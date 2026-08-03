@@ -1,0 +1,1044 @@
+/*
+ * Shared UI: the app shell (sidebar, topbar, mobile sheet), the demo dock,
+ * and every component under `components/`.
+ *
+ * All positional properties are LOGICAL (inset-inline-start, padding-inline,
+ * border-inline-start, margin-inline-end) so the entire layout mirrors under
+ * dir="rtl" with no second stylesheet. The only physical values left are the
+ * block axis, which does not mirror.
+ */
+
+/* ------------------------------------------------------------------ layout */
+
+.mr-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.mr-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mr-content {
+  flex: 1;
+  padding: clamp(18px, 2.4vw, 30px) var(--gutter) 96px;
+  max-width: 1240px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+/* ----------------------------------------------------------------- sidebar */
+
+.mr-sidebar {
+  width: var(--sidebar-w);
+  flex: 0 0 var(--sidebar-w);
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  inset-block-start: 0;
+  height: 100vh;
+}
+
+.mr-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px var(--gutter);
+  border-block-end: 1px solid var(--border);
+}
+
+.mr-sidebar__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.mr-sidebar__name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.mr-sidebar__sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+
+.mr-sidebar__nav {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mr-navitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 13.5px;
+  font-weight: 700;
+  width: 100%;
+  text-align: start;
+}
+
+.mr-navitem:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.mr-navitem[aria-current="page"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.mr-navitem__badge {
+  margin-inline-start: auto;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mr-sidebar__foot {
+  padding: 14px var(--gutter) 18px;
+  border-block-start: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  line-height: 1.5;
+}
+
+.mr-sidebar__chip {
+  display: inline-block;
+  margin-block-start: 8px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+
+/* ------------------------------------------------------------------ topbar */
+
+.mr-topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: var(--gutter);
+  background: var(--surface-header);
+  backdrop-filter: blur(12px);
+  border-block-end: 1px solid var(--border);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-header);
+}
+
+.mr-topbar__search {
+  flex: 1;
+  max-width: 460px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mr-topbar__search svg {
+  position: absolute;
+  inset-inline-start: 11px;
+  color: var(--fg-subtle);
+  pointer-events: none;
+}
+
+.mr-topbar__input {
+  width: 100%;
+  padding: 9px 12px;
+  padding-inline-start: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.mr-topbar__spacer {
+  flex: 1;
+}
+
+.mr-userchip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 11px 5px 5px;
+  padding-inline: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.mr-iconbtn {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  display: grid;
+  place-items: center;
+}
+
+.mr-iconbtn:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+/* --------------------------------------------------------- search results */
+
+.mr-searchpop {
+  position: absolute;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-start: 0;
+  width: min(440px, 92vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  z-index: var(--z-sheet);
+  animation: mr-drop 0.16s ease;
+}
+
+.mr-searchpop__group {
+  padding: 8px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.mr-searchpop__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: start;
+}
+
+.mr-searchpop__row:hover {
+  background: var(--surface-2);
+}
+
+.mr-searchpop__meta {
+  margin-inline-start: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+
+.mr-searchpop__empty {
+  padding: 18px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------ mobile sheet */
+
+.mr-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim-sheet);
+  backdrop-filter: blur(2px);
+  z-index: var(--z-sheet);
+  animation: mr-scrim 0.18s ease;
+  border: 0;
+  padding: 0;
+}
+
+.mr-sheet {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: min(292px, 84vw);
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  z-index: calc(var(--z-sheet) + 1);
+  display: flex;
+  flex-direction: column;
+  animation: mr-sheet 0.24s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* --------------------------------------------------------------- demo dock */
+
+.mr-dock {
+  position: fixed;
+  inset-block-end: 16px;
+  inset-inline-end: 16px;
+  z-index: var(--z-dock);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 232px;
+  animation: mr-pop 0.22s ease;
+}
+
+/*
+ * House layout rule 1: the dock must never cover a primary action. When any
+ * overlay owns the screen it moves to the opposite inline corner rather than
+ * sitting on top of the thing the reader came for.
+ */
+.mr-dock--shifted {
+  inset-inline-end: auto;
+  inset-inline-start: 16px;
+}
+
+.mr-dock__head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.mr-dock__collapse {
+  margin-inline-start: auto;
+  border: 0;
+  background: transparent;
+  color: var(--fg-subtle);
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.mr-dock__collapse:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.mr-dock__row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mr-dock__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+  min-width: 52px;
+}
+
+.mr-dock__mini {
+  position: fixed;
+  inset-block-end: 16px;
+  inset-inline-end: 16px;
+  z-index: var(--z-dock);
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  color: var(--fg-muted);
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mr-select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------- segmented */
+
+.mr-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+
+.mr-seg__btn {
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 7px;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
+}
+
+.mr-seg__btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.mr-seg--full {
+  display: flex;
+  flex: 1;
+}
+
+.mr-seg--full .mr-seg__btn {
+  flex: 1;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.mr-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  white-space: nowrap;
+}
+
+.mr-button--ghost {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--fg);
+}
+
+.mr-button--ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.mr-button--pos {
+  background: var(--pos);
+  color: #fff;
+}
+
+.mr-button--danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.mr-button--sm {
+  padding: 7px 12px;
+  font-size: 12.5px;
+  border-radius: 9px;
+}
+
+.mr-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------- chips */
+
+.mr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.mr-chip--pos {
+  background: var(--pos-soft);
+  color: var(--pos);
+  border-color: transparent;
+}
+.mr-chip--warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-color: transparent;
+}
+.mr-chip--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: transparent;
+}
+.mr-chip--info {
+  background: var(--info-soft);
+  color: var(--info);
+  border-color: transparent;
+}
+.mr-chip--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: transparent;
+}
+
+.mr-chipbtn {
+  cursor: pointer;
+}
+
+.mr-chipbtn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: transparent;
+}
+
+/* ------------------------------------------------------------------- cards */
+
+.mr-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+}
+
+.mr-panel__head {
+  padding: 15px 17px 12px;
+  border-block-end: 1px solid var(--border);
+}
+
+.mr-panel__title {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.mr-panel__sub {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  margin-block-start: 3px;
+}
+
+.mr-panel__body {
+  padding: 15px 17px;
+}
+
+/* ------------------------------------------------------------------ tiles */
+
+.mr-tile {
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.mr-tile__ini {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+.mr-tile__file {
+  position: absolute;
+  inset-block-end: 4px;
+  inset-inline-start: 5px;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: var(--on-tint);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 1px 4px;
+  max-width: calc(100% - 10px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * House layout rule 2: a floating badge over a tile sits in the corner
+ * OPPOSITE the tile's own filename chip, never on top of it.
+ */
+.mr-tile__badge {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 5px;
+}
+
+.mr-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex: none;
+  border: 1px solid var(--border);
+}
+
+.mr-avatar--lg {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  font-size: 15px;
+}
+
+/* --------------------------------------------------------------- KPI strip */
+
+.mr-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 13px;
+}
+
+.mr-kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 15px 16px;
+  box-shadow: var(--shadow);
+}
+
+.mr-kpi__label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+.mr-kpi__value {
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-block-start: 6px;
+  line-height: 1.1;
+}
+
+.mr-kpi__hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  margin-block-start: 5px;
+}
+
+/* --------------------------------------------------------------- timeline */
+
+.mr-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/*
+ * House layout rule 4: the marker column is a RESERVED gutter, declared once
+ * here as a grid track. The dot is placed inside its own column rather than
+ * absolutely positioned over the text, so it can never overlap the body copy
+ * at any width or in either writing direction.
+ */
+.mr-tl-row {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 11px;
+  padding-block: 11px;
+  position: relative;
+}
+
+.mr-tl-row::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  /* Centre of the 30px gutter. */
+  inset-inline-start: 14px;
+  width: 1px;
+  background: var(--border);
+}
+
+.mr-tl-row:first-child::before {
+  inset-block-start: 18px;
+}
+
+.mr-tl-row:last-child::before {
+  inset-block-end: calc(100% - 18px);
+}
+
+.mr-tl-dot {
+  width: 29px;
+  height: 29px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.mr-tl-body {
+  min-width: 0;
+}
+
+.mr-tl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px;
+  margin-block-end: 3px;
+}
+
+.mr-tl-type {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--fg);
+}
+
+.mr-tl-when {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+
+.mr-tl-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  line-height: 1.55;
+}
+
+/* ------------------------------------------------------------------ fields */
+
+.mr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mr-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+
+.mr-input,
+.mr-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.mr-textarea {
+  min-height: 84px;
+  line-height: 1.55;
+}
+
+/* ------------------------------------------------------------------ modal */
+
+.mr-modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim-modal);
+  backdrop-filter: blur(3px);
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  animation: mr-scrim 0.18s ease;
+}
+
+.mr-modal {
+  width: min(440px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 17px;
+  box-shadow: var(--shadow-modal);
+  padding: 20px;
+  animation: mr-pop 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.mr-modal__title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+
+.mr-modal__actions {
+  display: flex;
+  gap: 9px;
+  margin-block-start: 18px;
+}
+
+.mr-modal__actions .mr-button {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------- popover */
+
+.mr-popover {
+  position: absolute;
+  inset-block-start: calc(100% + 7px);
+  inset-inline-end: 0;
+  min-width: 208px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  z-index: var(--z-sheet);
+  animation: mr-drop 0.15s ease;
+}
+
+.mr-popover__title {
+  padding: 7px 9px 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.mr-popover__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 8px 9px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: start;
+}
+
+.mr-popover__item:hover {
+  background: var(--surface-2);
+}
+
+/* ------------------------------------------------------------------ toasts */
+
+.mr-toasts {
+  position: fixed;
+  inset-block-end: 22px;
+  inset-inline: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+.mr-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--fg);
+  color: var(--bg);
+  border-radius: 999px;
+  padding: 10px 17px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-toast);
+  animation: mr-pop 0.2s ease;
+  max-width: min(520px, 92vw);
+}
+
+.mr-toast--pos {
+  background: var(--pos);
+  color: #fff;
+}
+.mr-toast--danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.mr-toast__x {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.mr-toast__x:hover {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------ empty states */
+
+.mr-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.mr-empty__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+}
+
+.mr-empty__title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.mr-empty__body {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  margin-block-start: 5px;
+  max-width: 380px;
+  margin-inline: auto;
+  line-height: 1.55;
+}
+
+/* ------------------------------------------------------------ honest lines */
+
+.mr-honest {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  line-height: 1.55;
+  padding: 11px 13px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+}
+
+/* -------------------------------------------------------- screen headings */
+
+.mr-head {
+  margin-block-end: 18px;
+}
+
+.mr-head__title {
+  font-size: clamp(21px, 3vw, 27px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.mr-head__sub {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  margin-block-start: 5px;
+}
+
+.mr-backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--fg-subtle);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 0;
+  margin-block-end: 11px;
+}
+
+.mr-backlink:hover {
+  color: var(--accent);
+}
+
+/* The chevron points the way "back" goes, which flips with the writing mode. */
+[dir="rtl"] .mr-backlink svg {
+  transform: scaleX(-1);
+}
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 899.98px) {
+  .mr-sidebar {
+    display: none;
+  }
+  .mr-content {
+    padding-block-end: 120px;
+  }
+  .mr-dock {
+    width: calc(100vw - 32px);
+    max-width: 300px;
+  }
+}
+
+/* A flex child that shares the row equally — used by paired dialog buttons. */
+.mr-flex1 {
+  flex: 1;
+}
