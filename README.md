@@ -25,9 +25,9 @@ already mid-quarter rather than lorem ipsum.
   the stale list have both already changed.
 
 - **A real pipeline engine.** [`src/lib/pipeline.ts`](src/lib/pipeline.ts) is a
-  pure, React-free module: odds-weighting, column subtotals, staleness against
-  the stage-entry date, the overdue-first follow-up queue, the three-month
-  weighted forecast, win rate and average cycle. Nothing is stored
+  pure module with no React in it: odds-weighting, column subtotals, staleness
+  against the stage-entry date, the overdue-first follow-up queue, the
+  three-month weighted forecast, win rate and average cycle. Nothing is stored
   pre-computed, because a stored total is a total that goes stale the moment a
   card moves. 37 assertions in
   [`pipeline.test.ts`](src/lib/pipeline.test.ts) run against the shipped seed.
@@ -114,6 +114,39 @@ both moved.
 | `npm run preview` | Preview a production build locally. |
 | `npm test` | Run the pipeline engine suite. |
 
+## Full implementation (self-host)
+
+There are two ways to run this workspace.
+
+**One click — the frontend on its own.** The Vercel / DigitalOcean routes
+above deploy the sales workspace by itself, running on the bundled demo data.
+No database, no dashboard — a fully static preview.
+
+**One command — the whole stack.**
+[`docker-compose.yml`](docker-compose.yml) stands up Postgres (seeded with the
+*same* companies, people, deals, follow-ups and activity), an auto-generated
+Adminium dashboard that runs that real database, and the workspace itself:
+
+```bash
+cp .env.example .env      # then set ADMINIUM_SECRET — e.g. openssl rand -hex 32
+docker compose up
+```
+
+- **Sales workspace** → http://localhost:8080
+- **Adminium dashboard** → http://localhost:4600
+
+On first boot, `crm-db` applies [`db/schema.sql`](db/schema.sql) then
+[`db/seed.sql`](db/seed.sql), and Adminium imports the Meridian database as its
+first source connection, introspects the schema, and generates the back
+office. Finish the ~1-minute first-run wizard at `:4600` — it's pre-pointed at
+the seeded pipeline. The install spec Adminium reads to configure itself is
+[`manifest.json`](manifest.json).
+
+The seed is the app's own fiction, not a second one: the same nine accounts,
+the same fourteen open deals, the same three overdue follow-ups, against the
+same pinned clock. Drag *Analyst pods* to Verbal on `:8080` and it is the same
+row a manager reads on `:4600`.
+
 ## The split: the workspace and the back office
 
 The app you deploy is **the rep's workspace**. The dashboard Adminium
@@ -126,6 +159,9 @@ not a limitation:
 | Moving a deal and logging what happened | Creating and merging companies and contacts |
 | The manager's weighted forecast | Imports, exports and bulk edits |
 | Nudging what has gone quiet | Reporting across the whole history |
+
+The manifest scaffolds 8 tables, 5 dashboard pages, 2 access presets
+(`sales-rep`, `sales-manager`) and 4 settings into your connected database.
 
 ## Connecting to Adminium
 
