@@ -123,9 +123,10 @@ above deploy the sales workspace by itself, running on the bundled demo data.
 No database, no dashboard — a fully static preview.
 
 **One command — the whole stack.**
-[`docker-compose.yml`](docker-compose.yml) stands up Postgres (seeded with the
-*same* companies, people, deals, follow-ups and activity), an auto-generated
-Adminium dashboard that runs that real database, and the workspace itself:
+[`docker-compose.yml`](docker-compose.yml) stands up Postgres (seeded by
+default with the *same* companies, people, deals, follow-ups and activity), an
+auto-generated Adminium dashboard that runs that real database, and the
+workspace itself:
 
 ```bash
 cp .env.example .env      # then set ADMINIUM_SECRET — e.g. openssl rand -hex 32
@@ -135,17 +136,42 @@ docker compose up
 - **Sales workspace** → http://localhost:8080
 - **Adminium dashboard** → http://localhost:4600
 
-On first boot, `crm-db` applies [`db/schema.sql`](db/schema.sql) then
-[`db/seed.sql`](db/seed.sql), and Adminium imports the Meridian database as its
-first source connection, introspects the schema, and generates the back
-office. Finish the ~1-minute first-run wizard at `:4600` — it's pre-pointed at
-the seeded pipeline. The install spec Adminium reads to configure itself is
+On first boot, `crm-db` applies [`db/schema.sql`](db/schema.sql), installs the
+demo-data bookkeeping, and then loads [`db/seed.sql`](db/seed.sql) unless you
+set `DEMO_DATA=0`. Adminium imports the Meridian database as its first source
+connection, introspects the schema, and generates the back office. Finish the
+~1-minute first-run wizard at `:4600` — it's pre-pointed at the pipeline.
+The install spec Adminium reads to configure itself is
 [`manifest.json`](manifest.json).
 
 The seed is the app's own fiction, not a second one: the same nine accounts,
 the same fourteen open deals, the same three overdue follow-ups, against the
 same pinned clock. Drag *Analyst pods* to Verbal on `:8080` and it is the same
 row a manager reads on `:4600`.
+
+### Demo data
+
+The Meridian pipeline is loaded for you — a database with data in it is the
+default. To start empty instead, with the same full schema and no rows, set
+`DEMO_DATA=0` in `.env` before the first `docker compose up`. Neither choice
+is permanent: the demo rows go in and come out again at any time.
+
+| Command | What it does |
+| --- | --- |
+| `npm run demo:status` | What is loaded right now, table by table |
+| `npm run demo:import` | Load [`db/seed.sql`](db/seed.sql) |
+| `npm run demo:wipe` | Remove the demo rows — your schema and your own rows stay |
+| `npm run demo:reset` | Wipe, then import a fresh copy |
+
+A wipe takes out only what the seed put in. Those rows are recorded in their
+own `adminium_demo` schema, outside `public`. A demo row your own data depends
+on is kept rather than force-deleted, and reported under `kept`; but
+`ON DELETE CASCADE` still applies, so a demo company takes its contacts with
+it and a demo deal its activities — including ones you added yourself —
+counted separately as `cascaded`. `wipe` and `reset` ask before they do
+anything; `npm run demo:wipe -- --yes` skips the question, which is what a
+script needs. Set `DATABASE_URL` to run them against a Postgres somewhere
+else. [`db/README.md`](db/README.md) covers the rest.
 
 ## The split: the workspace and the back office
 
@@ -199,6 +225,7 @@ src/
   styles/      tokens.css (canonical design tokens), base.css, components.css,
                screens.css
 public/fonts/  self-hosted Manrope + JetBrains Mono (woff2)
+db/            schema.sql, seed.sql and the demo-data toolkit
 ```
 
 ## License
