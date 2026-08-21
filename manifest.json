@@ -13,52 +13,86 @@
     "key": "mft.crm.desc",
     "fallback": "A working sales day — a weighted pipeline board, a follow-up queue and deal rooms with a full activity history — backed by your own database."
   },
-  "categories": ["sales"],
-
+  "categories": [
+    "crm"
+  ],
   "compatibility": {
     "minAdminiumVersion": "1.0.0",
-    "engines": ["postgres", "mysql", "sqlite"],
-    "requires": ["realtime"]
+    "engines": [
+      "postgres",
+      "mysql",
+      "sqlite"
+    ],
+    "requires": [
+      "realtime"
+    ]
   },
-
   "requiredSchema": {
     "tables": [
       {
         "ref": "users",
-        "table": "users",
-        "label": { "key": "mft.crm.tbl.users", "fallback": "Team" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "name", "type": "text", "required": true, "display": "title" },
-          { "name": "email", "type": "email", "required": true, "unique": true },
-          { "name": "initials", "type": "text", "required": true },
-          { "name": "avatar", "type": "image" },
-          { "name": "tint", "type": "text", "required": true },
           {
-            "name": "role",
-            "type": "enum",
-            "required": true,
-            "values": ["rep", "manager"],
-            "default": "rep"
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
           },
-          { "name": "created_at", "type": "timestamp", "default": "now", "role": "created" }
+          {
+            "ref": "name",
+            "type": "text"
+          },
+          {
+            "ref": "email",
+            "type": "text",
+            "semantic": "email"
+          },
+          {
+            "ref": "initials",
+            "type": "text"
+          },
+          {
+            "ref": "avatar",
+            "type": "text",
+            "semantic": "image"
+          },
+          {
+            "ref": "tint",
+            "type": "text"
+          },
+          {
+            "ref": "role",
+            "type": "enum",
+            "enum": [
+              "rep",
+              "manager"
+            ]
+          },
+          {
+            "ref": "created_at",
+            "type": "timestamptz"
+          }
         ]
       },
       {
         "ref": "companies",
-        "table": "companies",
-        "label": { "key": "mft.crm.tbl.companies", "fallback": "Companies" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "name", "type": "text", "required": true, "display": "title" },
-          { "name": "domain", "type": "text" },
           {
-            "name": "industry",
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text"
+          },
+          {
+            "ref": "domain",
+            "type": "text"
+          },
+          {
+            "ref": "industry",
             "type": "enum",
-            "required": true,
-            "values": [
+            "enum": [
               "law",
               "health",
               "data",
@@ -70,435 +104,364 @@
               "aerospace"
             ]
           },
-          { "name": "city", "type": "text" },
-          { "name": "headcount", "type": "int", "default": 0 },
-          { "name": "initials", "type": "text", "required": true },
-          { "name": "tint", "type": "text" },
-          { "name": "icon", "type": "text" },
-          { "name": "since_note", "type": "text" },
-          { "name": "note", "type": "text" },
-          { "name": "created_at", "type": "timestamp", "default": "now", "role": "created" }
+          {
+            "ref": "city",
+            "type": "text"
+          },
+          {
+            "ref": "headcount",
+            "type": "int"
+          },
+          {
+            "ref": "initials",
+            "type": "text"
+          },
+          {
+            "ref": "tint",
+            "type": "text"
+          },
+          {
+            "ref": "icon",
+            "type": "text"
+          },
+          {
+            "ref": "since_note",
+            "type": "text"
+          },
+          {
+            "ref": "note",
+            "type": "text"
+          },
+          {
+            "ref": "created_at",
+            "type": "timestamptz"
+          }
         ]
       },
       {
         "ref": "contacts",
-        "table": "contacts",
-        "label": { "key": "mft.crm.tbl.contacts", "fallback": "People" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "company_id", "type": "fk", "references": "companies", "required": true },
-          { "name": "name", "type": "text", "required": true, "display": "title" },
-          { "name": "email", "type": "email", "required": true, "unique": true },
-          { "name": "phone", "type": "text" },
-          { "name": "title", "type": "text" },
-          { "name": "initials", "type": "text", "required": true },
-          { "name": "created_at", "type": "timestamp", "default": "now", "role": "created" }
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies"
+          },
+          {
+            "ref": "name",
+            "type": "text"
+          },
+          {
+            "ref": "email",
+            "type": "text",
+            "semantic": "email"
+          },
+          {
+            "ref": "phone",
+            "type": "text"
+          },
+          {
+            "ref": "title",
+            "type": "text"
+          },
+          {
+            "ref": "initials",
+            "type": "text"
+          },
+          {
+            "ref": "created_at",
+            "type": "timestamptz"
+          }
         ]
       },
       {
         "ref": "pipelines",
-        "table": "pipelines",
-        "label": { "key": "mft.crm.tbl.pipelines", "fallback": "Pipelines" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "name", "type": "text", "required": true, "display": "title" }
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text"
+          }
         ]
       },
       {
         "ref": "stages",
-        "table": "stages",
-        "label": { "key": "mft.crm.tbl.stages", "fallback": "Stages" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "pipeline_id", "type": "fk", "references": "pipelines", "required": true },
-          { "name": "name", "type": "text", "required": true, "display": "title" },
-          { "name": "position", "type": "int", "required": true, "default": 0 },
-          { "name": "probability", "type": "int", "required": true, "default": 0 }
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "pipeline_id",
+            "type": "fk",
+            "references": "pipelines"
+          },
+          {
+            "ref": "name",
+            "type": "text"
+          },
+          {
+            "ref": "position",
+            "type": "int"
+          },
+          {
+            "ref": "probability",
+            "type": "int"
+          }
         ]
       },
       {
         "ref": "deals",
-        "table": "deals",
-        "label": { "key": "mft.crm.tbl.deals", "fallback": "Deals" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "name", "type": "text", "required": true, "display": "title" },
-          { "name": "company_id", "type": "fk", "references": "companies", "required": true },
-          { "name": "contact_id", "type": "fk", "references": "contacts" },
-          { "name": "stage_id", "type": "fk", "references": "stages", "required": true },
-          { "name": "amount", "type": "money", "required": true },
-          { "name": "currency", "type": "text", "required": true, "default": "USD" },
-          { "name": "expected_close", "type": "date" },
           {
-            "name": "status",
-            "type": "enum",
-            "required": true,
-            "values": ["open", "won", "lost"],
-            "default": "open"
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
           },
-          { "name": "lost_reason", "type": "text" },
-          { "name": "owner_id", "type": "fk", "references": "users", "required": true },
-          { "name": "scope", "type": "text" },
-          { "name": "stage_entered_at", "type": "timestamp" },
-          { "name": "closed_on", "type": "date" },
-          { "name": "created_at", "type": "timestamp", "default": "now", "role": "created" },
-          { "name": "updated_at", "type": "timestamp", "default": "now", "role": "updated" }
+          {
+            "ref": "name",
+            "type": "text"
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies"
+          },
+          {
+            "ref": "contact_id",
+            "type": "fk",
+            "references": "contacts"
+          },
+          {
+            "ref": "stage_id",
+            "type": "fk",
+            "references": "stages"
+          },
+          {
+            "ref": "amount",
+            "type": "money"
+          },
+          {
+            "ref": "currency",
+            "type": "text"
+          },
+          {
+            "ref": "expected_close",
+            "type": "date"
+          },
+          {
+            "ref": "status",
+            "type": "enum",
+            "enum": [
+              "open",
+              "won",
+              "lost"
+            ]
+          },
+          {
+            "ref": "lost_reason",
+            "type": "text"
+          },
+          {
+            "ref": "owner_id",
+            "type": "fk",
+            "references": "users"
+          },
+          {
+            "ref": "scope",
+            "type": "text"
+          },
+          {
+            "ref": "stage_entered_at",
+            "type": "timestamptz"
+          },
+          {
+            "ref": "closed_on",
+            "type": "date"
+          },
+          {
+            "ref": "created_at",
+            "type": "timestamptz"
+          },
+          {
+            "ref": "updated_at",
+            "type": "timestamptz"
+          }
         ]
       },
       {
         "ref": "activities",
-        "table": "activities",
-        "label": { "key": "mft.crm.tbl.activities", "fallback": "Activity" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "deal_id", "type": "fk", "references": "deals", "required": true },
           {
-            "name": "type",
-            "type": "enum",
-            "required": true,
-            "values": ["call", "email", "meeting", "note", "stage_change"]
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
           },
-          { "name": "summary", "type": "text", "required": true, "display": "title" },
-          { "name": "due_at", "type": "timestamp" },
-          { "name": "done", "type": "boolean", "default": true },
-          { "name": "created_by", "type": "fk", "references": "users" },
-          { "name": "created_at", "type": "timestamp", "default": "now", "role": "created" }
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals"
+          },
+          {
+            "ref": "type",
+            "type": "enum",
+            "enum": [
+              "call",
+              "email",
+              "meeting",
+              "note",
+              "stage_change"
+            ]
+          },
+          {
+            "ref": "summary",
+            "type": "text"
+          },
+          {
+            "ref": "due_at",
+            "type": "timestamptz"
+          },
+          {
+            "ref": "done",
+            "type": "bool"
+          },
+          {
+            "ref": "created_by",
+            "type": "fk",
+            "references": "users"
+          },
+          {
+            "ref": "created_at",
+            "type": "timestamptz"
+          }
         ]
       },
       {
         "ref": "tasks",
-        "table": "tasks",
-        "label": { "key": "mft.crm.tbl.tasks", "fallback": "Follow-ups" },
-        "primaryKey": ["id"],
         "columns": [
-          { "name": "id", "type": "int", "role": "pk" },
-          { "name": "deal_id", "type": "fk", "references": "deals" },
-          { "name": "title", "type": "text", "required": true, "display": "title" },
-          { "name": "due_at", "type": "timestamp" },
-          { "name": "done", "type": "boolean", "default": false },
-          { "name": "owner_id", "type": "fk", "references": "users", "required": true }
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals"
+          },
+          {
+            "ref": "title",
+            "type": "text"
+          },
+          {
+            "ref": "due_at",
+            "type": "timestamptz"
+          },
+          {
+            "ref": "done",
+            "type": "bool"
+          },
+          {
+            "ref": "owner_id",
+            "type": "fk",
+            "references": "users"
+          }
         ]
       }
     ]
   },
-
   "pages": [
     {
-      "key": "crm-dashboard",
-      "title": { "key": "mft.crm.page.dashboard", "fallback": "Dashboard" },
-      "path": "/",
-      "type": "page-dashboard",
-      "icon": "layout-dashboard",
-      "nav": { "group": "manifest:crm", "order": 1 },
-      "blocks": [
-        {
-          "kind": "kpi-stat-card",
-          "key": "open-pipeline",
-          "label": { "key": "mft.crm.kpi.pipeline", "fallback": "Open pipeline" },
-          "source": "deals",
-          "metric": "sum",
-          "field": "amount",
-          "format": "money",
-          "filter": { "status": ["open"] }
-        },
-        {
-          "kind": "kpi-stat-card",
-          "key": "win-rate",
-          "label": { "key": "mft.crm.kpi.winRate", "fallback": "Win rate" },
-          "source": "deals",
-          "metric": "ratio",
-          "format": "percent",
-          "numerator": { "status": ["won"] },
-          "denominator": { "status": ["won", "lost"] }
-        },
-        {
-          "kind": "kpi-stat-card",
-          "key": "overdue-followups",
-          "label": { "key": "mft.crm.kpi.overdue", "fallback": "Overdue follow-ups" },
-          "source": "tasks",
-          "metric": "count",
-          "format": "number",
-          "filter": { "done": false, "due_at": { "before": "now" } }
-        },
-        {
-          "kind": "chart-funnel",
-          "key": "pipeline-by-stage",
-          "label": { "key": "mft.crm.chart.funnel", "fallback": "Pipeline by stage" },
-          "source": "deals",
-          "chart": "funnel",
-          "x": { "field": "stage_id", "lookup": "stages", "orderBy": "position" },
-          "y": { "agg": "sum", "field": "amount" },
-          "format": "money",
-          "filter": { "status": ["open"] }
-        },
-        {
-          "kind": "chart-line-area",
-          "key": "won-per-month",
-          "label": { "key": "mft.crm.chart.won", "fallback": "Won per month" },
-          "source": "deals",
-          "chart": "line-area",
-          "x": { "field": "closed_on", "bucket": "month" },
-          "y": { "agg": "sum", "field": "amount" },
-          "format": "money",
-          "filter": { "status": ["won"] }
-        },
-        {
-          "kind": "mini-table",
-          "key": "closing-soon",
-          "label": { "key": "mft.crm.block.closing", "fallback": "Closing soon" },
-          "source": "deals",
-          "limit": 8,
-          "orderBy": { "field": "expected_close", "dir": "asc" },
-          "filter": { "status": ["open"] },
-          "columns": ["name", "company_id", "amount", "stage_id", "expected_close", "owner_id"]
-        },
-        {
-          "kind": "activity-feed",
-          "key": "recent-activity",
-          "label": { "key": "mft.crm.block.activity", "fallback": "Recent activity" },
-          "source": "activities",
-          "timestamp": "created_at",
-          "limit": 12
-        }
-      ]
-    },
-    {
-      "key": "crm-board",
-      "title": { "key": "mft.crm.page.board", "fallback": "Pipeline" },
-      "path": "/pipeline",
-      "type": "page-board",
-      "icon": "columns-3",
-      "source": "deals",
-      "nav": { "group": "manifest:crm", "order": 2 },
-      "board": {
-        "view": "kanban-board",
-        "groupBy": "stage_id",
-        "groups": { "source": "stages", "label": "name", "orderBy": { "field": "position", "dir": "asc" } },
-        "card": {
-          "title": "name",
-          "subtitle": "company_id",
-          "amount": "amount",
-          "meta": ["owner_id", "expected_close"],
-          "stamp": "stage_entered_at"
-        },
-        "columnTotal": { "agg": "sum", "field": "amount", "weightBy": "stages.probability", "format": "money" },
-        "move": { "set": { "stage_id": "$group", "stage_entered_at": "now" }, "log": "activities", "logType": "stage_change" }
+      "ref": "crm-dashboard",
+      "template": "page-dashboard",
+      "title": {
+        "key": "mft.crm.page.dashboard",
+        "fallback": "Dashboard"
       },
-      "filters": ["owner_id", "company_id", "status"],
-      "filterControl": "filter-chip-bar",
-      "search": ["name", "scope"]
-    },
-    {
-      "key": "crm-companies",
-      "title": { "key": "mft.crm.page.companies", "fallback": "Companies" },
-      "path": "/companies",
-      "type": "page-master-detail",
-      "icon": "building-2",
-      "source": "companies",
-      "nav": { "group": "manifest:crm", "order": 3 },
-      "list": {
-        "view": "master-list",
-        "title": "name",
-        "subtitle": "city",
-        "badge": "industry"
-      },
-      "search": ["name", "domain", "city"],
-      "filters": ["industry", "city"],
-      "columns": ["name", "industry", "city", "headcount", "domain", "created_at"],
-      "detail": {
-        "title": "name",
-        "fields": ["domain", "industry", "city", "headcount", "since_note", "note"],
-        "timeline": {
-          "view": "activity-timeline",
-          "source": "activities",
-          "through": { "table": "deals", "foreignKey": "company_id", "localKey": "deal_id" },
-          "kind": "type",
-          "body": "summary",
-          "timestamp": "created_at"
-        }
-      },
-      "children": [
-        {
-          "key": "contacts",
-          "label": { "key": "mft.crm.tab.contacts", "fallback": "People" },
-          "source": "contacts",
-          "foreignKey": "company_id",
-          "columns": ["name", "title", "email", "phone"]
-        },
-        {
-          "key": "deals",
-          "label": { "key": "mft.crm.tab.deals", "fallback": "Deals" },
-          "source": "deals",
-          "foreignKey": "company_id",
-          "columns": ["name", "amount", "stage_id", "status", "expected_close", "owner_id"],
-          "orderBy": { "field": "expected_close", "dir": "asc" }
-        }
-      ]
-    },
-    {
-      "key": "crm-contacts",
-      "title": { "key": "mft.crm.page.contacts", "fallback": "People" },
-      "path": "/people",
-      "type": "page-crud",
-      "icon": "contact",
-      "source": "contacts",
-      "nav": { "group": "manifest:crm", "order": 4 },
-      "columns": ["name", "title", "company_id", "email", "phone", "created_at"],
-      "search": ["name", "email", "title"],
-      "filters": ["company_id"],
-      "orderBy": { "field": "name", "dir": "asc" },
-      "children": [
-        {
-          "key": "deals",
-          "label": { "key": "mft.crm.tab.dealsFor", "fallback": "Deals" },
-          "source": "deals",
-          "foreignKey": "contact_id",
-          "columns": ["name", "amount", "stage_id", "status", "expected_close"]
-        }
-      ]
-    },
-    {
-      "key": "crm-tasks",
-      "title": { "key": "mft.crm.page.tasks", "fallback": "Follow-ups" },
-      "path": "/follow-ups",
-      "type": "page-queue-inbox",
-      "icon": "list-checks",
-      "source": "tasks",
-      "nav": { "group": "manifest:crm", "order": 5 },
-      "tabs": {
-        "field": "done",
-        "values": ["open", "done"],
-        "default": "open",
-        "control": "segmented-control"
-      },
-      "list": {
-        "title": "title",
-        "subtitle": "deal_id",
-        "timestamp": "due_at",
-        "orderBy": { "field": "due_at", "dir": "asc" }
-      },
-      "filters": ["owner_id"],
-      "detail": {
-        "title": "title",
-        "fields": ["deal_id", "owner_id", "due_at", "done"],
-        "edit": ["due_at", "done"],
-        "actions": [
-          { "key": "complete", "label": "Mark complete", "set": { "done": true }, "undo": true },
-          { "key": "push-week", "label": "Push one week", "set": { "due_at": "+7d" }, "undo": true }
-        ],
-        "undo": { "view": "toast-stack" }
-      }
-    }
-  ],
-
-  "roles": [
-    {
-      "key": "sales-rep",
-      "name": { "key": "mft.crm.role.rep", "fallback": "Account executive" },
-      "description": {
-        "key": "mft.crm.role.rep.desc",
-        "fallback": "Reads and writes their own deals, activities and follow-ups; reads companies and people. Cannot edit stages, and never sees settings."
-      },
-      "permissions": [
-        { "resource": "deals", "actions": ["read", "create", "update"], "scope": "own" },
-        { "resource": "activities", "actions": ["read", "create", "update"], "scope": "own" },
-        { "resource": "tasks", "actions": ["read", "create", "update"], "scope": "own" },
-        { "resource": "companies", "actions": ["read"] },
-        { "resource": "contacts", "actions": ["read"] },
-        { "resource": "pipelines", "actions": ["read"] },
-        { "resource": "stages", "actions": ["read"] },
-        { "resource": "users", "actions": ["read"] }
-      ]
-    },
-    {
-      "key": "sales-manager",
-      "name": { "key": "mft.crm.role.manager", "fallback": "Sales manager" },
-      "description": {
-        "key": "mft.crm.role.manager.desc",
-        "fallback": "Every deal on the team, plus companies and people. Stage administration and settings stay with the super-admin."
-      },
-      "permissions": [
-        { "resource": "deals", "actions": ["read", "create", "update", "delete"] },
-        { "resource": "activities", "actions": ["read", "create", "update", "delete"] },
-        { "resource": "tasks", "actions": ["read", "create", "update", "delete"] },
-        { "resource": "companies", "actions": ["read", "create", "update"] },
-        { "resource": "contacts", "actions": ["read", "create", "update"] },
-        { "resource": "pipelines", "actions": ["read"] },
-        { "resource": "stages", "actions": ["read"] },
-        { "resource": "users", "actions": ["read"] }
-      ]
-    }
-  ],
-
-  "settings": [
-    {
-      "key": "company_name",
-      "type": "text",
-      "label": { "key": "mft.crm.set.company_name", "fallback": "Company name" },
-      "required": true
-    },
-    {
-      "key": "currency",
-      "type": "enum",
-      "label": { "key": "mft.crm.set.currency", "fallback": "Currency" },
-      "values": ["USD", "EUR", "GBP", "AUD", "CAD"],
-      "default": "USD",
-      "required": true,
-      "help": {
-        "key": "mft.crm.set.currency.help",
-        "fallback": "One currency for the whole pipeline. Deals carry a currency column so a second one can be added later without a migration."
+      "nav": {
+        "group": "manifest:crm",
+        "icon": "layout-dashboard",
+        "order": 1
       }
     },
     {
-      "key": "stale_deal_days",
-      "type": "int",
-      "label": { "key": "mft.crm.set.stale_deal_days", "fallback": "Days before a deal reads as stale" },
-      "default": 14,
-      "help": {
-        "key": "mft.crm.set.stale_deal_days.help",
-        "fallback": "Counted from the day the deal entered its current stage, not from the day it was opened."
+      "ref": "crm-board",
+      "template": "page-board",
+      "title": {
+        "key": "mft.crm.page.board",
+        "fallback": "Pipeline"
+      },
+      "nav": {
+        "group": "manifest:crm",
+        "icon": "columns-3",
+        "order": 2
       }
     },
     {
-      "key": "fiscal_year_start",
-      "type": "enum",
-      "label": { "key": "mft.crm.set.fiscal_year_start", "fallback": "Fiscal year starts" },
-      "values": [
-        "january",
-        "february",
-        "march",
-        "april",
-        "may",
-        "june",
-        "july",
-        "august",
-        "september",
-        "october",
-        "november",
-        "december"
-      ],
-      "default": "january",
-      "required": true
+      "ref": "crm-companies",
+      "template": "page-master-detail",
+      "title": {
+        "key": "mft.crm.page.companies",
+        "fallback": "Companies"
+      },
+      "nav": {
+        "group": "manifest:crm",
+        "icon": "building-2",
+        "order": 3
+      }
+    },
+    {
+      "ref": "crm-contacts",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.contacts",
+        "fallback": "People"
+      },
+      "nav": {
+        "group": "manifest:crm",
+        "icon": "contact",
+        "order": 4
+      }
+    },
+    {
+      "ref": "crm-tasks",
+      "template": "page-queue-inbox",
+      "title": {
+        "key": "mft.crm.page.tasks",
+        "fallback": "Follow-ups"
+      },
+      "nav": {
+        "group": "manifest:crm",
+        "icon": "list-checks",
+        "order": 5
+      }
     }
   ],
-
-  "capabilities": ["email-delivery", "realtime", "file-storage"],
-
-  "frontend": {
-    "kind": "spa",
-    "root": ".",
-    "buildCommand": "npm run build",
-    "buildOutput": "dist",
-    "entry": "index.html",
-    "routes": {
-      "today": "/",
-      "board": "/",
-      "manager": "/"
+  "capabilities": [
+    "email-delivery",
+    "realtime",
+    "file-storage"
+  ],
+  "kind": "app",
+  "frontends": [
+    {
+      "side": "staff",
+      "kind": "spa",
+      "entry": "index.html",
+      "routes": {
+        "today": "/",
+        "board": "/",
+        "manager": "/"
+      }
     }
-  }
+  ]
 }
