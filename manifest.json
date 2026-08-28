@@ -457,6 +457,16 @@
       "side": "staff",
       "kind": "spa",
       "entry": "index.html",
+      "env": {
+        "VITE_ADMINIUM_API_BASE_URL": {
+          "required": false,
+          "example": "https://admin.example.com"
+        },
+        "VITE_ADMINIUM_PUBLISHABLE_KEY": {
+          "required": false,
+          "example": "adm_pub_..."
+        }
+      },
       "routes": {
         "today": "/",
         "board": "/",
