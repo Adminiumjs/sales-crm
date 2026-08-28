@@ -1,3 +1,4 @@
+import { Segmented } from "./Primitives.tsx";
 /**
  * The internal-tool chrome: a compact sidebar, a topbar with global search and
  * a user chip, and — under 900px — a hamburger plus a slide-in nav sheet.
@@ -19,8 +20,8 @@ import {
   X,
 } from "lucide-react";
 
-import { COMPANIES, CONTACTS } from "../data/demo.ts";
-import type { View } from "../data/types.ts";
+import { COMPANIES, CONTACTS } from "../data/live.ts";
+import type { Persona, View } from "../data/types.ts";
 import { useI18n } from "../i18n/index.tsx";
 import { label, money } from "../lib/format.ts";
 import { currentUser, useStore } from "../state/store.ts";
@@ -243,6 +244,44 @@ function GlobalSearch() {
   );
 }
 
+/**
+ * WHICH SIDE OF THE BUSINESS YOU ARE LOOKING AT.
+ *
+ * Both personas here are STAFF. Until this existed the only way to move between
+ * them was the demo dock's segment — so outside a demo build the app had no
+ * switcher at all, and half of it was unreachable. That was invisible while the
+ * dock shipped in every build; making the dock demo-only is what exposed it.
+ *
+ * It is a LENS, not a permission. A hosted surface sits behind the operator's
+ * session and RBAC, so everyone who can reach this page is already authorised
+ * for the data underneath; flipping the view changes what is shown, never what
+ * may be fetched. Anything that must actually be withheld belongs in a role,
+ * not in a segmented control.
+ *
+ * The `chrome.dock.*` keys are reused deliberately: they carry the right words
+ * in all eight locales, and renaming them would be 8 × 3 repos of churn for an
+ * internal identifier no reader ever sees.
+ */
+function PersonaSwitch() {
+  const { t } = useI18n();
+  const persona = useStore((s) => s.persona);
+  const setPersona = useStore((s) => s.setPersona);
+  return (
+    <div className="mr-sidebar__persona">
+      <Segmented<Persona>
+        full
+        ariaLabel={t("chrome.dock.persona")}
+        value={persona}
+        onChange={setPersona}
+        options={[
+          { value: "rep", label: t("chrome.dock.rep") },
+          { value: "manager", label: t("chrome.dock.manager") },
+        ]}
+      />
+    </div>
+  );
+}
+
 export default function Shell({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const persona = useStore((s) => s.persona);
@@ -254,6 +293,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     <div className="mr-app">
       <aside className="mr-sidebar">
         <Brand />
+        <PersonaSwitch />
         <NavList />
         <Footer />
       </aside>

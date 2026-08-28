@@ -76,6 +76,14 @@
   color: var(--fg-subtle);
 }
 
+/* Container for the persona switch, not a label.
+   It held uppercase letter-spaced text until the switch became a real control;
+   those rules now apply to a segmented button group that overrides them, so
+   they were dead weight pointing at the wrong intent. Inset only. */
+.mr-sidebar__persona {
+  padding: 0 14px 10px;
+}
+
 .mr-sidebar__nav {
   padding: 12px;
   display: flex;

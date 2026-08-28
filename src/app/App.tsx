@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import type { ComponentType } from "react";
 
 import DemoDock from "../components/DemoDock.tsx";
+import { isConnected } from "../data/source.ts";
 import { CloseDealDialog, ToastLayer } from "../components/Overlays.tsx";
 import Shell from "../components/Shell.tsx";
 import type { View } from "../data/types.ts";
@@ -83,7 +84,7 @@ export default function App() {
       <Shell>
         <CurrentScreen />
       </Shell>
-      <DemoDock />
+      {!isConnected() && <DemoDock />}
       <ToastLayer />
       <CloseDealDialog />
     </>

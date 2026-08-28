@@ -2,7 +2,7 @@
  * The demo dock.
  *
  * A fixed panel holding everything that makes this a demo rather than a
- * product: the persona segment, the theme toggle, the locale picker and a
+ * product: the theme toggle, the locale picker and a
  * reset. It is deliberately labelled "Demo controls" so nobody mistakes it for
  * a feature of the workspace.
  *
@@ -17,13 +17,9 @@ import { ChevronDown, Moon, Settings2, Sun, RotateCcw } from "lucide-react";
 
 import { LOCALES, LOCALE_TAGS, useI18n, type LocaleTag } from "../i18n/index.tsx";
 import { useStore } from "../state/store.ts";
-import type { Persona } from "../data/types.ts";
-import { Segmented } from "./Primitives.tsx";
 
 export default function DemoDock() {
   const { t, locale, setLocale } = useI18n();
-  const persona = useStore((s) => s.persona);
-  const setPersona = useStore((s) => s.setPersona);
   const theme = useStore((s) => s.theme);
   const toggleTheme = useStore((s) => s.toggleTheme);
   const open = useStore((s) => s.dockOpen);
@@ -62,17 +58,10 @@ export default function DemoDock() {
           <ChevronDown size={15} aria-hidden="true" />
         </button>
       </div>
-
-      <Segmented<Persona>
-        full
-        ariaLabel={t("chrome.dock.persona")}
-        value={persona}
-        onChange={setPersona}
-        options={[
-          { value: "rep", label: t("chrome.dock.rep") },
-          { value: "manager", label: t("chrome.dock.manager") },
-        ]}
-      />
+      {/* The persona switch lives in the app chrome now (Shell.tsx).
+          It is not a demo control: both personas are staff, and outside a
+          demo build this dock does not exist — so a switcher that only
+          lived here left half the app unreachable. */}
 
       <div className="mr-dock__row">
         <span className="mr-dock__label">{t("chrome.dock.language")}</span>
