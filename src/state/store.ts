@@ -23,7 +23,7 @@ import {
   NOW,
   REPS,
   STAGES,
-} from "../data/demo.ts";
+} from "../data/live.ts";
 import type {
   Activity,
   ClosedDeal,

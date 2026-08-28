@@ -13,7 +13,7 @@
 import { useEffect, useRef } from "react";
 import { CheckCheck, CircleCheck, Clock3 } from "lucide-react";
 
-import { COMPANIES, NOW, STAGES } from "../data/demo.ts";
+import { COMPANIES, NOW, STAGES } from "../data/live.ts";
 import { useI18n } from "../i18n/index.tsx";
 import { label, money, moneyShort, nowLabel, time } from "../lib/format.ts";
 import {

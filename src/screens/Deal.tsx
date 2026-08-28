@@ -22,7 +22,8 @@ import {
   StickyNote,
 } from "lucide-react";
 
-import { ACTIVITY_TYPE, COMPANIES, CONTACTS, NOW, REPS, STAGES } from "../data/demo.ts";
+import { COMPANIES, CONTACTS, NOW, REPS, STAGES } from "../data/live.ts";
+import { ACTIVITY_TYPE } from "../data/demo.ts";
 import type { ActivityType } from "../data/types.ts";
 import { useI18n } from "../i18n/index.tsx";
 import {

@@ -8,7 +8,8 @@
 
 import { ArrowLeft, Building2, Search, UserRound } from "lucide-react";
 
-import { ACTIVITY_TYPE, COMPANIES, CONTACTS, NOW, REPS, STAGES } from "../data/demo.ts";
+import { COMPANIES, CONTACTS, NOW, REPS, STAGES } from "../data/live.ts";
+import { ACTIVITY_TYPE } from "../data/demo.ts";
 import { useI18n } from "../i18n/index.tsx";
 import { label, money, number, relativeAt } from "../lib/format.ts";
 import { stageById, timelineForDeals } from "../lib/pipeline.ts";

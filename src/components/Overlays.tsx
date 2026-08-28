@@ -9,7 +9,8 @@
 import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 
-import { LOST_REASONS, STAGES } from "../data/demo.ts";
+import { STAGES } from "../data/live.ts";
+import { LOST_REASONS } from "../data/demo.ts";
 import { useI18n } from "../i18n/index.tsx";
 import { label, money } from "../lib/format.ts";
 import { stageById } from "../lib/pipeline.ts";

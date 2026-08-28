@@ -14,7 +14,7 @@
 import { useState } from "react";
 import { EllipsisVertical, GripVertical } from "lucide-react";
 
-import { COMPANIES, NOW, REPS, STAGES } from "../data/demo.ts";
+import { COMPANIES, NOW, REPS, STAGES } from "../data/live.ts";
 import type { Deal, StageId } from "../data/types.ts";
 import { useI18n } from "../i18n/index.tsx";
 import {
