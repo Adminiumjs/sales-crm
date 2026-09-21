@@ -395,7 +395,7 @@
     },
     {
       "ref": "crm-board",
-      "template": "page-board",
+      "template": "page-master-detail",
       "title": {
         "key": "mft.crm.page.board",
         "fallback": "Pipeline"
@@ -404,6 +404,9 @@
         "group": "manifest:crm",
         "icon": "columns-3",
         "order": 2
+      },
+      "bindings": {
+        "rows": "deals"
       }
     },
     {
@@ -417,6 +420,9 @@
         "group": "manifest:crm",
         "icon": "building-2",
         "order": 3
+      },
+      "bindings": {
+        "rows": "companies"
       }
     },
     {
@@ -430,6 +436,9 @@
         "group": "manifest:crm",
         "icon": "contact",
         "order": 4
+      },
+      "bindings": {
+        "rows": "contacts"
       }
     },
     {
@@ -443,6 +452,9 @@
         "group": "manifest:crm",
         "icon": "list-checks",
         "order": 5
+      },
+      "bindings": {
+        "rows": "tasks"
       }
     }
   ],
