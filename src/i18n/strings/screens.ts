@@ -8,7 +8,7 @@
  * Same rules as `chrome.ts`: all eight locales, `en-US` is the source of truth,
  * plural variants in the locale's own CLDR order.
  *
- * VOCABULARY (21 D10): the words "pricing", "plan", "tier", "billing" and
+ * VOCABULARY: the words "pricing", "plan", "tier", "billing" and
  * "upgrade" appear nowhere in this file, in any locale. Say targets, strategy,
  * stages and expansion.
  */

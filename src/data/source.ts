@@ -13,8 +13,8 @@
  * either build-time env var is absent — which is the case for every
  * marketplace demo, and is why that fallback is structural rather than a catch.
  *
- * THE PARAGRAPH ABOVE USED TO BE A LIE OF OMISSION, and §5.3 recorded it: this
- * seam was ORPHANED. Nothing imported it. The store and six screens and
+ * THE PARAGRAPH ABOVE USED TO BE A LIE OF OMISSION, and an audit recorded it:
+ * this seam was ORPHANED. Nothing imported it. The store and six screens and
  * components read `data/demo.ts` directly, so swapping the source would have
  * changed nothing anybody could see — the app worked, which is exactly why
  * nobody noticed. There is now one reader, `data/live.ts`, and everything else

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Connected mode (28-public-surface.md §5.2, 28-T28 wave 4).
+ * Connected mode.
  *
  * ── WHY THIS DRIVES A REAL CLIENT ──────────────────────────────────────────
  * `createPublicClient` takes an injectable `fetch`, so these run the SHIPPED
@@ -9,10 +9,10 @@
  * under test too — and those are where a connected app actually fails.
  *
  * ── THE ORPHANED SEAM IS WHAT THIS REPO ACTUALLY HAD ───────────────────────
- * §5.3 recorded this seam as orphaned and it was: the store and six screens
- * read `data/demo.ts` directly, so a swap changed nothing. The last test in
- * this file is the tripwire that now makes that impossible, and it is the one
- * that matters most here.
+ * An audit of the example apps recorded this seam as orphaned and it was: the
+ * store and six screens read `data/demo.ts` directly, so a swap changed
+ * nothing. The last test in this file is the tripwire that now makes that
+ * impossible, and it is the one that matters most here.
  */
 
 import { describe, expect, it } from "vitest";
@@ -156,7 +156,7 @@ describe("the board", () => {
   it("draws one pipeline, lowest id, in position order", async () => {
     const snap = await snapshot();
     expect(snap).not.toBeNull();
-    // WS-I G-2: two pipelines exist and the board has room for one. The columns
+    // Gap G-2: two pipelines exist and the board has room for one. The columns
     // must not reshuffle between loads, so the rule is lowest id, not arrival.
     expect(snap!.stages.map((s) => s.label)).toEqual(["Discovery", "Proposal"]);
     // Odds are a percentage in the database and a fraction in the app.
@@ -188,8 +188,8 @@ describe("the board", () => {
 describe("the two closed vocabularies the schema enforces are translated", () => {
   it("derives a sector key and a role key from CHECK-constrained columns", async () => {
     const snap = await snapshot();
-    // These are §5.5's `catalogue` classification working: nine industries,
-    // nine `data.sector.*` keys, so a German reader sees a German sector.
+    // These are the `catalogue` classification working: nine industries, nine
+    // `data.sector.*` keys, so a German reader sees a German sector.
     expect(snap!.companies[0]!.sector).toBe("data.sector.freight");
     expect(snap!.reps.map((r) => r.role)).toEqual(["data.role.rep", "data.role.manager"]);
   });
@@ -206,7 +206,7 @@ describe("the two closed vocabularies the schema enforces are translated", () =>
 
   it("derives the fields the schema has no column for", async () => {
     const snap = await snapshot();
-    // WS-I G-1: no given name, no logo file.
+    // Gap G-1: no given name, no logo file.
     expect(snap!.reps[0]!.first).toBe("Dana");
     expect(snap!.companies[0]!.file).toBe("meridian.svg");
   });
@@ -215,7 +215,7 @@ describe("the two closed vocabularies the schema enforces are translated", () =>
 describe("the timeline and the follow-ups", () => {
   it("maps stage_change onto the app's word and drops what it cannot name", async () => {
     const snap = await snapshot();
-    // WS-I G-4: an unrecognised type has no icon and no label, so it is dropped
+    // Gap G-4: an unrecognised type has no icon and no label, so it is dropped
     // rather than rendered as a blank row in somebody's deal history.
     expect(snap!.activities.map((a) => a.type)).toEqual(["stage"]);
     // Stamps are `YYYY-MM-DD HH:mm` in the TENANT's zone: 08:00Z is 10:00 in
@@ -226,7 +226,7 @@ describe("the timeline and the follow-ups", () => {
 
   it("keeps only open follow-ups that belong to a live deal", async () => {
     const snap = await snapshot();
-    // WS-I G-5: `tasks.deal_id` is nullable and a done task is not a follow-up.
+    // Gap G-5: `tasks.deal_id` is nullable and a done task is not a follow-up.
     expect(snap!.followUps.map((f) => f.text)).toEqual(["Send the revised scope"]);
     expect(snap!.followUps[0]!.due).toBe("2026-07-29 15:30");
   });

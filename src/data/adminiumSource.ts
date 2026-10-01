@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * A `DataSource` backed by a real Adminium instance (28-public-surface.md §5.2,
- * 28-T28 wave 4).
+ * A `DataSource` backed by a real Adminium instance.
  *
  * ── READS DO NOT BECOME ASYNC ──────────────────────────────────────────────
  * `loadSnapshot` fetches the whole read-set once, before React mounts, and
@@ -21,7 +20,7 @@
  * `companies.industry` is CHECK-constrained to nine values which are exactly
  * the app's own sector keys, so `data.sector.<industry>` is DERIVED and a
  * German reader sees a translated sector. `users.role` is the same shape.
- * Those two are §5.5's `catalogue` classification working as designed. Every
+ * Those two are the `catalogue` classification working as designed. Every
  * other translatable column here — a stage's name, a deal's name, a contact's
  * title, a lost reason — is `operator` text and ships untranslated, which is
  * correct: they are the tenant's words, not the app's.
@@ -31,9 +30,9 @@
  * is a row in a pipeline. Nothing below rejects a sixth stage — the board draws
  * whatever `stages` returns, in `position` order — so a tenant with a seven-
  * stage pipeline gets seven columns. The union is now a lie the compiler tells
- * itself, and widening it is 28-T36's job, not a mapping's.
+ * itself, and widening it is the schema's job, not a mapping's.
  *
- * ── WHAT THE SCHEMA CANNOT SAY (WS-I gaps, marked not hidden) ──────────────
+ * ── WHAT THE SCHEMA CANNOT SAY (gaps, marked not hidden) ───────────────────
  * G-1 There is no `first` name and no logo file. The first word of `name` is
  *     used for one, and the other is derived from the company's domain.
  * G-2 `pipelines` allows many and the board draws one. The lowest pipeline id
@@ -145,7 +144,7 @@ interface WireTask {
   done: boolean;
 }
 
-/** WS-I G-4: the schema's word for a stage move is not the app's. */
+/** G-4: the schema's word for a stage move is not the app's. */
 const ACTIVITY_TYPES: Record<string, ActivityType> = {
   call: "call",
   email: "email",
@@ -255,7 +254,7 @@ export async function loadSnapshot(client: PublicClient): Promise<Snapshot | nul
         listAll<WireTask>(client, "tasks", cap("tasks"), 50_000),
       ]);
 
-    /* WS-I G-2: the board draws one pipeline. Lowest id, stably, so the columns
+    /* G-2: the board draws one pipeline. Lowest id, stably, so the columns
      * do not reshuffle between loads. */
     const pipeline = [...pipelines].sort((a, b) => a.id - b.id)[0];
     const own = stages
@@ -276,7 +275,7 @@ export async function loadSnapshot(client: PublicClient): Promise<Snapshot | nul
     const reps: Rep[] = users.map((row) => ({
       id: String(row.id),
       name: row.name,
-      // WS-I G-1: no given-name column. The first word, which is right for most
+      // G-1: no given-name column. The first word, which is right for most
       // names and wrong for some — and visibly so, rather than silently.
       first: row.name.split(" ")[0] ?? row.name,
       ini: row.initials,
@@ -298,7 +297,7 @@ export async function loadSnapshot(client: PublicClient): Promise<Snapshot | nul
       city: row.city,
       tint: row.tint,
       icon: row.icon,
-      // WS-I G-1: no logo file. Derived from the domain so the chip reads like
+      // G-1: no logo file. Derived from the domain so the chip reads like
       // a filename rather than being blank.
       file: fileFor(row.domain, row.name),
       since: row.since_note,
@@ -331,7 +330,7 @@ export async function loadSnapshot(client: PublicClient): Promise<Snapshot | nul
           amount: Number(row.amount),
           stage: String(row.stage_id) as StageId,
           owner: String(row.owner_id),
-          // WS-I G-3: `created_at` is when the row was made, not when the deal
+          // G-3: `created_at` is when the row was made, not when the deal
           // was opened. They agree only if the CRM was there first.
           opened,
           since: toTenantDay(row.stage_entered_at, tz),
@@ -365,7 +364,7 @@ export async function loadSnapshot(client: PublicClient): Promise<Snapshot | nul
     const mappedActivities: Activity[] = [];
     for (const row of activities) {
       const type = ACTIVITY_TYPES[row.type];
-      // WS-I G-4: an unrecognised type has no icon and no label. Dropped.
+      // G-4: an unrecognised type has no icon and no label. Dropped.
       if (type === undefined) continue;
       mappedActivities.push({
         id: String(row.id),
@@ -379,7 +378,7 @@ export async function loadSnapshot(client: PublicClient): Promise<Snapshot | nul
 
     const followUps: FollowUp[] = [];
     for (const row of tasks) {
-      // WS-I G-5: a task attached to no deal, or already done, has no screen.
+      // G-5: a task attached to no deal, or already done, has no screen.
       if (row.done || row.deal_id === null || row.due_at === null) continue;
       if (!liveDeals.has(String(row.deal_id))) continue;
       followUps.push({
@@ -428,7 +427,7 @@ function stampOf(iso: string, timezone: string): string {
   return `${day} ${parts}`;
 }
 
-/** "meridian.example" → "meridian.svg". WS-I G-1: presentation, not data. */
+/** "meridian.example" → "meridian.svg". G-1: presentation, not data. */
 function fileFor(domain: string, name: string): string {
   const stem = domain.length > 0 ? (domain.split(".")[0] ?? domain) : name;
   return `${stem.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.svg`;
