@@ -82,7 +82,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "withdrawn_at",
     ],
   },
-  quote_lines: { nullable: ["description", "rate", "discount", "currency", "amount", "list_rate"] },
+  price_list: { nullable: [] },
+  quote_lines: { nullable: ["description", "rate", "discount", "currency", "amount", "price_id", "list_rate"] },
   comments: { nullable: ["parent_id", "settled_by_id", "settled_at"] },
   saved_views: { nullable: ["owner_id"] },
   saved_searches: { nullable: ["owner_id", "last_run_at"] },
@@ -251,8 +252,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
-/** How many tables the manifest holds: all 72 the plan lists. */
-const TABLE_COUNT = 72;
+/** How many tables the manifest holds: the 72 the plan lists, and the price list ruling F asked for. */
+const TABLE_COUNT = 73;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -397,7 +398,7 @@ describe("the manifest holds the tables the plan lists, and no other", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
 
-  it("has seventy-two of them", () => {
+  it("has seventy-three of them", () => {
     expect(tables).toHaveLength(TABLE_COUNT);
     expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });

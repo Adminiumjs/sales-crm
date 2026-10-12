@@ -4962,6 +4962,300 @@
    ]
   },
   {
+   "ref": "price_list",
+   "rows": [
+    {
+     "@label": "price:1",
+     "name": {
+      "@t": {
+       "en-US": "Front-of-house refit, showroom one",
+       "de-DE": "Umbau Empfangsbereich, Showroom eins",
+       "fr-FR": "Réaménagement de l’espace accueil, showroom un",
+       "cs-CZ": "Přestavba přední části, první showroom",
+       "da-DK": "Ombygning af kundearealet, showroom et",
+       "zh-CN": "前厅翻新，一号展厅",
+       "zh-TW": "門面翻新，展示間一",
+       "ar-EG": "تجديد الواجهة الأمامية، المعرض الأول"
+      }
+     },
+     "list_rate": 19000,
+     "active": true
+    },
+    {
+     "@label": "price:2",
+     "name": {
+      "@t": {
+       "en-US": "Front-of-house refit, showroom two",
+       "de-DE": "Umbau Empfangsbereich, Showroom zwei",
+       "fr-FR": "Réaménagement de l’espace accueil, showroom deux",
+       "cs-CZ": "Přestavba přední části, druhý showroom",
+       "da-DK": "Ombygning af kundearealet, showroom to",
+       "zh-CN": "前厅翻新，二号展厅",
+       "zh-TW": "門面翻新，展示間二",
+       "ar-EG": "تجديد الواجهة الأمامية، المعرض الثاني"
+      }
+     },
+     "list_rate": 19000,
+     "active": true
+    },
+    {
+     "@label": "price:3",
+     "name": {
+      "@t": {
+       "en-US": "Bench desk, 1600 x 800, oak top",
+       "de-DE": "Bench-Schreibtisch, 1600 x 800, Eichenplatte",
+       "fr-FR": "Bureau bench, 1600 x 800, plateau chêne",
+       "cs-CZ": "Lavicový stůl, 1600 x 800, deska dub",
+       "da-DK": "Bænkbord, 1600 x 800, egetop",
+       "zh-CN": "排桌，1600 x 800，橡木桌面",
+       "zh-TW": "排桌，1600 x 800，橡木桌面",
+       "ar-EG": "مكتب مشترك 1600 x 800، سطح بلوط"
+      }
+     },
+     "list_rate": 880,
+     "active": true
+    },
+    {
+     "@label": "price:4",
+     "name": {
+      "@t": {
+       "en-US": "Height-adjustable supervisor station",
+       "de-DE": "Höhenverstellbarer Teamleiter-Platz",
+       "fr-FR": "Poste de superviseur réglable en hauteur",
+       "cs-CZ": "Výškově nastavitelné pracoviště vedoucího",
+       "da-DK": "Højdejusterbar supervisorplads",
+       "zh-CN": "升降式主管工位",
+       "zh-TW": "可調高度主管工作站",
+       "ar-EG": "محطة مشرف قابلة لضبط الارتفاع"
+      }
+     },
+     "list_rate": 1340,
+     "active": true
+    },
+    {
+     "@label": "price:5",
+     "name": {
+      "@t": {
+       "en-US": "Cable tray and power, per position",
+       "de-DE": "Kabelkanal und Strom, pro Platz",
+       "fr-FR": "Chemin de câbles et alimentation, par poste",
+       "cs-CZ": "Kabelový žlab a napájení, na pozici",
+       "da-DK": "Kabelbakke og strøm, pr. plads",
+       "zh-CN": "线槽和电源，按工位计",
+       "zh-TW": "線槽與電源，每個位置",
+       "ar-EG": "مسار كابلات وكهرباء، لكل موضع"
+      }
+     },
+     "list_rate": 145,
+     "active": true
+    },
+    {
+     "@label": "price:6",
+     "name": {
+      "@t": {
+       "en-US": "Install over two weekends",
+       "de-DE": "Montage an zwei Wochenenden",
+       "fr-FR": "Pose sur deux week-ends",
+       "cs-CZ": "Montáž během dvou víkendů",
+       "da-DK": "Montering over to weekender",
+       "zh-CN": "分两个周末安装",
+       "zh-TW": "分兩個週末安裝",
+       "ar-EG": "التركيب على عطلتين أسبوعيتين"
+      }
+     },
+     "list_rate": 2970,
+     "active": true
+    },
+    {
+     "@label": "price:7",
+     "name": {
+      "@t": {
+       "en-US": "Single-person acoustic booth, 34dB",
+       "de-DE": "Akustikbox für eine Person, 34dB",
+       "fr-FR": "Cabine acoustique individuelle, 34dB",
+       "cs-CZ": "Jednomístná akustická kabina, 34dB",
+       "da-DK": "Akustikboks til én person, 34dB",
+       "zh-CN": "单人隔音舱，34dB",
+       "zh-TW": "單人隔音間，34dB",
+       "ar-EG": "كابينة عزل صوتي لشخص واحد، 34dB"
+      }
+     },
+     "list_rate": 2950,
+     "active": true
+    },
+    {
+     "@label": "price:8",
+     "name": {
+      "@t": {
+       "en-US": "Four-person acoustic room, 38dB",
+       "de-DE": "Akustikraum für vier Personen, 38dB",
+       "fr-FR": "Salle acoustique quatre personnes, 38dB",
+       "cs-CZ": "Čtyřmístná akustická místnost, 38dB",
+       "da-DK": "Akustikrum til fire personer, 38dB",
+       "zh-CN": "四人隔音间，38dB",
+       "zh-TW": "四人隔音室，38dB",
+       "ar-EG": "غرفة عزل صوتي لأربعة أشخاص، 38dB"
+      }
+     },
+     "list_rate": 4100,
+     "active": true
+    },
+    {
+     "@label": "price:9",
+     "name": {
+      "@t": {
+       "en-US": "Weekend install and packaging removal",
+       "de-DE": "Montage am Wochenende und Verpackungsentsorgung",
+       "fr-FR": "Pose le week-end et reprise des emballages",
+       "cs-CZ": "Víkendová montáž a odvoz obalů",
+       "da-DK": "Weekendmontering og fjernelse af emballage",
+       "zh-CN": "周末安装并清运包装",
+       "zh-TW": "週末安裝與包材清運",
+       "ar-EG": "التركيب في عطلة نهاية الأسبوع وإزالة مواد التغليف"
+      }
+     },
+     "list_rate": 1600,
+     "active": true
+    },
+    {
+     "@label": "price:10",
+     "name": {
+      "@t": {
+       "en-US": "Partner desk, 1800 x 900, oak veneer",
+       "de-DE": "Partnerschreibtisch, 1800 x 900, Eichenfurnier",
+       "fr-FR": "Bureau d’associé, 1800 x 900, placage chêne",
+       "cs-CZ": "Stůl pro společníka, 1800 x 900, dubová dýha",
+       "da-DK": "Partnerskrivebord, 1800 x 900, egefinér",
+       "zh-CN": "合伙人办公桌，1800 x 900，橡木贴皮",
+       "zh-TW": "合夥人辦公桌，1800 x 900，橡木貼皮",
+       "ar-EG": "مكتب شريك 1800 x 900، قشرة بلوط"
+      }
+     },
+     "list_rate": 2050,
+     "active": true
+    },
+    {
+     "@label": "price:11",
+     "name": {
+      "@t": {
+       "en-US": "Personal storage tower, lockable",
+       "de-DE": "Persönlicher Schrankturm, abschließbar",
+       "fr-FR": "Colonne de rangement personnelle, verrouillable",
+       "cs-CZ": "Osobní úložná věž, uzamykatelná",
+       "da-DK": "Personligt opbevaringsskab, kan låses",
+       "zh-CN": "个人储物柜，可上锁",
+       "zh-TW": "個人收納櫃，可上鎖",
+       "ar-EG": "برج تخزين شخصي بقفل"
+      }
+     },
+     "list_rate": 620,
+     "active": true
+    },
+    {
+     "@label": "price:12",
+     "name": {
+      "@t": {
+       "en-US": "Task chair, leather, 5-year warranty",
+       "de-DE": "Arbeitsstuhl, Leder, 5 Jahre Garantie",
+       "fr-FR": "Fauteuil de travail, cuir, garantie 5 ans",
+       "cs-CZ": "Pracovní židle, kůže, záruka 5 let",
+       "da-DK": "Kontorstol, læder, 5 års garanti",
+       "zh-CN": "办公椅，真皮，5年质保",
+       "zh-TW": "辦公椅，皮革，保固 5 年",
+       "ar-EG": "كرسي عمل جلد، ضمان 5 سنوات"
+      }
+     },
+     "list_rate": 290,
+     "active": true
+    },
+    {
+     "@label": "price:13",
+     "name": {
+      "@t": {
+       "en-US": "Install and old-furniture removal",
+       "de-DE": "Montage und Entsorgung der Altmöbel",
+       "fr-FR": "Pose et évacuation de l’ancien mobilier",
+       "cs-CZ": "Montáž a odvoz starého nábytku",
+       "da-DK": "Montering og bortskaffelse af gamle møbler",
+       "zh-CN": "安装并清运旧家具",
+       "zh-TW": "安裝與舊家具清運",
+       "ar-EG": "التركيب وإزالة الأثاث القديم"
+      }
+     },
+     "list_rate": 940,
+     "active": true
+    },
+    {
+     "@label": "price:14",
+     "name": {
+      "@t": {
+       "en-US": "Single quiet-room pod, 32dB",
+       "de-DE": "Ruheraum-Pod für eine Person, 32dB",
+       "fr-FR": "Pod de salle calme individuel, 32dB",
+       "cs-CZ": "Jednomístný box do tiché místnosti, 32dB",
+       "da-DK": "Stillerumspod til én person, 32dB",
+       "zh-CN": "单人静音舱，32dB",
+       "zh-TW": "單人靜音艙，32dB",
+       "ar-EG": "كابينة غرفة هادئة فردية، 32dB"
+      }
+     },
+     "list_rate": 3800,
+     "active": true
+    },
+    {
+     "@label": "price:15",
+     "name": {
+      "@t": {
+       "en-US": "Two-person meeting room, 36dB",
+       "de-DE": "Besprechungsraum für zwei Personen, 36dB",
+       "fr-FR": "Salle de réunion deux personnes, 36dB",
+       "cs-CZ": "Dvoumístná zasedačka, 36dB",
+       "da-DK": "Mødelokale til to personer, 36dB",
+       "zh-CN": "双人会议室，36dB",
+       "zh-TW": "雙人會議室，36dB",
+       "ar-EG": "غرفة اجتماعات لشخصين، 36dB"
+      }
+     },
+     "list_rate": 4650,
+     "active": true
+    },
+    {
+     "@label": "price:16",
+     "name": {
+      "@t": {
+       "en-US": "Ventilation retrofit kit",
+       "de-DE": "Nachrüstsatz Belüftung",
+       "fr-FR": "Kit de ventilation à poser sur l’existant",
+       "cs-CZ": "Sada pro dodatečné větrání",
+       "da-DK": "Eftermonteret ventilationssæt",
+       "zh-CN": "通风改造套件",
+       "zh-TW": "通風加裝套件",
+       "ar-EG": "طقم تركيب تهوية إضافي"
+      }
+     },
+     "list_rate": 190,
+     "active": true
+    },
+    {
+     "@label": "price:17",
+     "name": {
+      "@t": {
+       "en-US": "Delivery and install",
+       "de-DE": "Lieferung und Montage",
+       "fr-FR": "Livraison et pose",
+       "cs-CZ": "Doprava a montáž",
+       "da-DK": "Levering og montering",
+       "zh-CN": "送货及安装",
+       "zh-TW": "運送與安裝",
+       "ar-EG": "التوصيل والتركيب"
+      }
+     },
+     "list_rate": 700,
+     "active": true
+    }
+   ]
+  },
+  {
    "ref": "quotes",
    "rows": [
     {
@@ -5245,7 +5539,10 @@
      },
      "qty": 1,
      "rate": 19000,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:1"
+     }
     },
     {
      "document_id": {
@@ -5266,7 +5563,10 @@
      },
      "qty": 1,
      "rate": 19000,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:2"
+     }
     },
     {
      "document_id": {
@@ -5287,7 +5587,10 @@
      },
      "qty": 46,
      "rate": 880,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:3"
+     }
     },
     {
      "document_id": {
@@ -5308,7 +5611,10 @@
      },
      "qty": 2,
      "rate": 1340,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:4"
+     }
     },
     {
      "document_id": {
@@ -5329,7 +5635,10 @@
      },
      "qty": 46,
      "rate": 145,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:5"
+     }
     },
     {
      "document_id": {
@@ -5350,7 +5659,10 @@
      },
      "qty": 1,
      "rate": 2970,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:6"
+     }
     },
     {
      "document_id": {
@@ -5371,7 +5683,10 @@
      },
      "qty": 6,
      "rate": 2950,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:7"
+     }
     },
     {
      "document_id": {
@@ -5392,7 +5707,10 @@
      },
      "qty": 2,
      "rate": 4100,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:8"
+     }
     },
     {
      "document_id": {
@@ -5413,7 +5731,10 @@
      },
      "qty": 1,
      "rate": 1600,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:9"
+     }
     },
     {
      "document_id": {
@@ -5434,7 +5755,10 @@
      },
      "qty": 11,
      "rate": 2050,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:10"
+     }
     },
     {
      "document_id": {
@@ -5455,7 +5779,10 @@
      },
      "qty": 11,
      "rate": 620,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:11"
+     }
     },
     {
      "document_id": {
@@ -5476,7 +5803,10 @@
      },
      "qty": 11,
      "rate": 290,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:12"
+     }
     },
     {
      "document_id": {
@@ -5497,7 +5827,10 @@
      },
      "qty": 1,
      "rate": 940,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:13"
+     }
     },
     {
      "document_id": {
@@ -5518,7 +5851,10 @@
      },
      "qty": 4,
      "rate": 3800,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:14"
+     }
     },
     {
      "document_id": {
@@ -5539,7 +5875,10 @@
      },
      "qty": 1,
      "rate": 4650,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:15"
+     }
     },
     {
      "document_id": {
@@ -5560,7 +5899,10 @@
      },
      "qty": 5,
      "rate": 190,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:16"
+     }
     },
     {
      "document_id": {
@@ -5581,7 +5923,10 @@
      },
      "qty": 1,
      "rate": 700,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:17"
+     }
     },
     {
      "document_id": {
@@ -5603,7 +5948,9 @@
      "qty": 11,
      "rate": 1850,
      "currency": "GBP",
-     "list_rate": 2050
+     "price_id": {
+      "@ref": "price:10"
+     }
     },
     {
      "document_id": {
@@ -5624,7 +5971,10 @@
      },
      "qty": 11,
      "rate": 620,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:11"
+     }
     },
     {
      "document_id": {
@@ -5645,7 +5995,10 @@
      },
      "qty": 11,
      "rate": 290,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:12"
+     }
     },
     {
      "document_id": {
@@ -5667,7 +6020,9 @@
      "qty": 1,
      "rate": 640,
      "currency": "GBP",
-     "list_rate": 940
+     "price_id": {
+      "@ref": "price:13"
+     }
     },
     {
      "document_id": {
@@ -5689,7 +6044,9 @@
      "qty": 4,
      "rate": 3200,
      "currency": "GBP",
-     "list_rate": 3800
+     "price_id": {
+      "@ref": "price:14"
+     }
     },
     {
      "document_id": {
@@ -5710,7 +6067,10 @@
      },
      "qty": 1,
      "rate": 4650,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:15"
+     }
     },
     {
      "document_id": {
@@ -5731,7 +6091,10 @@
      },
      "qty": 5,
      "rate": 190,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:16"
+     }
     },
     {
      "document_id": {
@@ -5753,7 +6116,9 @@
      "qty": 1,
      "rate": 500,
      "currency": "GBP",
-     "list_rate": 700
+     "price_id": {
+      "@ref": "price:17"
+     }
     },
     {
      "document_id": {
@@ -5775,7 +6140,9 @@
      "qty": 1,
      "rate": 17000,
      "currency": "GBP",
-     "list_rate": 19000
+     "price_id": {
+      "@ref": "price:1"
+     }
     },
     {
      "document_id": {
@@ -5797,7 +6164,9 @@
      "qty": 1,
      "rate": 17000,
      "currency": "GBP",
-     "list_rate": 19000
+     "price_id": {
+      "@ref": "price:2"
+     }
     },
     {
      "document_id": {
@@ -5819,7 +6188,9 @@
      "qty": 46,
      "rate": 780,
      "currency": "GBP",
-     "list_rate": 880
+     "price_id": {
+      "@ref": "price:3"
+     }
     },
     {
      "document_id": {
@@ -5840,7 +6211,10 @@
      },
      "qty": 2,
      "rate": 1340,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:4"
+     }
     },
     {
      "document_id": {
@@ -5861,7 +6235,10 @@
      },
      "qty": 46,
      "rate": 145,
-     "currency": "GBP"
+     "currency": "GBP",
+     "price_id": {
+      "@ref": "price:5"
+     }
     },
     {
      "document_id": {
@@ -5883,7 +6260,9 @@
      "qty": 1,
      "rate": 2770,
      "currency": "GBP",
-     "list_rate": 2970
+     "price_id": {
+      "@ref": "price:6"
+     }
     }
    ]
   },

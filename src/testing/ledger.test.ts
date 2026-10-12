@@ -144,10 +144,11 @@ describe("the sample is the one the manifest names", () => {
 });
 
 describe("the sample's rows are the ledger's", () => {
-  it("has 661 rows in 67 tables, each table as the ledger counts it", () => {
+  it("has 678 rows in 68 tables: the ledger's 661 in 67, and the 17 list prices its quotes were written from", () => {
     const counts = Object.fromEntries([...tables].map(([table, list]) => [table, list.length]));
-    expect(Object.keys(counts)).toHaveLength(67);
-    expect(Object.values(counts).reduce((total, n) => total + n, 0)).toBe(661);
+    expect(Object.keys(counts)).toHaveLength(68);
+    expect(Object.values(counts).reduce((total, n) => total + n, 0)).toBe(678);
+    expect(counts["price_list"]).toBe(17);
     expect(counts).toMatchObject({
       settings: 1, stages: 5, lost_reasons: 5, companies: 9, contacts: 13, territories: 4, territory_places: 9,
       deals: 40, deal_stage_changes: 66, deal_marks: 40, follow_ups: 16, activities: 26, quotes: 9, quote_lines: 31,
@@ -180,6 +181,20 @@ describe("the sample's rows are the ledger's", () => {
     const d1 = rows("quotes").filter((quote) => ref(quote["deal_id"]) === "deal:d1");
     expect(d1.map((quote) => [quote["version"], quote["status"], quote["approval"]])).toEqual([[1, "sent", "none"], [2, "draft", "approved"]]);
     expect([rows("quotes").filter((quote) => quote["approval"] === "asked").length, rows("quotes").filter((quote) => quote["approval"] === "approved").length, rows("quotes").filter((quote) => quote["approval"] === "refused").length]).toEqual([1, 2, 1]);
+  });
+
+  it("every quote line names its list price, and a first version is at list", () => {
+    const price = new Map(rows("price_list").map((one) => [String(one["@label"]), pence(one["list_rate"])]));
+    const first = new Set(rows("quotes").filter((quote) => quote["version"] === 1).map((quote) => String(quote["@label"])));
+    const under: string[] = [];
+    for (const one of rows("quote_lines")) {
+      // The list price is the price list's: the sample types none, Adminium copies it as the line goes in.
+      expect(one["list_rate"], "a typed list price").toBeUndefined();
+      const listed = price.get(ref(one["price_id"])!);
+      expect(listed, String(one["position"])).toBeDefined();
+      if (first.has(ref(one["document_id"])!) && pence(one["rate"]) !== listed) under.push(ref(one["document_id"])!);
+    }
+    expect(under).toEqual([]);
   });
 
   it("closed: 8 won for 130,000, 18 lost for 294,400; booked this year 81,600", () => {

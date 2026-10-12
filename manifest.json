@@ -1332,6 +1332,87 @@
         ]
       },
       {
+        "ref": "price_list",
+        "label": {
+          "en-US": "List price",
+          "de-DE": "Listenpreis",
+          "fr-FR": "Prix catalogue",
+          "da-DK": "Listepris",
+          "cs-CZ": "Ceníková cena",
+          "ar-EG": "سعر القائمة",
+          "zh-CN": "目录价",
+          "zh-TW": "牌價"
+        },
+        "labelPlural": {
+          "en-US": "Price list",
+          "de-DE": "Preisliste",
+          "fr-FR": "Liste de prix",
+          "da-DK": "Prisliste",
+          "cs-CZ": "Ceník",
+          "ar-EG": "قائمة الأسعار",
+          "zh-CN": "价目表",
+          "zh-TW": "價目表"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "What it is",
+              "de-DE": "Bezeichnung",
+              "fr-FR": "Désignation",
+              "da-DK": "Betegnelse",
+              "cs-CZ": "Název",
+              "ar-EG": "الوصف",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "list_rate",
+            "type": "decimal",
+            "scale": "currency",
+            "label": {
+              "en-US": "List price, each",
+              "de-DE": "Listenpreis je Stück",
+              "fr-FR": "Prix catalogue unitaire",
+              "da-DK": "Listepris pr. stk.",
+              "cs-CZ": "Ceníková cena za kus",
+              "ar-EG": "سعر القائمة للوحدة",
+              "zh-CN": "目录单价",
+              "zh-TW": "牌價（單價）"
+            },
+            "rules": {
+              "validation": {
+                "min": 0
+              }
+            }
+          },
+          {
+            "ref": "active",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Offered",
+              "de-DE": "Im Angebot",
+              "fr-FR": "Proposé",
+              "da-DK": "Udbydes",
+              "cs-CZ": "V nabídce",
+              "ar-EG": "معروض",
+              "zh-CN": "在售",
+              "zh-TW": "供應中"
+            }
+          }
+        ]
+      },
+      {
         "ref": "quotes",
         "label": {
           "en-US": "Quote",
@@ -1894,6 +1975,51 @@
             }
           },
           {
+            "ref": "unlisted_lines",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "quote_lines",
+                "via": "document_id",
+                "sum": "unlisted"
+              }
+            },
+            "label": {
+              "en-US": "Lines with no list price",
+              "de-DE": "Positionen ohne Listenpreis",
+              "fr-FR": "Lignes sans prix catalogue",
+              "da-DK": "Linjer uden listepris",
+              "cs-CZ": "Řádky bez ceníkové ceny",
+              "ar-EG": "بنود بلا سعر قائمة",
+              "zh-CN": "无目录价的行数",
+              "zh-TW": "無牌價的行數"
+            }
+          },
+          {
+            "ref": "unlisted_value",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "quote_lines",
+                "via": "document_id",
+                "sum": "unlisted_amount"
+              }
+            },
+            "label": {
+              "en-US": "Value with no list price",
+              "de-DE": "Wert ohne Listenpreis",
+              "fr-FR": "Valeur sans prix catalogue",
+              "da-DK": "Værdi uden listepris",
+              "cs-CZ": "Hodnota bez ceníkové ceny",
+              "ar-EG": "القيمة بلا سعر قائمة",
+              "zh-CN": "无目录价的金额",
+              "zh-TW": "無牌價的金額"
+            }
+          },
+          {
             "ref": "threshold_pct",
             "type": "decimal",
             "scale": 2,
@@ -1924,11 +2050,21 @@
               "formula": {
                 "if": [
                   {
-                    "gt": [
-                      "under_list_pct",
+                    "or": [
                       {
-                        "coalesce": [
-                          "threshold_pct",
+                        "gt": [
+                          "under_list_pct",
+                          {
+                            "coalesce": [
+                              "threshold_pct",
+                              0
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "gt": [
+                          "unlisted_lines",
                           0
                         ]
                       }
@@ -2704,6 +2840,22 @@
             }
           },
           {
+            "ref": "price_id",
+            "type": "fk",
+            "references": "price_list",
+            "nullable": true,
+            "label": {
+              "en-US": "Price-list entry",
+              "de-DE": "Preislisteneintrag",
+              "fr-FR": "Entrée de la liste de prix",
+              "da-DK": "Prislistepost",
+              "cs-CZ": "Položka ceníku",
+              "ar-EG": "بند قائمة الأسعار",
+              "zh-CN": "价目表条目",
+              "zh-TW": "價目表項目"
+            }
+          },
+          {
             "ref": "list_rate",
             "type": "decimal",
             "scale": "currency",
@@ -2717,6 +2869,13 @@
               "ar-EG": "سعر القائمة",
               "zh-CN": "目录单价",
               "zh-TW": "牌價單價"
+            },
+            "rules": {
+              "copy": {
+                "via": "price_id",
+                "from": "list_rate",
+                "mode": "always"
+              }
             }
           },
           {
@@ -2751,7 +2910,68 @@
               "zh-CN": "目录价小计",
               "zh-TW": "牌價小計"
             }
+          },
+          {
+            "ref": "unlisted",
+            "type": "int",
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "isNull": "list_rate"
+                  },
+                  1,
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "No list price",
+              "de-DE": "Ohne Listenpreis",
+              "fr-FR": "Sans prix catalogue",
+              "da-DK": "Uden listepris",
+              "cs-CZ": "Bez ceníkové ceny",
+              "ar-EG": "بلا سعر قائمة",
+              "zh-CN": "无目录价",
+              "zh-TW": "無牌價"
+            }
+          },
+          {
+            "ref": "unlisted_amount",
+            "type": "decimal",
+            "scale": "currency",
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "isNull": "list_rate"
+                  },
+                  {
+                    "coalesce": [
+                      "amount",
+                      0
+                    ]
+                  },
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Amount with no list price",
+              "de-DE": "Betrag ohne Listenpreis",
+              "fr-FR": "Montant sans prix catalogue",
+              "da-DK": "Beløb uden listepris",
+              "cs-CZ": "Částka bez ceníkové ceny",
+              "ar-EG": "المبلغ بلا سعر قائمة",
+              "zh-CN": "无目录价金额",
+              "zh-TW": "無牌價金額"
+            }
           }
+        ],
+        "indexes": [
+          [
+            "price_id"
+          ]
         ]
       },
       {
@@ -15130,6 +15350,10 @@
         "table:@lost_reasons:create",
         "table:@lost_reasons:update",
         "table:@lost_reasons:delete",
+        "table:@price_list:read",
+        "table:@price_list:create",
+        "table:@price_list:update",
+        "table:@price_list:delete",
         "table:@quotes:read",
         "table:@quotes:create",
         "table:@quotes:update",
@@ -15367,6 +15591,7 @@
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
+        "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
         "page:@crm-comments:view",
@@ -15500,6 +15725,67 @@
               "reach": "own"
             }
           }
+        },
+        "quotes": {
+          "writable": [
+            "status",
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "threshold_pct",
+            "approval",
+            "ask_reason",
+            "decision_note",
+            "sent_to_contact_id",
+            "notes",
+            "accepted_name"
+          ],
+          "creatable": [
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "threshold_pct",
+            "approval",
+            "ask_reason",
+            "decision_note",
+            "sent_to_contact_id",
+            "notes",
+            "accepted_name"
+          ]
+        },
+        "quote_lines": {
+          "writable": [
+            "document_id",
+            "position",
+            "description",
+            "qty",
+            "rate",
+            "discount_kind",
+            "discount",
+            "price_id"
+          ],
+          "creatable": [
+            "document_id",
+            "position",
+            "description",
+            "qty",
+            "rate",
+            "discount_kind",
+            "discount",
+            "price_id"
+          ]
         }
       }
     },
@@ -15521,6 +15807,9 @@
         "table:@activities:create",
         "table:@activities:update",
         "table:@lost_reasons:read",
+        "table:@price_list:read",
+        "table:@price_list:create",
+        "table:@price_list:update",
         "table:@quotes:read",
         "table:@quotes:create",
         "table:@quotes:update",
@@ -15661,6 +15950,7 @@
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
+        "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
         "page:@crm-comments:view",
@@ -15851,7 +16141,7 @@
             "rate",
             "discount_kind",
             "discount",
-            "list_rate"
+            "price_id"
           ],
           "creatable": [
             "document_id",
@@ -15861,7 +16151,7 @@
             "rate",
             "discount_kind",
             "discount",
-            "list_rate"
+            "price_id"
           ],
           "rows": {
             "read": {
@@ -16263,6 +16553,7 @@
         "table:@activities:create",
         "table:@activities:update",
         "table:@lost_reasons:read",
+        "table:@price_list:read",
         "table:@quotes:read",
         "table:@quotes:create",
         "table:@quotes:update",
@@ -16377,6 +16668,7 @@
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
+        "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
         "page:@crm-comments:view",
@@ -16577,7 +16869,7 @@
             "rate",
             "discount_kind",
             "discount",
-            "list_rate"
+            "price_id"
           ],
           "creatable": [
             "document_id",
@@ -16587,7 +16879,7 @@
             "rate",
             "discount_kind",
             "discount",
-            "list_rate"
+            "price_id"
           ],
           "rows": {
             "read": {
@@ -17906,6 +18198,7 @@
         "table:@follow_ups:read",
         "table:@activities:read",
         "table:@lost_reasons:read",
+        "table:@price_list:read",
         "table:@quotes:read",
         "table:@quotes:export",
         "table:@quote_lines:read",
@@ -17972,6 +18265,7 @@
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
+        "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
         "page:@crm-comments:view",
@@ -18586,6 +18880,31 @@
       },
       "bindings": {
         "rows": "visit_agreed"
+      }
+    },
+    {
+      "ref": "crm-price-list",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.price_list",
+        "fallback": "Price list"
+      },
+      "titles": {
+        "de-DE": "Preisliste",
+        "fr-FR": "Liste de prix",
+        "da-DK": "Prisliste",
+        "cs-CZ": "Ceník",
+        "ar-EG": "قائمة الأسعار",
+        "zh-CN": "价目表",
+        "zh-TW": "價目表"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "tags",
+        "order": 18
+      },
+      "bindings": {
+        "rows": "price_list"
       }
     },
     {

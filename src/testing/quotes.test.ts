@@ -105,6 +105,8 @@ function line(typed: Row): Row {
   const row: Row = { discount_kind: "amount", discount: null, list_rate: null, ...typed };
   row["amount"] = formula("quote_lines", "amount", row);
   row["list_amount"] = formula("quote_lines", "list_amount", row);
+  row["unlisted"] = formula("quote_lines", "unlisted", row);
+  row["unlisted_amount"] = formula("quote_lines", "unlisted_amount", row);
   return row;
 }
 
@@ -113,6 +115,8 @@ function version(lines: readonly Row[], typed: Row = {}): Row {
   const row: Row = { tax_rate: 20, threshold_pct: 5, approval: "none", ...typed };
   row["subtotal"] = total("quotes", "subtotal", lines);
   row["list_value"] = total("quotes", "list_value", lines);
+  row["unlisted_lines"] = total("quotes", "unlisted_lines", lines);
+  row["unlisted_value"] = total("quotes", "unlisted_value", lines);
   for (const ref of ["tax", "total", "under_list_pct", "needs_approval", "may_send"]) row[ref] = formula("quotes", ref, row);
   return row;
 }
@@ -180,11 +184,11 @@ describe("the quote tables are what the quote shape of Invoices & Receipts says"
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 describe("a version's list value is its lines' list amounts, added up", () => {
-  // Three lines: one at list, one priced under its list rate, one with 10 % off and no list rate.
+  // Three lines: one at list, one priced under its list rate, one with 10 % off its own list rate.
   const lines = [
     line({ qty: 2, rate: 1000, list_rate: 1000 }),
     line({ qty: 3, rate: 450, list_rate: 500 }),
-    line({ qty: 1, rate: 400, discount_kind: "percent", discount: 10 }),
+    line({ qty: 1, rate: 400, list_rate: 400, discount_kind: "percent", discount: 10 }),
   ];
 
   it("adds the list amounts up from the lines, through the version's own link", () => {
@@ -206,6 +210,13 @@ describe("a version's list value is its lines' list amounts, added up", () => {
     expect(quote).toMatchObject({ list_value: "3900.00", subtotal: "3710.00", tax: "742.00", total: "4452.00" });
     // 190 under a list of 3,900.
     expect(quote["under_list_pct"]).toBe("4.87");
+  });
+
+  it("counts a line with no list price at its own rate, and counts the line", () => {
+    const bare = line({ qty: 2, rate: 300 });
+    expect(bare).toMatchObject({ list_amount: "600.00", unlisted: "1", unlisted_amount: "600.00" });
+    expect(line({ qty: 2, rate: 300, list_rate: 300 })).toMatchObject({ unlisted: "0", unlisted_amount: "0.00" });
+    expect(version([bare, line({ qty: 1, rate: 100, list_rate: 100 })])).toMatchObject({ unlisted_lines: "1", unlisted_value: "600.00", under_list_pct: "0.00" });
   });
 
   it("is nothing under list while it has no lines", () => {
@@ -256,6 +267,58 @@ describe("a version says whether it needs approval, and whether it may be sent",
     expect(column("quotes", "asked_at").rules?.stamp).toEqual({ set: "now", on: asked });
     expect(column("quotes", "decided_by_id").rules?.stamp).toEqual({ set: "user-id", on: decided });
     expect(column("quotes", "approval_decided_at").rules?.stamp).toEqual({ set: "now", on: decided });
+  });
+
+  /*
+   * RULING F. The list price is not the writer's: it is copied, on every write of
+   * the line, from the price-list row the line names, and no role may type it.
+   * A line that names none has no list price, and the version then needs approval
+   * whatever it costs.
+   */
+  it("takes a line's list price from the price list, on every write, and lets no role type it", () => {
+    expect(column("quote_lines", "price_id")).toMatchObject({ type: "fk", references: "price_list", nullable: true });
+    expect((column("quote_lines", "list_rate").rules as { copy?: unknown } | undefined)?.copy).toEqual({ via: "price_id", from: "list_rate", mode: "always" });
+    const roles = (manifest as unknown as { roles: { key: string; permissions: string[]; limits?: Record<string, { writable?: string[]; creatable?: string[] }> }[] }).roles;
+    for (const role of roles) {
+      const writes = role.permissions.some((p) => p === "table:@quote_lines:update" || p === "table:@quote_lines:create");
+      if (!writes) continue;
+      const limit = role.limits?.["quote_lines"];
+      expect(limit?.writable, role.key).toBeDefined();
+      for (const list of [limit?.writable ?? [], limit?.creatable ?? []]) {
+        expect(list, role.key).toContain("price_id");
+        for (const kept of ["list_rate", "list_amount", "unlisted", "unlisted_amount", "amount"]) expect(list, `${role.key} ${kept}`).not.toContain(kept);
+      }
+      // Nor a figure Adminium keeps on the version.
+      const version = role.limits?.["quotes"];
+      expect(version?.writable, role.key).toBeDefined();
+      for (const kept of ["may_send", "needs_approval", "under_list_pct", "list_value", "unlisted_lines", "unlisted_value"]) expect(version?.writable ?? [], `${role.key} ${kept}`).not.toContain(kept);
+    }
+    // Who writes the price list: the CRM admin and the Sales manager. A rep reads it.
+    const may = (key: string, action: string) => roles.find((role) => role.key === key)!.permissions.includes(`table:@price_list:${action}`);
+    expect([may("admin", "update"), may("sales-manager", "update"), may("rep", "read"), may("rep", "update"), may("rep", "create")]).toEqual([true, true, true, false, false]);
+  });
+
+  it("needs approval for any line with no list price, however it is priced", () => {
+    const bare = version([line({ qty: 1, rate: 5000 })]);
+    expect(bare).toMatchObject({ under_list_pct: "0.00", unlisted_lines: "1", needs_approval: "1", may_send: "0" });
+    expect(version([line({ qty: 1, rate: 5000 })], { approval: "approved" })["may_send"]).toBe("1");
+  });
+
+  /*
+   * NOT YET (ruling F, second half): an approval should remember how far under
+   * list it approved, so that a version cut further afterwards needs asking
+   * again. The word for it is a stamp that copies a column of the row on
+   * approval, and Adminium's server refuses such a stamp on any column that is
+   * not text (it takes it for a stamp that names a person) and then installs
+   * the app without the rule. Until that is fixed in Adminium the hole stands,
+   * and this test holds it: the day `may_send` reads a remembered figure, it
+   * fails and is turned round.
+   */
+  it("does not yet remember what an approval covered: approved at 6 % under, cut to 50 %, it may still be sent", () => {
+    const approved = (rate: number) => version([line({ qty: 1, rate, list_rate: 1000 })], { approval: "approved" });
+    expect(approved(940)).toMatchObject({ under_list_pct: "6.00", may_send: "1" });
+    expect(approved(500)).toMatchObject({ under_list_pct: "50.00", may_send: "1" });
+    expect(table("quotes").columns.map((c) => c.ref).filter((ref) => ref.startsWith("approved_"))).toEqual([]);
   });
 
   /*
