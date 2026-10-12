@@ -841,6 +841,20 @@ describe("what a role is kept from, column by column", () => {
     expect(held("marketer", "enquiries")).toEqual(["read", "create"]);
   });
 
+  it("lets a rep tick an onboarding step done, and rewrite none", () => {
+    expect(held("rep", "starter_steps")).toEqual(["read", "update"]);
+    expect(limitOf("rep", "starter_steps")).toEqual({ writable: ["done"] });
+  });
+
+  it("lets the front desk name no deal: it reads none", () => {
+    expect(held("front-desk", "deals")).toEqual([]);
+    for (const ref of ["enquiries", "showroom_bookings"]) {
+      const limit = limitOf("front-desk", ref);
+      if (holds("front-desk", ref, "update")) expect(limit?.writable ?? ["deal_id"], ref).not.toContain("deal_id");
+      if (holds("front-desk", ref, "create")) expect(limit?.creatable ?? ["deal_id"], ref).not.toContain("deal_id");
+    }
+  });
+
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
     expect(apart).toEqual(["rep: starters"]);

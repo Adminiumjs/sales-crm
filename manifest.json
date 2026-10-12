@@ -16806,6 +16806,11 @@
             "user_id"
           ]
         },
+        "starter_steps": {
+          "writable": [
+            "done"
+          ]
+        },
         "cover_notes": {
           "rows": {
             "read": {
@@ -17277,8 +17282,24 @@
             "company_id",
             "state",
             "passed_to_id",
-            "rung_at",
-            "deal_id"
+            "rung_at"
+          ],
+          "creatable": [
+            "source",
+            "company_name",
+            "person",
+            "email",
+            "phone",
+            "text",
+            "est_value",
+            "town",
+            "wants",
+            "warmth",
+            "show_id",
+            "company_id",
+            "state",
+            "passed_to_id",
+            "rung_at"
           ],
           "rows": {
             "read": {
@@ -17290,6 +17311,38 @@
               "unowned": true
             }
           }
+        },
+        "showroom_bookings": {
+          "writable": [
+            "space_id",
+            "company_id",
+            "contact_id",
+            "visitor_name",
+            "party",
+            "starts_at",
+            "minutes",
+            "rep_id",
+            "state",
+            "cancel_reason",
+            "outcome",
+            "next_step",
+            "next_step_by"
+          ],
+          "creatable": [
+            "space_id",
+            "company_id",
+            "contact_id",
+            "visitor_name",
+            "party",
+            "starts_at",
+            "minutes",
+            "rep_id",
+            "state",
+            "cancel_reason",
+            "outcome",
+            "next_step",
+            "next_step_by"
+          ]
         },
         "sample_chases": {
           "writable": [
