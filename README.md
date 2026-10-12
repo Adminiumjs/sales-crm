@@ -75,9 +75,11 @@ How a row comes to be somebody's:
   the rows of the people in a team they lead.
 - **By being listed.** Somebody added to a deal as a helper reaches it. Somebody
   listed as cover for a rep reaches that rep's deals between the cover's two
-  dates, and not a day longer. The deal's owner does not change in either case.
+  dates, and not a day longer. The deal's owner does not change in either case,
+  and neither a helper nor a cover can change it.
 - **Through its parent.** Whoever reaches a deal reaches its activities, quotes
-  and comments. A fitter reaches the visits of their own crew.
+  and comments. A note or a comment is changed only by the person who wrote
+  it, or by their manager. A fitter reaches the visits of their own crew.
 - **Private.** Four tables (one-to-ones, their sessions, coaching plans, coaching
   areas) are read by the manager and the rep of the row and by nobody else: not
   the CRM admin, not Read-only, not a Super Admin. They are never exported.
@@ -147,9 +149,8 @@ them out again.
 - **Most reminders and digests are not shipped**: the three nudges on a quiet
   deal, the weekly digests, a follow-up falling due, a quote about to run out,
   a mention, the aftercare call after a sign-off, the survey after a job.
-- **Two known gaps in who may write what**, both waiting for a change in
-  Adminium: a helper or a cover on a deal can change it as its owner could, its
-  owner included; a saved view can be made that belongs to nobody.
+- **One known gap in who may write what**, waiting for a change in Adminium: a
+  saved view can be made that belongs to nobody.
 - **A limited list is slower than an unlimited one on MySQL**: about a tenth of
   a second for a page of 50 among 50,000 deals.
 

@@ -63,7 +63,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["stages", "lost_reasons"], "RCUD", "R", "R", "R", "-", "-", "-", "-", "R"],
   [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won", "-", "-", "-", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
-  [["activities", "comments"], "RCUD", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
+  // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
+  [["activities", "comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "-", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
   [["quotes", "quote_lines"], "RCUDX", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "RX"],
   // The price list: a rep reads what a thing costs at list and writes none of it (ruling F).
@@ -173,6 +174,7 @@ interface Reach {
   reach: "own" | "team" | "all";
   unowned?: true;
   while?: { column: string; in: string[] };
+  by?: string;
 }
 type Rows = Partial<Record<RowAction, Reach>>;
 interface Cell {
@@ -187,6 +189,9 @@ const REACHES: Record<string, Reach> = {
   "own+free": { reach: "own", unowned: true },
   "team+free": { reach: "team", unowned: true },
   won: { reach: "all", while: { column: "state", in: ["won"] } },
+  // Of the rows they reach, only the ones the row's own author column names them in.
+  "own-written": { reach: "own", by: "author_id" },
+  "team-written": { reach: "team", by: "author_id" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
