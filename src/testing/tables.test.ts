@@ -819,14 +819,15 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
     }
   });
 
-  it("keeps no move for a role yet: that is the roles' task", () => {
+  it("keeps a move for a role only where the roles' test says so: a sent time sheet", () => {
+    // Which role, and why, is roles.test.ts's to hold.
     const kept: string[] = [];
     for (const ref of Object.keys(MOVES)) {
       for (const [from, moves] of Object.entries(byRef.get(ref)?.states?.moves ?? {})) {
         for (const move of moves) if (typeof move === "object" && (move as unknown as { roles?: unknown }).roles !== undefined) kept.push(`${ref} ${from}`);
       }
     }
-    expect(kept).toEqual([]);
+    expect(kept).toEqual(["time_sheets sent", "time_sheets sent"]);
   });
 
   it("books a visit only with a day and a crew, and not before its stock is ready", () => {

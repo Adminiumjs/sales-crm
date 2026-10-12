@@ -13259,7 +13259,12 @@
               "sent"
             ],
             "sent": [
-              "signed-off",
+              {
+                "to": "signed-off",
+                "roles": [
+                  "ops-manager"
+                ]
+              },
               {
                 "to": "sent-back",
                 "requires": {
@@ -13269,7 +13274,10 @@
                       "isNull": false
                     }
                   ]
-                }
+                },
+                "roles": [
+                  "ops-manager"
+                ]
               }
             ],
             "sent-back": [
@@ -15067,6 +15075,2890 @@
       }
     ]
   },
+  "roles": [
+    {
+      "key": "admin",
+      "name": "CRM admin",
+      "permissions": [
+        "app:@:staff",
+        "table:@stages:read",
+        "table:@stages:create",
+        "table:@stages:update",
+        "table:@stages:delete",
+        "table:@deals:read",
+        "table:@deals:create",
+        "table:@deals:update",
+        "table:@deals:delete",
+        "table:@deals:export",
+        "table:@deal_stage_changes:read",
+        "table:@follow_ups:read",
+        "table:@follow_ups:create",
+        "table:@follow_ups:update",
+        "table:@follow_ups:delete",
+        "table:@activities:read",
+        "table:@activities:create",
+        "table:@activities:update",
+        "table:@activities:delete",
+        "table:@lost_reasons:read",
+        "table:@lost_reasons:create",
+        "table:@lost_reasons:update",
+        "table:@lost_reasons:delete",
+        "table:@quotes:read",
+        "table:@quotes:create",
+        "table:@quotes:update",
+        "table:@quotes:delete",
+        "table:@quotes:export",
+        "table:@quote_lines:read",
+        "table:@quote_lines:create",
+        "table:@quote_lines:update",
+        "table:@quote_lines:delete",
+        "table:@quote_lines:export",
+        "table:@comments:read",
+        "table:@comments:create",
+        "table:@comments:update",
+        "table:@comments:delete",
+        "table:@saved_views:read",
+        "table:@saved_views:create",
+        "table:@saved_views:update",
+        "table:@saved_views:delete",
+        "table:@saved_searches:read",
+        "table:@saved_searches:create",
+        "table:@saved_searches:update",
+        "table:@saved_searches:delete",
+        "table:@nudge_snoozes:read",
+        "table:@nudge_snoozes:create",
+        "table:@nudge_snoozes:delete",
+        "table:@deal_members:read",
+        "table:@deal_members:create",
+        "table:@deal_members:update",
+        "table:@deal_members:delete",
+        "table:@deal_marks:read",
+        "table:@site_visits:read",
+        "table:@site_visits:create",
+        "table:@site_visits:update",
+        "table:@site_visits:delete",
+        "table:@visit_notes:read",
+        "table:@visit_notes:create",
+        "table:@visit_notes:update",
+        "table:@visit_notes:delete",
+        "table:@visit_agreed:read",
+        "table:@visit_agreed:create",
+        "table:@visit_agreed:update",
+        "table:@visit_agreed:delete",
+        "table:@companies:read",
+        "table:@companies:create",
+        "table:@companies:update",
+        "table:@companies:delete",
+        "table:@companies:export",
+        "table:@contacts:read",
+        "table:@contacts:read_pii",
+        "table:@contacts:create",
+        "table:@contacts:update",
+        "table:@contacts:delete",
+        "table:@contacts:export",
+        "table:@territories:read",
+        "table:@territories:create",
+        "table:@territories:update",
+        "table:@territories:delete",
+        "table:@territory_places:read",
+        "table:@territory_places:create",
+        "table:@territory_places:update",
+        "table:@territory_places:delete",
+        "table:@renewals:read",
+        "table:@renewals:create",
+        "table:@renewals:update",
+        "table:@renewals:delete",
+        "table:@referrals:read",
+        "table:@referrals:create",
+        "table:@referrals:update",
+        "table:@referrals:delete",
+        "table:@reps:read",
+        "table:@reps:create",
+        "table:@reps:update",
+        "table:@reps:delete",
+        "table:@targets:read",
+        "table:@targets:create",
+        "table:@targets:update",
+        "table:@targets:delete",
+        "table:@actions:read",
+        "table:@meetings:read",
+        "table:@meetings:create",
+        "table:@meetings:update",
+        "table:@meetings:delete",
+        "table:@meeting_slots:read",
+        "table:@meeting_slots:create",
+        "table:@meeting_slots:update",
+        "table:@meeting_slots:delete",
+        "table:@meeting_decisions:read",
+        "table:@meeting_decisions:create",
+        "table:@meeting_decisions:update",
+        "table:@meeting_decisions:delete",
+        "table:@threads:read",
+        "table:@threads:create",
+        "table:@thread_members:read",
+        "table:@thread_members:create",
+        "table:@thread_members:update",
+        "table:@messages:read",
+        "table:@messages:create",
+        "table:@starters:read",
+        "table:@starters:create",
+        "table:@starters:update",
+        "table:@starters:delete",
+        "table:@starter_steps:read",
+        "table:@starter_steps:create",
+        "table:@starter_steps:update",
+        "table:@starter_steps:delete",
+        "table:@covers:read",
+        "table:@covers:create",
+        "table:@covers:update",
+        "table:@covers:delete",
+        "table:@cover_notes:read",
+        "table:@cover_notes:create",
+        "table:@cover_notes:update",
+        "table:@cover_notes:delete",
+        "table:@enquiries:read",
+        "table:@enquiries:read_pii",
+        "table:@enquiries:create",
+        "table:@enquiries:update",
+        "table:@enquiries:delete",
+        "table:@shows:read",
+        "table:@shows:create",
+        "table:@shows:update",
+        "table:@shows:delete",
+        "table:@showroom_spaces:read",
+        "table:@showroom_spaces:create",
+        "table:@showroom_spaces:update",
+        "table:@showroom_spaces:delete",
+        "table:@showroom_bookings:read",
+        "table:@showroom_bookings:create",
+        "table:@showroom_bookings:update",
+        "table:@showroom_bookings:delete",
+        "table:@samples:read",
+        "table:@samples:create",
+        "table:@samples:update",
+        "table:@samples:delete",
+        "table:@sample_loans:read",
+        "table:@sample_loans:create",
+        "table:@sample_loans:update",
+        "table:@sample_loans:delete",
+        "table:@sample_chases:read",
+        "table:@sample_chases:create",
+        "table:@sample_chases:update",
+        "table:@sample_chases:delete",
+        "table:@display_pieces:read",
+        "table:@display_pieces:create",
+        "table:@display_pieces:update",
+        "table:@display_pieces:delete",
+        "table:@jobs:read",
+        "table:@jobs:create",
+        "table:@jobs:update",
+        "table:@jobs:delete",
+        "table:@crews:read",
+        "table:@crews:create",
+        "table:@crews:update",
+        "table:@crews:delete",
+        "table:@crew_members:read",
+        "table:@crew_members:create",
+        "table:@crew_members:update",
+        "table:@crew_members:delete",
+        "table:@job_visits:read",
+        "table:@job_visits:create",
+        "table:@job_visits:update",
+        "table:@job_visits:delete",
+        "table:@sign_offs:read",
+        "table:@sign_offs:create",
+        "table:@sign_offs:update",
+        "table:@sign_offs:delete",
+        "table:@snags:read",
+        "table:@snags:create",
+        "table:@snags:update",
+        "table:@snags:delete",
+        "table:@delivery_notes:read",
+        "table:@delivery_notes:create",
+        "table:@delivery_notes:update",
+        "table:@delivery_notes:delete",
+        "table:@delivery_note_lines:read",
+        "table:@delivery_note_lines:create",
+        "table:@delivery_note_lines:update",
+        "table:@delivery_note_lines:delete",
+        "table:@waste_removals:read",
+        "table:@waste_removals:create",
+        "table:@waste_removals:update",
+        "table:@waste_removals:delete",
+        "table:@feedback:read",
+        "table:@feedback:create",
+        "table:@feedback:update",
+        "table:@feedback:delete",
+        "table:@complaints:read",
+        "table:@complaints:create",
+        "table:@complaints:update",
+        "table:@complaints:delete",
+        "table:@warranty_claims:read",
+        "table:@warranty_claims:create",
+        "table:@warranty_claims:update",
+        "table:@warranty_claims:delete",
+        "table:@deal_stock_needs:read",
+        "table:@deal_stock_needs:create",
+        "table:@deal_stock_needs:update",
+        "table:@deal_stock_needs:delete",
+        "table:@vehicles:read",
+        "table:@vehicles:create",
+        "table:@vehicles:update",
+        "table:@vehicles:delete",
+        "table:@vehicle_checks:read",
+        "table:@vehicle_checks:create",
+        "table:@vehicle_checks:update",
+        "table:@vehicle_checks:delete",
+        "table:@vehicle_faults:read",
+        "table:@vehicle_faults:create",
+        "table:@vehicle_faults:update",
+        "table:@vehicle_faults:delete",
+        "table:@fuel_fills:read",
+        "table:@fuel_fills:create",
+        "table:@fuel_fills:update",
+        "table:@fuel_fills:delete",
+        "table:@time_sheets:read",
+        "table:@time_sheet_lines:read",
+        "table:@certificates:read",
+        "table:@certificates:create",
+        "table:@certificates:update",
+        "table:@certificates:delete",
+        "table:@subcontractors:read",
+        "table:@subcontractors:create",
+        "table:@subcontractors:update",
+        "table:@subcontractors:delete",
+        "table:@insurance_incidents:read",
+        "table:@insurance_incidents:create",
+        "table:@insurance_incidents:update",
+        "table:@insurance_incidents:delete",
+        "table:@outbox:read",
+        "table:@settings:read",
+        "table:@settings:update",
+        "page:@crm-stages:view",
+        "page:@crm-deals:view",
+        "page:@crm-deal-stage-changes:view",
+        "page:@crm-follow-ups:view",
+        "page:@crm-activities:view",
+        "page:@crm-lost-reasons:view",
+        "page:@crm-quotes:view",
+        "page:@crm-quote-lines:view",
+        "page:@crm-comments:view",
+        "page:@crm-saved-views:view",
+        "page:@crm-saved-searches:view",
+        "page:@crm-nudge-snoozes:view",
+        "page:@crm-deal-members:view",
+        "page:@crm-deal-marks:view",
+        "page:@crm-site-visits:view",
+        "page:@crm-visit-notes:view",
+        "page:@crm-visit-agreed:view",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-territories:view",
+        "page:@crm-territory-places:view",
+        "page:@crm-renewals:view",
+        "page:@crm-referrals:view",
+        "page:@crm-reps:view",
+        "page:@crm-targets:view",
+        "page:@crm-actions:view",
+        "page:@crm-meetings:view",
+        "page:@crm-meeting-slots:view",
+        "page:@crm-meeting-decisions:view",
+        "page:@crm-threads:view",
+        "page:@crm-thread-members:view",
+        "page:@crm-messages:view",
+        "page:@crm-starters:view",
+        "page:@crm-starter-steps:view",
+        "page:@crm-covers:view",
+        "page:@crm-cover-notes:view",
+        "page:@crm-enquiries:view",
+        "page:@crm-shows:view",
+        "page:@crm-showroom-spaces:view",
+        "page:@crm-showroom-bookings:view",
+        "page:@crm-samples:view",
+        "page:@crm-sample-loans:view",
+        "page:@crm-sample-chases:view",
+        "page:@crm-display-pieces:view",
+        "page:@crm-jobs:view",
+        "page:@crm-crews:view",
+        "page:@crm-crew-members:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-delivery-notes:view",
+        "page:@crm-delivery-note-lines:view",
+        "page:@crm-waste-removals:view",
+        "page:@crm-feedback:view",
+        "page:@crm-complaints:view",
+        "page:@crm-warranty-claims:view",
+        "page:@crm-deal-stock-needs:view",
+        "page:@crm-vehicles:view",
+        "page:@crm-vehicle-checks:view",
+        "page:@crm-vehicle-faults:view",
+        "page:@crm-fuel-fills:view",
+        "page:@crm-time-sheets:view",
+        "page:@crm-time-sheet-lines:view",
+        "page:@crm-certificates:view",
+        "page:@crm-subcontractors:view",
+        "page:@crm-insurance-incidents:view",
+        "page:@crm-outbox:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "saved_views": {
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "saved_searches": {
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "nudge_snoozes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "actions": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "threads": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "thread_members": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "messages": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "sales-manager",
+      "name": "Sales manager",
+      "permissions": [
+        "app:@:staff",
+        "table:@stages:read",
+        "table:@deals:read",
+        "table:@deals:create",
+        "table:@deals:update",
+        "table:@deals:export",
+        "table:@deal_stage_changes:read",
+        "table:@follow_ups:read",
+        "table:@follow_ups:create",
+        "table:@follow_ups:update",
+        "table:@activities:read",
+        "table:@activities:create",
+        "table:@activities:update",
+        "table:@lost_reasons:read",
+        "table:@quotes:read",
+        "table:@quotes:create",
+        "table:@quotes:update",
+        "table:@quote_lines:read",
+        "table:@quote_lines:create",
+        "table:@quote_lines:update",
+        "table:@comments:read",
+        "table:@comments:create",
+        "table:@comments:update",
+        "table:@saved_views:read",
+        "table:@saved_views:create",
+        "table:@saved_views:update",
+        "table:@saved_views:delete",
+        "table:@saved_searches:read",
+        "table:@saved_searches:create",
+        "table:@saved_searches:update",
+        "table:@saved_searches:delete",
+        "table:@nudge_snoozes:read",
+        "table:@nudge_snoozes:create",
+        "table:@nudge_snoozes:delete",
+        "table:@deal_members:read",
+        "table:@deal_members:create",
+        "table:@deal_members:update",
+        "table:@deal_members:delete",
+        "table:@deal_marks:read",
+        "table:@site_visits:read",
+        "table:@site_visits:create",
+        "table:@site_visits:update",
+        "table:@visit_notes:read",
+        "table:@visit_notes:create",
+        "table:@visit_notes:update",
+        "table:@visit_agreed:read",
+        "table:@visit_agreed:create",
+        "table:@visit_agreed:update",
+        "table:@companies:read",
+        "table:@companies:create",
+        "table:@companies:update",
+        "table:@companies:export",
+        "table:@contacts:read",
+        "table:@contacts:read_pii",
+        "table:@contacts:create",
+        "table:@contacts:update",
+        "table:@contacts:export",
+        "table:@territories:read",
+        "table:@territories:create",
+        "table:@territories:update",
+        "table:@territories:delete",
+        "table:@territory_places:read",
+        "table:@territory_places:create",
+        "table:@territory_places:update",
+        "table:@territory_places:delete",
+        "table:@renewals:read",
+        "table:@referrals:read",
+        "table:@reps:read",
+        "table:@reps:update",
+        "table:@targets:read",
+        "table:@targets:create",
+        "table:@targets:update",
+        "table:@one_to_ones:read",
+        "table:@one_to_ones:create",
+        "table:@one_to_ones:update",
+        "table:@one_to_ones:delete",
+        "table:@one_to_one_sessions:read",
+        "table:@one_to_one_sessions:create",
+        "table:@one_to_one_sessions:update",
+        "table:@one_to_one_sessions:delete",
+        "table:@coaching_plans:read",
+        "table:@coaching_plans:create",
+        "table:@coaching_plans:update",
+        "table:@coaching_plans:delete",
+        "table:@coaching_areas:read",
+        "table:@coaching_areas:create",
+        "table:@coaching_areas:update",
+        "table:@coaching_areas:delete",
+        "table:@actions:read",
+        "table:@actions:create",
+        "table:@actions:update",
+        "table:@actions:delete",
+        "table:@meetings:read",
+        "table:@meetings:create",
+        "table:@meetings:update",
+        "table:@meetings:delete",
+        "table:@meeting_slots:read",
+        "table:@meeting_slots:create",
+        "table:@meeting_slots:update",
+        "table:@meeting_slots:delete",
+        "table:@meeting_decisions:read",
+        "table:@meeting_decisions:create",
+        "table:@meeting_decisions:update",
+        "table:@meeting_decisions:delete",
+        "table:@threads:read",
+        "table:@threads:create",
+        "table:@thread_members:read",
+        "table:@thread_members:create",
+        "table:@thread_members:update",
+        "table:@messages:read",
+        "table:@messages:create",
+        "table:@starters:read",
+        "table:@starters:create",
+        "table:@starters:update",
+        "table:@starters:delete",
+        "table:@starter_steps:read",
+        "table:@starter_steps:create",
+        "table:@starter_steps:update",
+        "table:@starter_steps:delete",
+        "table:@covers:read",
+        "table:@covers:create",
+        "table:@covers:update",
+        "table:@covers:delete",
+        "table:@cover_notes:read",
+        "table:@cover_notes:create",
+        "table:@cover_notes:update",
+        "table:@cover_notes:delete",
+        "table:@enquiries:read",
+        "table:@enquiries:read_pii",
+        "table:@enquiries:create",
+        "table:@enquiries:update",
+        "table:@shows:read",
+        "table:@showroom_spaces:read",
+        "table:@showroom_bookings:read",
+        "table:@samples:read",
+        "table:@sample_loans:read",
+        "table:@sample_chases:read",
+        "table:@display_pieces:read",
+        "table:@jobs:read",
+        "table:@job_visits:read",
+        "table:@sign_offs:read",
+        "table:@snags:read",
+        "table:@feedback:read",
+        "table:@complaints:read",
+        "table:@warranty_claims:read",
+        "table:@deal_stock_needs:read",
+        "table:@settings:read",
+        "table:@settings:update",
+        "page:@crm-stages:view",
+        "page:@crm-deals:view",
+        "page:@crm-deal-stage-changes:view",
+        "page:@crm-follow-ups:view",
+        "page:@crm-activities:view",
+        "page:@crm-lost-reasons:view",
+        "page:@crm-quotes:view",
+        "page:@crm-quote-lines:view",
+        "page:@crm-comments:view",
+        "page:@crm-saved-views:view",
+        "page:@crm-saved-searches:view",
+        "page:@crm-nudge-snoozes:view",
+        "page:@crm-deal-members:view",
+        "page:@crm-deal-marks:view",
+        "page:@crm-site-visits:view",
+        "page:@crm-visit-notes:view",
+        "page:@crm-visit-agreed:view",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-territories:view",
+        "page:@crm-territory-places:view",
+        "page:@crm-renewals:view",
+        "page:@crm-referrals:view",
+        "page:@crm-reps:view",
+        "page:@crm-targets:view",
+        "page:@crm-one-to-ones:view",
+        "page:@crm-one-to-one-sessions:view",
+        "page:@crm-coaching-plans:view",
+        "page:@crm-coaching-areas:view",
+        "page:@crm-actions:view",
+        "page:@crm-meetings:view",
+        "page:@crm-meeting-slots:view",
+        "page:@crm-meeting-decisions:view",
+        "page:@crm-threads:view",
+        "page:@crm-thread-members:view",
+        "page:@crm-messages:view",
+        "page:@crm-starters:view",
+        "page:@crm-starter-steps:view",
+        "page:@crm-covers:view",
+        "page:@crm-cover-notes:view",
+        "page:@crm-enquiries:view",
+        "page:@crm-shows:view",
+        "page:@crm-showroom-spaces:view",
+        "page:@crm-showroom-bookings:view",
+        "page:@crm-samples:view",
+        "page:@crm-sample-loans:view",
+        "page:@crm-sample-chases:view",
+        "page:@crm-display-pieces:view",
+        "page:@crm-jobs:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-feedback:view",
+        "page:@crm-complaints:view",
+        "page:@crm-warranty-claims:view",
+        "page:@crm-deal-stock-needs:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "deals": {
+          "writable": [
+            "name",
+            "scope",
+            "company_id",
+            "contact_id",
+            "owner_id",
+            "stage_id",
+            "expected_close",
+            "state",
+            "lost_reason_id",
+            "close_note",
+            "typed_amount",
+            "list_value"
+          ],
+          "creatable": [
+            "name",
+            "scope",
+            "company_id",
+            "contact_id",
+            "owner_id",
+            "stage_id",
+            "expected_close",
+            "state",
+            "lost_reason_id",
+            "close_note",
+            "typed_amount",
+            "list_value"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "deal_stage_changes": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "follow_ups": {
+          "writable": [
+            "deal_id",
+            "job_id",
+            "owner_id",
+            "due_at",
+            "text",
+            "kind",
+            "call_no",
+            "outcome",
+            "done"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "activities": {
+          "writable": [
+            "deal_id",
+            "kind",
+            "text"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "quotes": {
+          "writable": [
+            "status",
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "threshold_pct",
+            "approval",
+            "ask_reason",
+            "decision_note",
+            "sent_to_contact_id",
+            "notes",
+            "accepted_name"
+          ],
+          "creatable": [
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "threshold_pct",
+            "approval",
+            "ask_reason",
+            "decision_note",
+            "sent_to_contact_id",
+            "notes",
+            "accepted_name"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "quote_lines": {
+          "writable": [
+            "document_id",
+            "position",
+            "description",
+            "qty",
+            "rate",
+            "discount_kind",
+            "discount",
+            "list_rate"
+          ],
+          "creatable": [
+            "document_id",
+            "position",
+            "description",
+            "qty",
+            "rate",
+            "discount_kind",
+            "discount",
+            "list_rate"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "comments": {
+          "writable": [
+            "deal_id",
+            "parent_id",
+            "text",
+            "settled_by_id",
+            "settled_at"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "saved_views": {
+          "writable": [
+            "owner_id",
+            "name",
+            "filters",
+            "pinned"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "saved_searches": {
+          "writable": [
+            "owner_id",
+            "name",
+            "query",
+            "last_run_at",
+            "pinned"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "nudge_snoozes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_members": {
+          "writable": [
+            "deal_id",
+            "user_id",
+            "role_note"
+          ],
+          "rows": {
+            "update": {
+              "reach": "team"
+            },
+            "delete": {
+              "reach": "team"
+            }
+          }
+        },
+        "site_visits": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "visit_notes": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "visit_agreed": {
+          "writable": [
+            "visit_note_id",
+            "text",
+            "position"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "contacts": {
+          "writable": [
+            "company_id",
+            "name",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
+          ]
+        },
+        "reps": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "targets": {
+          "writable": [
+            "rep_id",
+            "year",
+            "amount"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            }
+          }
+        },
+        "one_to_ones": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "one_to_one_sessions": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "coaching_plans": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "coaching_areas": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "actions": {
+          "writable": [
+            "text",
+            "owner_id",
+            "due_on",
+            "done",
+            "source",
+            "one_to_one_id",
+            "meeting_id",
+            "coaching_area_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "threads": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "thread_members": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "messages": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "cover_notes": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            },
+            "update": {
+              "reach": "team"
+            },
+            "delete": {
+              "reach": "team"
+            }
+          }
+        },
+        "enquiries": {
+          "writable": [
+            "source",
+            "company_name",
+            "person",
+            "email",
+            "phone",
+            "text",
+            "est_value",
+            "town",
+            "wants",
+            "warmth",
+            "show_id",
+            "company_id",
+            "state",
+            "passed_to_id",
+            "rung_at",
+            "deal_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "team",
+              "unowned": true
+            },
+            "update": {
+              "reach": "team",
+              "unowned": true
+            }
+          }
+        },
+        "jobs": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "job_visits": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "sign_offs": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "snags": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "feedback": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "complaints": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "warranty_claims": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "deal_stock_needs": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
+        "settings": {
+          "writable": [
+            "approval_threshold_pct",
+            "quote_valid_days",
+            "quote_warn_days",
+            "sitting_warm_days",
+            "sitting_stale_days",
+            "nudge_quiet_days",
+            "nudge_stuck_days",
+            "nudge_soon_days"
+          ]
+        }
+      }
+    },
+    {
+      "key": "rep",
+      "name": "Sales rep",
+      "permissions": [
+        "app:@:staff",
+        "table:@stages:read",
+        "table:@deals:read",
+        "table:@deals:create",
+        "table:@deals:update",
+        "table:@deal_stage_changes:read",
+        "table:@follow_ups:read",
+        "table:@follow_ups:create",
+        "table:@follow_ups:update",
+        "table:@follow_ups:delete",
+        "table:@activities:read",
+        "table:@activities:create",
+        "table:@activities:update",
+        "table:@lost_reasons:read",
+        "table:@quotes:read",
+        "table:@quotes:create",
+        "table:@quotes:update",
+        "table:@quote_lines:read",
+        "table:@quote_lines:create",
+        "table:@quote_lines:update",
+        "table:@comments:read",
+        "table:@comments:create",
+        "table:@comments:update",
+        "table:@saved_views:read",
+        "table:@saved_views:create",
+        "table:@saved_views:update",
+        "table:@saved_views:delete",
+        "table:@saved_searches:read",
+        "table:@saved_searches:create",
+        "table:@saved_searches:update",
+        "table:@saved_searches:delete",
+        "table:@nudge_snoozes:read",
+        "table:@nudge_snoozes:create",
+        "table:@nudge_snoozes:delete",
+        "table:@deal_members:read",
+        "table:@deal_members:create",
+        "table:@deal_members:update",
+        "table:@deal_members:delete",
+        "table:@deal_marks:read",
+        "table:@site_visits:read",
+        "table:@site_visits:create",
+        "table:@site_visits:update",
+        "table:@site_visits:delete",
+        "table:@visit_notes:read",
+        "table:@visit_notes:create",
+        "table:@visit_notes:update",
+        "table:@visit_notes:delete",
+        "table:@visit_agreed:read",
+        "table:@visit_agreed:create",
+        "table:@visit_agreed:update",
+        "table:@visit_agreed:delete",
+        "table:@companies:read",
+        "table:@companies:create",
+        "table:@companies:update",
+        "table:@contacts:read",
+        "table:@contacts:read_pii",
+        "table:@contacts:create",
+        "table:@contacts:update",
+        "table:@territories:read",
+        "table:@territory_places:read",
+        "table:@renewals:read",
+        "table:@renewals:create",
+        "table:@renewals:update",
+        "table:@referrals:read",
+        "table:@referrals:create",
+        "table:@referrals:update",
+        "table:@reps:read",
+        "table:@reps:update",
+        "table:@targets:read",
+        "table:@one_to_ones:read",
+        "table:@one_to_one_sessions:read",
+        "table:@coaching_plans:read",
+        "table:@coaching_areas:read",
+        "table:@actions:read",
+        "table:@actions:create",
+        "table:@actions:update",
+        "table:@meetings:read",
+        "table:@meeting_slots:read",
+        "table:@meeting_decisions:read",
+        "table:@threads:read",
+        "table:@threads:create",
+        "table:@thread_members:read",
+        "table:@thread_members:create",
+        "table:@thread_members:update",
+        "table:@messages:read",
+        "table:@messages:create",
+        "table:@starters:read",
+        "table:@starter_steps:read",
+        "table:@starter_steps:update",
+        "table:@covers:read",
+        "table:@cover_notes:read",
+        "table:@cover_notes:create",
+        "table:@cover_notes:update",
+        "table:@enquiries:read",
+        "table:@enquiries:read_pii",
+        "table:@enquiries:create",
+        "table:@enquiries:update",
+        "table:@shows:read",
+        "table:@showroom_spaces:read",
+        "table:@showroom_bookings:read",
+        "table:@showroom_bookings:create",
+        "table:@showroom_bookings:update",
+        "table:@samples:read",
+        "table:@sample_loans:read",
+        "table:@sample_loans:create",
+        "table:@sample_loans:update",
+        "table:@sample_chases:read",
+        "table:@sample_chases:create",
+        "table:@sample_chases:update",
+        "table:@display_pieces:read",
+        "table:@jobs:read",
+        "table:@job_visits:read",
+        "table:@sign_offs:read",
+        "table:@snags:read",
+        "table:@feedback:read",
+        "table:@complaints:read",
+        "table:@complaints:update",
+        "table:@warranty_claims:read",
+        "table:@deal_stock_needs:read",
+        "table:@deal_stock_needs:create",
+        "table:@deal_stock_needs:update",
+        "table:@settings:read",
+        "page:@crm-stages:view",
+        "page:@crm-deals:view",
+        "page:@crm-deal-stage-changes:view",
+        "page:@crm-follow-ups:view",
+        "page:@crm-activities:view",
+        "page:@crm-lost-reasons:view",
+        "page:@crm-quotes:view",
+        "page:@crm-quote-lines:view",
+        "page:@crm-comments:view",
+        "page:@crm-saved-views:view",
+        "page:@crm-saved-searches:view",
+        "page:@crm-nudge-snoozes:view",
+        "page:@crm-deal-members:view",
+        "page:@crm-deal-marks:view",
+        "page:@crm-site-visits:view",
+        "page:@crm-visit-notes:view",
+        "page:@crm-visit-agreed:view",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-territories:view",
+        "page:@crm-territory-places:view",
+        "page:@crm-renewals:view",
+        "page:@crm-referrals:view",
+        "page:@crm-reps:view",
+        "page:@crm-targets:view",
+        "page:@crm-one-to-ones:view",
+        "page:@crm-one-to-one-sessions:view",
+        "page:@crm-coaching-plans:view",
+        "page:@crm-coaching-areas:view",
+        "page:@crm-actions:view",
+        "page:@crm-meetings:view",
+        "page:@crm-meeting-slots:view",
+        "page:@crm-meeting-decisions:view",
+        "page:@crm-threads:view",
+        "page:@crm-thread-members:view",
+        "page:@crm-messages:view",
+        "page:@crm-starters:view",
+        "page:@crm-starter-steps:view",
+        "page:@crm-covers:view",
+        "page:@crm-cover-notes:view",
+        "page:@crm-enquiries:view",
+        "page:@crm-shows:view",
+        "page:@crm-showroom-spaces:view",
+        "page:@crm-showroom-bookings:view",
+        "page:@crm-samples:view",
+        "page:@crm-sample-loans:view",
+        "page:@crm-sample-chases:view",
+        "page:@crm-display-pieces:view",
+        "page:@crm-jobs:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-feedback:view",
+        "page:@crm-complaints:view",
+        "page:@crm-warranty-claims:view",
+        "page:@crm-deal-stock-needs:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "deals": {
+          "writable": [
+            "name",
+            "scope",
+            "company_id",
+            "contact_id",
+            "owner_id",
+            "stage_id",
+            "expected_close",
+            "state",
+            "lost_reason_id",
+            "close_note",
+            "typed_amount",
+            "list_value"
+          ],
+          "creatable": [
+            "name",
+            "scope",
+            "company_id",
+            "contact_id",
+            "owner_id",
+            "stage_id",
+            "expected_close",
+            "state",
+            "lost_reason_id",
+            "close_note",
+            "typed_amount",
+            "list_value"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_stage_changes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "follow_ups": {
+          "writable": [
+            "deal_id",
+            "job_id",
+            "owner_id",
+            "due_at",
+            "text",
+            "kind",
+            "call_no",
+            "outcome",
+            "done"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "activities": {
+          "writable": [
+            "deal_id",
+            "kind",
+            "text"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "quotes": {
+          "writable": [
+            "status",
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "approval",
+            "ask_reason",
+            "sent_to_contact_id",
+            "notes",
+            "accepted_name"
+          ],
+          "writableValues": {
+            "approval": [
+              "asked"
+            ]
+          },
+          "creatable": [
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "approval",
+            "ask_reason",
+            "sent_to_contact_id",
+            "notes",
+            "accepted_name"
+          ],
+          "creatableValues": {
+            "approval": [
+              "none",
+              "asked"
+            ]
+          },
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "quote_lines": {
+          "writable": [
+            "document_id",
+            "position",
+            "description",
+            "qty",
+            "rate",
+            "discount_kind",
+            "discount",
+            "list_rate"
+          ],
+          "creatable": [
+            "document_id",
+            "position",
+            "description",
+            "qty",
+            "rate",
+            "discount_kind",
+            "discount",
+            "list_rate"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "comments": {
+          "writable": [
+            "deal_id",
+            "parent_id",
+            "text",
+            "settled_by_id",
+            "settled_at"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "saved_views": {
+          "writable": [
+            "owner_id",
+            "name",
+            "filters",
+            "pinned"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "saved_searches": {
+          "writable": [
+            "owner_id",
+            "name",
+            "query",
+            "last_run_at",
+            "pinned"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "nudge_snoozes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_members": {
+          "writable": [
+            "deal_id",
+            "user_id",
+            "role_note"
+          ],
+          "rows": {
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "site_visits": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "visit_notes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "visit_agreed": {
+          "writable": [
+            "visit_note_id",
+            "text",
+            "position"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "contacts": {
+          "writable": [
+            "company_id",
+            "name",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
+          ]
+        },
+        "reps": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "targets": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "one_to_ones": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "one_to_one_sessions": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "coaching_plans": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "coaching_areas": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "actions": {
+          "writable": [
+            "text",
+            "owner_id",
+            "due_on",
+            "done",
+            "source",
+            "one_to_one_id",
+            "meeting_id",
+            "coaching_area_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "threads": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "thread_members": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "messages": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "starters": {
+          "readable": [
+            "name",
+            "starts_on",
+            "manager_id",
+            "user_id"
+          ]
+        },
+        "cover_notes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "enquiries": {
+          "writable": [
+            "source",
+            "company_name",
+            "person",
+            "email",
+            "phone",
+            "text",
+            "est_value",
+            "town",
+            "wants",
+            "warmth",
+            "show_id",
+            "company_id",
+            "state",
+            "passed_to_id",
+            "rung_at",
+            "deal_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "sample_chases": {
+          "writable": [
+            "loan_id",
+            "chased_on"
+          ]
+        },
+        "jobs": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "job_visits": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "sign_offs": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "snags": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "feedback": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "complaints": {
+          "writable": [
+            "company_id",
+            "contact_id",
+            "job_id",
+            "owner_id",
+            "text",
+            "cause",
+            "fairness",
+            "state"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "warranty_claims": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_stock_needs": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "account-manager",
+      "name": "Account manager",
+      "permissions": [
+        "app:@:staff",
+        "table:@stages:read",
+        "table:@deals:read",
+        "table:@follow_ups:read",
+        "table:@follow_ups:create",
+        "table:@follow_ups:update",
+        "table:@lost_reasons:read",
+        "table:@saved_views:read",
+        "table:@saved_views:create",
+        "table:@saved_views:update",
+        "table:@saved_views:delete",
+        "table:@saved_searches:read",
+        "table:@saved_searches:create",
+        "table:@saved_searches:update",
+        "table:@saved_searches:delete",
+        "table:@deal_members:read",
+        "table:@deal_marks:read",
+        "table:@companies:read",
+        "table:@companies:create",
+        "table:@companies:update",
+        "table:@contacts:read",
+        "table:@contacts:read_pii",
+        "table:@contacts:create",
+        "table:@contacts:update",
+        "table:@territories:read",
+        "table:@territory_places:read",
+        "table:@renewals:read",
+        "table:@renewals:create",
+        "table:@renewals:update",
+        "table:@renewals:delete",
+        "table:@referrals:read",
+        "table:@referrals:create",
+        "table:@referrals:update",
+        "table:@referrals:delete",
+        "table:@reps:read",
+        "table:@reps:update",
+        "table:@threads:read",
+        "table:@threads:create",
+        "table:@thread_members:read",
+        "table:@thread_members:create",
+        "table:@thread_members:update",
+        "table:@messages:read",
+        "table:@messages:create",
+        "table:@covers:read",
+        "table:@jobs:read",
+        "table:@job_visits:read",
+        "table:@sign_offs:read",
+        "table:@snags:read",
+        "table:@delivery_notes:read",
+        "table:@delivery_note_lines:read",
+        "table:@feedback:read",
+        "table:@feedback:create",
+        "table:@feedback:update",
+        "table:@feedback:delete",
+        "table:@complaints:read",
+        "table:@complaints:create",
+        "table:@complaints:update",
+        "table:@complaints:delete",
+        "table:@warranty_claims:read",
+        "table:@warranty_claims:create",
+        "table:@warranty_claims:update",
+        "table:@warranty_claims:delete",
+        "table:@settings:read",
+        "page:@crm-stages:view",
+        "page:@crm-deals:view",
+        "page:@crm-follow-ups:view",
+        "page:@crm-lost-reasons:view",
+        "page:@crm-saved-views:view",
+        "page:@crm-saved-searches:view",
+        "page:@crm-deal-members:view",
+        "page:@crm-deal-marks:view",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-territories:view",
+        "page:@crm-territory-places:view",
+        "page:@crm-renewals:view",
+        "page:@crm-referrals:view",
+        "page:@crm-reps:view",
+        "page:@crm-threads:view",
+        "page:@crm-thread-members:view",
+        "page:@crm-messages:view",
+        "page:@crm-covers:view",
+        "page:@crm-jobs:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-delivery-notes:view",
+        "page:@crm-delivery-note-lines:view",
+        "page:@crm-feedback:view",
+        "page:@crm-complaints:view",
+        "page:@crm-warranty-claims:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "deals": {
+          "rows": {
+            "read": {
+              "reach": "all",
+              "while": {
+                "column": "state",
+                "in": [
+                  "won"
+                ]
+              }
+            }
+          }
+        },
+        "follow_ups": {
+          "writable": [
+            "deal_id",
+            "job_id",
+            "owner_id",
+            "due_at",
+            "text",
+            "kind",
+            "call_no",
+            "outcome",
+            "done"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "saved_views": {
+          "writable": [
+            "owner_id",
+            "name",
+            "filters",
+            "pinned"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "saved_searches": {
+          "writable": [
+            "owner_id",
+            "name",
+            "query",
+            "last_run_at",
+            "pinned"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own"
+            },
+            "delete": {
+              "reach": "own"
+            }
+          }
+        },
+        "contacts": {
+          "writable": [
+            "company_id",
+            "name",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
+          ]
+        },
+        "reps": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "threads": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "thread_members": {
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "messages": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "complaints": {
+          "writable": [
+            "company_id",
+            "contact_id",
+            "job_id",
+            "owner_id",
+            "text",
+            "cause",
+            "fairness",
+            "state"
+          ]
+        },
+        "warranty_claims": {
+          "writable": [
+            "job_id",
+            "contact_id",
+            "what",
+            "part",
+            "cover",
+            "cover_years",
+            "supplier_name",
+            "supplier",
+            "paid_by",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "key": "marketer",
+      "name": "Marketer",
+      "permissions": [
+        "app:@:staff",
+        "table:@companies:read",
+        "table:@contacts:read",
+        "table:@territories:read",
+        "table:@territory_places:read",
+        "table:@enquiries:read",
+        "table:@enquiries:read_pii",
+        "table:@enquiries:create",
+        "table:@shows:read",
+        "table:@shows:create",
+        "table:@shows:update",
+        "table:@shows:delete",
+        "table:@settings:read",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-territories:view",
+        "page:@crm-territory-places:view",
+        "page:@crm-enquiries:view",
+        "page:@crm-shows:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "enquiries": {
+          "creatable": [
+            "source",
+            "company_name",
+            "person",
+            "email",
+            "phone",
+            "text",
+            "est_value",
+            "town",
+            "wants",
+            "warmth",
+            "show_id",
+            "company_id"
+          ]
+        }
+      }
+    },
+    {
+      "key": "front-desk",
+      "name": "Front desk",
+      "permissions": [
+        "app:@:staff",
+        "table:@companies:read",
+        "table:@contacts:read",
+        "table:@contacts:read_pii",
+        "table:@contacts:create",
+        "table:@enquiries:read",
+        "table:@enquiries:read_pii",
+        "table:@enquiries:create",
+        "table:@enquiries:update",
+        "table:@shows:read",
+        "table:@showroom_spaces:read",
+        "table:@showroom_spaces:create",
+        "table:@showroom_spaces:update",
+        "table:@showroom_spaces:delete",
+        "table:@showroom_bookings:read",
+        "table:@showroom_bookings:create",
+        "table:@showroom_bookings:update",
+        "table:@showroom_bookings:delete",
+        "table:@samples:read",
+        "table:@samples:create",
+        "table:@samples:update",
+        "table:@samples:delete",
+        "table:@sample_loans:read",
+        "table:@sample_loans:create",
+        "table:@sample_loans:update",
+        "table:@sample_loans:delete",
+        "table:@sample_chases:read",
+        "table:@sample_chases:create",
+        "table:@sample_chases:update",
+        "table:@sample_chases:delete",
+        "table:@display_pieces:read",
+        "table:@display_pieces:create",
+        "table:@display_pieces:update",
+        "table:@display_pieces:delete",
+        "table:@settings:read",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-enquiries:view",
+        "page:@crm-shows:view",
+        "page:@crm-showroom-spaces:view",
+        "page:@crm-showroom-bookings:view",
+        "page:@crm-samples:view",
+        "page:@crm-sample-loans:view",
+        "page:@crm-sample-chases:view",
+        "page:@crm-display-pieces:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "enquiries": {
+          "writable": [
+            "source",
+            "company_name",
+            "person",
+            "email",
+            "phone",
+            "text",
+            "est_value",
+            "town",
+            "wants",
+            "warmth",
+            "show_id",
+            "company_id",
+            "state",
+            "passed_to_id",
+            "rung_at",
+            "deal_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            },
+            "update": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "sample_chases": {
+          "writable": [
+            "loan_id",
+            "chased_on"
+          ]
+        }
+      }
+    },
+    {
+      "key": "ops-manager",
+      "name": "Operations manager",
+      "permissions": [
+        "app:@:staff",
+        "table:@jobs:read",
+        "table:@jobs:create",
+        "table:@jobs:update",
+        "table:@crews:read",
+        "table:@crews:create",
+        "table:@crews:update",
+        "table:@crews:delete",
+        "table:@crew_members:read",
+        "table:@crew_members:create",
+        "table:@crew_members:update",
+        "table:@crew_members:delete",
+        "table:@job_visits:read",
+        "table:@job_visits:create",
+        "table:@job_visits:update",
+        "table:@job_visits:delete",
+        "table:@sign_offs:read",
+        "table:@sign_offs:create",
+        "table:@sign_offs:update",
+        "table:@snags:read",
+        "table:@snags:create",
+        "table:@snags:update",
+        "table:@snags:delete",
+        "table:@delivery_notes:read",
+        "table:@delivery_notes:create",
+        "table:@delivery_notes:update",
+        "table:@delivery_notes:delete",
+        "table:@delivery_note_lines:read",
+        "table:@delivery_note_lines:create",
+        "table:@delivery_note_lines:update",
+        "table:@delivery_note_lines:delete",
+        "table:@waste_removals:read",
+        "table:@waste_removals:create",
+        "table:@waste_removals:update",
+        "table:@waste_removals:delete",
+        "table:@feedback:read",
+        "table:@complaints:read",
+        "table:@warranty_claims:read",
+        "table:@warranty_claims:create",
+        "table:@warranty_claims:update",
+        "table:@deal_stock_needs:read",
+        "table:@deal_stock_needs:create",
+        "table:@deal_stock_needs:update",
+        "table:@deal_stock_needs:delete",
+        "table:@vehicles:read",
+        "table:@vehicles:create",
+        "table:@vehicles:update",
+        "table:@vehicles:delete",
+        "table:@vehicle_checks:read",
+        "table:@vehicle_checks:create",
+        "table:@vehicle_checks:update",
+        "table:@vehicle_checks:delete",
+        "table:@vehicle_faults:read",
+        "table:@vehicle_faults:create",
+        "table:@vehicle_faults:update",
+        "table:@vehicle_faults:delete",
+        "table:@fuel_fills:read",
+        "table:@fuel_fills:create",
+        "table:@fuel_fills:update",
+        "table:@fuel_fills:delete",
+        "table:@time_sheets:read",
+        "table:@time_sheets:update",
+        "table:@time_sheet_lines:read",
+        "table:@certificates:read",
+        "table:@certificates:create",
+        "table:@certificates:update",
+        "table:@certificates:delete",
+        "table:@subcontractors:read",
+        "table:@subcontractors:create",
+        "table:@subcontractors:update",
+        "table:@subcontractors:delete",
+        "table:@insurance_incidents:read",
+        "table:@insurance_incidents:create",
+        "table:@insurance_incidents:update",
+        "table:@insurance_incidents:delete",
+        "table:@settings:read",
+        "page:@crm-jobs:view",
+        "page:@crm-crews:view",
+        "page:@crm-crew-members:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-delivery-notes:view",
+        "page:@crm-delivery-note-lines:view",
+        "page:@crm-waste-removals:view",
+        "page:@crm-feedback:view",
+        "page:@crm-complaints:view",
+        "page:@crm-warranty-claims:view",
+        "page:@crm-deal-stock-needs:view",
+        "page:@crm-vehicles:view",
+        "page:@crm-vehicle-checks:view",
+        "page:@crm-vehicle-faults:view",
+        "page:@crm-fuel-fills:view",
+        "page:@crm-time-sheets:view",
+        "page:@crm-time-sheet-lines:view",
+        "page:@crm-certificates:view",
+        "page:@crm-subcontractors:view",
+        "page:@crm-insurance-incidents:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "jobs": {
+          "writable": [
+            "deal_id",
+            "site_name",
+            "address_lines",
+            "town",
+            "lat",
+            "lng",
+            "access_note",
+            "ask_for",
+            "site_phone",
+            "state"
+          ],
+          "creatable": [
+            "deal_id",
+            "site_name",
+            "address_lines",
+            "town",
+            "lat",
+            "lng",
+            "access_note",
+            "ask_for",
+            "site_phone"
+          ]
+        },
+        "job_visits": {
+          "writable": [
+            "job_id",
+            "kind",
+            "what",
+            "day",
+            "start_time",
+            "crew_id",
+            "vehicle_id",
+            "hours",
+            "crew_size",
+            "stock_ready_on",
+            "state",
+            "cancel_reason",
+            "tick_loaded",
+            "tick_arrived",
+            "tick_fitted",
+            "tick_cleared"
+          ]
+        },
+        "sign_offs": {
+          "writable": [
+            "job_id",
+            "visit_id",
+            "check_1",
+            "check_2",
+            "check_3",
+            "check_4",
+            "check_5",
+            "signer_name",
+            "signature",
+            "photos",
+            "copy_sent_to"
+          ]
+        },
+        "snags": {
+          "writable": [
+            "job_id",
+            "visit_id",
+            "text",
+            "severity",
+            "stops_sign_off",
+            "state",
+            "raised_by_id",
+            "raised_by_contact_id",
+            "due_days",
+            "put_right_note",
+            "photo",
+            "put_right_photo"
+          ]
+        },
+        "delivery_notes": {
+          "writable": [
+            "job_id",
+            "visit_id",
+            "taken_by_id",
+            "signed_by_contact_id",
+            "signed_name",
+            "damage",
+            "note"
+          ]
+        },
+        "delivery_note_lines": {
+          "writable": [
+            "note_id",
+            "what",
+            "ordered",
+            "delivered"
+          ]
+        },
+        "warranty_claims": {
+          "writable": [
+            "job_id",
+            "contact_id",
+            "what",
+            "part",
+            "cover",
+            "cover_years",
+            "supplier_name",
+            "supplier",
+            "paid_by",
+            "state"
+          ]
+        },
+        "vehicle_checks": {
+          "writable": [
+            "vehicle_id",
+            "day",
+            "tyres",
+            "fluids",
+            "lights",
+            "straps",
+            "tail_lift"
+          ]
+        },
+        "vehicle_faults": {
+          "writable": [
+            "vehicle_id",
+            "text",
+            "fixed_on"
+          ]
+        },
+        "fuel_fills": {
+          "writable": [
+            "vehicle_id",
+            "day",
+            "litres",
+            "cost",
+            "odometer"
+          ]
+        },
+        "time_sheets": {
+          "writable": [
+            "state",
+            "sent_back_note"
+          ],
+          "writableValues": {
+            "state": [
+              "signed-off",
+              "sent-back"
+            ]
+          },
+          "writableFrom": {
+            "state": [
+              "sent"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "key": "crew",
+      "name": "Field crew",
+      "permissions": [
+        "app:@:staff",
+        "table:@crews:read",
+        "table:@crew_members:read",
+        "table:@job_visits:read",
+        "table:@job_visits:update",
+        "table:@sign_offs:read",
+        "table:@sign_offs:create",
+        "table:@snags:read",
+        "table:@snags:create",
+        "table:@snags:update",
+        "table:@delivery_notes:read",
+        "table:@delivery_notes:create",
+        "table:@delivery_notes:update",
+        "table:@delivery_note_lines:read",
+        "table:@delivery_note_lines:create",
+        "table:@delivery_note_lines:update",
+        "table:@vehicles:read",
+        "table:@vehicle_checks:read",
+        "table:@vehicle_checks:create",
+        "table:@vehicle_faults:read",
+        "table:@vehicle_faults:create",
+        "table:@fuel_fills:read",
+        "table:@fuel_fills:create",
+        "table:@time_sheets:read",
+        "table:@time_sheets:create",
+        "table:@time_sheets:update",
+        "table:@time_sheet_lines:read",
+        "table:@time_sheet_lines:create",
+        "table:@time_sheet_lines:update",
+        "table:@certificates:read",
+        "table:@settings:read",
+        "page:@crm-crews:view",
+        "page:@crm-crew-members:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-delivery-notes:view",
+        "page:@crm-delivery-note-lines:view",
+        "page:@crm-vehicles:view",
+        "page:@crm-vehicle-checks:view",
+        "page:@crm-vehicle-faults:view",
+        "page:@crm-fuel-fills:view",
+        "page:@crm-time-sheets:view",
+        "page:@crm-time-sheet-lines:view",
+        "page:@crm-certificates:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "job_visits": {
+          "writable": [
+            "tick_loaded",
+            "tick_arrived",
+            "tick_fitted",
+            "tick_cleared"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "sign_offs": {
+          "creatable": [
+            "job_id",
+            "visit_id",
+            "check_1",
+            "check_2",
+            "check_3",
+            "check_4",
+            "check_5",
+            "signer_name",
+            "signature",
+            "photos",
+            "copy_sent_to"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "snags": {
+          "writable": [
+            "text",
+            "severity",
+            "state",
+            "put_right_note",
+            "photo",
+            "put_right_photo"
+          ],
+          "creatable": [
+            "job_id",
+            "visit_id",
+            "text",
+            "severity",
+            "stops_sign_off",
+            "raised_by_id",
+            "raised_by_contact_id",
+            "photo"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "delivery_notes": {
+          "writable": [
+            "taken_by_id",
+            "signed_by_contact_id",
+            "signed_name",
+            "damage",
+            "note"
+          ],
+          "creatable": [
+            "job_id",
+            "visit_id",
+            "taken_by_id",
+            "signed_by_contact_id",
+            "signed_name",
+            "damage",
+            "note"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "delivery_note_lines": {
+          "writable": [
+            "what",
+            "ordered",
+            "delivered"
+          ],
+          "creatable": [
+            "note_id",
+            "what",
+            "ordered",
+            "delivered"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "vehicle_checks": {
+          "creatable": [
+            "vehicle_id",
+            "day",
+            "tyres",
+            "fluids",
+            "lights",
+            "straps",
+            "tail_lift"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "vehicle_faults": {
+          "creatable": [
+            "vehicle_id",
+            "text"
+          ]
+        },
+        "fuel_fills": {
+          "creatable": [
+            "vehicle_id",
+            "day",
+            "litres",
+            "cost",
+            "odometer"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "time_sheets": {
+          "writable": [
+            "week_of",
+            "state"
+          ],
+          "writableValues": {
+            "state": [
+              "sent"
+            ]
+          },
+          "writableFrom": {
+            "state": [
+              "open",
+              "sent-back"
+            ]
+          },
+          "creatable": [
+            "user_id",
+            "week_of"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "time_sheet_lines": {
+          "writable": [
+            "day",
+            "what",
+            "hours",
+            "travel_hours",
+            "job_id"
+          ],
+          "creatable": [
+            "sheet_id",
+            "day",
+            "what",
+            "hours",
+            "travel_hours",
+            "job_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own"
+            }
+          }
+        },
+        "certificates": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "read-only",
+      "name": "Read-only",
+      "permissions": [
+        "app:@:staff",
+        "table:@stages:read",
+        "table:@deals:read",
+        "table:@deals:export",
+        "table:@deal_stage_changes:read",
+        "table:@follow_ups:read",
+        "table:@activities:read",
+        "table:@lost_reasons:read",
+        "table:@quotes:read",
+        "table:@quotes:export",
+        "table:@quote_lines:read",
+        "table:@quote_lines:export",
+        "table:@comments:read",
+        "table:@saved_views:read",
+        "table:@saved_searches:read",
+        "table:@deal_members:read",
+        "table:@deal_marks:read",
+        "table:@site_visits:read",
+        "table:@visit_notes:read",
+        "table:@visit_agreed:read",
+        "table:@companies:read",
+        "table:@companies:export",
+        "table:@contacts:read",
+        "table:@contacts:export",
+        "table:@territories:read",
+        "table:@territory_places:read",
+        "table:@renewals:read",
+        "table:@referrals:read",
+        "table:@reps:read",
+        "table:@targets:read",
+        "table:@meetings:read",
+        "table:@meeting_slots:read",
+        "table:@meeting_decisions:read",
+        "table:@starters:read",
+        "table:@starter_steps:read",
+        "table:@covers:read",
+        "table:@cover_notes:read",
+        "table:@enquiries:read",
+        "table:@shows:read",
+        "table:@showroom_spaces:read",
+        "table:@showroom_bookings:read",
+        "table:@samples:read",
+        "table:@sample_loans:read",
+        "table:@sample_chases:read",
+        "table:@display_pieces:read",
+        "table:@jobs:read",
+        "table:@crews:read",
+        "table:@crew_members:read",
+        "table:@job_visits:read",
+        "table:@sign_offs:read",
+        "table:@snags:read",
+        "table:@delivery_notes:read",
+        "table:@delivery_note_lines:read",
+        "table:@waste_removals:read",
+        "table:@feedback:read",
+        "table:@complaints:read",
+        "table:@warranty_claims:read",
+        "table:@deal_stock_needs:read",
+        "table:@vehicles:read",
+        "table:@vehicle_checks:read",
+        "table:@vehicle_faults:read",
+        "table:@fuel_fills:read",
+        "table:@time_sheets:read",
+        "table:@time_sheet_lines:read",
+        "table:@certificates:read",
+        "table:@subcontractors:read",
+        "table:@insurance_incidents:read",
+        "table:@settings:read",
+        "page:@crm-stages:view",
+        "page:@crm-deals:view",
+        "page:@crm-deal-stage-changes:view",
+        "page:@crm-follow-ups:view",
+        "page:@crm-activities:view",
+        "page:@crm-lost-reasons:view",
+        "page:@crm-quotes:view",
+        "page:@crm-quote-lines:view",
+        "page:@crm-comments:view",
+        "page:@crm-saved-views:view",
+        "page:@crm-saved-searches:view",
+        "page:@crm-deal-members:view",
+        "page:@crm-deal-marks:view",
+        "page:@crm-site-visits:view",
+        "page:@crm-visit-notes:view",
+        "page:@crm-visit-agreed:view",
+        "page:@crm-companies:view",
+        "page:@crm-contacts:view",
+        "page:@crm-territories:view",
+        "page:@crm-territory-places:view",
+        "page:@crm-renewals:view",
+        "page:@crm-referrals:view",
+        "page:@crm-reps:view",
+        "page:@crm-targets:view",
+        "page:@crm-meetings:view",
+        "page:@crm-meeting-slots:view",
+        "page:@crm-meeting-decisions:view",
+        "page:@crm-starters:view",
+        "page:@crm-starter-steps:view",
+        "page:@crm-covers:view",
+        "page:@crm-cover-notes:view",
+        "page:@crm-enquiries:view",
+        "page:@crm-shows:view",
+        "page:@crm-showroom-spaces:view",
+        "page:@crm-showroom-bookings:view",
+        "page:@crm-samples:view",
+        "page:@crm-sample-loans:view",
+        "page:@crm-sample-chases:view",
+        "page:@crm-display-pieces:view",
+        "page:@crm-jobs:view",
+        "page:@crm-crews:view",
+        "page:@crm-crew-members:view",
+        "page:@crm-job-visits:view",
+        "page:@crm-sign-offs:view",
+        "page:@crm-snags:view",
+        "page:@crm-delivery-notes:view",
+        "page:@crm-delivery-note-lines:view",
+        "page:@crm-waste-removals:view",
+        "page:@crm-feedback:view",
+        "page:@crm-complaints:view",
+        "page:@crm-warranty-claims:view",
+        "page:@crm-deal-stock-needs:view",
+        "page:@crm-vehicles:view",
+        "page:@crm-vehicle-checks:view",
+        "page:@crm-vehicle-faults:view",
+        "page:@crm-fuel-fills:view",
+        "page:@crm-time-sheets:view",
+        "page:@crm-time-sheet-lines:view",
+        "page:@crm-certificates:view",
+        "page:@crm-subcontractors:view",
+        "page:@crm-insurance-incidents:view",
+        "page:@crm-settings:view"
+      ],
+      "limits": {
+        "saved_views": {
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        },
+        "saved_searches": {
+          "rows": {
+            "read": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
+        }
+      }
+    }
+  ],
   "pages": [
     {
       "ref": "crm-stages",
