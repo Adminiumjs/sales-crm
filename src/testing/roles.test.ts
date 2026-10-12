@@ -774,6 +774,37 @@ describe("nobody but the CRM admin types what Adminium works out", () => {
   });
 });
 
+describe("a listing a table is read through is not a way in", () => {
+  // A table is reached through `deal_members`, `thread_members`, `crew_members` and `covers`: whoever
+  // may write themselves into one of those reaches the rows behind it. A new row there is held by its
+  // link (it names a deal or a conversation its writer reaches), so the role must read that table in part.
+  it("lets a role add a person to a deal or a conversation only where it reads that table in part", () => {
+    for (const [listing, parent] of [["deal_members", "deals"], ["thread_members", "threads"]] as const) {
+      for (const key of ROLES) {
+        if (!holds(key, listing, "create") || key === "admin") continue;
+        expect(limitOf(key, parent)?.rows?.read, `${key} adds to ${listing} and reads all of ${parent}`).toBeDefined();
+      }
+    }
+    // The CRM admin reads every deal already, and conversations only as their own.
+    expect(limitOf("admin", "threads")?.rows?.read).toEqual({ reach: "own" });
+  });
+
+  it("lets a member of a conversation add a colleague, and change no row there but their own", () => {
+    expect(tableOf.get("thread_members")?.belongs).toEqual([{ column: "user_id", set: "anyone" }]);
+    for (const key of ROLES) {
+      if (!holds(key, "thread_members", "update")) continue;
+      expect(limitOf(key, "thread_members")?.rows, key).toEqual({ update: { reach: "own" } });
+      expect(holds(key, "thread_members", "delete"), key).toBe(false);
+    }
+    // Nobody changes a conversation or a message once written, so no row is added under one by a change of it.
+    for (const key of ROLES) for (const ref of ["threads", "messages"]) for (const action of ["update", "delete"] as const) expect(holds(key, ref, action), `${key}: ${ref}`).toBe(false);
+  });
+
+  it("leaves a crew's people to the operations manager and the CRM admin", () => {
+    expect(ROLES.filter((key) => held(key, "crew_members").some((action) => action !== "read"))).toEqual(["admin", "ops-manager"]);
+  });
+});
+
 describe("what a role is kept from, column by column", () => {
   it("lets only the CRM admin take back that a contact unsubscribed", () => {
     for (const key of ROLES) {

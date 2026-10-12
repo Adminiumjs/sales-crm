@@ -600,7 +600,10 @@ describe("the listings a table is read through are limited by their own person",
   it("lists a conversation's people once each", () => {
     const members = byRef.get("thread_members");
     expect(members?.unique).toEqual([["thread_id", "user_id"]]);
-    expect(members?.belongs).toEqual([{ column: "user_id" }]);
+    // `anyone`: a member adds a colleague. The four roles change only their own row there, and a writer
+    // held to their own rows names nobody but themselves in a column that does not say otherwise. A
+    // stranger is kept out by the link: a new row names a conversation its writer reaches.
+    expect(members?.belongs).toEqual([{ column: "user_id", set: "anyone" }]);
     expect(byRef.get("threads")?.belongs).toEqual([{ through: { table: "thread_members", link: "thread_id", user: "user_id" } }]);
     expect(byRef.get("messages")?.belongs).toEqual([{ via: "thread_id" }]);
   });
