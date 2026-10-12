@@ -116,7 +116,80 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   territory_places: { nullable: [] },
   renewals: { nullable: ["deal_id", "est_value", "due_on", "every_months"] },
   referrals: { nullable: ["company_id", "referred_name", "deal_id", "thanked_at", "reward"] },
-  // The app's own
+  // The team
+  reps: { nullable: ["tint", "hours_from", "hours_to", "landing"] },
+  targets: { nullable: [] },
+  one_to_ones: { nullable: ["next_at"] },
+  one_to_one_sessions: { nullable: ["notes"] },
+  coaching_plans: { nullable: ["review_on", "runs_to"] },
+  coaching_areas: { nullable: [] },
+  actions: { nullable: ["due_on", "done_at", "one_to_one_id", "meeting_id", "coaching_area_id"] },
+  meetings: { nullable: [] },
+  meeting_slots: { nullable: ["who_id"] },
+  meeting_decisions: { nullable: ["who_id"] },
+  threads: { nullable: ["title"] },
+  thread_members: { nullable: ["read_at"] },
+  messages: { nullable: [] },
+  starters: { nullable: ["first_year_target", "user_id"] },
+  starter_steps: { nullable: ["owner_id"] },
+  covers: { nullable: ["ends_on", "note"] },
+  cover_notes: { nullable: [] },
+  // Inbox
+  enquiries: {
+    nullable: [
+      "person",
+      "email",
+      "phone",
+      "text",
+      "est_value",
+      "town",
+      "wants",
+      "warmth",
+      "show_id",
+      "company_id",
+      "claimed_by_id",
+      "passed_to_id",
+      "rung_at",
+      "deal_id",
+    ],
+  },
+  shows: { nullable: ["ends_on"] },
+  // Showroom and samples
+  showroom_spaces: { nullable: [] },
+  showroom_bookings: {
+    nullable: [
+      "company_id",
+      "contact_id",
+      "visitor_name",
+      "rep_id",
+      "cancel_reason",
+      "outcome",
+      "next_step",
+      "next_step_by",
+      "deal_id",
+    ],
+  },
+  samples: { nullable: ["kind", "item"] },
+  sample_loans: { nullable: ["company_id", "contact_id", "returned_on"] },
+  sample_chases: { nullable: [] },
+  display_pieces: { nullable: ["promised_booking_id", "lent_company_id", "lent_until", "item"] },
+  // The app's own. Every column of the outbox but its kind and status may be
+  // empty: Adminium fills them as it sends, and not every email is about a quote.
+  outbox: {
+    nullable: [
+      "created_at",
+      "to",
+      "language",
+      "contact_id",
+      "quote_id",
+      "deal_id",
+      "due_at",
+      "sent_at",
+      "error",
+      "skip_reason",
+      "repeat_key",
+    ],
+  },
   settings: {
     nullable: ["depot_name", "depot_address", "depot_town", "depot_lat", "depot_lng", "aftercare_owner_id"],
   },
@@ -178,6 +251,15 @@ function indexed(table: Table, ref: string): boolean {
 /** Whether a declared index starts with this column. */
 function firstInAnIndex(table: Table, ref: string): boolean {
   return (table.indexes ?? []).some((set) => set[0] === ref);
+}
+
+/**
+ * Whether a list limited by this staff column reads an index: first in a
+ * declared set, or a unique column, which the database indexes itself (and
+ * which the validator refuses a declared set for: "indexed already").
+ */
+function staffIndexed(table: Table, ref: string): boolean {
+  return firstInAnIndex(table, ref) || table.columns.find((c) => c.ref === ref)?.unique === true;
 }
 
 /** The languages a label lacks, or holds only blank text in. */
@@ -270,11 +352,11 @@ describe("a list limited to a person's rows reads an index", () => {
     expect(plain).toEqual([]);
   });
 
-  it("puts every staff column a belongs names first in a declared index", () => {
+  it("puts every staff column a belongs names first in a declared index, or keeps it unique", () => {
     const bare = staffColumns
       .filter(({ table, column }) => {
         const found = byRef.get(table);
-        return found === undefined || !firstInAnIndex(found, column);
+        return found === undefined || !staffIndexed(found, column);
       })
       .map(({ table, column, why }) => `${table}.${column} (${why})`);
     expect(bare).toEqual([]);

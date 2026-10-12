@@ -11,7 +11,7 @@
   "license": "AGPL-3.0-only",
   "description": {
     "key": "mft.crm.desc",
-    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling, with quotes, and for accounts, and no screens yet; the team’s week and the rest follow."
+    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling, with quotes, for accounts, the team, the inbox and the showroom, and no screens yet; jobs on site and the rest follow."
   },
   "categories": [
     "crm"
@@ -140,6 +140,16 @@
               "table": "deal_members",
               "link": "deal_id",
               "user": "user_id"
+            }
+          },
+          {
+            "through": {
+              "table": "covers",
+              "link": "owner_id",
+              "on": "owner_id",
+              "user": "cover_id",
+              "from": "starts_on",
+              "to": "ends_on"
             }
           }
         ],
@@ -5045,6 +5055,4208 @@
               "ar-EG": "المكافأة",
               "zh-CN": "奖励",
               "zh-TW": "獎勵"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "reps",
+        "label": {
+          "en-US": "Rep profile",
+          "de-DE": "Vertriebsprofil",
+          "fr-FR": "Profil commercial",
+          "da-DK": "Sælgerprofil",
+          "cs-CZ": "Profil obchodníka",
+          "ar-EG": "ملف مندوب",
+          "zh-CN": "销售档案",
+          "zh-TW": "業務檔案"
+        },
+        "labelPlural": {
+          "en-US": "Rep profiles",
+          "de-DE": "Vertriebsprofile",
+          "fr-FR": "Profils commerciaux",
+          "da-DK": "Sælgerprofiler",
+          "cs-CZ": "Profily obchodníků",
+          "ar-EG": "ملفات المندوبين",
+          "zh-CN": "销售档案",
+          "zh-TW": "業務檔案"
+        },
+        "belongs": [
+          {
+            "column": "user_id"
+          }
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "user_id",
+            "type": "text",
+            "maxLength": 36,
+            "unique": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Person",
+              "de-DE": "Person",
+              "fr-FR": "Personne",
+              "da-DK": "Person",
+              "cs-CZ": "Osoba",
+              "ar-EG": "الشخص",
+              "zh-CN": "人员",
+              "zh-TW": "人員"
+            }
+          },
+          {
+            "ref": "tint",
+            "type": "text",
+            "maxLength": 20,
+            "nullable": true,
+            "label": {
+              "en-US": "Colour",
+              "de-DE": "Farbe",
+              "fr-FR": "Couleur",
+              "da-DK": "Farve",
+              "cs-CZ": "Barva",
+              "ar-EG": "اللون",
+              "zh-CN": "颜色",
+              "zh-TW": "顏色"
+            }
+          },
+          {
+            "ref": "hours_from",
+            "type": "text",
+            "maxLength": 5,
+            "nullable": true,
+            "label": {
+              "en-US": "Works from",
+              "de-DE": "Arbeitet ab",
+              "fr-FR": "Travaille à partir de",
+              "da-DK": "Arbejder fra",
+              "cs-CZ": "Pracuje od",
+              "ar-EG": "يعمل من",
+              "zh-CN": "上班时间",
+              "zh-TW": "上班時間"
+            }
+          },
+          {
+            "ref": "hours_to",
+            "type": "text",
+            "maxLength": 5,
+            "nullable": true,
+            "label": {
+              "en-US": "Works until",
+              "de-DE": "Arbeitet bis",
+              "fr-FR": "Travaille jusqu’à",
+              "da-DK": "Arbejder til",
+              "cs-CZ": "Pracuje do",
+              "ar-EG": "يعمل حتى",
+              "zh-CN": "下班时间",
+              "zh-TW": "下班時間"
+            }
+          },
+          {
+            "ref": "landing",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "label": {
+              "en-US": "Opening screen",
+              "de-DE": "Startseite",
+              "fr-FR": "Écran d’accueil",
+              "da-DK": "Startskærm",
+              "cs-CZ": "Úvodní obrazovka",
+              "ar-EG": "شاشة البداية",
+              "zh-CN": "起始页面",
+              "zh-TW": "起始頁面"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "targets",
+        "label": {
+          "en-US": "Target",
+          "de-DE": "Ziel",
+          "fr-FR": "Objectif",
+          "da-DK": "Mål",
+          "cs-CZ": "Cíl",
+          "ar-EG": "هدف",
+          "zh-CN": "销售目标",
+          "zh-TW": "業績目標"
+        },
+        "labelPlural": {
+          "en-US": "Targets",
+          "de-DE": "Ziele",
+          "fr-FR": "Objectifs",
+          "da-DK": "Mål",
+          "cs-CZ": "Cíle",
+          "ar-EG": "الأهداف",
+          "zh-CN": "销售目标",
+          "zh-TW": "業績目標"
+        },
+        "belongs": [
+          {
+            "column": "rep_id",
+            "set": "team"
+          }
+        ],
+        "indexes": [
+          [
+            "rep_id",
+            "year"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "rep_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep",
+              "de-DE": "Vertriebsmitarbeiter",
+              "fr-FR": "Commercial",
+              "da-DK": "Sælger",
+              "cs-CZ": "Obchodník",
+              "ar-EG": "مندوب المبيعات",
+              "zh-CN": "销售",
+              "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "year",
+            "type": "int",
+            "label": {
+              "en-US": "Year",
+              "de-DE": "Jahr",
+              "fr-FR": "Année",
+              "da-DK": "År",
+              "cs-CZ": "Rok",
+              "ar-EG": "السنة",
+              "zh-CN": "年份",
+              "zh-TW": "年度"
+            }
+          },
+          {
+            "ref": "amount",
+            "type": "decimal",
+            "scale": "currency",
+            "label": {
+              "en-US": "Amount",
+              "de-DE": "Betrag",
+              "fr-FR": "Montant",
+              "da-DK": "Beløb",
+              "cs-CZ": "Částka",
+              "ar-EG": "المبلغ",
+              "zh-CN": "金额",
+              "zh-TW": "金額"
+            }
+          },
+          {
+            "ref": "set_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "columns": [
+                    "amount"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Set by",
+              "de-DE": "Festgelegt von",
+              "fr-FR": "Fixé par",
+              "da-DK": "Fastsat af",
+              "cs-CZ": "Nastavil(a)",
+              "ar-EG": "حدّده",
+              "zh-CN": "设定人",
+              "zh-TW": "設定人"
+            }
+          },
+          {
+            "ref": "set_at",
+            "type": "timestamptz",
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "columns": [
+                    "amount"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Set at",
+              "de-DE": "Festgelegt am",
+              "fr-FR": "Fixé le",
+              "da-DK": "Fastsat den",
+              "cs-CZ": "Nastaveno dne",
+              "ar-EG": "وقت التحديد",
+              "zh-CN": "设定时间",
+              "zh-TW": "設定時間"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "one_to_ones",
+        "label": {
+          "en-US": "One-to-one",
+          "de-DE": "Einzelgespräch",
+          "fr-FR": "Entretien individuel",
+          "da-DK": "En-til-en-samtale",
+          "cs-CZ": "Schůzka jeden na jednoho",
+          "ar-EG": "لقاء فردي",
+          "zh-CN": "一对一面谈",
+          "zh-TW": "一對一面談"
+        },
+        "labelPlural": {
+          "en-US": "One-to-ones",
+          "de-DE": "Einzelgespräche",
+          "fr-FR": "Entretiens individuels",
+          "da-DK": "En-til-en-samtaler",
+          "cs-CZ": "Schůzky jeden na jednoho",
+          "ar-EG": "اللقاءات الفردية",
+          "zh-CN": "一对一面谈",
+          "zh-TW": "一對一面談"
+        },
+        "private": true,
+        "belongs": [
+          {
+            "column": "manager_id"
+          },
+          {
+            "column": "rep_id",
+            "set": "team"
+          }
+        ],
+        "indexes": [
+          [
+            "manager_id"
+          ],
+          [
+            "rep_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "manager_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Manager",
+              "de-DE": "Führungskraft",
+              "fr-FR": "Manager",
+              "da-DK": "Leder",
+              "cs-CZ": "Vedoucí",
+              "ar-EG": "المدير",
+              "zh-CN": "经理",
+              "zh-TW": "主管"
+            }
+          },
+          {
+            "ref": "rep_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep",
+              "de-DE": "Vertriebsmitarbeiter",
+              "fr-FR": "Commercial",
+              "da-DK": "Sælger",
+              "cs-CZ": "Obchodník",
+              "ar-EG": "مندوب المبيعات",
+              "zh-CN": "销售",
+              "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "next_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Next one-to-one",
+              "de-DE": "Nächstes Einzelgespräch",
+              "fr-FR": "Prochain entretien",
+              "da-DK": "Næste samtale",
+              "cs-CZ": "Příští schůzka",
+              "ar-EG": "اللقاء القادم",
+              "zh-CN": "下次面谈时间",
+              "zh-TW": "下次面談時間"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "one_to_one_sessions",
+        "label": {
+          "en-US": "One-to-one session",
+          "de-DE": "Einzelgespräch-Termin",
+          "fr-FR": "Séance d’entretien individuel",
+          "da-DK": "En-til-en-møde",
+          "cs-CZ": "Sezení jeden na jednoho",
+          "ar-EG": "جلسة لقاء فردي",
+          "zh-CN": "一对一面谈记录",
+          "zh-TW": "一對一面談紀錄"
+        },
+        "labelPlural": {
+          "en-US": "One-to-one sessions",
+          "de-DE": "Einzelgespräch-Termine",
+          "fr-FR": "Séances d’entretien individuel",
+          "da-DK": "En-til-en-møder",
+          "cs-CZ": "Sezení jeden na jednoho",
+          "ar-EG": "جلسات اللقاءات الفردية",
+          "zh-CN": "一对一面谈记录",
+          "zh-TW": "一對一面談紀錄"
+        },
+        "private": true,
+        "belongs": [
+          {
+            "column": "manager_id"
+          },
+          {
+            "column": "rep_id",
+            "set": "team"
+          }
+        ],
+        "indexes": [
+          [
+            "manager_id"
+          ],
+          [
+            "rep_id"
+          ],
+          [
+            "one_to_one_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "one_to_one_id",
+            "type": "fk",
+            "references": "one_to_ones",
+            "label": {
+              "en-US": "One-to-one",
+              "de-DE": "Einzelgespräch",
+              "fr-FR": "Entretien individuel",
+              "da-DK": "En-til-en-samtale",
+              "cs-CZ": "Schůzka jeden na jednoho",
+              "ar-EG": "اللقاء الفردي",
+              "zh-CN": "一对一面谈",
+              "zh-TW": "一對一面談"
+            }
+          },
+          {
+            "ref": "manager_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Manager",
+              "de-DE": "Führungskraft",
+              "fr-FR": "Manager",
+              "da-DK": "Leder",
+              "cs-CZ": "Vedoucí",
+              "ar-EG": "المدير",
+              "zh-CN": "经理",
+              "zh-TW": "主管"
+            }
+          },
+          {
+            "ref": "rep_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep",
+              "de-DE": "Vertriebsmitarbeiter",
+              "fr-FR": "Commercial",
+              "da-DK": "Sælger",
+              "cs-CZ": "Obchodník",
+              "ar-EG": "مندوب المبيعات",
+              "zh-CN": "销售",
+              "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "held_on",
+            "type": "date",
+            "label": {
+              "en-US": "Held on",
+              "de-DE": "Geführt am",
+              "fr-FR": "Tenu le",
+              "da-DK": "Holdt den",
+              "cs-CZ": "Konáno dne",
+              "ar-EG": "تاريخ الانعقاد",
+              "zh-CN": "面谈日期",
+              "zh-TW": "面談日期"
+            }
+          },
+          {
+            "ref": "notes",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 4000
+              }
+            },
+            "label": {
+              "en-US": "Notes",
+              "de-DE": "Notizen",
+              "fr-FR": "Notes",
+              "da-DK": "Noter",
+              "cs-CZ": "Poznámky",
+              "ar-EG": "ملاحظات",
+              "zh-CN": "备注",
+              "zh-TW": "備註"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "coaching_plans",
+        "label": {
+          "en-US": "Coaching plan",
+          "de-DE": "Coaching-Plan",
+          "fr-FR": "Plan de coaching",
+          "da-DK": "Coachingplan",
+          "cs-CZ": "Plán koučinku",
+          "ar-EG": "خطة تدريب",
+          "zh-CN": "辅导计划",
+          "zh-TW": "輔導計畫"
+        },
+        "labelPlural": {
+          "en-US": "Coaching plans",
+          "de-DE": "Coaching-Pläne",
+          "fr-FR": "Plans de coaching",
+          "da-DK": "Coachingplaner",
+          "cs-CZ": "Plány koučinku",
+          "ar-EG": "خطط التدريب",
+          "zh-CN": "辅导计划",
+          "zh-TW": "輔導計畫"
+        },
+        "private": true,
+        "belongs": [
+          {
+            "column": "manager_id"
+          },
+          {
+            "column": "rep_id",
+            "set": "team"
+          }
+        ],
+        "indexes": [
+          [
+            "manager_id"
+          ],
+          [
+            "rep_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "rep_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep",
+              "de-DE": "Vertriebsmitarbeiter",
+              "fr-FR": "Commercial",
+              "da-DK": "Sælger",
+              "cs-CZ": "Obchodník",
+              "ar-EG": "مندوب المبيعات",
+              "zh-CN": "销售",
+              "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "manager_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Manager",
+              "de-DE": "Führungskraft",
+              "fr-FR": "Manager",
+              "da-DK": "Leder",
+              "cs-CZ": "Vedoucí",
+              "ar-EG": "المدير",
+              "zh-CN": "经理",
+              "zh-TW": "主管"
+            }
+          },
+          {
+            "ref": "review_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Review on",
+              "de-DE": "Überprüfung am",
+              "fr-FR": "Révision le",
+              "da-DK": "Gennemgang den",
+              "cs-CZ": "Revize dne",
+              "ar-EG": "تاريخ المراجعة",
+              "zh-CN": "复盘日期",
+              "zh-TW": "檢視日期"
+            }
+          },
+          {
+            "ref": "runs_to",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Runs to",
+              "de-DE": "Läuft bis",
+              "fr-FR": "Jusqu’au",
+              "da-DK": "Løber til",
+              "cs-CZ": "Trvá do",
+              "ar-EG": "يستمر حتى",
+              "zh-CN": "截止日期",
+              "zh-TW": "截止日期"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "coaching_areas",
+        "label": {
+          "en-US": "Coaching area",
+          "de-DE": "Coaching-Schwerpunkt",
+          "fr-FR": "Axe de coaching",
+          "da-DK": "Coachingområde",
+          "cs-CZ": "Oblast koučinku",
+          "ar-EG": "مجال تدريب",
+          "zh-CN": "辅导重点",
+          "zh-TW": "輔導重點"
+        },
+        "labelPlural": {
+          "en-US": "Coaching areas",
+          "de-DE": "Coaching-Schwerpunkte",
+          "fr-FR": "Axes de coaching",
+          "da-DK": "Coachingområder",
+          "cs-CZ": "Oblasti koučinku",
+          "ar-EG": "مجالات التدريب",
+          "zh-CN": "辅导重点",
+          "zh-TW": "輔導重點"
+        },
+        "keyField": "title",
+        "private": true,
+        "belongs": [
+          {
+            "column": "manager_id"
+          },
+          {
+            "column": "rep_id",
+            "set": "team"
+          }
+        ],
+        "indexes": [
+          [
+            "manager_id"
+          ],
+          [
+            "rep_id"
+          ],
+          [
+            "plan_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "plan_id",
+            "type": "fk",
+            "references": "coaching_plans",
+            "label": {
+              "en-US": "Coaching plan",
+              "de-DE": "Coaching-Plan",
+              "fr-FR": "Plan de coaching",
+              "da-DK": "Coachingplan",
+              "cs-CZ": "Plán koučinku",
+              "ar-EG": "خطة التدريب",
+              "zh-CN": "辅导计划",
+              "zh-TW": "輔導計畫"
+            }
+          },
+          {
+            "ref": "rep_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep",
+              "de-DE": "Vertriebsmitarbeiter",
+              "fr-FR": "Commercial",
+              "da-DK": "Sælger",
+              "cs-CZ": "Obchodník",
+              "ar-EG": "مندوب المبيعات",
+              "zh-CN": "销售",
+              "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "manager_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Manager",
+              "de-DE": "Führungskraft",
+              "fr-FR": "Manager",
+              "da-DK": "Leder",
+              "cs-CZ": "Vedoucí",
+              "ar-EG": "المدير",
+              "zh-CN": "经理",
+              "zh-TW": "主管"
+            }
+          },
+          {
+            "ref": "title",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Title",
+              "de-DE": "Titel",
+              "fr-FR": "Titre",
+              "da-DK": "Titel",
+              "cs-CZ": "Název",
+              "ar-EG": "العنوان",
+              "zh-CN": "标题",
+              "zh-TW": "標題"
+            }
+          },
+          {
+            "ref": "position",
+            "type": "int",
+            "label": {
+              "en-US": "Position",
+              "de-DE": "Position",
+              "fr-FR": "Position",
+              "da-DK": "Placering",
+              "cs-CZ": "Pořadí",
+              "ar-EG": "الترتيب",
+              "zh-CN": "排序",
+              "zh-TW": "排序"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "actions",
+        "label": {
+          "en-US": "Action",
+          "de-DE": "Aufgabe",
+          "fr-FR": "Action",
+          "da-DK": "Handling",
+          "cs-CZ": "Úkol",
+          "ar-EG": "إجراء",
+          "zh-CN": "行动项",
+          "zh-TW": "行動項目"
+        },
+        "labelPlural": {
+          "en-US": "Actions",
+          "de-DE": "Aufgaben",
+          "fr-FR": "Actions",
+          "da-DK": "Handlinger",
+          "cs-CZ": "Úkoly",
+          "ar-EG": "الإجراءات",
+          "zh-CN": "行动项",
+          "zh-TW": "行動項目"
+        },
+        "keyField": "text",
+        "belongs": [
+          {
+            "column": "owner_id",
+            "set": "team"
+          },
+          {
+            "column": "set_by_id"
+          }
+        ],
+        "indexes": [
+          [
+            "owner_id",
+            "done"
+          ],
+          [
+            "set_by_id"
+          ],
+          [
+            "one_to_one_id"
+          ],
+          [
+            "meeting_id"
+          ],
+          [
+            "coaching_area_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "maxLength": 400,
+            "label": {
+              "en-US": "Text",
+              "de-DE": "Text",
+              "fr-FR": "Texte",
+              "da-DK": "Tekst",
+              "cs-CZ": "Text",
+              "ar-EG": "النص",
+              "zh-CN": "内容",
+              "zh-TW": "內容"
+            }
+          },
+          {
+            "ref": "owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Owner",
+              "de-DE": "Zuständig",
+              "fr-FR": "Responsable",
+              "da-DK": "Ansvarlig",
+              "cs-CZ": "Vlastník",
+              "ar-EG": "المسؤول",
+              "zh-CN": "负责人",
+              "zh-TW": "負責人"
+            }
+          },
+          {
+            "ref": "set_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Set by",
+              "de-DE": "Festgelegt von",
+              "fr-FR": "Fixé par",
+              "da-DK": "Fastsat af",
+              "cs-CZ": "Nastavil(a)",
+              "ar-EG": "حدّده",
+              "zh-CN": "设定人",
+              "zh-TW": "設定人"
+            }
+          },
+          {
+            "ref": "due_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Due on",
+              "de-DE": "Fällig am",
+              "fr-FR": "Échéance",
+              "da-DK": "Forfalder den",
+              "cs-CZ": "Termín",
+              "ar-EG": "تاريخ الاستحقاق",
+              "zh-CN": "到期日",
+              "zh-TW": "到期日"
+            }
+          },
+          {
+            "ref": "done",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Done",
+              "de-DE": "Erledigt",
+              "fr-FR": "Fait",
+              "da-DK": "Udført",
+              "cs-CZ": "Hotovo",
+              "ar-EG": "تم",
+              "zh-CN": "已完成",
+              "zh-TW": "已完成"
+            }
+          },
+          {
+            "ref": "done_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "done",
+                  "values": [
+                    true
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Done at",
+              "de-DE": "Erledigt am",
+              "fr-FR": "Fait le",
+              "da-DK": "Udført den",
+              "cs-CZ": "Dokončeno dne",
+              "ar-EG": "وقت الإنجاز",
+              "zh-CN": "完成时间",
+              "zh-TW": "完成時間"
+            }
+          },
+          {
+            "ref": "source",
+            "type": "enum",
+            "enum": [
+              "one-to-one",
+              "meeting",
+              "coaching"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "one-to-one": {
+                    "en-US": "One-to-one",
+                    "de-DE": "Einzelgespräch",
+                    "fr-FR": "Entretien individuel",
+                    "da-DK": "En-til-en-samtale",
+                    "cs-CZ": "Schůzka jeden na jednoho",
+                    "ar-EG": "اللقاء الفردي",
+                    "zh-CN": "一对一面谈",
+                    "zh-TW": "一對一面談"
+                  },
+                  "meeting": {
+                    "en-US": "Team meeting",
+                    "de-DE": "Teammeeting",
+                    "fr-FR": "Réunion d’équipe",
+                    "da-DK": "Teammøde",
+                    "cs-CZ": "Týmová porada",
+                    "ar-EG": "اجتماع الفريق",
+                    "zh-CN": "团队会议",
+                    "zh-TW": "團隊會議"
+                  },
+                  "coaching": {
+                    "en-US": "Coaching",
+                    "de-DE": "Coaching",
+                    "fr-FR": "Coaching",
+                    "da-DK": "Coaching",
+                    "cs-CZ": "Koučink",
+                    "ar-EG": "التدريب",
+                    "zh-CN": "辅导",
+                    "zh-TW": "輔導"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Source",
+              "de-DE": "Herkunft",
+              "fr-FR": "Origine",
+              "da-DK": "Kilde",
+              "cs-CZ": "Zdroj",
+              "ar-EG": "المصدر",
+              "zh-CN": "来源",
+              "zh-TW": "來源"
+            }
+          },
+          {
+            "ref": "one_to_one_id",
+            "type": "fk",
+            "references": "one_to_ones",
+            "nullable": true,
+            "label": {
+              "en-US": "One-to-one",
+              "de-DE": "Einzelgespräch",
+              "fr-FR": "Entretien individuel",
+              "da-DK": "En-til-en-samtale",
+              "cs-CZ": "Schůzka jeden na jednoho",
+              "ar-EG": "اللقاء الفردي",
+              "zh-CN": "一对一面谈",
+              "zh-TW": "一對一面談"
+            }
+          },
+          {
+            "ref": "meeting_id",
+            "type": "fk",
+            "references": "meetings",
+            "nullable": true,
+            "label": {
+              "en-US": "Team meeting",
+              "de-DE": "Teammeeting",
+              "fr-FR": "Réunion d’équipe",
+              "da-DK": "Teammøde",
+              "cs-CZ": "Týmová porada",
+              "ar-EG": "اجتماع الفريق",
+              "zh-CN": "团队会议",
+              "zh-TW": "團隊會議"
+            }
+          },
+          {
+            "ref": "coaching_area_id",
+            "type": "fk",
+            "references": "coaching_areas",
+            "nullable": true,
+            "label": {
+              "en-US": "Coaching area",
+              "de-DE": "Coaching-Schwerpunkt",
+              "fr-FR": "Axe de coaching",
+              "da-DK": "Coachingområde",
+              "cs-CZ": "Oblast koučinku",
+              "ar-EG": "مجال التدريب",
+              "zh-CN": "辅导重点",
+              "zh-TW": "輔導重點"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "meetings",
+        "label": {
+          "en-US": "Team meeting",
+          "de-DE": "Teammeeting",
+          "fr-FR": "Réunion d’équipe",
+          "da-DK": "Teammøde",
+          "cs-CZ": "Týmová porada",
+          "ar-EG": "اجتماع فريق",
+          "zh-CN": "团队会议",
+          "zh-TW": "團隊會議"
+        },
+        "labelPlural": {
+          "en-US": "Team meetings",
+          "de-DE": "Teammeetings",
+          "fr-FR": "Réunions d’équipe",
+          "da-DK": "Teammøder",
+          "cs-CZ": "Týmové porady",
+          "ar-EG": "اجتماعات الفريق",
+          "zh-CN": "团队会议",
+          "zh-TW": "團隊會議"
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "at",
+            "type": "timestamptz",
+            "label": {
+              "en-US": "When",
+              "de-DE": "Zeitpunkt",
+              "fr-FR": "Date et heure",
+              "da-DK": "Tidspunkt",
+              "cs-CZ": "Kdy",
+              "ar-EG": "الوقت",
+              "zh-CN": "时间",
+              "zh-TW": "時間"
+            }
+          },
+          {
+            "ref": "minutes",
+            "type": "int",
+            "label": {
+              "en-US": "Minutes",
+              "de-DE": "Minuten",
+              "fr-FR": "Minutes",
+              "da-DK": "Minutter",
+              "cs-CZ": "Minuty",
+              "ar-EG": "الدقائق",
+              "zh-CN": "时长（分钟）",
+              "zh-TW": "時長（分鐘）"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "meeting_slots",
+        "label": {
+          "en-US": "Agenda item",
+          "de-DE": "Tagesordnungspunkt",
+          "fr-FR": "Point à l’ordre du jour",
+          "da-DK": "Dagsordenspunkt",
+          "cs-CZ": "Bod programu",
+          "ar-EG": "بند جدول الأعمال",
+          "zh-CN": "议程项",
+          "zh-TW": "議程項目"
+        },
+        "labelPlural": {
+          "en-US": "Agenda items",
+          "de-DE": "Tagesordnungspunkte",
+          "fr-FR": "Points à l’ordre du jour",
+          "da-DK": "Dagsordenspunkter",
+          "cs-CZ": "Body programu",
+          "ar-EG": "بنود جدول الأعمال",
+          "zh-CN": "议程项",
+          "zh-TW": "議程項目"
+        },
+        "keyField": "label",
+        "indexes": [
+          [
+            "meeting_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "meeting_id",
+            "type": "fk",
+            "references": "meetings",
+            "label": {
+              "en-US": "Team meeting",
+              "de-DE": "Teammeeting",
+              "fr-FR": "Réunion d’équipe",
+              "da-DK": "Teammøde",
+              "cs-CZ": "Týmová porada",
+              "ar-EG": "اجتماع الفريق",
+              "zh-CN": "团队会议",
+              "zh-TW": "團隊會議"
+            }
+          },
+          {
+            "ref": "label",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Label",
+              "de-DE": "Bezeichnung",
+              "fr-FR": "Libellé",
+              "da-DK": "Betegnelse",
+              "cs-CZ": "Název",
+              "ar-EG": "التسمية",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "who_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Who",
+              "de-DE": "Wer",
+              "fr-FR": "Qui",
+              "da-DK": "Hvem",
+              "cs-CZ": "Kdo",
+              "ar-EG": "مَن",
+              "zh-CN": "负责人员",
+              "zh-TW": "負責人員"
+            }
+          },
+          {
+            "ref": "minutes",
+            "type": "int",
+            "label": {
+              "en-US": "Minutes",
+              "de-DE": "Minuten",
+              "fr-FR": "Minutes",
+              "da-DK": "Minutter",
+              "cs-CZ": "Minuty",
+              "ar-EG": "الدقائق",
+              "zh-CN": "时长（分钟）",
+              "zh-TW": "時長（分鐘）"
+            }
+          },
+          {
+            "ref": "position",
+            "type": "int",
+            "label": {
+              "en-US": "Position",
+              "de-DE": "Position",
+              "fr-FR": "Position",
+              "da-DK": "Placering",
+              "cs-CZ": "Pořadí",
+              "ar-EG": "الترتيب",
+              "zh-CN": "排序",
+              "zh-TW": "排序"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "meeting_decisions",
+        "label": {
+          "en-US": "Decision",
+          "de-DE": "Beschluss",
+          "fr-FR": "Décision",
+          "da-DK": "Beslutning",
+          "cs-CZ": "Rozhodnutí",
+          "ar-EG": "قرار",
+          "zh-CN": "会议决定",
+          "zh-TW": "會議決議"
+        },
+        "labelPlural": {
+          "en-US": "Decisions",
+          "de-DE": "Beschlüsse",
+          "fr-FR": "Décisions",
+          "da-DK": "Beslutninger",
+          "cs-CZ": "Rozhodnutí",
+          "ar-EG": "القرارات",
+          "zh-CN": "会议决定",
+          "zh-TW": "會議決議"
+        },
+        "keyField": "text",
+        "indexes": [
+          [
+            "meeting_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "done",
+              "carried"
+            ]
+          }
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "meeting_id",
+            "type": "fk",
+            "references": "meetings",
+            "label": {
+              "en-US": "Team meeting",
+              "de-DE": "Teammeeting",
+              "fr-FR": "Réunion d’équipe",
+              "da-DK": "Teammøde",
+              "cs-CZ": "Týmová porada",
+              "ar-EG": "اجتماع الفريق",
+              "zh-CN": "团队会议",
+              "zh-TW": "團隊會議"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "maxLength": 400,
+            "label": {
+              "en-US": "Text",
+              "de-DE": "Text",
+              "fr-FR": "Texte",
+              "da-DK": "Tekst",
+              "cs-CZ": "Text",
+              "ar-EG": "النص",
+              "zh-CN": "内容",
+              "zh-TW": "內容"
+            }
+          },
+          {
+            "ref": "who_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Who",
+              "de-DE": "Wer",
+              "fr-FR": "Qui",
+              "da-DK": "Hvem",
+              "cs-CZ": "Kdo",
+              "ar-EG": "مَن",
+              "zh-CN": "负责人员",
+              "zh-TW": "負責人員"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "done",
+              "carried"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouverte",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřené",
+                    "ar-EG": "مفتوح",
+                    "zh-CN": "待办",
+                    "zh-TW": "待辦"
+                  },
+                  "done": {
+                    "en-US": "Done",
+                    "de-DE": "Erledigt",
+                    "fr-FR": "Faite",
+                    "da-DK": "Udført",
+                    "cs-CZ": "Hotovo",
+                    "ar-EG": "تم",
+                    "zh-CN": "已完成",
+                    "zh-TW": "已完成"
+                  },
+                  "carried": {
+                    "en-US": "Carried over",
+                    "de-DE": "Vertagt",
+                    "fr-FR": "Reportée",
+                    "da-DK": "Overført",
+                    "cs-CZ": "Přeneseno",
+                    "ar-EG": "مُرحَّل",
+                    "zh-CN": "顺延",
+                    "zh-TW": "順延"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "threads",
+        "label": {
+          "en-US": "Conversation",
+          "de-DE": "Unterhaltung",
+          "fr-FR": "Conversation",
+          "da-DK": "Samtale",
+          "cs-CZ": "Konverzace",
+          "ar-EG": "محادثة",
+          "zh-CN": "会话",
+          "zh-TW": "對話"
+        },
+        "labelPlural": {
+          "en-US": "Conversations",
+          "de-DE": "Unterhaltungen",
+          "fr-FR": "Conversations",
+          "da-DK": "Samtaler",
+          "cs-CZ": "Konverzace",
+          "ar-EG": "المحادثات",
+          "zh-CN": "会话",
+          "zh-TW": "對話"
+        },
+        "belongs": [
+          {
+            "through": {
+              "table": "thread_members",
+              "link": "thread_id",
+              "user": "user_id"
+            }
+          }
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "title",
+            "type": "text",
+            "maxLength": 80,
+            "nullable": true,
+            "label": {
+              "en-US": "Title",
+              "de-DE": "Titel",
+              "fr-FR": "Titre",
+              "da-DK": "Titel",
+              "cs-CZ": "Název",
+              "ar-EG": "العنوان",
+              "zh-CN": "标题",
+              "zh-TW": "標題"
+            }
+          },
+          {
+            "ref": "kind",
+            "type": "enum",
+            "enum": [
+              "direct",
+              "group"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "direct": {
+                    "en-US": "Direct",
+                    "de-DE": "Direkt",
+                    "fr-FR": "Directe",
+                    "da-DK": "Direkte",
+                    "cs-CZ": "Přímá",
+                    "ar-EG": "مباشرة",
+                    "zh-CN": "私聊",
+                    "zh-TW": "私訊"
+                  },
+                  "group": {
+                    "en-US": "Group",
+                    "de-DE": "Gruppe",
+                    "fr-FR": "Groupe",
+                    "da-DK": "Gruppe",
+                    "cs-CZ": "Skupinová",
+                    "ar-EG": "مجموعة",
+                    "zh-CN": "群聊",
+                    "zh-TW": "群組"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Kind",
+              "de-DE": "Art",
+              "fr-FR": "Type",
+              "da-DK": "Type",
+              "cs-CZ": "Druh",
+              "ar-EG": "النوع",
+              "zh-CN": "类型",
+              "zh-TW": "類型"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "thread_members",
+        "label": {
+          "en-US": "Conversation member",
+          "de-DE": "Teilnehmer der Unterhaltung",
+          "fr-FR": "Participant à la conversation",
+          "da-DK": "Samtaledeltager",
+          "cs-CZ": "Účastník konverzace",
+          "ar-EG": "عضو في المحادثة",
+          "zh-CN": "会话成员",
+          "zh-TW": "對話成員"
+        },
+        "labelPlural": {
+          "en-US": "Conversation members",
+          "de-DE": "Teilnehmer der Unterhaltungen",
+          "fr-FR": "Participants aux conversations",
+          "da-DK": "Samtaledeltagere",
+          "cs-CZ": "Účastníci konverzací",
+          "ar-EG": "أعضاء المحادثات",
+          "zh-CN": "会话成员",
+          "zh-TW": "對話成員"
+        },
+        "unique": [
+          [
+            "thread_id",
+            "user_id"
+          ]
+        ],
+        "belongs": [
+          {
+            "column": "user_id"
+          }
+        ],
+        "indexes": [
+          [
+            "user_id"
+          ],
+          [
+            "thread_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "thread_id",
+            "type": "fk",
+            "references": "threads",
+            "label": {
+              "en-US": "Conversation",
+              "de-DE": "Unterhaltung",
+              "fr-FR": "Conversation",
+              "da-DK": "Samtale",
+              "cs-CZ": "Konverzace",
+              "ar-EG": "المحادثة",
+              "zh-CN": "会话",
+              "zh-TW": "對話"
+            }
+          },
+          {
+            "ref": "user_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Person",
+              "de-DE": "Person",
+              "fr-FR": "Personne",
+              "da-DK": "Person",
+              "cs-CZ": "Osoba",
+              "ar-EG": "الشخص",
+              "zh-CN": "人员",
+              "zh-TW": "人員"
+            }
+          },
+          {
+            "ref": "read_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Read up to",
+              "de-DE": "Gelesen bis",
+              "fr-FR": "Lu jusqu’à",
+              "da-DK": "Læst til",
+              "cs-CZ": "Přečteno do",
+              "ar-EG": "مقروء حتى",
+              "zh-CN": "已读至",
+              "zh-TW": "已讀至"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "messages",
+        "label": {
+          "en-US": "Message",
+          "de-DE": "Nachricht",
+          "fr-FR": "Message",
+          "da-DK": "Besked",
+          "cs-CZ": "Zpráva",
+          "ar-EG": "رسالة",
+          "zh-CN": "消息",
+          "zh-TW": "訊息"
+        },
+        "labelPlural": {
+          "en-US": "Messages",
+          "de-DE": "Nachrichten",
+          "fr-FR": "Messages",
+          "da-DK": "Beskeder",
+          "cs-CZ": "Zprávy",
+          "ar-EG": "الرسائل",
+          "zh-CN": "消息",
+          "zh-TW": "訊息"
+        },
+        "belongs": [
+          {
+            "via": "thread_id"
+          }
+        ],
+        "indexes": [
+          [
+            "thread_id"
+          ],
+          [
+            "at"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "thread_id",
+            "type": "fk",
+            "references": "threads",
+            "label": {
+              "en-US": "Conversation",
+              "de-DE": "Unterhaltung",
+              "fr-FR": "Conversation",
+              "da-DK": "Samtale",
+              "cs-CZ": "Konverzace",
+              "ar-EG": "المحادثة",
+              "zh-CN": "会话",
+              "zh-TW": "對話"
+            }
+          },
+          {
+            "ref": "author_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Written by",
+              "de-DE": "Erfasst von",
+              "fr-FR": "Rédigé par",
+              "da-DK": "Skrevet af",
+              "cs-CZ": "Napsal(a)",
+              "ar-EG": "كتبه",
+              "zh-CN": "记录人",
+              "zh-TW": "記錄人"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "rules": {
+              "validation": {
+                "maxLength": 4000
+              }
+            },
+            "label": {
+              "en-US": "Text",
+              "de-DE": "Text",
+              "fr-FR": "Texte",
+              "da-DK": "Tekst",
+              "cs-CZ": "Text",
+              "ar-EG": "النص",
+              "zh-CN": "内容",
+              "zh-TW": "內容"
+            }
+          },
+          {
+            "ref": "at",
+            "type": "timestamptz",
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "When",
+              "de-DE": "Zeitpunkt",
+              "fr-FR": "Date et heure",
+              "da-DK": "Tidspunkt",
+              "cs-CZ": "Kdy",
+              "ar-EG": "الوقت",
+              "zh-CN": "时间",
+              "zh-TW": "時間"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "starters",
+        "label": {
+          "en-US": "New starter",
+          "de-DE": "Neuzugang",
+          "fr-FR": "Nouvelle recrue",
+          "da-DK": "Ny medarbejder",
+          "cs-CZ": "Nováček",
+          "ar-EG": "موظف جديد",
+          "zh-CN": "新员工",
+          "zh-TW": "新進人員"
+        },
+        "labelPlural": {
+          "en-US": "New starters",
+          "de-DE": "Neuzugänge",
+          "fr-FR": "Nouvelles recrues",
+          "da-DK": "Nye medarbejdere",
+          "cs-CZ": "Nováčci",
+          "ar-EG": "الموظفون الجدد",
+          "zh-CN": "新员工",
+          "zh-TW": "新進人員"
+        },
+        "keyField": "name",
+        "belongs": [
+          {
+            "column": "manager_id"
+          }
+        ],
+        "indexes": [
+          [
+            "manager_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "starts_on",
+            "type": "date",
+            "label": {
+              "en-US": "Starts on",
+              "de-DE": "Beginnt am",
+              "fr-FR": "Commence le",
+              "da-DK": "Starter den",
+              "cs-CZ": "Začíná dne",
+              "ar-EG": "تاريخ البدء",
+              "zh-CN": "开始日期",
+              "zh-TW": "開始日期"
+            }
+          },
+          {
+            "ref": "manager_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Manager",
+              "de-DE": "Führungskraft",
+              "fr-FR": "Manager",
+              "da-DK": "Leder",
+              "cs-CZ": "Vedoucí",
+              "ar-EG": "المدير",
+              "zh-CN": "经理",
+              "zh-TW": "主管"
+            }
+          },
+          {
+            "ref": "first_year_target",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "First-year target",
+              "de-DE": "Ziel im ersten Jahr",
+              "fr-FR": "Objectif de première année",
+              "da-DK": "Mål for første år",
+              "cs-CZ": "Cíl na první rok",
+              "ar-EG": "هدف السنة الأولى",
+              "zh-CN": "首年目标",
+              "zh-TW": "首年目標"
+            }
+          },
+          {
+            "ref": "user_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Account",
+              "de-DE": "Benutzerkonto",
+              "fr-FR": "Compte",
+              "da-DK": "Konto",
+              "cs-CZ": "Účet",
+              "ar-EG": "الحساب",
+              "zh-CN": "账号",
+              "zh-TW": "帳號"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "starter_steps",
+        "label": {
+          "en-US": "Onboarding step",
+          "de-DE": "Einarbeitungsschritt",
+          "fr-FR": "Étape d’intégration",
+          "da-DK": "Onboardingtrin",
+          "cs-CZ": "Krok zaškolení",
+          "ar-EG": "خطوة تهيئة",
+          "zh-CN": "入职步骤",
+          "zh-TW": "到職步驟"
+        },
+        "labelPlural": {
+          "en-US": "Onboarding steps",
+          "de-DE": "Einarbeitungsschritte",
+          "fr-FR": "Étapes d’intégration",
+          "da-DK": "Onboardingtrin",
+          "cs-CZ": "Kroky zaškolení",
+          "ar-EG": "خطوات التهيئة",
+          "zh-CN": "入职步骤",
+          "zh-TW": "到職步驟"
+        },
+        "keyField": "text",
+        "indexes": [
+          [
+            "starter_id"
+          ],
+          [
+            "owner_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "starter_id",
+            "type": "fk",
+            "references": "starters",
+            "label": {
+              "en-US": "New starter",
+              "de-DE": "Neuzugang",
+              "fr-FR": "Nouvelle recrue",
+              "da-DK": "Ny medarbejder",
+              "cs-CZ": "Nováček",
+              "ar-EG": "الموظف الجديد",
+              "zh-CN": "新员工",
+              "zh-TW": "新進人員"
+            }
+          },
+          {
+            "ref": "phase",
+            "type": "enum",
+            "enum": [
+              "before",
+              "week",
+              "month"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "before": {
+                    "en-US": "Before the first day",
+                    "de-DE": "Vor dem ersten Tag",
+                    "fr-FR": "Avant le premier jour",
+                    "da-DK": "Før første dag",
+                    "cs-CZ": "Před prvním dnem",
+                    "ar-EG": "قبل اليوم الأول",
+                    "zh-CN": "入职前",
+                    "zh-TW": "到職前"
+                  },
+                  "week": {
+                    "en-US": "First week",
+                    "de-DE": "Erste Woche",
+                    "fr-FR": "Première semaine",
+                    "da-DK": "Første uge",
+                    "cs-CZ": "První týden",
+                    "ar-EG": "الأسبوع الأول",
+                    "zh-CN": "第一周",
+                    "zh-TW": "第一週"
+                  },
+                  "month": {
+                    "en-US": "First month",
+                    "de-DE": "Erster Monat",
+                    "fr-FR": "Premier mois",
+                    "da-DK": "Første måned",
+                    "cs-CZ": "První měsíc",
+                    "ar-EG": "الشهر الأول",
+                    "zh-CN": "第一个月",
+                    "zh-TW": "第一個月"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Phase",
+              "de-DE": "Abschnitt",
+              "fr-FR": "Phase",
+              "da-DK": "Fase",
+              "cs-CZ": "Etapa",
+              "ar-EG": "المرحلة",
+              "zh-CN": "阶段",
+              "zh-TW": "階段"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "maxLength": 300,
+            "label": {
+              "en-US": "Text",
+              "de-DE": "Text",
+              "fr-FR": "Texte",
+              "da-DK": "Tekst",
+              "cs-CZ": "Text",
+              "ar-EG": "النص",
+              "zh-CN": "内容",
+              "zh-TW": "內容"
+            }
+          },
+          {
+            "ref": "owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Owner",
+              "de-DE": "Zuständig",
+              "fr-FR": "Responsable",
+              "da-DK": "Ansvarlig",
+              "cs-CZ": "Vlastník",
+              "ar-EG": "المسؤول",
+              "zh-CN": "负责人",
+              "zh-TW": "負責人"
+            }
+          },
+          {
+            "ref": "for_starter",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "For the starter to do",
+              "de-DE": "Vom Neuzugang zu erledigen",
+              "fr-FR": "À faire par la recrue",
+              "da-DK": "Skal udføres af den nye medarbejder",
+              "cs-CZ": "Úkol pro nováčka",
+              "ar-EG": "يقوم بها الموظف الجديد",
+              "zh-CN": "由新员工完成",
+              "zh-TW": "由新進人員完成"
+            }
+          },
+          {
+            "ref": "done",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Done",
+              "de-DE": "Erledigt",
+              "fr-FR": "Fait",
+              "da-DK": "Udført",
+              "cs-CZ": "Hotovo",
+              "ar-EG": "تم",
+              "zh-CN": "已完成",
+              "zh-TW": "已完成"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "covers",
+        "label": {
+          "en-US": "Cover",
+          "de-DE": "Vertretung",
+          "fr-FR": "Remplacement",
+          "da-DK": "Afløsning",
+          "cs-CZ": "Zástup",
+          "ar-EG": "تغطية",
+          "zh-CN": "代班",
+          "zh-TW": "代理"
+        },
+        "labelPlural": {
+          "en-US": "Covers",
+          "de-DE": "Vertretungen",
+          "fr-FR": "Remplacements",
+          "da-DK": "Afløsninger",
+          "cs-CZ": "Zástupy",
+          "ar-EG": "التغطيات",
+          "zh-CN": "代班",
+          "zh-TW": "代理"
+        },
+        "indexes": [
+          [
+            "owner_id",
+            "starts_on"
+          ],
+          [
+            "cover_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep away",
+              "de-DE": "Abwesender Vertriebsmitarbeiter",
+              "fr-FR": "Commercial absent",
+              "da-DK": "Fraværende sælger",
+              "cs-CZ": "Nepřítomný obchodník",
+              "ar-EG": "المندوب الغائب",
+              "zh-CN": "休假销售",
+              "zh-TW": "休假業務"
+            }
+          },
+          {
+            "ref": "cover_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Covered by",
+              "de-DE": "Vertreten durch",
+              "fr-FR": "Remplacé par",
+              "da-DK": "Dækkes af",
+              "cs-CZ": "Zastupuje",
+              "ar-EG": "يغطّيه",
+              "zh-CN": "代班人",
+              "zh-TW": "代理人"
+            }
+          },
+          {
+            "ref": "starts_on",
+            "type": "date",
+            "label": {
+              "en-US": "From",
+              "de-DE": "Von",
+              "fr-FR": "Du",
+              "da-DK": "Fra",
+              "cs-CZ": "Od",
+              "ar-EG": "من",
+              "zh-CN": "开始日期",
+              "zh-TW": "開始日期"
+            }
+          },
+          {
+            "ref": "ends_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "To",
+              "de-DE": "Bis",
+              "fr-FR": "Au",
+              "da-DK": "Til",
+              "cs-CZ": "Do",
+              "ar-EG": "إلى",
+              "zh-CN": "结束日期",
+              "zh-TW": "結束日期"
+            }
+          },
+          {
+            "ref": "note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Note",
+              "de-DE": "Notiz",
+              "fr-FR": "Note",
+              "da-DK": "Note",
+              "cs-CZ": "Poznámka",
+              "ar-EG": "ملاحظة",
+              "zh-CN": "备注",
+              "zh-TW": "備註"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "cover_notes",
+        "label": {
+          "en-US": "Cover note",
+          "de-DE": "Vertretungsnotiz",
+          "fr-FR": "Note de remplacement",
+          "da-DK": "Afløsningsnote",
+          "cs-CZ": "Poznámka k zástupu",
+          "ar-EG": "ملاحظة تغطية",
+          "zh-CN": "代班备注",
+          "zh-TW": "代理備註"
+        },
+        "labelPlural": {
+          "en-US": "Cover notes",
+          "de-DE": "Vertretungsnotizen",
+          "fr-FR": "Notes de remplacement",
+          "da-DK": "Afløsningsnoter",
+          "cs-CZ": "Poznámky k zástupu",
+          "ar-EG": "ملاحظات التغطية",
+          "zh-CN": "代班备注",
+          "zh-TW": "代理備註"
+        },
+        "belongs": [
+          {
+            "via": "deal_id"
+          }
+        ],
+        "indexes": [
+          [
+            "cover_id"
+          ],
+          [
+            "deal_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "cover_id",
+            "type": "fk",
+            "references": "covers",
+            "label": {
+              "en-US": "Cover",
+              "de-DE": "Vertretung",
+              "fr-FR": "Remplacement",
+              "da-DK": "Afløsning",
+              "cs-CZ": "Zástup",
+              "ar-EG": "التغطية",
+              "zh-CN": "代班",
+              "zh-TW": "代理"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "maxLength": 1000,
+            "label": {
+              "en-US": "Text",
+              "de-DE": "Text",
+              "fr-FR": "Texte",
+              "da-DK": "Tekst",
+              "cs-CZ": "Text",
+              "ar-EG": "النص",
+              "zh-CN": "内容",
+              "zh-TW": "內容"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "enquiries",
+        "label": {
+          "en-US": "Enquiry",
+          "de-DE": "Anfrage",
+          "fr-FR": "Demande",
+          "da-DK": "Henvendelse",
+          "cs-CZ": "Poptávka",
+          "ar-EG": "استفسار",
+          "zh-CN": "询盘",
+          "zh-TW": "詢問"
+        },
+        "labelPlural": {
+          "en-US": "Enquiries",
+          "de-DE": "Anfragen",
+          "fr-FR": "Demandes",
+          "da-DK": "Henvendelser",
+          "cs-CZ": "Poptávky",
+          "ar-EG": "الاستفسارات",
+          "zh-CN": "询盘",
+          "zh-TW": "詢問"
+        },
+        "keyField": "company_name",
+        "belongs": [
+          {
+            "column": "claimed_by_id"
+          },
+          {
+            "column": "passed_to_id",
+            "set": "anyone"
+          }
+        ],
+        "indexes": [
+          [
+            "state",
+            "received_at"
+          ],
+          [
+            "claimed_by_id"
+          ],
+          [
+            "passed_to_id"
+          ],
+          [
+            "show_id"
+          ],
+          [
+            "company_id"
+          ],
+          [
+            "deal_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "claimed",
+              {
+                "to": "passed",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "passed_to_id",
+                      "isNull": false
+                    }
+                  ]
+                }
+              },
+              "dropped"
+            ],
+            "passed": [
+              "claimed",
+              "dropped"
+            ]
+          },
+          "actions": [
+            {
+              "id": "claim",
+              "label": {
+                "en-US": "Claim",
+                "de-DE": "Übernehmen",
+                "fr-FR": "Prendre en charge",
+                "da-DK": "Overtag",
+                "cs-CZ": "Převzít",
+                "ar-EG": "استلم",
+                "zh-CN": "认领",
+                "zh-TW": "認領"
+              },
+              "move": {
+                "to": "claimed"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "pass",
+              "label": {
+                "en-US": "Pass on",
+                "de-DE": "Weitergeben",
+                "fr-FR": "Transmettre",
+                "da-DK": "Giv videre",
+                "cs-CZ": "Předat",
+                "ar-EG": "أحِل",
+                "zh-CN": "转交",
+                "zh-TW": "轉交"
+              },
+              "move": {
+                "to": "passed"
+              },
+              "ask": [
+                "passed_to_id"
+              ],
+              "handOver": true
+            },
+            {
+              "id": "not-for-us",
+              "label": {
+                "en-US": "Not for us",
+                "de-DE": "Nichts für uns",
+                "fr-FR": "Pas pour nous",
+                "da-DK": "Ikke noget for os",
+                "cs-CZ": "Není pro nás",
+                "ar-EG": "ليس لنا",
+                "zh-CN": "不适合",
+                "zh-TW": "不適合"
+              },
+              "move": {
+                "to": "dropped"
+              },
+              "tone": "danger"
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "source",
+            "type": "enum",
+            "enum": [
+              "form",
+              "phone",
+              "show",
+              "chat"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "form": {
+                    "en-US": "Web form",
+                    "de-DE": "Webformular",
+                    "fr-FR": "Formulaire web",
+                    "da-DK": "Webformular",
+                    "cs-CZ": "Webový formulář",
+                    "ar-EG": "نموذج الموقع",
+                    "zh-CN": "网页表单",
+                    "zh-TW": "網頁表單"
+                  },
+                  "phone": {
+                    "en-US": "Phone",
+                    "de-DE": "Telefon",
+                    "fr-FR": "Téléphone",
+                    "da-DK": "Telefon",
+                    "cs-CZ": "Telefon",
+                    "ar-EG": "الهاتف",
+                    "zh-CN": "电话",
+                    "zh-TW": "電話"
+                  },
+                  "show": {
+                    "en-US": "Trade show",
+                    "de-DE": "Messe",
+                    "fr-FR": "Salon",
+                    "da-DK": "Messe",
+                    "cs-CZ": "Veletrh",
+                    "ar-EG": "معرض",
+                    "zh-CN": "展会",
+                    "zh-TW": "展覽"
+                  },
+                  "chat": {
+                    "en-US": "Chat",
+                    "de-DE": "Chat",
+                    "fr-FR": "Chat",
+                    "da-DK": "Chat",
+                    "cs-CZ": "Chat",
+                    "ar-EG": "الدردشة",
+                    "zh-CN": "在线聊天",
+                    "zh-TW": "線上聊天"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Source",
+              "de-DE": "Herkunft",
+              "fr-FR": "Origine",
+              "da-DK": "Kilde",
+              "cs-CZ": "Zdroj",
+              "ar-EG": "المصدر",
+              "zh-CN": "来源",
+              "zh-TW": "來源"
+            }
+          },
+          {
+            "ref": "company_name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Company name",
+              "de-DE": "Firmenname",
+              "fr-FR": "Nom de la société",
+              "da-DK": "Virksomhedsnavn",
+              "cs-CZ": "Název firmy",
+              "ar-EG": "اسم الشركة",
+              "zh-CN": "公司名称",
+              "zh-TW": "公司名稱"
+            }
+          },
+          {
+            "ref": "person",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Contact name",
+              "de-DE": "Name der Kontaktperson",
+              "fr-FR": "Nom du contact",
+              "da-DK": "Kontaktpersonens navn",
+              "cs-CZ": "Jméno kontaktu",
+              "ar-EG": "اسم جهة الاتصال",
+              "zh-CN": "联系人姓名",
+              "zh-TW": "聯絡人姓名"
+            }
+          },
+          {
+            "ref": "email",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "rules": {
+              "personal": true
+            },
+            "label": {
+              "en-US": "Email",
+              "de-DE": "E-Mail",
+              "fr-FR": "E-mail",
+              "da-DK": "E-mail",
+              "cs-CZ": "E-mail",
+              "ar-EG": "البريد الإلكتروني",
+              "zh-CN": "邮箱",
+              "zh-TW": "電子郵件"
+            }
+          },
+          {
+            "ref": "phone",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "personal": true
+            },
+            "label": {
+              "en-US": "Phone",
+              "de-DE": "Telefon",
+              "fr-FR": "Téléphone",
+              "da-DK": "Telefon",
+              "cs-CZ": "Telefon",
+              "ar-EG": "الهاتف",
+              "zh-CN": "电话",
+              "zh-TW": "電話"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 2000
+              }
+            },
+            "label": {
+              "en-US": "Message",
+              "de-DE": "Nachricht",
+              "fr-FR": "Message",
+              "da-DK": "Besked",
+              "cs-CZ": "Zpráva",
+              "ar-EG": "الرسالة",
+              "zh-CN": "留言内容",
+              "zh-TW": "留言內容"
+            }
+          },
+          {
+            "ref": "est_value",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Estimated value",
+              "de-DE": "Geschätzter Wert",
+              "fr-FR": "Valeur estimée",
+              "da-DK": "Anslået værdi",
+              "cs-CZ": "Odhadovaná hodnota",
+              "ar-EG": "القيمة التقديرية",
+              "zh-CN": "预估金额",
+              "zh-TW": "預估金額"
+            }
+          },
+          {
+            "ref": "town",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Town",
+              "de-DE": "Ort",
+              "fr-FR": "Ville",
+              "da-DK": "By",
+              "cs-CZ": "Město",
+              "ar-EG": "المدينة",
+              "zh-CN": "城市",
+              "zh-TW": "城市"
+            }
+          },
+          {
+            "ref": "wants",
+            "type": "text",
+            "maxLength": 300,
+            "nullable": true,
+            "label": {
+              "en-US": "What they want",
+              "de-DE": "Gewünscht",
+              "fr-FR": "Ce qu’ils souhaitent",
+              "da-DK": "Hvad de ønsker",
+              "cs-CZ": "O co mají zájem",
+              "ar-EG": "ما يريدونه",
+              "zh-CN": "需求",
+              "zh-TW": "需求"
+            }
+          },
+          {
+            "ref": "warmth",
+            "type": "enum",
+            "enum": [
+              "hot",
+              "warm",
+              "cold"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "hot": {
+                    "en-US": "Hot",
+                    "de-DE": "Heiß",
+                    "fr-FR": "Chaud",
+                    "da-DK": "Varm",
+                    "cs-CZ": "Horký",
+                    "ar-EG": "ساخن",
+                    "zh-CN": "高",
+                    "zh-TW": "高"
+                  },
+                  "warm": {
+                    "en-US": "Warm",
+                    "de-DE": "Warm",
+                    "fr-FR": "Tiède",
+                    "da-DK": "Lun",
+                    "cs-CZ": "Vlažný",
+                    "ar-EG": "دافئ",
+                    "zh-CN": "中",
+                    "zh-TW": "中"
+                  },
+                  "cold": {
+                    "en-US": "Cold",
+                    "de-DE": "Kalt",
+                    "fr-FR": "Froid",
+                    "da-DK": "Kold",
+                    "cs-CZ": "Studený",
+                    "ar-EG": "بارد",
+                    "zh-CN": "低",
+                    "zh-TW": "低"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Warmth",
+              "de-DE": "Interesse",
+              "fr-FR": "Intérêt",
+              "da-DK": "Interesse",
+              "cs-CZ": "Míra zájmu",
+              "ar-EG": "درجة الاهتمام",
+              "zh-CN": "意向度",
+              "zh-TW": "意向度"
+            }
+          },
+          {
+            "ref": "show_id",
+            "type": "fk",
+            "references": "shows",
+            "nullable": true,
+            "label": {
+              "en-US": "Trade show",
+              "de-DE": "Messe",
+              "fr-FR": "Salon",
+              "da-DK": "Messe",
+              "cs-CZ": "Veletrh",
+              "ar-EG": "المعرض",
+              "zh-CN": "展会",
+              "zh-TW": "展覽"
+            }
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies",
+            "nullable": true,
+            "label": {
+              "en-US": "Matched company",
+              "de-DE": "Zugeordnete Firma",
+              "fr-FR": "Société rapprochée",
+              "da-DK": "Matchet virksomhed",
+              "cs-CZ": "Přiřazená firma",
+              "ar-EG": "الشركة المطابقة",
+              "zh-CN": "匹配的公司",
+              "zh-TW": "比對到的公司"
+            }
+          },
+          {
+            "ref": "received_at",
+            "type": "timestamptz",
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Received at",
+              "de-DE": "Eingegangen am",
+              "fr-FR": "Reçue le",
+              "da-DK": "Modtaget den",
+              "cs-CZ": "Přijato dne",
+              "ar-EG": "وقت الاستلام",
+              "zh-CN": "收到时间",
+              "zh-TW": "收到時間"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "claimed",
+              "passed",
+              "dropped"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouverte",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřená",
+                    "ar-EG": "مفتوح",
+                    "zh-CN": "待处理",
+                    "zh-TW": "待處理"
+                  },
+                  "claimed": {
+                    "en-US": "Claimed",
+                    "de-DE": "Übernommen",
+                    "fr-FR": "Prise en charge",
+                    "da-DK": "Overtaget",
+                    "cs-CZ": "Převzatá",
+                    "ar-EG": "مُستلَم",
+                    "zh-CN": "已认领",
+                    "zh-TW": "已認領"
+                  },
+                  "passed": {
+                    "en-US": "Passed on",
+                    "de-DE": "Weitergegeben",
+                    "fr-FR": "Transmise",
+                    "da-DK": "Givet videre",
+                    "cs-CZ": "Předaná",
+                    "ar-EG": "مُحال",
+                    "zh-CN": "已转交",
+                    "zh-TW": "已轉交"
+                  },
+                  "dropped": {
+                    "en-US": "Not for us",
+                    "de-DE": "Nichts für uns",
+                    "fr-FR": "Pas pour nous",
+                    "da-DK": "Ikke noget for os",
+                    "cs-CZ": "Není pro nás",
+                    "ar-EG": "ليس لنا",
+                    "zh-CN": "不适合",
+                    "zh-TW": "不適合"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "claimed_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "claimed"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Claimed by",
+              "de-DE": "Übernommen von",
+              "fr-FR": "Prise en charge par",
+              "da-DK": "Overtaget af",
+              "cs-CZ": "Převzal(a)",
+              "ar-EG": "استلمه",
+              "zh-CN": "认领人",
+              "zh-TW": "認領人"
+            }
+          },
+          {
+            "ref": "passed_to_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Passed to",
+              "de-DE": "Weitergegeben an",
+              "fr-FR": "Transmise à",
+              "da-DK": "Givet videre til",
+              "cs-CZ": "Předáno komu",
+              "ar-EG": "أُحيل إلى",
+              "zh-CN": "转交给",
+              "zh-TW": "轉交對象"
+            }
+          },
+          {
+            "ref": "rung_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Rung at",
+              "de-DE": "Angerufen am",
+              "fr-FR": "Appelé le",
+              "da-DK": "Ringet op den",
+              "cs-CZ": "Zavoláno dne",
+              "ar-EG": "وقت الاتصال",
+              "zh-CN": "致电时间",
+              "zh-TW": "致電時間"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "nullable": true,
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "shows",
+        "label": {
+          "en-US": "Trade show",
+          "de-DE": "Messe",
+          "fr-FR": "Salon",
+          "da-DK": "Messe",
+          "cs-CZ": "Veletrh",
+          "ar-EG": "معرض",
+          "zh-CN": "展会",
+          "zh-TW": "展覽"
+        },
+        "labelPlural": {
+          "en-US": "Trade shows",
+          "de-DE": "Messen",
+          "fr-FR": "Salons",
+          "da-DK": "Messer",
+          "cs-CZ": "Veletrhy",
+          "ar-EG": "المعارض",
+          "zh-CN": "展会",
+          "zh-TW": "展覽"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "starts_on",
+            "type": "date",
+            "label": {
+              "en-US": "Starts on",
+              "de-DE": "Beginnt am",
+              "fr-FR": "Commence le",
+              "da-DK": "Starter den",
+              "cs-CZ": "Začíná dne",
+              "ar-EG": "تاريخ البدء",
+              "zh-CN": "开始日期",
+              "zh-TW": "開始日期"
+            }
+          },
+          {
+            "ref": "ends_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Ends on",
+              "de-DE": "Endet am",
+              "fr-FR": "Se termine le",
+              "da-DK": "Slutter den",
+              "cs-CZ": "Končí dne",
+              "ar-EG": "تاريخ الانتهاء",
+              "zh-CN": "结束日期",
+              "zh-TW": "結束日期"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "showroom_spaces",
+        "label": {
+          "en-US": "Showroom space",
+          "de-DE": "Showroom-Bereich",
+          "fr-FR": "Espace du showroom",
+          "da-DK": "Showroomområde",
+          "cs-CZ": "Prostor showroomu",
+          "ar-EG": "مساحة في صالة العرض",
+          "zh-CN": "展厅空间",
+          "zh-TW": "展示間空間"
+        },
+        "labelPlural": {
+          "en-US": "Showroom spaces",
+          "de-DE": "Showroom-Bereiche",
+          "fr-FR": "Espaces du showroom",
+          "da-DK": "Showroomområder",
+          "cs-CZ": "Prostory showroomu",
+          "ar-EG": "مساحات صالة العرض",
+          "zh-CN": "展厅空间",
+          "zh-TW": "展示間空間"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "showroom_bookings",
+        "label": {
+          "en-US": "Showroom booking",
+          "de-DE": "Showroom-Termin",
+          "fr-FR": "Réservation du showroom",
+          "da-DK": "Showroombooking",
+          "cs-CZ": "Rezervace showroomu",
+          "ar-EG": "حجز صالة العرض",
+          "zh-CN": "展厅预约",
+          "zh-TW": "展示間預約"
+        },
+        "labelPlural": {
+          "en-US": "Showroom bookings",
+          "de-DE": "Showroom-Termine",
+          "fr-FR": "Réservations du showroom",
+          "da-DK": "Showroombookinger",
+          "cs-CZ": "Rezervace showroomu",
+          "ar-EG": "حجوزات صالة العرض",
+          "zh-CN": "展厅预约",
+          "zh-TW": "展示間預約"
+        },
+        "indexes": [
+          [
+            "space_id",
+            "starts_at"
+          ],
+          [
+            "rep_id"
+          ],
+          [
+            "company_id"
+          ],
+          [
+            "contact_id"
+          ],
+          [
+            "deal_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "tentative",
+          "moves": {
+            "tentative": [
+              "confirmed",
+              {
+                "to": "cancelled",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "cancel_reason",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "confirmed": [
+              "done",
+              {
+                "to": "cancelled",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "cancel_reason",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "done": [
+              {
+                "to": "cancelled",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "cancel_reason",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "id": "confirm",
+              "label": {
+                "en-US": "Confirm",
+                "de-DE": "Bestätigen",
+                "fr-FR": "Confirmer",
+                "da-DK": "Bekræft",
+                "cs-CZ": "Potvrdit",
+                "ar-EG": "أكِّد",
+                "zh-CN": "确认",
+                "zh-TW": "確認"
+              },
+              "move": {
+                "to": "confirmed"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "done",
+              "label": {
+                "en-US": "Mark done",
+                "de-DE": "Als erledigt markieren",
+                "fr-FR": "Marquer comme effectuée",
+                "da-DK": "Markér som gennemført",
+                "cs-CZ": "Označit jako proběhlou",
+                "ar-EG": "علِّم كمنجز",
+                "zh-CN": "标记为已完成",
+                "zh-TW": "標記為已完成"
+              },
+              "move": {
+                "to": "done"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "cancel",
+              "label": {
+                "en-US": "Cancel",
+                "de-DE": "Absagen",
+                "fr-FR": "Annuler",
+                "da-DK": "Aflys",
+                "cs-CZ": "Zrušit",
+                "ar-EG": "ألغِ",
+                "zh-CN": "取消预约",
+                "zh-TW": "取消預約"
+              },
+              "move": {
+                "to": "cancelled"
+              },
+              "tone": "danger",
+              "ask": [
+                "cancel_reason"
+              ]
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "space_id",
+            "type": "fk",
+            "references": "showroom_spaces",
+            "label": {
+              "en-US": "Space",
+              "de-DE": "Bereich",
+              "fr-FR": "Espace",
+              "da-DK": "Område",
+              "cs-CZ": "Prostor",
+              "ar-EG": "المساحة",
+              "zh-CN": "空间",
+              "zh-TW": "空間"
+            }
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies",
+            "nullable": true,
+            "label": {
+              "en-US": "Company",
+              "de-DE": "Firma",
+              "fr-FR": "Société",
+              "da-DK": "Virksomhed",
+              "cs-CZ": "Firma",
+              "ar-EG": "الشركة",
+              "zh-CN": "公司",
+              "zh-TW": "公司"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Contact",
+              "de-DE": "Kontakt",
+              "fr-FR": "Contact",
+              "da-DK": "Kontakt",
+              "cs-CZ": "Kontakt",
+              "ar-EG": "جهة الاتصال",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
+            }
+          },
+          {
+            "ref": "visitor_name",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Visitor name",
+              "de-DE": "Name des Besuchers",
+              "fr-FR": "Nom du visiteur",
+              "da-DK": "Besøgendes navn",
+              "cs-CZ": "Jméno návštěvníka",
+              "ar-EG": "اسم الزائر",
+              "zh-CN": "访客姓名",
+              "zh-TW": "訪客姓名"
+            }
+          },
+          {
+            "ref": "party",
+            "type": "int",
+            "label": {
+              "en-US": "Party size",
+              "de-DE": "Personenzahl",
+              "fr-FR": "Nombre de personnes",
+              "da-DK": "Antal personer",
+              "cs-CZ": "Počet osob",
+              "ar-EG": "عدد الأشخاص",
+              "zh-CN": "人数",
+              "zh-TW": "人數"
+            }
+          },
+          {
+            "ref": "starts_at",
+            "type": "timestamptz",
+            "label": {
+              "en-US": "Starts",
+              "de-DE": "Beginn",
+              "fr-FR": "Début",
+              "da-DK": "Starter",
+              "cs-CZ": "Začátek",
+              "ar-EG": "وقت البدء",
+              "zh-CN": "开始时间",
+              "zh-TW": "開始時間"
+            }
+          },
+          {
+            "ref": "minutes",
+            "type": "int",
+            "label": {
+              "en-US": "Minutes",
+              "de-DE": "Minuten",
+              "fr-FR": "Minutes",
+              "da-DK": "Minutter",
+              "cs-CZ": "Minuty",
+              "ar-EG": "الدقائق",
+              "zh-CN": "时长（分钟）",
+              "zh-TW": "時長（分鐘）"
+            }
+          },
+          {
+            "ref": "rep_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Rep",
+              "de-DE": "Vertriebsmitarbeiter",
+              "fr-FR": "Commercial",
+              "da-DK": "Sælger",
+              "cs-CZ": "Obchodník",
+              "ar-EG": "مندوب المبيعات",
+              "zh-CN": "销售",
+              "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "tentative",
+              "confirmed",
+              "done",
+              "cancelled"
+            ],
+            "default": "tentative",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "tentative": {
+                    "en-US": "Tentative",
+                    "de-DE": "Vorläufig",
+                    "fr-FR": "Provisoire",
+                    "da-DK": "Foreløbig",
+                    "cs-CZ": "Předběžná",
+                    "ar-EG": "مبدئي",
+                    "zh-CN": "暂定",
+                    "zh-TW": "暫定"
+                  },
+                  "confirmed": {
+                    "en-US": "Confirmed",
+                    "de-DE": "Bestätigt",
+                    "fr-FR": "Confirmée",
+                    "da-DK": "Bekræftet",
+                    "cs-CZ": "Potvrzená",
+                    "ar-EG": "مؤكَّد",
+                    "zh-CN": "已确认",
+                    "zh-TW": "已確認"
+                  },
+                  "done": {
+                    "en-US": "Done",
+                    "de-DE": "Erledigt",
+                    "fr-FR": "Effectuée",
+                    "da-DK": "Gennemført",
+                    "cs-CZ": "Proběhla",
+                    "ar-EG": "تم",
+                    "zh-CN": "已完成",
+                    "zh-TW": "已完成"
+                  },
+                  "cancelled": {
+                    "en-US": "Cancelled",
+                    "de-DE": "Abgesagt",
+                    "fr-FR": "Annulée",
+                    "da-DK": "Aflyst",
+                    "cs-CZ": "Zrušená",
+                    "ar-EG": "ملغى",
+                    "zh-CN": "已取消",
+                    "zh-TW": "已取消"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "cancel_reason",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Reason for cancelling",
+              "de-DE": "Absagegrund",
+              "fr-FR": "Motif d’annulation",
+              "da-DK": "Årsag til aflysning",
+              "cs-CZ": "Důvod zrušení",
+              "ar-EG": "سبب الإلغاء",
+              "zh-CN": "取消原因",
+              "zh-TW": "取消原因"
+            }
+          },
+          {
+            "ref": "outcome",
+            "type": "text",
+            "maxLength": 1000,
+            "nullable": true,
+            "label": {
+              "en-US": "Outcome",
+              "de-DE": "Ergebnis",
+              "fr-FR": "Résultat",
+              "da-DK": "Resultat",
+              "cs-CZ": "Výsledek",
+              "ar-EG": "النتيجة",
+              "zh-CN": "结果",
+              "zh-TW": "結果"
+            }
+          },
+          {
+            "ref": "next_step",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Next step",
+              "de-DE": "Nächster Schritt",
+              "fr-FR": "Prochaine étape",
+              "da-DK": "Næste skridt",
+              "cs-CZ": "Další krok",
+              "ar-EG": "الخطوة التالية",
+              "zh-CN": "下一步",
+              "zh-TW": "下一步"
+            }
+          },
+          {
+            "ref": "next_step_by",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Next step by",
+              "de-DE": "Nächster Schritt bis",
+              "fr-FR": "Prochaine étape avant le",
+              "da-DK": "Næste skridt senest",
+              "cs-CZ": "Další krok do",
+              "ar-EG": "الخطوة التالية قبل",
+              "zh-CN": "下一步期限",
+              "zh-TW": "下一步期限"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "nullable": true,
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "samples",
+        "label": {
+          "en-US": "Sample",
+          "de-DE": "Muster",
+          "fr-FR": "Échantillon",
+          "da-DK": "Prøve",
+          "cs-CZ": "Vzorek",
+          "ar-EG": "عينة",
+          "zh-CN": "样品",
+          "zh-TW": "樣品"
+        },
+        "labelPlural": {
+          "en-US": "Samples",
+          "de-DE": "Muster",
+          "fr-FR": "Échantillons",
+          "da-DK": "Prøver",
+          "cs-CZ": "Vzorky",
+          "ar-EG": "العينات",
+          "zh-CN": "样品",
+          "zh-TW": "樣品"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "kind",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "label": {
+              "en-US": "Kind",
+              "de-DE": "Art",
+              "fr-FR": "Type",
+              "da-DK": "Type",
+              "cs-CZ": "Druh",
+              "ar-EG": "النوع",
+              "zh-CN": "类型",
+              "zh-TW": "類型"
+            }
+          },
+          {
+            "ref": "held",
+            "type": "int",
+            "label": {
+              "en-US": "Held",
+              "de-DE": "Bestand",
+              "fr-FR": "Détenus",
+              "da-DK": "Beholdning",
+              "cs-CZ": "Počet kusů",
+              "ar-EG": "العدد المتوفر",
+              "zh-CN": "持有数量",
+              "zh-TW": "持有數量"
+            }
+          },
+          {
+            "ref": "item",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "label": {
+              "en-US": "Stock item",
+              "de-DE": "Lagerartikel",
+              "fr-FR": "Article en stock",
+              "da-DK": "Lagervare",
+              "cs-CZ": "Skladová položka",
+              "ar-EG": "صنف المخزون",
+              "zh-CN": "库存物料",
+              "zh-TW": "庫存品項"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "sample_loans",
+        "label": {
+          "en-US": "Sample loan",
+          "de-DE": "Musterausleihe",
+          "fr-FR": "Prêt d’échantillon",
+          "da-DK": "Prøveudlån",
+          "cs-CZ": "Zápůjčka vzorku",
+          "ar-EG": "إعارة عينة",
+          "zh-CN": "样品借出",
+          "zh-TW": "樣品借出"
+        },
+        "labelPlural": {
+          "en-US": "Sample loans",
+          "de-DE": "Musterausleihen",
+          "fr-FR": "Prêts d’échantillons",
+          "da-DK": "Prøveudlån",
+          "cs-CZ": "Zápůjčky vzorků",
+          "ar-EG": "إعارات العينات",
+          "zh-CN": "样品借出",
+          "zh-TW": "樣品借出"
+        },
+        "indexes": [
+          [
+            "sample_id"
+          ],
+          [
+            "company_id"
+          ],
+          [
+            "contact_id"
+          ],
+          [
+            "returned_on",
+            "due_back"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "sample_id",
+            "type": "fk",
+            "references": "samples",
+            "label": {
+              "en-US": "Sample",
+              "de-DE": "Muster",
+              "fr-FR": "Échantillon",
+              "da-DK": "Prøve",
+              "cs-CZ": "Vzorek",
+              "ar-EG": "العينة",
+              "zh-CN": "样品",
+              "zh-TW": "樣品"
+            }
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies",
+            "nullable": true,
+            "label": {
+              "en-US": "Company",
+              "de-DE": "Firma",
+              "fr-FR": "Société",
+              "da-DK": "Virksomhed",
+              "cs-CZ": "Firma",
+              "ar-EG": "الشركة",
+              "zh-CN": "公司",
+              "zh-TW": "公司"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Contact",
+              "de-DE": "Kontakt",
+              "fr-FR": "Contact",
+              "da-DK": "Kontakt",
+              "cs-CZ": "Kontakt",
+              "ar-EG": "جهة الاتصال",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
+            }
+          },
+          {
+            "ref": "out_on",
+            "type": "date",
+            "label": {
+              "en-US": "Out on",
+              "de-DE": "Ausgegeben am",
+              "fr-FR": "Sorti le",
+              "da-DK": "Udlånt den",
+              "cs-CZ": "Vydáno dne",
+              "ar-EG": "تاريخ الإعارة",
+              "zh-CN": "借出日期",
+              "zh-TW": "借出日期"
+            }
+          },
+          {
+            "ref": "due_back",
+            "type": "date",
+            "label": {
+              "en-US": "Due back",
+              "de-DE": "Rückgabe bis",
+              "fr-FR": "Retour prévu le",
+              "da-DK": "Skal retur den",
+              "cs-CZ": "Vrátit do",
+              "ar-EG": "موعد الإرجاع",
+              "zh-CN": "应还日期",
+              "zh-TW": "應還日期"
+            }
+          },
+          {
+            "ref": "returned_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Returned on",
+              "de-DE": "Zurück am",
+              "fr-FR": "Rendu le",
+              "da-DK": "Returneret den",
+              "cs-CZ": "Vráceno dne",
+              "ar-EG": "تاريخ الإرجاع",
+              "zh-CN": "归还日期",
+              "zh-TW": "歸還日期"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "sample_chases",
+        "label": {
+          "en-US": "Sample chase",
+          "de-DE": "Muster-Erinnerung",
+          "fr-FR": "Relance d’échantillon",
+          "da-DK": "Rykker for prøve",
+          "cs-CZ": "Urgence vzorku",
+          "ar-EG": "استعجال عينة",
+          "zh-CN": "样品催还",
+          "zh-TW": "樣品催還"
+        },
+        "labelPlural": {
+          "en-US": "Sample chases",
+          "de-DE": "Muster-Erinnerungen",
+          "fr-FR": "Relances d’échantillons",
+          "da-DK": "Rykkere for prøver",
+          "cs-CZ": "Urgence vzorků",
+          "ar-EG": "استعجالات العينات",
+          "zh-CN": "样品催还",
+          "zh-TW": "樣品催還"
+        },
+        "indexes": [
+          [
+            "loan_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "loan_id",
+            "type": "fk",
+            "references": "sample_loans",
+            "label": {
+              "en-US": "Sample loan",
+              "de-DE": "Musterausleihe",
+              "fr-FR": "Prêt d’échantillon",
+              "da-DK": "Prøveudlån",
+              "cs-CZ": "Zápůjčka vzorku",
+              "ar-EG": "إعارة العينة",
+              "zh-CN": "样品借出",
+              "zh-TW": "樣品借出"
+            }
+          },
+          {
+            "ref": "chased_on",
+            "type": "date",
+            "label": {
+              "en-US": "Chased on",
+              "de-DE": "Erinnert am",
+              "fr-FR": "Relancé le",
+              "da-DK": "Rykket den",
+              "cs-CZ": "Urgováno dne",
+              "ar-EG": "تاريخ الاستعجال",
+              "zh-CN": "催还日期",
+              "zh-TW": "催還日期"
+            }
+          },
+          {
+            "ref": "by_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Chased by",
+              "de-DE": "Erinnert von",
+              "fr-FR": "Relancé par",
+              "da-DK": "Rykket af",
+              "cs-CZ": "Urgoval(a)",
+              "ar-EG": "استعجله",
+              "zh-CN": "催还人",
+              "zh-TW": "催還人"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "display_pieces",
+        "label": {
+          "en-US": "Display piece",
+          "de-DE": "Ausstellungsstück",
+          "fr-FR": "Pièce d’exposition",
+          "da-DK": "Udstillingsmodel",
+          "cs-CZ": "Vystavený kus",
+          "ar-EG": "قطعة عرض",
+          "zh-CN": "展品",
+          "zh-TW": "展示品"
+        },
+        "labelPlural": {
+          "en-US": "Display pieces",
+          "de-DE": "Ausstellungsstücke",
+          "fr-FR": "Pièces d’exposition",
+          "da-DK": "Udstillingsmodeller",
+          "cs-CZ": "Vystavené kusy",
+          "ar-EG": "قطع العرض",
+          "zh-CN": "展品",
+          "zh-TW": "展示品"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "space_id",
+            "type": "fk",
+            "references": "showroom_spaces",
+            "label": {
+              "en-US": "Space",
+              "de-DE": "Bereich",
+              "fr-FR": "Espace",
+              "da-DK": "Område",
+              "cs-CZ": "Prostor",
+              "ar-EG": "المساحة",
+              "zh-CN": "空间",
+              "zh-TW": "空間"
+            }
+          },
+          {
+            "ref": "out_since",
+            "type": "date",
+            "label": {
+              "en-US": "On display since",
+              "de-DE": "Ausgestellt seit",
+              "fr-FR": "Exposée depuis le",
+              "da-DK": "Udstillet siden",
+              "cs-CZ": "Vystaveno od",
+              "ar-EG": "معروضة منذ",
+              "zh-CN": "上展日期",
+              "zh-TW": "上展日期"
+            }
+          },
+          {
+            "ref": "spec",
+            "type": "enum",
+            "enum": [
+              "current",
+              "old"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "current": {
+                    "en-US": "Current",
+                    "de-DE": "Aktuell",
+                    "fr-FR": "Actuelle",
+                    "da-DK": "Aktuel",
+                    "cs-CZ": "Aktuální",
+                    "ar-EG": "حالية",
+                    "zh-CN": "现行",
+                    "zh-TW": "現行"
+                  },
+                  "old": {
+                    "en-US": "Old",
+                    "de-DE": "Alt",
+                    "fr-FR": "Ancienne",
+                    "da-DK": "Gammel",
+                    "cs-CZ": "Stará",
+                    "ar-EG": "قديمة",
+                    "zh-CN": "旧款",
+                    "zh-TW": "舊款"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Specification",
+              "de-DE": "Ausführung",
+              "fr-FR": "Spécification",
+              "da-DK": "Specifikation",
+              "cs-CZ": "Provedení",
+              "ar-EG": "المواصفة",
+              "zh-CN": "规格",
+              "zh-TW": "規格"
+            }
+          },
+          {
+            "ref": "promised_booking_id",
+            "type": "fk",
+            "references": "showroom_bookings",
+            "nullable": true,
+            "label": {
+              "en-US": "Promised for booking",
+              "de-DE": "Zugesagt für Termin",
+              "fr-FR": "Promise pour la réservation",
+              "da-DK": "Lovet til booking",
+              "cs-CZ": "Slíbeno pro rezervaci",
+              "ar-EG": "موعودة لحجز",
+              "zh-CN": "已许诺给预约",
+              "zh-TW": "已承諾給預約"
+            }
+          },
+          {
+            "ref": "lent_company_id",
+            "type": "fk",
+            "references": "companies",
+            "nullable": true,
+            "label": {
+              "en-US": "Lent to",
+              "de-DE": "Verliehen an",
+              "fr-FR": "Prêtée à",
+              "da-DK": "Udlånt til",
+              "cs-CZ": "Zapůjčeno komu",
+              "ar-EG": "مُعارة إلى",
+              "zh-CN": "借给",
+              "zh-TW": "借給"
+            }
+          },
+          {
+            "ref": "lent_until",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Lent until",
+              "de-DE": "Verliehen bis",
+              "fr-FR": "Prêtée jusqu’au",
+              "da-DK": "Udlånt til den",
+              "cs-CZ": "Zapůjčeno do",
+              "ar-EG": "مُعارة حتى",
+              "zh-CN": "借出至",
+              "zh-TW": "借出至"
+            }
+          },
+          {
+            "ref": "item",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "label": {
+              "en-US": "Stock item",
+              "de-DE": "Lagerartikel",
+              "fr-FR": "Article en stock",
+              "da-DK": "Lagervare",
+              "cs-CZ": "Skladová položka",
+              "ar-EG": "صنف المخزون",
+              "zh-CN": "库存物料",
+              "zh-TW": "庫存品項"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "outbox",
+        "label": {
+          "en-US": "Email",
+          "de-DE": "E-Mail",
+          "fr-FR": "E-mail",
+          "da-DK": "E-mail",
+          "cs-CZ": "E-mail",
+          "ar-EG": "رسالة بريد",
+          "zh-CN": "邮件",
+          "zh-TW": "電子郵件"
+        },
+        "labelPlural": {
+          "en-US": "Emails",
+          "de-DE": "E-Mails",
+          "fr-FR": "E-mails",
+          "da-DK": "E-mails",
+          "cs-CZ": "E-maily",
+          "ar-EG": "رسائل البريد",
+          "zh-CN": "邮件",
+          "zh-TW": "電子郵件"
+        },
+        "indexes": [
+          [
+            "status",
+            "due_at"
+          ],
+          [
+            "contact_id"
+          ],
+          [
+            "quote_id"
+          ],
+          [
+            "deal_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "kind",
+            "type": "enum",
+            "enum": [
+              "quote-sent",
+              "handover-intro",
+              "approval-asked"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "quote-sent": {
+                    "en-US": "Quote sent",
+                    "de-DE": "Angebot gesendet",
+                    "fr-FR": "Devis envoyé",
+                    "da-DK": "Tilbud sendt",
+                    "cs-CZ": "Nabídka odeslána",
+                    "ar-EG": "عرض السعر أُرسل",
+                    "zh-CN": "报价单已发送",
+                    "zh-TW": "報價單已送出"
+                  },
+                  "handover-intro": {
+                    "en-US": "Handover introduction",
+                    "de-DE": "Vorstellung bei Übergabe",
+                    "fr-FR": "Présentation lors du passage de relais",
+                    "da-DK": "Introduktion ved overdragelse",
+                    "cs-CZ": "Představení při předání",
+                    "ar-EG": "تعريف عند التسليم",
+                    "zh-CN": "交接介绍",
+                    "zh-TW": "交接介紹"
+                  },
+                  "approval-asked": {
+                    "en-US": "Approval asked",
+                    "de-DE": "Genehmigung angefragt",
+                    "fr-FR": "Approbation demandée",
+                    "da-DK": "Godkendelse anmodet",
+                    "cs-CZ": "Žádost o schválení",
+                    "ar-EG": "طلب موافقة",
+                    "zh-CN": "申请审批",
+                    "zh-TW": "申請審批"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Kind",
+              "de-DE": "Art",
+              "fr-FR": "Type",
+              "da-DK": "Type",
+              "cs-CZ": "Druh",
+              "ar-EG": "النوع",
+              "zh-CN": "类型",
+              "zh-TW": "類型"
+            }
+          },
+          {
+            "ref": "status",
+            "type": "enum",
+            "enum": [
+              "held",
+              "queued",
+              "sent",
+              "failed",
+              "skipped"
+            ],
+            "default": "queued",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "held": {
+                    "en-US": "Held",
+                    "de-DE": "Zurückgehalten",
+                    "fr-FR": "En attente d’approbation",
+                    "da-DK": "Tilbageholdt",
+                    "cs-CZ": "Pozdrženo",
+                    "ar-EG": "محجوزة",
+                    "zh-CN": "待批准",
+                    "zh-TW": "待核准"
+                  },
+                  "queued": {
+                    "en-US": "Queued",
+                    "de-DE": "In der Warteschlange",
+                    "fr-FR": "En file d’attente",
+                    "da-DK": "I kø",
+                    "cs-CZ": "Ve frontě",
+                    "ar-EG": "في قائمة الانتظار",
+                    "zh-CN": "排队中",
+                    "zh-TW": "佇列中"
+                  },
+                  "sent": {
+                    "en-US": "Sent",
+                    "de-DE": "Gesendet",
+                    "fr-FR": "Envoyé",
+                    "da-DK": "Sendt",
+                    "cs-CZ": "Odesláno",
+                    "ar-EG": "أُرسلت",
+                    "zh-CN": "已发送",
+                    "zh-TW": "已送出"
+                  },
+                  "failed": {
+                    "en-US": "Failed",
+                    "de-DE": "Fehlgeschlagen",
+                    "fr-FR": "Échec",
+                    "da-DK": "Mislykket",
+                    "cs-CZ": "Selhalo",
+                    "ar-EG": "فشلت",
+                    "zh-CN": "发送失败",
+                    "zh-TW": "傳送失敗"
+                  },
+                  "skipped": {
+                    "en-US": "Skipped",
+                    "de-DE": "Übersprungen",
+                    "fr-FR": "Ignoré",
+                    "da-DK": "Sprunget over",
+                    "cs-CZ": "Přeskočeno",
+                    "ar-EG": "تم تخطيها",
+                    "zh-CN": "已跳过",
+                    "zh-TW": "已略過"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Status",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "created_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Created at",
+              "de-DE": "Erstellt am",
+              "fr-FR": "Créé le",
+              "da-DK": "Oprettet den",
+              "cs-CZ": "Vytvořeno dne",
+              "ar-EG": "وقت الإنشاء",
+              "zh-CN": "创建时间",
+              "zh-TW": "建立時間"
+            }
+          },
+          {
+            "ref": "to",
+            "type": "text",
+            "maxLength": 254,
+            "nullable": true,
+            "label": {
+              "en-US": "To",
+              "de-DE": "An",
+              "fr-FR": "À",
+              "da-DK": "Til",
+              "cs-CZ": "Komu",
+              "ar-EG": "إلى",
+              "zh-CN": "收件地址",
+              "zh-TW": "收件地址"
+            }
+          },
+          {
+            "ref": "language",
+            "type": "text",
+            "maxLength": 16,
+            "nullable": true,
+            "label": {
+              "en-US": "Language",
+              "de-DE": "Sprache",
+              "fr-FR": "Langue",
+              "da-DK": "Sprog",
+              "cs-CZ": "Jazyk",
+              "ar-EG": "اللغة",
+              "zh-CN": "语言",
+              "zh-TW": "語言"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Contact",
+              "de-DE": "Kontakt",
+              "fr-FR": "Contact",
+              "da-DK": "Kontakt",
+              "cs-CZ": "Kontakt",
+              "ar-EG": "جهة الاتصال",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
+            }
+          },
+          {
+            "ref": "quote_id",
+            "type": "fk",
+            "references": "quotes",
+            "nullable": true,
+            "label": {
+              "en-US": "Quote",
+              "de-DE": "Angebot",
+              "fr-FR": "Devis",
+              "da-DK": "Tilbud",
+              "cs-CZ": "Nabídka",
+              "ar-EG": "عرض السعر",
+              "zh-CN": "报价单",
+              "zh-TW": "報價單"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "nullable": true,
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "due_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Due",
+              "de-DE": "Fällig am",
+              "fr-FR": "Échéance",
+              "da-DK": "Forfalder",
+              "cs-CZ": "Termín",
+              "ar-EG": "موعد الاستحقاق",
+              "zh-CN": "到期时间",
+              "zh-TW": "到期時間"
+            }
+          },
+          {
+            "ref": "sent_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Sent at",
+              "de-DE": "Gesendet am",
+              "fr-FR": "Envoyé le",
+              "da-DK": "Sendt den",
+              "cs-CZ": "Odesláno dne",
+              "ar-EG": "وقت الإرسال",
+              "zh-CN": "发送时间",
+              "zh-TW": "送出時間"
+            }
+          },
+          {
+            "ref": "error",
+            "type": "text",
+            "nullable": true,
+            "label": {
+              "en-US": "Error",
+              "de-DE": "Fehler",
+              "fr-FR": "Erreur",
+              "da-DK": "Fejl",
+              "cs-CZ": "Chyba",
+              "ar-EG": "الخطأ",
+              "zh-CN": "错误",
+              "zh-TW": "錯誤"
+            }
+          },
+          {
+            "ref": "skip_reason",
+            "type": "enum",
+            "enum": [
+              "overtaken",
+              "paid",
+              "void",
+              "no-longer-needed",
+              "by-hand"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "overtaken": {
+                    "en-US": "Overtaken",
+                    "de-DE": "Überholt",
+                    "fr-FR": "Remplacé par un plus récent",
+                    "da-DK": "Overhalet",
+                    "cs-CZ": "Nahrazeno novější",
+                    "ar-EG": "تجاوزتها رسالة أحدث",
+                    "zh-CN": "已被取代",
+                    "zh-TW": "已被取代"
+                  },
+                  "paid": {
+                    "en-US": "Paid",
+                    "de-DE": "Bezahlt",
+                    "fr-FR": "Payé",
+                    "da-DK": "Betalt",
+                    "cs-CZ": "Zaplaceno",
+                    "ar-EG": "مدفوع",
+                    "zh-CN": "已付款",
+                    "zh-TW": "已付款"
+                  },
+                  "void": {
+                    "en-US": "Void",
+                    "de-DE": "Storniert",
+                    "fr-FR": "Annulé",
+                    "da-DK": "Annulleret",
+                    "cs-CZ": "Stornováno",
+                    "ar-EG": "ملغى",
+                    "zh-CN": "已作废",
+                    "zh-TW": "已作廢"
+                  },
+                  "no-longer-needed": {
+                    "en-US": "No longer needed",
+                    "de-DE": "Nicht mehr nötig",
+                    "fr-FR": "Plus nécessaire",
+                    "da-DK": "Ikke længere nødvendig",
+                    "cs-CZ": "Již není potřeba",
+                    "ar-EG": "لم تعد لازمة",
+                    "zh-CN": "不再需要",
+                    "zh-TW": "不再需要"
+                  },
+                  "by-hand": {
+                    "en-US": "Skipped by hand",
+                    "de-DE": "Von Hand übersprungen",
+                    "fr-FR": "Ignoré manuellement",
+                    "da-DK": "Sprunget over manuelt",
+                    "cs-CZ": "Přeskočeno ručně",
+                    "ar-EG": "تم تخطيها يدويًا",
+                    "zh-CN": "手动跳过",
+                    "zh-TW": "手動略過"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Why it was skipped",
+              "de-DE": "Grund für das Überspringen",
+              "fr-FR": "Motif de l’omission",
+              "da-DK": "Hvorfor den blev sprunget over",
+              "cs-CZ": "Důvod přeskočení",
+              "ar-EG": "سبب التخطي",
+              "zh-CN": "跳过原因",
+              "zh-TW": "略過原因"
+            }
+          },
+          {
+            "ref": "repeat_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "label": {
+              "en-US": "Repeat key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de répétition",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح التكرار",
+              "zh-CN": "重复键",
+              "zh-TW": "重複鍵"
             }
           }
         ]
