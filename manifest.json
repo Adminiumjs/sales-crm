@@ -7047,6 +7047,12 @@
           "zh-CN": "代班",
           "zh-TW": "代理"
         },
+        "belongs": [
+          {
+            "column": "owner_id",
+            "set": "team"
+          }
+        ],
         "indexes": [
           [
             "owner_id",
@@ -16093,6 +16099,16 @@
           "rows": {
             "read": {
               "reach": "own"
+            }
+          }
+        },
+        "covers": {
+          "rows": {
+            "update": {
+              "reach": "team"
+            },
+            "delete": {
+              "reach": "team"
             }
           }
         },

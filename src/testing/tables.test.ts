@@ -545,8 +545,10 @@ describe("a deal is reached by its owner, by the people on it, and by whoever co
     const covers = byRef.get("covers");
     expect(covers?.columns.find((c) => c.ref === "starts_on")).toMatchObject({ type: "date" });
     expect(covers?.columns.find((c) => c.ref === "ends_on")).toMatchObject({ type: "date", nullable: true });
-    // Who covers whom is everybody's to read: the listing itself is limited by nothing.
-    expect(covers?.belongs).toBeUndefined();
+    // Who covers whom is everybody's to read. A cover is written for its own rep: a manager held to
+    // their team writes one for somebody they lead, never for another manager's rep (whose deals the
+    // cover would open to whoever it names). roles.test.ts holds the roles to it.
+    expect(covers?.belongs).toEqual([{ column: "owner_id", set: "team" }]);
   });
 });
 

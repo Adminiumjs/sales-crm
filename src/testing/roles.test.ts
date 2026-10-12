@@ -85,7 +85,10 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["messages"], ...talk("RC:own")],
   [["starters"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
   [["starter_steps"], "RCUD", "RCUD", "RU", "-", "-", "-", "-", "-", "R"],
-  [["covers"], "RCUD", "RCUD", "R", "R", "-", "-", "-", "-", "R"],
+  // NARROWER THAN THE PLAN'S TABLE, which gives the sales manager every cover (RCUD). A cover opens
+  // its rep's deals to whoever it names, so a manager who could write one for any rep could read any
+  // team's deals by covering for them. They read every cover, and write one for the people they lead.
+  [["covers"], "RCUD", "RCUD;u=team;d=team", "R", "R", "-", "-", "-", "-", "R"],
   [["cover_notes"], "RCUD", "RCUD:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
   [["enquiries"], "RCUD", "RCU:team+free", "RCU:own+free", "-", "RC", "RCU:own+free", "-", "-", "R"],
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
@@ -798,6 +801,16 @@ describe("a listing a table is read through is not a way in", () => {
     }
     // Nobody changes a conversation or a message once written, so no row is added under one by a change of it.
     for (const key of ROLES) for (const ref of ["threads", "messages"]) for (const action of ["update", "delete"] as const) expect(holds(key, ref, action), `${key}: ${ref}`).toBe(false);
+  });
+
+  it("lets a manager write cover for the people they lead, and for nobody else's rep", () => {
+    // The rep away is the cover's own person, and a writer held to their team names there only
+    // themselves or somebody they lead. Who covers is anybody: that is the manager's choice.
+    expect(tableOf.get("covers")?.belongs).toEqual([{ column: "owner_id", set: "team" }]);
+    expect(ROLES.filter((key) => held(key, "covers").some((action) => action !== "read"))).toEqual(["admin", "sales-manager"]);
+    expect(limitOf("sales-manager", "covers")?.rows).toEqual({ update: { reach: "team" }, delete: { reach: "team" } });
+    // Everybody who holds the table still reads every cover.
+    for (const key of ROLES) expect(limitOf(key, "covers")?.rows?.read, key).toBeUndefined();
   });
 
   it("leaves a crew's people to the operations manager and the CRM admin", () => {
