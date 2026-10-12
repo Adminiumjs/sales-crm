@@ -7,12 +7,13 @@
  * no index still validates, and still installs. Those are checked here.
  *
  * The expectations are data, at the top: a later batch of tables extends
- * `TABLES`, and nothing below it.
+ * `TABLES` and `TABLE_COUNT`, and nothing below them.
  */
 
 import { describe, expect, it } from "vitest";
 
 import manifest from "../../manifest.json";
+import { validateManifest } from "./manifest/index.ts";
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  WHAT IS EXPECTED                                                           */
@@ -195,6 +196,44 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
+/** How many tables the manifest holds after this batch (the plan lists 72 in all). */
+const TABLE_COUNT = 50;
+
+/**
+ * The tables only the two people of a row read: a manager and a rep. Each
+ * carries its pair in these two staff columns of its own and is reached by
+ * nothing else, because a private table takes no other way.
+ */
+const PRIVATE: Record<string, readonly [string, string]> = {
+  one_to_ones: ["manager_id", "rep_id"],
+  one_to_one_sessions: ["manager_id", "rep_id"],
+  coaching_plans: ["manager_id", "rep_id"],
+  coaching_areas: ["manager_id", "rep_id"],
+};
+
+/**
+ * The `outbox` word, as a later task will write it: here only to prove that
+ * the outbox TABLE is the shape the word asks for. Its kinds, its templates
+ * and its producer are that task's.
+ */
+const OUTBOX_WORD = {
+  table: "outbox",
+  columns: {
+    kind: "kind",
+    status: "status",
+    to: "to",
+    language: "language",
+    due: "due_at",
+    sentAt: "sent_at",
+    error: "error",
+    skipReason: "skip_reason",
+    repeatKey: "repeat_key",
+  },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id" },
+  recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
+  kinds: {},
+};
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  THE MANIFEST, READ LOOSELY                                                 */
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -204,6 +243,7 @@ type Labels = Record<string, string>;
 interface Column {
   ref: string;
   type: string;
+  references?: string;
   role?: string;
   nullable?: boolean;
   unique?: boolean;
@@ -219,13 +259,29 @@ interface Through {
   on?: string;
   user: string;
   person?: string;
+  from?: string;
+  to?: string;
 }
 
 interface Way {
   column?: string;
   person?: string;
+  set?: string;
   via?: string;
   through?: Through;
+}
+
+interface Move {
+  to: string;
+  requires?: { where?: { column: string; isNull?: boolean }[] };
+}
+
+interface Action {
+  id: string;
+  label?: Labels;
+  move?: { to: string };
+  ask?: string[];
+  handOver?: boolean;
 }
 
 interface Table {
@@ -234,7 +290,12 @@ interface Table {
   labelPlural?: Labels;
   columns: Column[];
   indexes?: string[][];
+  unique?: string[][];
   belongs?: Way[];
+  private?: boolean;
+  booking?: unknown;
+  capacity?: unknown;
+  states?: { column: string; initial: string; moves: Record<string, (string | Move)[]>; actions?: Action[] };
 }
 
 const tables = manifest.requiredSchema.tables as unknown as Table[];
@@ -262,6 +323,11 @@ function staffIndexed(table: Table, ref: string): boolean {
   return firstInAnIndex(table, ref) || table.columns.find((c) => c.ref === ref)?.unique === true;
 }
 
+/** The moves out of a state, each as `{ to, requires? }`. */
+function movesFrom(table: Table, from: string): Move[] {
+  return (table.states?.moves[from] ?? []).map((move) => (typeof move === "string" ? { to: move } : move));
+}
+
 /** The languages a label lacks, or holds only blank text in. */
 function missing(label: Labels | undefined): string[] {
   return LOCALES.filter((locale) => (label?.[locale] ?? "").trim() === "");
@@ -274,6 +340,11 @@ function missing(label: Labels | undefined): string[] {
 describe("the manifest holds the tables the plan lists, and no other", () => {
   it("has exactly the expected tables", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
+  });
+
+  it("has fifty of them", () => {
+    expect(tables).toHaveLength(TABLE_COUNT);
+    expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });
 
   it("gives every table a key, first", () => {
@@ -388,6 +459,201 @@ describe("a list limited to a person's rows reads an index", () => {
   });
 });
 
+describe("a table takes no more indexes than the validator allows", () => {
+  it("declares at most six sets a table", () => {
+    const over = tables.filter((table) => (table.indexes ?? []).length > 6).map((table) => table.ref);
+    expect(over).toEqual([]);
+  });
+
+  it("left the six sets of deals as they were", () => {
+    expect(byRef.get("deals")?.indexes).toEqual([
+      ["owner_id"],
+      ["state", "stage_id"],
+      ["expected_close"],
+      ["company_id"],
+      ["stage_id"],
+      ["contact_id"],
+    ]);
+  });
+});
+
+describe("a deal is reached by its owner, by the people on it, and by whoever covers its owner", () => {
+  it("writes the three ways as the plan does", () => {
+    expect(byRef.get("deals")?.belongs).toEqual([
+      { column: "owner_id", set: "team" },
+      { through: { table: "deal_members", link: "deal_id", user: "user_id" } },
+      { through: { table: "covers", link: "owner_id", on: "owner_id", user: "cover_id", from: "starts_on", to: "ends_on" } },
+    ]);
+  });
+
+  it("counts a cover by the day, on two date columns of the listing", () => {
+    const covers = byRef.get("covers");
+    expect(covers?.columns.find((c) => c.ref === "starts_on")).toMatchObject({ type: "date" });
+    expect(covers?.columns.find((c) => c.ref === "ends_on")).toMatchObject({ type: "date", nullable: true });
+    // Who covers whom is everybody's to read: the listing itself is limited by nothing.
+    expect(covers?.belongs).toBeUndefined();
+  });
+});
+
+describe("the four private tables are reached by their own two people and nothing else", () => {
+  it("marks exactly those four private", () => {
+    expect(tables.filter((table) => table.private === true).map((table) => table.ref).sort()).toEqual(Object.keys(PRIVATE).sort());
+  });
+
+  it("gives each exactly two ways, both staff columns of its own", () => {
+    for (const [ref, pair] of Object.entries(PRIVATE)) {
+      const table = byRef.get(ref);
+      const ways = table?.belongs ?? [];
+      expect(ways, ref).toHaveLength(2);
+      for (const way of ways) {
+        expect(way.via, ref).toBeUndefined();
+        expect(way.through, ref).toBeUndefined();
+        expect(way.person, ref).toBeUndefined();
+      }
+      expect(ways.map((way) => way.column).sort(), ref).toEqual([...pair].sort());
+      for (const column of pair) {
+        const found = table?.columns.find((c) => c.ref === column);
+        expect(found?.rules?.staff, `${ref}.${column}`).toBe(true);
+        // A row with half a pair would be read by one person only: neither may be empty.
+        expect(found?.nullable, `${ref}.${column}`).toBeUndefined();
+        expect(firstInAnIndex(table as Table, column), `${ref}.${column}`).toBe(true);
+      }
+    }
+  });
+
+  it("holds exactly two staff columns in each", () => {
+    for (const ref of Object.keys(PRIVATE)) {
+      const staffColumnsOf = (byRef.get(ref)?.columns ?? []).filter((c) => c.rules?.staff === true).map((c) => c.ref);
+      expect(staffColumnsOf.sort(), ref).toEqual(["manager_id", "rep_id"]);
+    }
+  });
+
+  it("is reached through by no other table", () => {
+    const leaning: string[] = [];
+    for (const table of tables) {
+      for (const way of table.belongs ?? []) {
+        const parent = way.via === undefined ? undefined : table.columns.find((c) => c.ref === way.via)?.references;
+        if (parent !== undefined && parent in PRIVATE && !(table.ref in PRIVATE)) leaning.push(`${table.ref} via ${way.via}`);
+        if (way.through !== undefined && way.through.table in PRIVATE) leaning.push(`${table.ref} through ${way.through.table}`);
+      }
+    }
+    expect(leaning).toEqual([]);
+  });
+});
+
+describe("the listings a table is read through are limited by their own person", () => {
+  it("lists a conversation's people once each", () => {
+    const members = byRef.get("thread_members");
+    expect(members?.unique).toEqual([["thread_id", "user_id"]]);
+    expect(members?.belongs).toEqual([{ column: "user_id" }]);
+    expect(byRef.get("threads")?.belongs).toEqual([{ through: { table: "thread_members", link: "thread_id", user: "user_id" } }]);
+    expect(byRef.get("messages")?.belongs).toEqual([{ via: "thread_id" }]);
+  });
+
+  it("keeps one profile a person", () => {
+    expect(byRef.get("reps")?.columns.find((c) => c.ref === "user_id")).toMatchObject({ unique: true, rules: { staff: true } });
+  });
+});
+
+describe("the moves of this batch's three state columns", () => {
+  it("lets an enquiry be claimed, passed or dropped, and a passed one claimed or dropped", () => {
+    const enquiries = byRef.get("enquiries") as Table;
+    expect(enquiries.states).toMatchObject({ column: "state", initial: "open" });
+    expect(movesFrom(enquiries, "open").map((move) => move.to)).toEqual(["claimed", "passed", "dropped"]);
+    expect(movesFrom(enquiries, "passed").map((move) => move.to)).toEqual(["claimed", "dropped"]);
+    expect(Object.keys(enquiries.states?.moves ?? {})).toEqual(["open", "passed"]);
+  });
+
+  it("passes an enquiry only to somebody, by a hand-over that asks who", () => {
+    const enquiries = byRef.get("enquiries") as Table;
+    const pass = movesFrom(enquiries, "open").find((move) => move.to === "passed");
+    expect(pass?.requires?.where).toEqual([{ column: "passed_to_id", isNull: false }]);
+    const button = enquiries.states?.actions?.find((action) => action.id === "pass");
+    expect(button).toMatchObject({ move: { to: "passed" }, ask: ["passed_to_id"], handOver: true });
+    // No other button of this batch hands a row over.
+    const handOvers = tables.flatMap((table) => (table.states?.actions ?? []).filter((action) => action.handOver === true).map((action) => `${table.ref}.${action.id}`));
+    expect(handOvers).toEqual(["enquiries.pass"]);
+  });
+
+  it("writes who claimed an enquiry when it is claimed", () => {
+    const claimedBy = byRef.get("enquiries")?.columns.find((c) => c.ref === "claimed_by_id") as unknown as { rules?: { stamp?: unknown } };
+    expect(claimedBy.rules?.stamp).toEqual({ set: "user-id", on: { column: "state", values: ["claimed"] } });
+  });
+
+  it("cancels a showroom booking from any live state, and only with a reason", () => {
+    const bookings = byRef.get("showroom_bookings") as Table;
+    expect(bookings.states).toMatchObject({ column: "state", initial: "tentative" });
+    expect(movesFrom(bookings, "tentative").map((move) => move.to)).toEqual(["confirmed", "cancelled"]);
+    expect(movesFrom(bookings, "confirmed").map((move) => move.to)).toEqual(["done", "cancelled"]);
+    expect(movesFrom(bookings, "done").map((move) => move.to)).toEqual(["cancelled"]);
+    for (const from of ["tentative", "confirmed", "done"]) {
+      const cancel = movesFrom(bookings, from).find((move) => move.to === "cancelled");
+      expect(cancel?.requires?.where, from).toEqual([{ column: "cancel_reason", isNull: false }]);
+    }
+    expect(bookings.states?.actions?.find((action) => action.id === "cancel")).toMatchObject({ ask: ["cancel_reason"] });
+  });
+
+  it("closes a meeting's decision as done or carried", () => {
+    const decisions = byRef.get("meeting_decisions") as Table;
+    expect(decisions.states).toEqual({ column: "state", initial: "open", moves: { open: ["done", "carried"] } });
+  });
+
+  it("starts every states column in its first state", () => {
+    for (const table of tables) {
+      if (table.states === undefined) continue;
+      const column = table.columns.find((c) => c.ref === table.states?.column) as unknown as { default?: string } | undefined;
+      expect(column?.default, table.ref).toBe(table.states.initial);
+    }
+  });
+});
+
+describe("what this batch leaves for a later one", () => {
+  it("holds no overlap rule on a showroom booking yet", () => {
+    // The core's booking rule needs a kind, a table of who does what, weekly
+    // hours and a grid, none of which the plan gives the showroom. The day one
+    // is written, this fails and the note in the plan is struck.
+    const bookings = byRef.get("showroom_bookings");
+    expect(bookings?.booking).toBeUndefined();
+    expect(bookings?.capacity).toBeUndefined();
+  });
+
+  it("keeps an Inventory item as plain text until the add-on link is written", () => {
+    for (const ref of ["samples", "display_pieces"]) {
+      const item = byRef.get(ref)?.columns.find((c) => c.ref === "item") as unknown as { type: string; maxLength?: number; rules?: unknown };
+      expect(item, ref).toEqual(expect.objectContaining({ type: "text", maxLength: 64, nullable: true }));
+      expect(item.rules, ref).toBeUndefined();
+    }
+  });
+
+  it("declares no outbox yet: no kind has a template", () => {
+    expect((manifest as unknown as { outbox?: unknown }).outbox).toBeUndefined();
+  });
+});
+
+describe("the outbox table is the shape the outbox word asks for", () => {
+  it("validates with the word written over it, and no kind", () => {
+    const withWord = { ...structuredClone(manifest), outbox: OUTBOX_WORD };
+    const result = validateManifest(withWord);
+    expect(result.ok ? [] : result.issues).toEqual([]);
+  });
+
+  it("offers every status Adminium writes, and held", () => {
+    const status = byRef.get("outbox")?.columns.find((c) => c.ref === "status");
+    expect(status?.enum).toEqual(["held", "queued", "sent", "failed", "skipped"]);
+  });
+
+  it("keeps every link of it empty-able, since not every email is about one", () => {
+    const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id"]);
+    for (const link of links) expect(link.nullable, link.ref).toBe(true);
+  });
+
+  it("would refuse a word that names a column the table lacks, so the check above is no stub", () => {
+    const broken = { ...structuredClone(manifest), outbox: { ...OUTBOX_WORD, columns: { ...OUTBOX_WORD.columns, due: "due" } } };
+    expect(validateManifest(broken).ok).toBe(false);
+  });
+});
+
 describe("every table, column and enum value is named in all eight languages", () => {
   it("names each table, one row of it and many", () => {
     const gaps: string[] = [];
@@ -423,6 +689,19 @@ describe("every table, column and enum value is named in all eight languages", (
         }
       }
     }
+    expect(gaps).toEqual([]);
+  });
+
+  it("names each button of a table's states", () => {
+    const gaps: string[] = [];
+    let buttons = 0;
+    for (const table of tables) {
+      for (const action of table.states?.actions ?? []) {
+        buttons += 1;
+        for (const locale of missing(action.label)) gaps.push(`${table.ref} button "${action.id}" ${locale}`);
+      }
+    }
+    expect(buttons).toBeGreaterThan(0);
     expect(gaps).toEqual([]);
   });
 
