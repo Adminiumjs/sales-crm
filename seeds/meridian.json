@@ -11885,6 +11885,71 @@
    ]
   },
   {
+   "ref": "crew_days",
+   "rows": [
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "mon"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "tue"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "wed"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "thu"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "fri"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "mon"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "tue"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "wed"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "thu"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "fri"
+    }
+   ]
+  },
+  {
    "ref": "jobs",
    "rows": [
     {

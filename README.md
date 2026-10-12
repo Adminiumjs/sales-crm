@@ -17,13 +17,13 @@ and what comes after them, vehicles and crew.
 | | |
 | --- | --- |
 | Key | `crm` (tables are named `crm_…`) |
-| Tables | 73 |
-| Pages | 73, one records page per table, under ten menu headings |
+| Tables | 74 |
+| Pages | 74, one records page per table, under ten menu headings |
 | Roles | 9 |
 | Shipped rules | 4, switched on at install |
 | E-mails | 3, in eight languages |
 | Starting rows | 1: the settings row, written by the install with its defaults. The sample fills in Meridian's depot on it, and takes it off again |
-| Sample data | "Meridian", an office-furniture wholesaler: 678 rows in 68 tables, 16 people, one team |
+| Sample data | "Meridian", an office-furniture wholesaler: 688 rows in 69 tables, 16 people, one team |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic, Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -134,13 +134,19 @@ opening receipt and to send four orders, so what is on hand, what it cost and
 what is on order are Inventory's own figures, and "Remove sample data" takes
 them out again.
 
+## What cannot be taken twice
+
+A showroom space is booked once for a time: a second tentative or confirmed
+booking that overlaps the first is refused, and a cancelled one frees its time.
+A job visit is not booked on a weekday its crew does not work (the days are a
+short list per crew, Monday to Friday in the sample). A crew may do several
+visits on a day it works, and a crew with no days written down is held to none.
+
 ## What does not work yet
 
 - **No screens.** The staff side shows one "being rebuilt" page. `reference/`
   holds the screens the app had before the rebuild; nothing builds, tests or
   ships that folder.
-- **Two showroom bookings can overlap**, and a job visit can be booked on a day
-  its crew does not work. Nothing refuses either yet.
 - **Every part is always on.** Showroom, jobs, aftercare, supply and vehicles
   are meant to be parts an owner can leave out at install.
 - **The role names are English** in every language.

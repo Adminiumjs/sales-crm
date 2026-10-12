@@ -144,10 +144,10 @@ describe("the sample is the one the manifest names", () => {
 });
 
 describe("the sample's rows are the ledger's", () => {
-  it("has 678 rows in 68 tables: the ledger's 661 in 67, and the 17 list prices its quotes were written from", () => {
+  it("has 688 rows in 69 tables: the ledger's 661 in 67, the 17 list prices its quotes were written from, and the two crews' ten working days", () => {
     const counts = Object.fromEntries([...tables].map(([table, list]) => [table, list.length]));
-    expect(Object.keys(counts)).toHaveLength(68);
-    expect(Object.values(counts).reduce((total, n) => total + n, 0)).toBe(678);
+    expect(Object.keys(counts)).toHaveLength(69);
+    expect(Object.values(counts).reduce((total, n) => total + n, 0)).toBe(688);
     expect(counts["price_list"]).toBe(17);
     expect(counts).toMatchObject({
       settings: 1, stages: 5, lost_reasons: 5, companies: 9, contacts: 13, territories: 4, territory_places: 9,
@@ -157,7 +157,7 @@ describe("the sample's rows are the ledger's", () => {
       meetings: 1, meeting_slots: 6, meeting_decisions: 3, threads: 4, thread_members: 10, messages: 12, starters: 1,
       starter_steps: 12, covers: 1, site_visits: 10, visit_notes: 2, visit_agreed: 6, showroom_spaces: 3,
       showroom_bookings: 9, samples: 8, sample_loans: 4, sample_chases: 3, display_pieces: 9, jobs: 8, crews: 2,
-      crew_members: 5, vehicles: 3, job_visits: 19, sign_offs: 7, snags: 9, delivery_notes: 5, delivery_note_lines: 15,
+      crew_members: 5, crew_days: 10, vehicles: 3, job_visits: 19, sign_offs: 7, snags: 9, delivery_notes: 5, delivery_note_lines: 15,
       waste_removals: 5, feedback: 5, complaints: 7, warranty_claims: 5, vehicle_checks: 2, vehicle_faults: 3,
       fuel_fills: 7, time_sheets: 5, time_sheet_lines: 25, certificates: 23, subcontractors: 5, insurance_incidents: 5,
     });

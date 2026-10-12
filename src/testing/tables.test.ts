@@ -184,6 +184,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "access_note", "ask_for", "site_phone"] },
   crews: { nullable: ["vehicle_id", "day_hours"] },
   crew_members: { nullable: ["since"] },
+  // The weekdays a crew works: a visit is not booked on a day it has no row for.
+  crew_days: { nullable: [] },
   job_visits: {
     nullable: [
       "day",
@@ -256,8 +258,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
-/** How many tables the manifest holds: the 72 the plan lists, and the price list ruling F asked for. */
-const TABLE_COUNT = 73;
+/** How many tables the manifest holds: the 72 the plan lists, the price list ruling F asked for, and the weekdays a crew works. */
+const TABLE_COUNT = 74;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -890,13 +892,13 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
 });
 
 describe("what this batch leaves for a later one", () => {
-  it("holds no overlap rule on a showroom booking yet", () => {
-    // The core's booking rule needs a kind, a table of who does what, weekly
-    // hours and a grid, none of which the plan gives the showroom. The day one
-    // is written, this fails and the note in the plan is struck.
-    const bookings = byRef.get("showroom_bookings");
-    expect(bookings?.booking).toBeUndefined();
-    expect(bookings?.capacity).toBeUndefined();
+  it("lets no two live bookings of one showroom space overlap", () => {
+    // Not the core's booking rule (kinds of visit, who does what, a grid): the plain one. A space, a
+    // start and its minutes; a cancelled booking and one that is over take nothing.
+    const bookings = byRef.get("showroom_bookings") as unknown as { occupies?: unknown; booking?: unknown; capacity?: unknown };
+    expect(bookings.occupies).toEqual({ resource: "space_id", start: "starts_at", minutes: "minutes", countWhere: { column: "state", values: ["tentative", "confirmed"] } });
+    expect(bookings.booking).toBeUndefined();
+    expect(bookings.capacity).toBeUndefined();
   });
 
   it("links a stock item and a supplier into Inventory, as the whole number Inventory's keys are", () => {
@@ -913,11 +915,23 @@ describe("what this batch leaves for a later one", () => {
     expect(suggests).toContain("inventory");
   });
 
-  it("writes no rule that fits a crew's day: a visit on a day without hours is not refused yet", () => {
-    // The plan wants it refused. The only word that knows a person's hours is
-    // the booking rule, which this app's tables do not have what it asks for.
-    expect(byRef.get("job_visits")?.booking).toBeUndefined();
-    expect(byRef.get("job_visits")?.capacity).toBeUndefined();
+  it("refuses a booked visit on a weekday its crew does not work, and lets a crew do several a day", () => {
+    // The rows share the day (over a crew's normal day is allowed and flagged when read): only the
+    // crew's week is asked, and only of a visit that is booked. A crew with no days written keeps no week.
+    const visits = byRef.get("job_visits") as unknown as { occupies?: unknown; booking?: unknown; capacity?: unknown };
+    expect(visits.occupies).toEqual({
+      resource: "crew_id",
+      day: "day",
+      shared: true,
+      countWhere: { column: "state", values: ["booked"] },
+      hours: { table: "crew_days", resource: "crew_id", weekday: "weekday" },
+    });
+    expect(visits.booking).toBeUndefined();
+    expect(visits.capacity).toBeUndefined();
+    const days = byRef.get("crew_days") as unknown as { unique?: string[][]; columns: { ref: string; type: string; enum?: string[]; references?: string }[] };
+    expect(days.unique).toEqual([["crew_id", "weekday"]]);
+    expect(days.columns.find((c) => c.ref === "crew_id")).toMatchObject({ type: "fk", references: "crews" });
+    expect(days.columns.find((c) => c.ref === "weekday")?.enum).toEqual(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
   });
 
   it("declares the outbox over the table, with a template for each of its three kinds", () => {

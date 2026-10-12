@@ -99,7 +99,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["showroom_bookings", "sample_loans", "sample_chases"], "RCUD", "R", "RCU", "-", "-", "RCUD", "-", "-", "R"],
   // The operations manager reads no deal, so she names none: a job is made by the rule when its deal is won, and she works it.
   [["jobs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RU", "-", "R"],
-  [["crews", "crew_members"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
+  [["crews", "crew_members", "crew_days"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
   [["job_visits"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
   [["sign_offs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCU", "RC:own", "R"],
   [["snags"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
@@ -155,7 +155,7 @@ const PARTS: readonly (readonly [string, readonly string[]])[] = [
   ["team", ["reps", "targets", "one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas", "actions", "meetings", "meeting_slots", "meeting_decisions", "threads", "thread_members", "messages", "starters", "starter_steps", "covers", "cover_notes"]],
   ["inbox", ["enquiries", "shows"]],
   ["showroom", ["showroom_spaces", "showroom_bookings", "samples", "sample_loans", "sample_chases", "display_pieces"]],
-  ["jobs", ["jobs", "crews", "crew_members", "job_visits", "sign_offs", "snags", "delivery_notes", "delivery_note_lines", "waste_removals"]],
+  ["jobs", ["jobs", "crews", "crew_members", "crew_days", "job_visits", "sign_offs", "snags", "delivery_notes", "delivery_note_lines", "waste_removals"]],
   ["aftercare", ["feedback", "complaints", "warranty_claims"]],
   ["supply", ["deal_stock_needs"]],
   ["fleet", ["vehicles", "vehicle_checks", "vehicle_faults", "fuel_fills", "time_sheets", "time_sheet_lines", "certificates", "subcontractors", "insurance_incidents"]],
@@ -395,13 +395,13 @@ describe("the matrix covers every table, and every table's every role", () => {
   it("lists each of the manifest's tables once", () => {
     expect(MATRIX_TABLES.length).toBe(new Set(MATRIX_TABLES).size);
     expect([...MATRIX_TABLES].sort()).toEqual(tables.map((table) => table.ref).sort());
-    expect(MATRIX_TABLES).toHaveLength(73);
+    expect(MATRIX_TABLES).toHaveLength(74);
   });
 
-  it("has nine roles by seventy-three tables: 657 cells", () => {
+  it("has nine roles by seventy-four tables: 666 cells", () => {
     let cells = 0;
     for (const key of ROLES) cells += EXPECTED.get(key)?.size ?? 0;
-    expect(cells).toBe(657);
+    expect(cells).toBe(666);
   });
 });
 
@@ -591,7 +591,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 69, "sales-manager": 58, rep: 58, "account-manager": 29, marketer: 7, "front-desk": 11, "ops-manager": 23, crew: 15, "read-only": 63 });
+    expect(menu).toEqual({ admin: 70, "sales-manager": 58, rep: 58, "account-manager": 29, marketer: 7, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 64 });
   });
 });
 

@@ -8620,6 +8620,18 @@
             "deal_id"
           ]
         ],
+        "occupies": {
+          "resource": "space_id",
+          "start": "starts_at",
+          "minutes": "minutes",
+          "countWhere": {
+            "column": "state",
+            "values": [
+              "tentative",
+              "confirmed"
+            ]
+          }
+        },
         "states": {
           "column": "state",
           "initial": "tentative",
@@ -10143,6 +10155,161 @@
         ]
       },
       {
+        "ref": "crew_days",
+        "label": {
+          "en-US": "Crew working day",
+          "de-DE": "Arbeitstag des Teams",
+          "fr-FR": "Jour de travail de l’équipe",
+          "da-DK": "Holdets arbejdsdag",
+          "cs-CZ": "Pracovní den týmu",
+          "ar-EG": "يوم عمل الطاقم",
+          "zh-CN": "施工队工作日",
+          "zh-TW": "施工班工作日"
+        },
+        "labelPlural": {
+          "en-US": "Crew working days",
+          "de-DE": "Arbeitstage der Teams",
+          "fr-FR": "Jours de travail des équipes",
+          "da-DK": "Holdenes arbejdsdage",
+          "cs-CZ": "Pracovní dny týmů",
+          "ar-EG": "أيام عمل الطواقم",
+          "zh-CN": "施工队工作日",
+          "zh-TW": "施工班工作日"
+        },
+        "unique": [
+          [
+            "crew_id",
+            "weekday"
+          ]
+        ],
+        "indexes": [
+          [
+            "crew_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "crew_id",
+            "type": "fk",
+            "references": "crews",
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "weekday",
+            "type": "enum",
+            "enum": [
+              "mon",
+              "tue",
+              "wed",
+              "thu",
+              "fri",
+              "sat",
+              "sun"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "mon": {
+                    "en-US": "Monday",
+                    "de-DE": "Montag",
+                    "fr-FR": "Lundi",
+                    "da-DK": "Mandag",
+                    "cs-CZ": "Pondělí",
+                    "ar-EG": "الاثنين",
+                    "zh-CN": "周一",
+                    "zh-TW": "週一"
+                  },
+                  "tue": {
+                    "en-US": "Tuesday",
+                    "de-DE": "Dienstag",
+                    "fr-FR": "Mardi",
+                    "da-DK": "Tirsdag",
+                    "cs-CZ": "Úterý",
+                    "ar-EG": "الثلاثاء",
+                    "zh-CN": "周二",
+                    "zh-TW": "週二"
+                  },
+                  "wed": {
+                    "en-US": "Wednesday",
+                    "de-DE": "Mittwoch",
+                    "fr-FR": "Mercredi",
+                    "da-DK": "Onsdag",
+                    "cs-CZ": "Středa",
+                    "ar-EG": "الأربعاء",
+                    "zh-CN": "周三",
+                    "zh-TW": "週三"
+                  },
+                  "thu": {
+                    "en-US": "Thursday",
+                    "de-DE": "Donnerstag",
+                    "fr-FR": "Jeudi",
+                    "da-DK": "Torsdag",
+                    "cs-CZ": "Čtvrtek",
+                    "ar-EG": "الخميس",
+                    "zh-CN": "周四",
+                    "zh-TW": "週四"
+                  },
+                  "fri": {
+                    "en-US": "Friday",
+                    "de-DE": "Freitag",
+                    "fr-FR": "Vendredi",
+                    "da-DK": "Fredag",
+                    "cs-CZ": "Pátek",
+                    "ar-EG": "الجمعة",
+                    "zh-CN": "周五",
+                    "zh-TW": "週五"
+                  },
+                  "sat": {
+                    "en-US": "Saturday",
+                    "de-DE": "Samstag",
+                    "fr-FR": "Samedi",
+                    "da-DK": "Lørdag",
+                    "cs-CZ": "Sobota",
+                    "ar-EG": "السبت",
+                    "zh-CN": "周六",
+                    "zh-TW": "週六"
+                  },
+                  "sun": {
+                    "en-US": "Sunday",
+                    "de-DE": "Sonntag",
+                    "fr-FR": "Dimanche",
+                    "da-DK": "Søndag",
+                    "cs-CZ": "Neděle",
+                    "ar-EG": "الأحد",
+                    "zh-CN": "周日",
+                    "zh-TW": "週日"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Weekday",
+              "de-DE": "Wochentag",
+              "fr-FR": "Jour de la semaine",
+              "da-DK": "Ugedag",
+              "cs-CZ": "Den v týdnu",
+              "ar-EG": "يوم الأسبوع",
+              "zh-CN": "星期",
+              "zh-TW": "星期"
+            }
+          }
+        ]
+      },
+      {
         "ref": "job_visits",
         "label": {
           "en-US": "Job visit",
@@ -10193,6 +10360,22 @@
             "vehicle_id"
           ]
         ],
+        "occupies": {
+          "resource": "crew_id",
+          "day": "day",
+          "shared": true,
+          "countWhere": {
+            "column": "state",
+            "values": [
+              "booked"
+            ]
+          },
+          "hours": {
+            "table": "crew_days",
+            "resource": "crew_id",
+            "weekday": "weekday"
+          }
+        },
         "states": {
           "column": "state",
           "initial": "waiting",
@@ -15959,6 +16142,10 @@
         "table:@crew_members:create",
         "table:@crew_members:update",
         "table:@crew_members:delete",
+        "table:@crew_days:read",
+        "table:@crew_days:create",
+        "table:@crew_days:update",
+        "table:@crew_days:delete",
         "table:@job_visits:read",
         "table:@job_visits:create",
         "table:@job_visits:update",
@@ -16080,6 +16267,7 @@
         "page:@crm-jobs:view",
         "page:@crm-crews:view",
         "page:@crm-crew-members:view",
+        "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
         "page:@crm-snags:view",
@@ -18132,6 +18320,10 @@
         "table:@crew_members:create",
         "table:@crew_members:update",
         "table:@crew_members:delete",
+        "table:@crew_days:read",
+        "table:@crew_days:create",
+        "table:@crew_days:update",
+        "table:@crew_days:delete",
         "table:@job_visits:read",
         "table:@job_visits:create",
         "table:@job_visits:update",
@@ -18198,6 +18390,7 @@
         "page:@crm-jobs:view",
         "page:@crm-crews:view",
         "page:@crm-crew-members:view",
+        "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
         "page:@crm-snags:view",
@@ -18370,6 +18563,7 @@
         "app:@:staff",
         "table:@crews:read",
         "table:@crew_members:read",
+        "table:@crew_days:read",
         "table:@job_visits:read",
         "table:@job_visits:update",
         "table:@sign_offs:read",
@@ -18400,6 +18594,7 @@
         "table:@settings:read",
         "page:@crm-crews:view",
         "page:@crm-crew-members:view",
+        "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
         "page:@crm-snags:view",
@@ -18675,6 +18870,7 @@
         "table:@jobs:read",
         "table:@crews:read",
         "table:@crew_members:read",
+        "table:@crew_days:read",
         "table:@job_visits:read",
         "table:@sign_offs:read",
         "table:@snags:read",
@@ -18738,6 +18934,7 @@
         "page:@crm-jobs:view",
         "page:@crm-crews:view",
         "page:@crm-crew-members:view",
+        "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
         "page:@crm-snags:view",
@@ -21117,6 +21314,31 @@
       }
     },
     {
+      "ref": "crm-crew-days",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.crew_days",
+        "fallback": "Crew working days"
+      },
+      "titles": {
+        "de-DE": "Arbeitstage der Teams",
+        "fr-FR": "Jours de travail des équipes",
+        "da-DK": "Holdenes arbejdsdage",
+        "cs-CZ": "Pracovní dny týmů",
+        "ar-EG": "أيام عمل الطواقم",
+        "zh-CN": "施工队工作日",
+        "zh-TW": "施工班工作日"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "calendar-days",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "crew_days"
+      }
+    },
+    {
       "ref": "crm-job-visits",
       "template": "page-crud",
       "title": {
@@ -21135,7 +21357,7 @@
       "nav": {
         "group": "jobs",
         "icon": "calendar-days",
-        "order": 4
+        "order": 5
       },
       "bindings": {
         "rows": "job_visits"
@@ -21160,7 +21382,7 @@
       "nav": {
         "group": "jobs",
         "icon": "signature",
-        "order": 5
+        "order": 6
       },
       "bindings": {
         "rows": "sign_offs"
@@ -21185,7 +21407,7 @@
       "nav": {
         "group": "jobs",
         "icon": "triangle-alert",
-        "order": 6
+        "order": 7
       },
       "bindings": {
         "rows": "snags"
@@ -21210,7 +21432,7 @@
       "nav": {
         "group": "jobs",
         "icon": "clipboard-list",
-        "order": 7
+        "order": 8
       },
       "bindings": {
         "rows": "delivery_notes"
@@ -21235,7 +21457,7 @@
       "nav": {
         "group": "jobs",
         "icon": "list",
-        "order": 8
+        "order": 9
       },
       "bindings": {
         "rows": "delivery_note_lines"
@@ -21260,7 +21482,7 @@
       "nav": {
         "group": "jobs",
         "icon": "recycle",
-        "order": 9
+        "order": 10
       },
       "bindings": {
         "rows": "waste_removals"
