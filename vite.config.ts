@@ -2,9 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
-// `base` defaults to "/" (root deploy on Vercel / DigitalOcean). The
-// `build:demo` script overrides it with --base=/demo/sales-crm/ so the app can
-// be served from the Adminium demo sub-path.
+// `base` defaults to "/". `build:surface:staff` overrides it with
+// --base=/apps/crm/staff/, where Adminium serves the staff side.
 /*
  * Every build-time flag is defined here, ALWAYS, even when unset.
  *
@@ -68,15 +67,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        /*
-         * Two vendor chunks. React barely changes between releases and the
-         * icon set is the biggest dependency, so splitting them keeps the app
-         * chunk under Rollup's 500 kB warning and lets a browser reuse both
-         * across deploys.
-         */
+        // React barely changes between releases: its own chunk is reused across deploys.
         manualChunks: {
           react: ["react", "react-dom", "react-dom/client"],
-          icons: ["lucide-react"],
         },
       },
     },

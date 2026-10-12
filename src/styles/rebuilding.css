@@ -1,0 +1,17 @@
+/* The one page the app has while it is rebuilt (`app/App.tsx`). */
+.crm-rebuilding {
+  max-inline-size: 34rem;
+  margin-inline: auto;
+  padding-block: clamp(48px, 16vh, 160px);
+  padding-inline: var(--gutter);
+}
+.crm-rebuilding h1 {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+.crm-rebuilding p {
+  margin: 0;
+  color: var(--fg-muted);
+  line-height: 1.6;
+}

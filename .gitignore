@@ -5,8 +5,7 @@ dist
 *.local
 .vercel
 
-# .env holds a real ADMINIUM_SECRET — README and .env.example both tell the
-# reader to put one there, so it must never be committable by a stray `git add`.
+# A lane's .env holds a real ADMINIUM_SECRET, so it must never be committable
+# by a stray `git add`.
 .env
 .env.*
-!.env.example
