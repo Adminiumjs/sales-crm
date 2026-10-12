@@ -2304,6 +2304,10 @@
                     {
                       "column": "total",
                       "gt": 0
+                    },
+                    {
+                      "column": "may_send",
+                      "eq": 1
                     }
                   ]
                 }

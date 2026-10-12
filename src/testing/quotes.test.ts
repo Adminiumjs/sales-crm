@@ -259,30 +259,18 @@ describe("a version says whether it needs approval, and whether it may be sent",
   });
 
   /*
-   * THE GAP, WHICH CAN NOW BE CLOSED. The plan holds the send itself to the
-   * approval: draft → sent only while `may_send` is 1. A table built on a shape
-   * could not say so: its moves were the shape's, and the install refused the
-   * manifest. Adminium has since learned to let an app hold a shape's move to a
-   * condition on a column the app added, and the validator vendored here says
-   * so. The manifest does not write the condition yet: that is a later task's,
-   * with its proof on three databases. Until then the move below is the shape's
-   * own, and nothing on the server stops a write that sends a quote which needs
-   * approval.
-   *
-   * When the condition is written in `manifest.json`, the first two lines fail:
-   * turn this test round.
+   * THE SEND IS HELD TO THE APPROVAL. draft → sent only while `may_send` is 1:
+   * a quote more than the threshold under list is not sent until the manager
+   * has approved it, on every route that moves a state, not only on a screen
+   * that greys a button out. A table built on a shape may hold the shape's move
+   * to a condition on a column the app itself added, and to nothing looser:
+   * the shape's own condition (a total above nothing) stays first, as written.
    */
-  it("could hold the send to the approval, and does not yet", () => {
+  it("holds the send to the approval, beside the shape's own condition", () => {
     const send = table("quotes").states?.moves["draft"]?.[0] as Move;
     expect(send.to).toBe("sent");
-    expect(send.requires?.where?.map((condition) => condition.column)).toEqual(["total"]);
-
-    const gated = changed((copy) => {
-      const move = copy.requiredSchema.tables.find((t) => t.ref === "quotes")!.states!.moves["draft"]![0] as Move;
-      move.requires!.where!.push({ column: "may_send", eq: 1 } as never);
-    });
-    expect(validateManifest(gated).ok).toBe(true);
-    expect(shapeConformanceIssues(gated as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([]);
+    expect(send.requires?.where).toEqual([{ column: "total", gt: 0 }, { column: "may_send", eq: 1 }]);
+    expect(shapeConformanceIssues(manifest as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([]);
 
     // Only on a column the app added: a condition on one of the shape's own is still refused.
     const onTheShapes = changed((copy) => {
