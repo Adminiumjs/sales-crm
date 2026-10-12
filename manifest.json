@@ -11,7 +11,7 @@
   "license": "AGPL-3.0-only",
   "description": {
     "key": "mft.crm.desc",
-    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling and for accounts, and no screens yet; quotes, the team’s week and the rest follow."
+    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling, with quotes, and for accounts, and no screens yet; the team’s week and the rest follow."
   },
   "categories": [
     "crm"
@@ -457,13 +457,61 @@
             }
           },
           {
+            "ref": "quoted_amount",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "rules": {
+              "rollup": {
+                "from": "quotes",
+                "via": "deal_id",
+                "latest": {
+                  "of": "total",
+                  "by": "sent_at",
+                  "row": "quote_id"
+                },
+                "unlessSet": "withdrawn_at"
+              }
+            },
+            "label": {
+              "en-US": "Quoted amount",
+              "de-DE": "Angebotener Betrag",
+              "fr-FR": "Montant du devis",
+              "da-DK": "Tilbudt beløb",
+              "cs-CZ": "Částka z nabídky",
+              "ar-EG": "المبلغ المعروض",
+              "zh-CN": "报价金额",
+              "zh-TW": "報價金額"
+            }
+          },
+          {
+            "ref": "quote_id",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Quote the amount is from",
+              "de-DE": "Angebot, aus dem der Betrag stammt",
+              "fr-FR": "Devis d’où vient le montant",
+              "da-DK": "Tilbud, beløbet kommer fra",
+              "cs-CZ": "Nabídka, ze které částka pochází",
+              "ar-EG": "عرض السعر الذي جاء منه المبلغ",
+              "zh-CN": "金额所依据的报价单",
+              "zh-TW": "金額所依據的報價單"
+            }
+          },
+          {
             "ref": "amount",
             "type": "decimal",
             "scale": "currency",
             "rules": {
               "formula": {
                 "coalesce": [
-                  "typed_amount",
+                  {
+                    "coalesce": [
+                      "quoted_amount",
+                      "typed_amount"
+                    ]
+                  },
                   0
                 ]
               }
@@ -1250,6 +1298,1425 @@
               "ar-EG": "الترتيب",
               "zh-CN": "排序",
               "zh-TW": "排序"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "quotes",
+        "label": {
+          "en-US": "Quote",
+          "de-DE": "Angebot",
+          "fr-FR": "Devis",
+          "da-DK": "Tilbud",
+          "cs-CZ": "Nabídka",
+          "ar-EG": "عرض سعر",
+          "zh-CN": "报价单",
+          "zh-TW": "報價單"
+        },
+        "labelPlural": {
+          "en-US": "Quotes",
+          "de-DE": "Angebote",
+          "fr-FR": "Devis",
+          "da-DK": "Tilbud",
+          "cs-CZ": "Nabídky",
+          "ar-EG": "عروض الأسعار",
+          "zh-CN": "报价单",
+          "zh-TW": "報價單"
+        },
+        "keyField": "number",
+        "builtOn": "invoices/quote@1",
+        "part": "document",
+        "belongs": [
+          {
+            "via": "deal_id"
+          }
+        ],
+        "indexes": [
+          [
+            "replaces_id"
+          ],
+          [
+            "status",
+            "valid_until"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "number_seq",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "sequence": {
+                "gapless": true,
+                "startSetting": {
+                  "addOn": "invoices",
+                  "setting": "number_start_quote"
+                }
+              }
+            },
+            "label": {
+              "en-US": "Number in the series",
+              "de-DE": "Laufende Nummer",
+              "fr-FR": "Numéro dans la série",
+              "da-DK": "Nummer i rækken",
+              "cs-CZ": "Pořadové číslo",
+              "ar-EG": "الرقم في السلسلة",
+              "zh-CN": "序列号",
+              "zh-TW": "序號"
+            }
+          },
+          {
+            "ref": "number",
+            "type": "text",
+            "maxLength": 24,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "format": {
+                "from": "number_seq",
+                "prefixSetting": {
+                  "addOn": "invoices",
+                  "setting": "prefix_quote"
+                },
+                "pad": 4
+              }
+            },
+            "label": {
+              "en-US": "Number",
+              "de-DE": "Nummer",
+              "fr-FR": "Numéro",
+              "da-DK": "Nummer",
+              "cs-CZ": "Číslo",
+              "ar-EG": "الرقم",
+              "zh-CN": "编号",
+              "zh-TW": "編號"
+            }
+          },
+          {
+            "ref": "status",
+            "type": "enum",
+            "enum": [
+              "draft",
+              "sent",
+              "accepted",
+              "declined",
+              "withdrawn"
+            ],
+            "default": "draft",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "draft": {
+                    "en-US": "Draft",
+                    "de-DE": "Entwurf",
+                    "fr-FR": "Brouillon",
+                    "da-DK": "Kladde",
+                    "cs-CZ": "Koncept",
+                    "ar-EG": "مسودة",
+                    "zh-CN": "草稿",
+                    "zh-TW": "草稿"
+                  },
+                  "sent": {
+                    "en-US": "Sent",
+                    "de-DE": "Gesendet",
+                    "fr-FR": "Envoyé",
+                    "da-DK": "Sendt",
+                    "cs-CZ": "Odesláno",
+                    "ar-EG": "أُرسل",
+                    "zh-CN": "已发送",
+                    "zh-TW": "已送出"
+                  },
+                  "accepted": {
+                    "en-US": "Accepted",
+                    "de-DE": "Angenommen",
+                    "fr-FR": "Accepté",
+                    "da-DK": "Accepteret",
+                    "cs-CZ": "Přijato",
+                    "ar-EG": "مقبول",
+                    "zh-CN": "已接受",
+                    "zh-TW": "已接受"
+                  },
+                  "declined": {
+                    "en-US": "Declined",
+                    "de-DE": "Abgelehnt",
+                    "fr-FR": "Refusé",
+                    "da-DK": "Afvist",
+                    "cs-CZ": "Odmítnuto",
+                    "ar-EG": "مرفوض",
+                    "zh-CN": "已拒绝",
+                    "zh-TW": "已拒絕"
+                  },
+                  "withdrawn": {
+                    "en-US": "Withdrawn",
+                    "de-DE": "Zurückgezogen",
+                    "fr-FR": "Retiré",
+                    "da-DK": "Trukket tilbage",
+                    "cs-CZ": "Staženo",
+                    "ar-EG": "مسحوب",
+                    "zh-CN": "已撤回",
+                    "zh-TW": "已撤回"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Status",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "valid_until",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Valid until",
+              "de-DE": "Gültig bis",
+              "fr-FR": "Valable jusqu’au",
+              "da-DK": "Gælder til",
+              "cs-CZ": "Platí do",
+              "ar-EG": "صالح حتى",
+              "zh-CN": "有效期至",
+              "zh-TW": "有效期至"
+            }
+          },
+          {
+            "ref": "currency",
+            "type": "text",
+            "maxLength": 3,
+            "nullable": true,
+            "rules": {
+              "default": {
+                "from": "connection.currency"
+              }
+            },
+            "label": {
+              "en-US": "Currency",
+              "de-DE": "Währung",
+              "fr-FR": "Devise",
+              "da-DK": "Valuta",
+              "cs-CZ": "Měna",
+              "ar-EG": "العملة",
+              "zh-CN": "货币",
+              "zh-TW": "貨幣"
+            }
+          },
+          {
+            "ref": "tax_name",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "default": {
+                "from": {
+                  "addOn": "invoices",
+                  "setting": "tax_name"
+                }
+              }
+            },
+            "label": {
+              "en-US": "Tax",
+              "de-DE": "Steuer",
+              "fr-FR": "Taxe",
+              "da-DK": "Moms",
+              "cs-CZ": "Daň",
+              "ar-EG": "الضريبة",
+              "zh-CN": "税",
+              "zh-TW": "稅"
+            }
+          },
+          {
+            "ref": "tax_rate",
+            "type": "decimal",
+            "scale": 3,
+            "nullable": true,
+            "rules": {
+              "default": {
+                "from": {
+                  "addOn": "invoices",
+                  "setting": "default_tax_rate"
+                }
+              }
+            },
+            "label": {
+              "en-US": "Tax rate",
+              "de-DE": "Steuersatz",
+              "fr-FR": "Taux de taxe",
+              "da-DK": "Momssats",
+              "cs-CZ": "Sazba daně",
+              "ar-EG": "نسبة الضريبة",
+              "zh-CN": "税率",
+              "zh-TW": "稅率"
+            }
+          },
+          {
+            "ref": "subtotal",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "rules": {
+              "rollup": {
+                "from": "quote_lines",
+                "via": "document_id",
+                "sum": "amount"
+              }
+            },
+            "label": {
+              "en-US": "Subtotal",
+              "de-DE": "Zwischensumme",
+              "fr-FR": "Sous-total",
+              "da-DK": "Subtotal",
+              "cs-CZ": "Mezisoučet",
+              "ar-EG": "المجموع الفرعي",
+              "zh-CN": "小计",
+              "zh-TW": "小計"
+            }
+          },
+          {
+            "ref": "tax",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "round": {
+                  "div": [
+                    {
+                      "mul": [
+                        "subtotal",
+                        {
+                          "coalesce": [
+                            "tax_rate",
+                            0
+                          ]
+                        }
+                      ]
+                    },
+                    100
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Tax amount",
+              "de-DE": "Steuerbetrag",
+              "fr-FR": "Montant de la taxe",
+              "da-DK": "Momsbeløb",
+              "cs-CZ": "Výše daně",
+              "ar-EG": "مبلغ الضريبة",
+              "zh-CN": "税额",
+              "zh-TW": "稅額"
+            }
+          },
+          {
+            "ref": "total",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "add": [
+                  {
+                    "coalesce": [
+                      "subtotal",
+                      0
+                    ]
+                  },
+                  {
+                    "coalesce": [
+                      "tax",
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Total",
+              "de-DE": "Summe",
+              "fr-FR": "Total",
+              "da-DK": "I alt",
+              "cs-CZ": "Celkem",
+              "ar-EG": "الإجمالي",
+              "zh-CN": "合计",
+              "zh-TW": "合計"
+            }
+          },
+          {
+            "ref": "sent_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "sent"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Sent at",
+              "de-DE": "Gesendet am",
+              "fr-FR": "Envoyé le",
+              "da-DK": "Sendt den",
+              "cs-CZ": "Odesláno dne",
+              "ar-EG": "وقت الإرسال",
+              "zh-CN": "发送时间",
+              "zh-TW": "送出時間"
+            }
+          },
+          {
+            "ref": "decided_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "accepted",
+                    "declined",
+                    "withdrawn"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Customer decided at",
+              "de-DE": "Vom Kunden entschieden am",
+              "fr-FR": "Décision du client le",
+              "da-DK": "Kunden besluttede den",
+              "cs-CZ": "Zákazník rozhodl dne",
+              "ar-EG": "وقت قرار العميل",
+              "zh-CN": "客户决定时间",
+              "zh-TW": "客戶決定時間"
+            }
+          },
+          {
+            "ref": "withdraw_reason",
+            "type": "text",
+            "maxLength": 500,
+            "nullable": true,
+            "label": {
+              "en-US": "Why it was withdrawn",
+              "de-DE": "Warum es zurückgezogen wurde",
+              "fr-FR": "Motif du retrait",
+              "da-DK": "Hvorfor det blev trukket tilbage",
+              "cs-CZ": "Důvod stažení",
+              "ar-EG": "سبب السحب",
+              "zh-CN": "撤回原因",
+              "zh-TW": "撤回原因"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "index": true,
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "version",
+            "type": "int",
+            "default": 1,
+            "rules": {
+              "validation": {
+                "min": 1
+              }
+            },
+            "label": {
+              "en-US": "Version",
+              "de-DE": "Version",
+              "fr-FR": "Version",
+              "da-DK": "Version",
+              "cs-CZ": "Verze",
+              "ar-EG": "الإصدار",
+              "zh-CN": "版本",
+              "zh-TW": "版本"
+            }
+          },
+          {
+            "ref": "family_no",
+            "type": "text",
+            "maxLength": 24,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "replaces_id",
+                "from": "family_no",
+                "mode": "default"
+              }
+            },
+            "label": {
+              "en-US": "First version’s number",
+              "de-DE": "Nummer der ersten Version",
+              "fr-FR": "Numéro de la première version",
+              "da-DK": "Første versions nummer",
+              "cs-CZ": "Číslo první verze",
+              "ar-EG": "رقم الإصدار الأول",
+              "zh-CN": "首个版本的编号",
+              "zh-TW": "首個版本的編號"
+            }
+          },
+          {
+            "ref": "replaces_id",
+            "type": "fk",
+            "references": "quotes",
+            "nullable": true,
+            "label": {
+              "en-US": "Replaces",
+              "de-DE": "Ersetzt",
+              "fr-FR": "Remplace",
+              "da-DK": "Erstatter",
+              "cs-CZ": "Nahrazuje",
+              "ar-EG": "يحلّ محلّ",
+              "zh-CN": "替代的版本",
+              "zh-TW": "取代的版本"
+            }
+          },
+          {
+            "ref": "list_value",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "quote_lines",
+                "via": "document_id",
+                "sum": "list_amount"
+              }
+            },
+            "label": {
+              "en-US": "List value",
+              "de-DE": "Listenwert",
+              "fr-FR": "Valeur au tarif",
+              "da-DK": "Listeværdi",
+              "cs-CZ": "Hodnota podle ceníku",
+              "ar-EG": "القيمة بسعر القائمة",
+              "zh-CN": "目录价金额",
+              "zh-TW": "牌價金額"
+            }
+          },
+          {
+            "ref": "under_list_pct",
+            "type": "decimal",
+            "scale": 2,
+            "rules": {
+              "formula": {
+                "coalesce": [
+                  {
+                    "div": [
+                      {
+                        "mul": [
+                          {
+                            "sub": [
+                              "list_value",
+                              {
+                                "coalesce": [
+                                  "subtotal",
+                                  0
+                                ]
+                              }
+                            ]
+                          },
+                          100
+                        ]
+                      },
+                      "list_value"
+                    ]
+                  },
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Under list (%)",
+              "de-DE": "Unter Liste (%)",
+              "fr-FR": "Sous le tarif (%)",
+              "da-DK": "Under listepris (%)",
+              "cs-CZ": "Pod ceníkem (%)",
+              "ar-EG": "أقل من سعر القائمة (%)",
+              "zh-CN": "低于目录价 (%)",
+              "zh-TW": "低於牌價 (%)"
+            }
+          },
+          {
+            "ref": "threshold_pct",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "rules": {
+              "default": {
+                "from": {
+                  "table": "settings",
+                  "column": "approval_threshold_pct"
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approval threshold (%)",
+              "de-DE": "Genehmigungsschwelle (%)",
+              "fr-FR": "Seuil d’approbation (%)",
+              "da-DK": "Godkendelsesgrænse (%)",
+              "cs-CZ": "Hranice pro schválení (%)",
+              "ar-EG": "حدّ الموافقة (%)",
+              "zh-CN": "审批阈值 (%)",
+              "zh-TW": "審批門檻 (%)"
+            }
+          },
+          {
+            "ref": "needs_approval",
+            "type": "int",
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "gt": [
+                      "under_list_pct",
+                      {
+                        "coalesce": [
+                          "threshold_pct",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Needs approval",
+              "de-DE": "Braucht Genehmigung",
+              "fr-FR": "Approbation requise",
+              "da-DK": "Kræver godkendelse",
+              "cs-CZ": "Vyžaduje schválení",
+              "ar-EG": "يحتاج إلى موافقة",
+              "zh-CN": "需要审批",
+              "zh-TW": "需要審批"
+            }
+          },
+          {
+            "ref": "approval",
+            "type": "enum",
+            "enum": [
+              "none",
+              "asked",
+              "approved",
+              "refused"
+            ],
+            "default": "none",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "none": {
+                    "en-US": "Not asked",
+                    "de-DE": "Nicht angefragt",
+                    "fr-FR": "Non demandée",
+                    "da-DK": "Ikke anmodet",
+                    "cs-CZ": "Nevyžádáno",
+                    "ar-EG": "لم تُطلب",
+                    "zh-CN": "未申请",
+                    "zh-TW": "未申請"
+                  },
+                  "asked": {
+                    "en-US": "Asked",
+                    "de-DE": "Angefragt",
+                    "fr-FR": "Demandée",
+                    "da-DK": "Anmodet",
+                    "cs-CZ": "Vyžádáno",
+                    "ar-EG": "مطلوبة",
+                    "zh-CN": "已申请",
+                    "zh-TW": "已申請"
+                  },
+                  "approved": {
+                    "en-US": "Approved",
+                    "de-DE": "Genehmigt",
+                    "fr-FR": "Approuvée",
+                    "da-DK": "Godkendt",
+                    "cs-CZ": "Schváleno",
+                    "ar-EG": "تمت الموافقة",
+                    "zh-CN": "已批准",
+                    "zh-TW": "已核准"
+                  },
+                  "refused": {
+                    "en-US": "Refused",
+                    "de-DE": "Abgelehnt",
+                    "fr-FR": "Refusée",
+                    "da-DK": "Afvist",
+                    "cs-CZ": "Zamítnuto",
+                    "ar-EG": "مرفوضة",
+                    "zh-CN": "已驳回",
+                    "zh-TW": "已駁回"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approval",
+              "de-DE": "Genehmigung",
+              "fr-FR": "Approbation",
+              "da-DK": "Godkendelse",
+              "cs-CZ": "Schválení",
+              "ar-EG": "الموافقة",
+              "zh-CN": "审批",
+              "zh-TW": "審批"
+            }
+          },
+          {
+            "ref": "may_send",
+            "type": "int",
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "or": [
+                      {
+                        "eq": [
+                          "approval",
+                          "approved"
+                        ]
+                      },
+                      {
+                        "and": [
+                          {
+                            "eq": [
+                              "approval",
+                              "none"
+                            ]
+                          },
+                          {
+                            "eq": [
+                              "needs_approval",
+                              0
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "May be sent",
+              "de-DE": "Darf gesendet werden",
+              "fr-FR": "Peut être envoyé",
+              "da-DK": "Må sendes",
+              "cs-CZ": "Lze odeslat",
+              "ar-EG": "يمكن إرساله",
+              "zh-CN": "可以发送",
+              "zh-TW": "可以送出"
+            }
+          },
+          {
+            "ref": "asked_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "asked"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Asked by",
+              "de-DE": "Angefragt von",
+              "fr-FR": "Demandée par",
+              "da-DK": "Anmodet af",
+              "cs-CZ": "Vyžádal",
+              "ar-EG": "طلبها",
+              "zh-CN": "申请人",
+              "zh-TW": "申請人"
+            }
+          },
+          {
+            "ref": "asked_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "asked"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Asked at",
+              "de-DE": "Angefragt am",
+              "fr-FR": "Demandée le",
+              "da-DK": "Anmodet den",
+              "cs-CZ": "Vyžádáno dne",
+              "ar-EG": "وقت الطلب",
+              "zh-CN": "申请时间",
+              "zh-TW": "申請時間"
+            }
+          },
+          {
+            "ref": "ask_reason",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Why approval is asked",
+              "de-DE": "Begründung der Anfrage",
+              "fr-FR": "Motif de la demande",
+              "da-DK": "Begrundelse for anmodningen",
+              "cs-CZ": "Důvod žádosti",
+              "ar-EG": "سبب طلب الموافقة",
+              "zh-CN": "申请理由",
+              "zh-TW": "申請理由"
+            }
+          },
+          {
+            "ref": "decided_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "approved",
+                    "refused"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approval decided by",
+              "de-DE": "Genehmigung entschieden von",
+              "fr-FR": "Approbation décidée par",
+              "da-DK": "Godkendelse afgjort af",
+              "cs-CZ": "O schválení rozhodl",
+              "ar-EG": "قرّر الموافقة",
+              "zh-CN": "审批人",
+              "zh-TW": "審批人"
+            }
+          },
+          {
+            "ref": "approval_decided_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "approved",
+                    "refused"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approval decided at",
+              "de-DE": "Genehmigung entschieden am",
+              "fr-FR": "Approbation décidée le",
+              "da-DK": "Godkendelse afgjort den",
+              "cs-CZ": "O schválení rozhodnuto dne",
+              "ar-EG": "وقت قرار الموافقة",
+              "zh-CN": "审批时间",
+              "zh-TW": "審批時間"
+            }
+          },
+          {
+            "ref": "decision_note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Note on the decision",
+              "de-DE": "Notiz zur Entscheidung",
+              "fr-FR": "Note sur la décision",
+              "da-DK": "Note til afgørelsen",
+              "cs-CZ": "Poznámka k rozhodnutí",
+              "ar-EG": "ملاحظة على القرار",
+              "zh-CN": "审批备注",
+              "zh-TW": "審批備註"
+            }
+          },
+          {
+            "ref": "sent_to_contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Sent to",
+              "de-DE": "Gesendet an",
+              "fr-FR": "Envoyé à",
+              "da-DK": "Sendt til",
+              "cs-CZ": "Odesláno komu",
+              "ar-EG": "أُرسل إلى",
+              "zh-CN": "发送给",
+              "zh-TW": "送出對象"
+            }
+          },
+          {
+            "ref": "notes",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 2000
+              }
+            },
+            "label": {
+              "en-US": "Notes",
+              "de-DE": "Notizen",
+              "fr-FR": "Notes",
+              "da-DK": "Noter",
+              "cs-CZ": "Poznámky",
+              "ar-EG": "ملاحظات",
+              "zh-CN": "备注",
+              "zh-TW": "備註"
+            }
+          },
+          {
+            "ref": "share_code",
+            "type": "text",
+            "maxLength": 16,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "code": {
+                "length": 16
+              }
+            },
+            "label": {
+              "en-US": "Code of the buyer’s link",
+              "de-DE": "Code des Kundenlinks",
+              "fr-FR": "Code du lien de l’acheteur",
+              "da-DK": "Kode til køberens link",
+              "cs-CZ": "Kód odkazu pro kupujícího",
+              "ar-EG": "رمز رابط المشتري",
+              "zh-CN": "买方链接代码",
+              "zh-TW": "買方連結代碼"
+            }
+          },
+          {
+            "ref": "accepted_name",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Accepted by (name)",
+              "de-DE": "Angenommen von (Name)",
+              "fr-FR": "Accepté par (nom)",
+              "da-DK": "Accepteret af (navn)",
+              "cs-CZ": "Přijal (jméno)",
+              "ar-EG": "قَبِله (الاسم)",
+              "zh-CN": "接受人姓名",
+              "zh-TW": "接受人姓名"
+            }
+          },
+          {
+            "ref": "withdrawn_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "withdrawn"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Withdrawn at",
+              "de-DE": "Zurückgezogen am",
+              "fr-FR": "Retiré le",
+              "da-DK": "Trukket tilbage den",
+              "cs-CZ": "Staženo dne",
+              "ar-EG": "وقت السحب",
+              "zh-CN": "撤回时间",
+              "zh-TW": "撤回時間"
+            }
+          }
+        ],
+        "states": {
+          "column": "status",
+          "initial": "draft",
+          "moves": {
+            "draft": [
+              {
+                "to": "sent",
+                "requires": {
+                  "children": {
+                    "quote_lines": 1
+                  },
+                  "where": [
+                    {
+                      "column": "total",
+                      "gt": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "sent": [
+              "accepted",
+              "declined",
+              "withdrawn"
+            ]
+          },
+          "lock": {
+            "when": [
+              "sent",
+              "accepted",
+              "declined",
+              "withdrawn"
+            ],
+            "except": [
+              "valid_until",
+              "decided_at",
+              "withdraw_reason",
+              "sent_to_contact_id",
+              "accepted_name"
+            ]
+          },
+          "children": {
+            "quote_lines": {
+              "via": "document_id",
+              "lock": true
+            }
+          },
+          "onlyLater": [
+            "valid_until"
+          ],
+          "actions": [
+            {
+              "id": "ask-approval",
+              "label": {
+                "en-US": "Ask for approval",
+                "de-DE": "Genehmigung anfragen",
+                "fr-FR": "Demander l’approbation",
+                "da-DK": "Anmod om godkendelse",
+                "cs-CZ": "Požádat o schválení",
+                "ar-EG": "اطلب الموافقة",
+                "zh-CN": "申请审批",
+                "zh-TW": "申請審批"
+              },
+              "set": {
+                "approval": "asked"
+              },
+              "in": [
+                "draft"
+              ],
+              "ask": [
+                "ask_reason"
+              ]
+            },
+            {
+              "id": "approve",
+              "label": {
+                "en-US": "Approve",
+                "de-DE": "Genehmigen",
+                "fr-FR": "Approuver",
+                "da-DK": "Godkend",
+                "cs-CZ": "Schválit",
+                "ar-EG": "وافق",
+                "zh-CN": "批准",
+                "zh-TW": "核准"
+              },
+              "set": {
+                "approval": "approved"
+              },
+              "in": [
+                "draft"
+              ],
+              "tone": "primary",
+              "ask": [
+                "decision_note"
+              ]
+            },
+            {
+              "id": "refuse",
+              "label": {
+                "en-US": "Refuse",
+                "de-DE": "Ablehnen",
+                "fr-FR": "Refuser",
+                "da-DK": "Afvis",
+                "cs-CZ": "Zamítnout",
+                "ar-EG": "ارفض",
+                "zh-CN": "驳回",
+                "zh-TW": "駁回"
+              },
+              "set": {
+                "approval": "refused"
+              },
+              "in": [
+                "draft"
+              ],
+              "tone": "danger",
+              "ask": [
+                "decision_note"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "ref": "quote_lines",
+        "label": {
+          "en-US": "Quote line",
+          "de-DE": "Angebotsposition",
+          "fr-FR": "Ligne de devis",
+          "da-DK": "Tilbudslinje",
+          "cs-CZ": "Položka nabídky",
+          "ar-EG": "بند عرض السعر",
+          "zh-CN": "报价明细",
+          "zh-TW": "報價明細"
+        },
+        "labelPlural": {
+          "en-US": "Quote lines",
+          "de-DE": "Angebotspositionen",
+          "fr-FR": "Lignes de devis",
+          "da-DK": "Tilbudslinjer",
+          "cs-CZ": "Položky nabídek",
+          "ar-EG": "بنود عروض الأسعار",
+          "zh-CN": "报价明细",
+          "zh-TW": "報價明細"
+        },
+        "builtOn": "invoices/quote@1",
+        "part": "lines",
+        "belongs": [
+          {
+            "via": "document_id"
+          }
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "document_id",
+            "type": "fk",
+            "references": "quotes",
+            "index": true,
+            "label": {
+              "en-US": "Quote",
+              "de-DE": "Angebot",
+              "fr-FR": "Devis",
+              "da-DK": "Tilbud",
+              "cs-CZ": "Nabídka",
+              "ar-EG": "عرض السعر",
+              "zh-CN": "报价单",
+              "zh-TW": "報價單"
+            }
+          },
+          {
+            "ref": "position",
+            "type": "int",
+            "default": 0,
+            "label": {
+              "en-US": "Position",
+              "de-DE": "Reihenfolge",
+              "fr-FR": "Ordre",
+              "da-DK": "Rækkefølge",
+              "cs-CZ": "Pořadí",
+              "ar-EG": "الترتيب",
+              "zh-CN": "顺序",
+              "zh-TW": "順序"
+            }
+          },
+          {
+            "ref": "description",
+            "type": "text",
+            "maxLength": 500,
+            "nullable": true,
+            "label": {
+              "en-US": "Description",
+              "de-DE": "Beschreibung",
+              "fr-FR": "Description",
+              "da-DK": "Beskrivelse",
+              "cs-CZ": "Popis",
+              "ar-EG": "الوصف",
+              "zh-CN": "描述",
+              "zh-TW": "描述"
+            }
+          },
+          {
+            "ref": "qty",
+            "type": "decimal",
+            "scale": 3,
+            "default": 1,
+            "label": {
+              "en-US": "Quantity",
+              "de-DE": "Menge",
+              "fr-FR": "Quantité",
+              "da-DK": "Antal",
+              "cs-CZ": "Množství",
+              "ar-EG": "الكمية",
+              "zh-CN": "数量",
+              "zh-TW": "數量"
+            }
+          },
+          {
+            "ref": "rate",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Rate",
+              "de-DE": "Einzelpreis",
+              "fr-FR": "Prix unitaire",
+              "da-DK": "Stykpris",
+              "cs-CZ": "Jednotková cena",
+              "ar-EG": "السعر",
+              "zh-CN": "单价",
+              "zh-TW": "單價"
+            }
+          },
+          {
+            "ref": "discount_kind",
+            "type": "enum",
+            "enum": [
+              "amount",
+              "percent"
+            ],
+            "default": "amount",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "amount": {
+                    "en-US": "Amount off",
+                    "de-DE": "Betrag abziehen",
+                    "fr-FR": "Montant déduit",
+                    "da-DK": "Beløb fratrukket",
+                    "cs-CZ": "Sleva v částce",
+                    "ar-EG": "خصم بمبلغ",
+                    "zh-CN": "减免金额",
+                    "zh-TW": "減免金額"
+                  },
+                  "percent": {
+                    "en-US": "Percent off",
+                    "de-DE": "Prozent abziehen",
+                    "fr-FR": "Pourcentage déduit",
+                    "da-DK": "Procent fratrukket",
+                    "cs-CZ": "Sleva v procentech",
+                    "ar-EG": "خصم بنسبة",
+                    "zh-CN": "减免百分比",
+                    "zh-TW": "減免百分比"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Discount kind",
+              "de-DE": "Rabattart",
+              "fr-FR": "Type de remise",
+              "da-DK": "Rabattype",
+              "cs-CZ": "Druh slevy",
+              "ar-EG": "نوع الخصم",
+              "zh-CN": "折扣类型",
+              "zh-TW": "折扣類型"
+            }
+          },
+          {
+            "ref": "discount",
+            "type": "decimal",
+            "scale": 3,
+            "nullable": true,
+            "label": {
+              "en-US": "Discount",
+              "de-DE": "Rabatt",
+              "fr-FR": "Remise",
+              "da-DK": "Rabat",
+              "cs-CZ": "Sleva",
+              "ar-EG": "الخصم",
+              "zh-CN": "折扣",
+              "zh-TW": "折扣"
+            }
+          },
+          {
+            "ref": "currency",
+            "type": "text",
+            "maxLength": 3,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "document_id",
+                "from": "currency",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Currency",
+              "de-DE": "Währung",
+              "fr-FR": "Devise",
+              "da-DK": "Valuta",
+              "cs-CZ": "Měna",
+              "ar-EG": "العملة",
+              "zh-CN": "货币",
+              "zh-TW": "貨幣"
+            }
+          },
+          {
+            "ref": "amount",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "max": [
+                  0,
+                  {
+                    "if": [
+                      {
+                        "eq": [
+                          "discount_kind",
+                          "percent"
+                        ]
+                      },
+                      {
+                        "mul": [
+                          "qty",
+                          "rate",
+                          {
+                            "sub": [
+                              1,
+                              {
+                                "div": [
+                                  {
+                                    "coalesce": [
+                                      "discount",
+                                      0
+                                    ]
+                                  },
+                                  100
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "sub": [
+                          {
+                            "mul": [
+                              "qty",
+                              "rate"
+                            ]
+                          },
+                          {
+                            "coalesce": [
+                              "discount",
+                              0
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Amount",
+              "de-DE": "Betrag",
+              "fr-FR": "Montant",
+              "da-DK": "Beløb",
+              "cs-CZ": "Částka",
+              "ar-EG": "المبلغ",
+              "zh-CN": "金额",
+              "zh-TW": "金額"
+            }
+          },
+          {
+            "ref": "list_rate",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "List rate",
+              "de-DE": "Listenpreis",
+              "fr-FR": "Prix au tarif",
+              "da-DK": "Listepris",
+              "cs-CZ": "Ceníková cena",
+              "ar-EG": "سعر القائمة",
+              "zh-CN": "目录单价",
+              "zh-TW": "牌價單價"
+            }
+          },
+          {
+            "ref": "list_amount",
+            "type": "decimal",
+            "scale": "currency",
+            "rules": {
+              "formula": {
+                "mul": [
+                  "qty",
+                  {
+                    "coalesce": [
+                      "list_rate",
+                      {
+                        "coalesce": [
+                          "rate",
+                          0
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "List amount",
+              "de-DE": "Listenbetrag",
+              "fr-FR": "Montant au tarif",
+              "da-DK": "Listebeløb",
+              "cs-CZ": "Částka podle ceníku",
+              "ar-EG": "المبلغ بسعر القائمة",
+              "zh-CN": "目录价小计",
+              "zh-TW": "牌價小計"
             }
           }
         ]
@@ -4130,11 +5597,10 @@
     }
   ],
   "addOns": {
-    "suggests": [
+    "requires": [
       {
         "key": "invoices",
         "range": ">=1.0.12",
-        "checked": true,
         "reason": {
           "en-US": "Quotes are made, numbered and sent by this add-on.",
           "de-DE": "Angebote werden von diesem Add-on erstellt, nummeriert und verschickt.",
@@ -4145,7 +5611,9 @@
           "zh-CN": "报价单由此插件生成、编号并发送。",
           "zh-TW": "報價單由此外掛產生、編號並寄出。"
         }
-      },
+      }
+    ],
+    "suggests": [
       {
         "key": "inventory",
         "range": ">=1.0.12",
