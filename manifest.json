@@ -8455,9 +8455,14 @@
           },
           {
             "ref": "item",
-            "type": "text",
-            "maxLength": 64,
+            "type": "int",
             "nullable": true,
+            "rules": {
+              "addOnLink": {
+                "addOn": "inventory",
+                "table": "items"
+              }
+            },
             "label": {
               "en-US": "Stock item",
               "de-DE": "Lagerartikel",
@@ -8857,9 +8862,14 @@
           },
           {
             "ref": "item",
-            "type": "text",
-            "maxLength": 64,
+            "type": "int",
             "nullable": true,
+            "rules": {
+              "addOnLink": {
+                "addOn": "inventory",
+                "table": "items"
+              }
+            },
             "label": {
               "en-US": "Stock item",
               "de-DE": "Lagerartikel",
@@ -12393,9 +12403,14 @@
           },
           {
             "ref": "supplier",
-            "type": "text",
-            "maxLength": 64,
+            "type": "int",
             "nullable": true,
+            "rules": {
+              "addOnLink": {
+                "addOn": "inventory",
+                "table": "suppliers"
+              }
+            },
             "label": {
               "en-US": "Supplier",
               "de-DE": "Lieferant",
@@ -12565,7 +12580,6 @@
           "zh-CN": "备货需求",
           "zh-TW": "備貨需求"
         },
-        "keyField": "item",
         "belongs": [
           {
             "via": "deal_id"
@@ -12602,8 +12616,14 @@
           },
           {
             "ref": "item",
-            "type": "text",
-            "maxLength": 64,
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "addOnLink": {
+                "addOn": "inventory",
+                "table": "items"
+              }
+            },
             "label": {
               "en-US": "Stock item",
               "de-DE": "Lagerartikel",
@@ -18029,6 +18049,119 @@
       }
     }
   ],
+  "sampleData": {
+    "file": "seeds/meridian.json",
+    "people": [
+      {
+        "key": "dana",
+        "name": "Dana Whitlock",
+        "email": "dana@meridian.example",
+        "role": "rep"
+      },
+      {
+        "key": "priya",
+        "name": "Priya Raman",
+        "email": "priya@meridian.example",
+        "role": "rep"
+      },
+      {
+        "key": "sam",
+        "name": "Sam Okonjo",
+        "email": "sam@meridian.example",
+        "role": "rep"
+      },
+      {
+        "key": "leo",
+        "name": "Leo Vance",
+        "email": "leo@meridian.example",
+        "role": "rep"
+      },
+      {
+        "key": "ivy",
+        "name": "Ivy Sandoval",
+        "email": "ivy@meridian.example",
+        "role": "sales-manager"
+      },
+      {
+        "key": "tessa",
+        "name": "Tessa Marlow",
+        "email": "tessa@meridian.example",
+        "role": "admin"
+      },
+      {
+        "key": "hugo",
+        "name": "Hugo Brandt",
+        "email": "hugo@meridian.example",
+        "role": "account-manager"
+      },
+      {
+        "key": "lena",
+        "name": "Lena Fischer",
+        "email": "lena@meridian.example",
+        "role": "marketer"
+      },
+      {
+        "key": "corin",
+        "name": "Corin Hale",
+        "email": "corin@meridian.example",
+        "role": "front-desk"
+      },
+      {
+        "key": "ada",
+        "name": "Ada Novak",
+        "email": "ada@meridian.example",
+        "role": "ops-manager"
+      },
+      {
+        "key": "grace",
+        "name": "Grace Lindholm",
+        "email": "grace@meridian.example",
+        "role": "read-only"
+      },
+      {
+        "key": "f_yusuf",
+        "name": "Yusuf Adeyemi",
+        "email": "yusuf@meridian.example",
+        "role": "crew"
+      },
+      {
+        "key": "cal",
+        "name": "Cal Brennan",
+        "email": "cal@meridian.example",
+        "role": "crew"
+      },
+      {
+        "key": "rina",
+        "name": "Rina Duval",
+        "email": "rina@meridian.example",
+        "role": "crew"
+      },
+      {
+        "key": "mo",
+        "name": "Mo Idris",
+        "email": "mo@meridian.example",
+        "role": "crew"
+      },
+      {
+        "key": "sean",
+        "name": "Sean Petit",
+        "email": "sean@meridian.example",
+        "role": "crew"
+      }
+    ],
+    "teams": [
+      {
+        "name": "Sales",
+        "lead": "ivy",
+        "members": [
+          "dana",
+          "priya",
+          "sam",
+          "leo"
+        ]
+      }
+    ]
+  },
   "pages": [
     {
       "ref": "crm-stages",

@@ -218,7 +218,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "fairness", "answered_at", "settled_at"] },
   warranty_claims: { nullable: ["contact_id", "part", "cover", "cover_years", "supplier_name", "supplier", "paid_by"] },
   // Supply
-  deal_stock_needs: { nullable: ["qty"] },
+  deal_stock_needs: { nullable: ["qty", "item"] },
   // Vehicles and crew
   vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to"] },
   vehicle_checks: { nullable: [] },
@@ -894,20 +894,18 @@ describe("what this batch leaves for a later one", () => {
     expect(bookings?.capacity).toBeUndefined();
   });
 
-  it("keeps an Inventory item as plain text until the add-on link is written", () => {
-    for (const ref of ["samples", "display_pieces"]) {
-      const item = byRef.get(ref)?.columns.find((c) => c.ref === "item") as unknown as { type: string; maxLength?: number; rules?: unknown };
-      expect(item, ref).toEqual(expect.objectContaining({ type: "text", maxLength: 64, nullable: true }));
-      expect(item.rules, ref).toBeUndefined();
+  it("links a stock item and a supplier into Inventory, as the whole number Inventory's keys are", () => {
+    // Inventory is suggested, not required: the column is there either way, with no foreign key.
+    // While the add-on is absent a value is refused; while it is there, the value must be a row's key.
+    // A whole number, not text: Inventory's keys are, and a text link into them is a database error on Postgres.
+    const link = (table: string, column: string) => byRef.get(table)?.columns.find((c) => c.ref === column) as unknown as { type: string; nullable?: boolean; maxLength?: number; rules?: unknown };
+    for (const table of ["deal_stock_needs", "samples", "display_pieces"]) {
+      expect(link(table, "item"), table).toEqual(expect.objectContaining({ type: "int", nullable: true, rules: { addOnLink: { addOn: "inventory", table: "items" } } }));
     }
-    // A stock need is of something: its item may not be empty. A claim's supplier may.
-    const need = byRef.get("deal_stock_needs")?.columns.find((c) => c.ref === "item") as unknown as { type: string; maxLength?: number; nullable?: boolean; rules?: unknown };
-    expect(need).toEqual(expect.objectContaining({ type: "text", maxLength: 64 }));
-    expect(need.nullable).toBeUndefined();
-    expect(need.rules).toBeUndefined();
-    const supplier = byRef.get("warranty_claims")?.columns.find((c) => c.ref === "supplier") as unknown as { type: string; rules?: unknown };
-    expect(supplier).toEqual(expect.objectContaining({ type: "text", maxLength: 64, nullable: true }));
-    expect(supplier.rules).toBeUndefined();
+    expect(link("warranty_claims", "supplier")).toEqual(expect.objectContaining({ type: "int", nullable: true, rules: { addOnLink: { addOn: "inventory", table: "suppliers" } } }));
+    // The add-on is one the manifest names.
+    const suggests = (manifest as unknown as { addOns: { suggests: { key: string }[] } }).addOns.suggests.map((one) => one.key);
+    expect(suggests).toContain("inventory");
   });
 
   it("writes no rule that fits a crew's day: a visit on a day without hours is not refused yet", () => {
