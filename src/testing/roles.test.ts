@@ -131,6 +131,8 @@ const EXPORTERS: readonly RoleKey[] = ["admin", "sales-manager", "read-only"];
 const PERSONAL: Record<string, readonly RoleKey[]> = {
   contacts: ["admin", "sales-manager", "rep", "account-manager", "front-desk"],
   enquiries: ["admin", "sales-manager", "rep", "marketer", "front-desk"],
+  // The address a quote was sent to is copied from its contact: as personal there as on the contact. Read-only sees it masked.
+  quotes: ["admin", "sales-manager", "rep"],
 };
 
 /** The settings the sales manager may change: the Selling keys. */

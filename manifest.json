@@ -2486,6 +2486,55 @@
             }
           },
           {
+            "ref": "sent_to_email",
+            "type": "text",
+            "maxLength": 254,
+            "nullable": true,
+            "rules": {
+              "personal": true,
+              "copy": {
+                "via": "sent_to_contact_id",
+                "from": "email",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Sent to (address)",
+              "de-DE": "Gesendet an (Adresse)",
+              "fr-FR": "Envoyé à (adresse)",
+              "da-DK": "Sendt til (adresse)",
+              "cs-CZ": "Odesláno na (adresa)",
+              "ar-EG": "أُرسل إلى (العنوان)",
+              "zh-CN": "发送至（邮箱）",
+              "zh-TW": "寄送至（信箱）"
+            }
+          },
+          {
+            "ref": "sent_to_name",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "sent_to_contact_id",
+                "from": "name",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Sent to (name)",
+              "de-DE": "Gesendet an (Name)",
+              "fr-FR": "Envoyé à (nom)",
+              "da-DK": "Sendt til (navn)",
+              "cs-CZ": "Odesláno (jméno)",
+              "ar-EG": "أُرسل إلى (الاسم)",
+              "zh-CN": "发送至（姓名）",
+              "zh-TW": "寄送至（姓名）"
+            }
+          },
+          {
             "ref": "notes",
             "type": "text",
             "nullable": true,
@@ -15590,6 +15639,7 @@
         "table:@quotes:update",
         "table:@quotes:delete",
         "table:@quotes:export",
+        "table:@quotes:read_pii",
         "table:@quote_lines:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
@@ -16044,6 +16094,7 @@
         "table:@quotes:read",
         "table:@quotes:create",
         "table:@quotes:update",
+        "table:@quotes:read_pii",
         "table:@quote_lines:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
@@ -16788,6 +16839,7 @@
         "table:@quotes:read",
         "table:@quotes:create",
         "table:@quotes:update",
+        "table:@quotes:read_pii",
         "table:@quote_lines:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
@@ -18687,6 +18739,916 @@
       }
     ]
   },
+  "automations": [
+    {
+      "key": "deal-made",
+      "name": {
+        "en-US": "A deal is made: its mark and its first history line",
+        "de-DE": "Ein Deal wird angelegt: seine Markierung und sein erster Verlaufseintrag",
+        "fr-FR": "Une affaire est créée : sa marque et sa première ligne d’historique",
+        "da-DK": "En handel oprettes: dens mærke og første historiklinje",
+        "cs-CZ": "Vznikne obchod: jeho značka a první řádek historie",
+        "ar-EG": "تُنشأ صفقة: علامتها وأول سطر في سجلّها",
+        "zh-CN": "新建商机：建立其标记和第一条历史记录",
+        "zh-TW": "新增案件：建立其標記與第一筆歷程"
+      },
+      "description": {
+        "en-US": "When a deal is made, makes the row other screens find it by and writes the stage it started in to its history.",
+        "de-DE": "Legt beim Anlegen eines Deals die Zeile an, über die andere Ansichten ihn finden, und schreibt die Startphase in seinen Verlauf.",
+        "fr-FR": "À la création d’une affaire, crée la ligne par laquelle les autres écrans la retrouvent et inscrit son étape de départ dans son historique.",
+        "da-DK": "Når en handel oprettes, laves den række, andre skærme finder den ved, og startfasen skrives i dens historik.",
+        "cs-CZ": "Při vzniku obchodu vytvoří řádek, podle kterého ho najdou ostatní obrazovky, a zapíše výchozí fázi do historie.",
+        "ar-EG": "عند إنشاء صفقة، يُنشئ الصف الذي تجدها به الشاشات الأخرى ويكتب مرحلتها الأولى في سجلّها.",
+        "zh-CN": "新建商机时，生成供其他页面查找它的记录，并把起始阶段写入其历史。",
+        "zh-TW": "新增案件時，建立供其他畫面查找的紀錄，並把起始階段寫入歷程。"
+      },
+      "enabled": true,
+      "trigger": {
+        "kind": "record",
+        "event": "created",
+        "table": "deals"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal is made: its mark and its first history line"
+          },
+          {
+            "id": "mark",
+            "kind": "action",
+            "title": "Make its mark",
+            "action": {
+              "kind": "record.create",
+              "table": "deal_marks",
+              "values": {
+                "deal_id": "{{record.id}}"
+              }
+            }
+          },
+          {
+            "id": "opening",
+            "kind": "action",
+            "title": "Write the stage it started in",
+            "action": {
+              "kind": "record.create",
+              "table": "deal_stage_changes",
+              "values": {
+                "deal_id": "{{record.id}}",
+                "to_stage_id": "{{record.stage_id}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "deal-stage-changed",
+      "name": {
+        "en-US": "A deal changes stage: a line in its history",
+        "de-DE": "Ein Deal wechselt die Phase: ein Eintrag im Verlauf",
+        "fr-FR": "Une affaire change d’étape : une ligne dans son historique",
+        "da-DK": "En handel skifter fase: en linje i historikken",
+        "cs-CZ": "Obchod změní fázi: řádek v historii",
+        "ar-EG": "تتغيّر مرحلة صفقة: سطر في سجلّها",
+        "zh-CN": "商机变更阶段：写入一条历史记录",
+        "zh-TW": "案件變更階段：寫入一筆歷程"
+      },
+      "description": {
+        "en-US": "Writes the stage a deal has moved into to its history, with the moment.",
+        "de-DE": "Schreibt die Phase, in die ein Deal gewechselt ist, mit Zeitpunkt in seinen Verlauf.",
+        "fr-FR": "Inscrit dans l’historique l’étape dans laquelle l’affaire est passée, avec le moment.",
+        "da-DK": "Skriver den fase, en handel er flyttet til, i dens historik med tidspunktet.",
+        "cs-CZ": "Zapíše do historie fázi, do které obchod přešel, i s okamžikem.",
+        "ar-EG": "يكتب في السجلّ المرحلة التي انتقلت إليها الصفقة مع وقتها.",
+        "zh-CN": "把商机进入的阶段连同时间写入其历史。",
+        "zh-TW": "把案件進入的階段連同時間寫入歷程。"
+      },
+      "enabled": true,
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "deals",
+        "changedColumn": "stage_id"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal changes stage: a line in its history"
+          },
+          {
+            "id": "line",
+            "kind": "action",
+            "title": "Write the stage it moved into",
+            "action": {
+              "kind": "record.create",
+              "table": "deal_stage_changes",
+              "values": {
+                "deal_id": "{{record.id}}",
+                "to_stage_id": "{{record.stage_id}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "deal-won-job",
+      "name": {
+        "en-US": "A deal is won: its job is made",
+        "de-DE": "Ein Deal wird gewonnen: sein Auftrag wird angelegt",
+        "fr-FR": "Une affaire est gagnée : son chantier est créé",
+        "da-DK": "En handel vindes: dens opgave oprettes",
+        "cs-CZ": "Obchod je vyhrán: vznikne jeho zakázka",
+        "ar-EG": "تُكسب صفقة: يُنشأ أمر عملها",
+        "zh-CN": "商机赢单：生成其工单",
+        "zh-TW": "案件成交：建立其工單"
+      },
+      "description": {
+        "en-US": "When a deal is marked won and has no job yet, makes its job. The site’s name starts as the deal’s; the operations manager fills in the rest.",
+        "de-DE": "Legt den Auftrag an, sobald ein Deal als gewonnen markiert wird und noch keinen hat. Der Name des Einsatzorts ist zunächst der des Deals; den Rest ergänzt die Einsatzleitung.",
+        "fr-FR": "Crée le chantier dès qu’une affaire est marquée gagnée et n’en a pas encore. Le nom du site reprend d’abord celui de l’affaire ; le responsable des opérations complète le reste.",
+        "da-DK": "Opretter opgaven, når en handel markeres som vundet og endnu ingen har. Stedets navn er først handlens; driftslederen udfylder resten.",
+        "cs-CZ": "Jakmile je obchod označen jako vyhraný a zakázku ještě nemá, vytvoří ji. Název místa je nejprve název obchodu; zbytek doplní vedoucí provozu.",
+        "ar-EG": "عند تعليم صفقة كمكسوبة وليس لها أمر عمل بعد، يُنشئه. يبدأ اسم الموقع باسم الصفقة، ويُكمل مدير العمليات الباقي.",
+        "zh-CN": "商机标记为赢单且尚无工单时，为其生成工单。现场名称先取商机名称，其余由运营经理补充。",
+        "zh-TW": "案件標記為成交且尚無工單時，為其建立工單。現場名稱先取案件名稱，其餘由營運經理補上。"
+      },
+      "enabled": true,
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "deals",
+        "changedColumn": "state",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "won"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal is won: its job is made"
+          },
+          {
+            "id": "none-yet",
+            "kind": "condition",
+            "title": "It has no job yet",
+            "condition": {
+              "left": {
+                "count": {
+                  "table": "jobs",
+                  "matchColumn": "deal_id",
+                  "equalsField": "id"
+                }
+              },
+              "op": "is",
+              "right": 0
+            }
+          },
+          {
+            "id": "job",
+            "kind": "action",
+            "title": "Make its job",
+            "action": {
+              "kind": "record.create",
+              "table": "jobs",
+              "values": {
+                "deal_id": "{{record.id}}",
+                "site_name": "{{record.name}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "approval-asked",
+      "name": {
+        "en-US": "A discount is put to approval: the sales managers are told",
+        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Vertriebsleitung wird benachrichtigt",
+        "fr-FR": "Une remise est soumise à approbation : les responsables commerciaux sont prévenus",
+        "da-DK": "En rabat sendes til godkendelse: salgscheferne får besked",
+        "cs-CZ": "Sleva jde ke schválení: vedoucí prodeje dostanou zprávu",
+        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ مديرو المبيعات",
+        "zh-CN": "折扣提交审批：通知销售经理",
+        "zh-TW": "折扣送交核准：通知業務經理"
+      },
+      "description": {
+        "en-US": "When somebody asks for approval of a quote, tells everyone who holds the Sales manager role.",
+        "de-DE": "Benachrichtigt alle mit der Rolle Vertriebsleitung, sobald jemand die Genehmigung eines Angebots anfragt.",
+        "fr-FR": "Prévient toutes les personnes ayant le rôle Responsable commercial dès qu’une approbation de devis est demandée.",
+        "da-DK": "Giver alle med rollen Salgschef besked, når nogen beder om godkendelse af et tilbud.",
+        "cs-CZ": "Jakmile někdo požádá o schválení nabídky, dá vědět všem s rolí Vedoucí prodeje.",
+        "ar-EG": "عند طلب اعتماد عرض سعر، يُبلِّغ كل من يحمل دور مدير المبيعات.",
+        "zh-CN": "有人为报价申请审批时，通知所有销售经理。",
+        "zh-TW": "有人為報價申請核准時，通知所有業務經理。"
+      },
+      "enabled": true,
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "quotes",
+        "changedColumn": "approval",
+        "when": [
+          {
+            "left": {
+              "field": "approval"
+            },
+            "op": "is",
+            "right": "asked"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A discount is put to approval: the sales managers are told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell the sales managers",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "roles": [
+                  "sales-manager"
+                ]
+              },
+              "title": {
+                "en-US": "Quote {{record.number}} needs your approval",
+                "de-DE": "Angebot {{record.number}} braucht Ihre Genehmigung",
+                "fr-FR": "Le devis {{record.number}} attend votre approbation",
+                "da-DK": "Tilbud {{record.number}} skal godkendes af dig",
+                "cs-CZ": "Nabídka {{record.number}} čeká na vaše schválení",
+                "ar-EG": "عرض السعر {{record.number}} بحاجة إلى اعتمادك",
+                "zh-CN": "报价 {{record.number}} 需要您审批",
+                "zh-TW": "報價 {{record.number}} 需要您核准"
+              },
+              "body": {
+                "en-US": "{{record.under_list_pct}} % under list. Why: {{record.ask_reason}}",
+                "de-DE": "{{record.under_list_pct}} % unter Liste. Begründung: {{record.ask_reason}}",
+                "fr-FR": "{{record.under_list_pct}} % sous le catalogue. Motif : {{record.ask_reason}}",
+                "da-DK": "{{record.under_list_pct}} % under liste. Begrundelse: {{record.ask_reason}}",
+                "cs-CZ": "{{record.under_list_pct}} % pod ceníkem. Důvod: {{record.ask_reason}}",
+                "ar-EG": "{{record.under_list_pct}} ٪ تحت القائمة. السبب: {{record.ask_reason}}",
+                "zh-CN": "低于目录价 {{record.under_list_pct}} %。原因：{{record.ask_reason}}",
+                "zh-TW": "低於牌價 {{record.under_list_pct}} %。原因：{{record.ask_reason}}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outbox": {
+    "table": "outbox",
+    "columns": {
+      "kind": "kind",
+      "status": "status",
+      "to": "to",
+      "language": "language",
+      "due": "due_at",
+      "sentAt": "sent_at",
+      "error": "error",
+      "skipReason": "skip_reason",
+      "repeatKey": "repeat_key"
+    },
+    "links": {
+      "contact": "contact_id",
+      "quote": "quote_id",
+      "deal": "deal_id"
+    },
+    "recipient": {
+      "via": "contact_id",
+      "table": "contacts",
+      "email": "email",
+      "name": "name"
+    },
+    "kinds": {
+      "quote-sent": "crm-quote-sent",
+      "handover-intro": "crm-handover-intro",
+      "approval-asked": "crm-approval-asked"
+    },
+    "producers": [
+      {
+        "kind": "quote-sent",
+        "link": "quote_id",
+        "recipient": {
+          "column": "sent_to_email",
+          "name": "sent_to_name"
+        },
+        "onChange": {
+          "table": "quotes",
+          "column": "status",
+          "to": "sent"
+        }
+      }
+    ]
+  },
+  "emailTemplates": [
+    {
+      "key": "crm-quote-sent",
+      "name": "Quote sent",
+      "vars": [
+        "quote.number",
+        "quote.sent_to_name",
+        "quote.valid_until.day_month"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your quote {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Quote {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{quote.sent_to_name}}, here is the quote we talked about."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "It holds until {{quote.valid_until.day_month}}. Reply to this message with any question."
+              }
+            }
+          ]
+        },
+        "de-DE": {
+          "subject": "Ihr Angebot {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Angebot {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{quote.sent_to_name}}, hier ist das besprochene Angebot."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Es gilt bis {{quote.valid_until.day_month}}. Bei Fragen antworten Sie einfach auf diese Nachricht."
+              }
+            }
+          ]
+        },
+        "fr-FR": {
+          "subject": "Votre devis {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Devis {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{quote.sent_to_name}}, voici le devis dont nous avons parlé."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Il est valable jusqu’au {{quote.valid_until.day_month}}. Répondez à ce message pour toute question."
+              }
+            }
+          ]
+        },
+        "da-DK": {
+          "subject": "Dit tilbud {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Tilbud {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{quote.sent_to_name}}, her er det tilbud, vi talte om."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Det gælder til {{quote.valid_until.day_month}}. Svar på denne besked, hvis du har spørgsmål."
+              }
+            }
+          ]
+        },
+        "cs-CZ": {
+          "subject": "Vaše nabídka {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Nabídka {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{quote.sent_to_name}}, posíláme nabídku, o které jsme mluvili."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Platí do {{quote.valid_until.day_month}}. S jakýmkoli dotazem stačí odpovědět na tuto zprávu."
+              }
+            }
+          ]
+        },
+        "ar-EG": {
+          "subject": "عرض السعر {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "عرض السعر {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{quote.sent_to_name}}، هذا عرض السعر الذي تحدثنا عنه."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "يسري حتى {{quote.valid_until.day_month}}. ردّ على هذه الرسالة لأي سؤال."
+              }
+            }
+          ]
+        },
+        "zh-CN": {
+          "subject": "您的报价单 {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "报价单 {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{quote.sent_to_name}}，您好，这是我们谈过的报价单。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "有效期至 {{quote.valid_until.day_month}}。如有疑问，请直接回复此邮件。"
+              }
+            }
+          ]
+        },
+        "zh-TW": {
+          "subject": "您的報價單 {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "報價單 {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{quote.sent_to_name}} 您好，這是我們談過的報價單。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "有效期限至 {{quote.valid_until.day_month}}。如有疑問，請直接回覆此信。"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "crm-handover-intro",
+      "name": "Handover introduction",
+      "vars": [
+        "deal.name",
+        "contact.name"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "A new contact for {{deal.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "A new contact for you"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{contact.name}}, from today a colleague looks after {{deal.name}} for you."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Nothing changes in what was agreed. They will be in touch this week."
+              }
+            }
+          ]
+        },
+        "de-DE": {
+          "subject": "Neue Ansprechperson für {{deal.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Eine neue Ansprechperson für Sie"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{contact.name}}, ab heute betreut eine Kollegin oder ein Kollege {{deal.name}} für Sie."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "An dem Vereinbarten ändert sich nichts. Sie meldet sich diese Woche bei Ihnen."
+              }
+            }
+          ]
+        },
+        "fr-FR": {
+          "subject": "Un nouvel interlocuteur pour {{deal.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Un nouvel interlocuteur pour vous"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{contact.name}}, à partir d’aujourd’hui un collègue s’occupe de {{deal.name}} pour vous."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Rien ne change à ce qui a été convenu. Il vous contactera cette semaine."
+              }
+            }
+          ]
+        },
+        "da-DK": {
+          "subject": "Ny kontaktperson for {{deal.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "En ny kontaktperson til dig"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{contact.name}}, fra i dag tager en kollega sig af {{deal.name}} for dig."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Der ændres intet i det aftalte. Du hører fra vedkommende i denne uge."
+              }
+            }
+          ]
+        },
+        "cs-CZ": {
+          "subject": "Nový kontakt pro {{deal.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Nový kontakt pro vás"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{contact.name}}, ode dneška se o {{deal.name}} stará kolega."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Na tom, co bylo domluveno, se nic nemění. Ozve se vám tento týden."
+              }
+            }
+          ]
+        },
+        "ar-EG": {
+          "subject": "جهة اتصال جديدة بخصوص {{deal.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "جهة اتصال جديدة لك"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{contact.name}}، من اليوم يتولى زميل متابعة {{deal.name}} معك."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "لا يتغير شيء مما اتُّفق عليه. سيتواصل معك هذا الأسبوع."
+              }
+            }
+          ]
+        },
+        "zh-CN": {
+          "subject": "{{deal.name}} 的新联系人",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "为您安排了新的联系人"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{contact.name}}，您好，从今天起由一位同事为您跟进 {{deal.name}}。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "已商定的内容不变。同事将在本周与您联系。"
+              }
+            }
+          ]
+        },
+        "zh-TW": {
+          "subject": "{{deal.name}} 的新聯絡人",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "為您安排了新的聯絡人"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{contact.name}} 您好，自今日起由一位同事為您跟進 {{deal.name}}。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "已約定的內容不變。同事將於本週與您聯絡。"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "crm-approval-asked",
+      "name": "Approval asked",
+      "vars": [
+        "quote.number",
+        "quote.under_list_pct",
+        "quote.ask_reason"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Quote {{quote.number}} needs approval",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Approval asked"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Quote {{quote.number}} is {{quote.under_list_pct}} % under list and cannot be sent until it is approved."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Why: {{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "de-DE": {
+          "subject": "Angebot {{quote.number}} braucht eine Genehmigung",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Genehmigung angefragt"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Angebot {{quote.number}} liegt {{quote.under_list_pct}} % unter Liste und kann erst nach Genehmigung versendet werden."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Begründung: {{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "fr-FR": {
+          "subject": "Le devis {{quote.number}} attend une approbation",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Approbation demandée"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Le devis {{quote.number}} est {{quote.under_list_pct}} % sous le catalogue et ne peut être envoyé qu’une fois approuvé."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Motif : {{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "da-DK": {
+          "subject": "Tilbud {{quote.number}} skal godkendes",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Godkendelse ønskes"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Tilbud {{quote.number}} er {{quote.under_list_pct}} % under liste og kan først sendes, når det er godkendt."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Begrundelse: {{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "cs-CZ": {
+          "subject": "Nabídka {{quote.number}} čeká na schválení",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Žádost o schválení"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Nabídka {{quote.number}} je {{quote.under_list_pct}} % pod ceníkem a nelze ji odeslat, dokud není schválena."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Důvod: {{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "ar-EG": {
+          "subject": "عرض السعر {{quote.number}} بحاجة إلى اعتماد",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "طلب اعتماد"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "عرض السعر {{quote.number}} أقل من القائمة بنسبة {{quote.under_list_pct}} ٪ ولا يمكن إرساله قبل اعتماده."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "السبب: {{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "zh-CN": {
+          "subject": "报价 {{quote.number}} 待审批",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "审批申请"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "报价 {{quote.number}} 低于目录价 {{quote.under_list_pct}} %，批准前不能发送。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "原因：{{quote.ask_reason}}"
+              }
+            }
+          ]
+        },
+        "zh-TW": {
+          "subject": "報價 {{quote.number}} 待核准",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "核准申請"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "報價 {{quote.number}} 低於牌價 {{quote.under_list_pct}} %，核准前不得寄出。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "原因：{{quote.ask_reason}}"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "pages": [
     {
       "ref": "crm-stages",

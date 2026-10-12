@@ -76,6 +76,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "approval_decided_at",
       "decision_note",
       "sent_to_contact_id",
+      "sent_to_email",
+      "sent_to_name",
       "notes",
       "share_code",
       "accepted_name",
@@ -916,8 +918,10 @@ describe("what this batch leaves for a later one", () => {
     expect(byRef.get("job_visits")?.capacity).toBeUndefined();
   });
 
-  it("declares no outbox yet: no kind has a template", () => {
-    expect((manifest as unknown as { outbox?: unknown }).outbox).toBeUndefined();
+  it("declares the outbox over the table, with a template for each of its three kinds", () => {
+    const box = (manifest as unknown as { outbox: typeof OUTBOX_WORD & { kinds: Record<string, string> } }).outbox;
+    expect({ ...box, kinds: {}, producers: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
+    expect(Object.keys(box.kinds)).toEqual(byRef.get("outbox")?.columns.find((c) => c.ref === "kind")?.enum);
   });
 });
 
