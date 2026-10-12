@@ -11,7 +11,7 @@
   "license": "AGPL-3.0-only",
   "description": {
     "key": "mft.crm.desc",
-    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling, with quotes, for accounts, the team, the inbox and the showroom, and no screens yet; jobs on site and the rest follow."
+    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling, with quotes, for accounts, the team, the inbox, the showroom, jobs on site, aftercare, supply, and vehicles and crew, and no screens yet."
   },
   "categories": [
     "crm"
@@ -785,6 +785,9 @@
           ],
           [
             "deal_id"
+          ],
+          [
+            "job_id"
           ]
         ],
         "columns": [
@@ -807,6 +810,22 @@
               "ar-EG": "الصفقة",
               "zh-CN": "商机",
               "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "nullable": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
             }
           },
           {
@@ -8843,6 +8862,5269 @@
               "ar-EG": "صنف المخزون",
               "zh-CN": "库存物料",
               "zh-TW": "庫存品項"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "jobs",
+        "label": {
+          "en-US": "Job",
+          "de-DE": "Auftrag",
+          "fr-FR": "Chantier",
+          "da-DK": "Opgave",
+          "cs-CZ": "Zakázka",
+          "ar-EG": "أمر العمل",
+          "zh-CN": "工单",
+          "zh-TW": "工單"
+        },
+        "labelPlural": {
+          "en-US": "Jobs",
+          "de-DE": "Aufträge",
+          "fr-FR": "Chantiers",
+          "da-DK": "Opgaver",
+          "cs-CZ": "Zakázky",
+          "ar-EG": "أوامر العمل",
+          "zh-CN": "工单",
+          "zh-TW": "工單"
+        },
+        "keyField": "title",
+        "belongs": [
+          {
+            "via": "deal_id"
+          }
+        ],
+        "indexes": [
+          [
+            "state"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "installed"
+            ],
+            "installed": [
+              {
+                "to": "signed-off",
+                "requires": {
+                  "children": {
+                    "sign_offs": 1
+                  },
+                  "where": [
+                    {
+                      "column": "blocking_snags",
+                      "eq": 0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "children": {
+            "sign_offs": {
+              "via": "job_id",
+              "createIn": [
+                "open",
+                "installed"
+              ]
+            }
+          },
+          "actions": [
+            {
+              "id": "installed",
+              "label": {
+                "en-US": "Mark installed",
+                "de-DE": "Als montiert markieren",
+                "fr-FR": "Marquer comme installé",
+                "da-DK": "Markér som monteret",
+                "cs-CZ": "Označit jako namontovanou",
+                "ar-EG": "علِّم كمُركَّب",
+                "zh-CN": "标记为已安装",
+                "zh-TW": "標記為已安裝"
+              },
+              "move": {
+                "to": "installed"
+              }
+            },
+            {
+              "id": "sign-off",
+              "label": {
+                "en-US": "Sign off",
+                "de-DE": "Abnehmen",
+                "fr-FR": "Réceptionner",
+                "da-DK": "Godkend",
+                "cs-CZ": "Převzít",
+                "ar-EG": "اعتمد الاستلام",
+                "zh-CN": "验收",
+                "zh-TW": "驗收"
+              },
+              "move": {
+                "to": "signed-off"
+              },
+              "tone": "primary"
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "code_seq",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "sequence": {
+                "gapless": true,
+                "start": 1
+              }
+            },
+            "label": {
+              "en-US": "Number in the series",
+              "de-DE": "Laufende Nummer",
+              "fr-FR": "Numéro dans la série",
+              "da-DK": "Nummer i rækken",
+              "cs-CZ": "Pořadové číslo",
+              "ar-EG": "الرقم في السلسلة",
+              "zh-CN": "序列号",
+              "zh-TW": "序號"
+            }
+          },
+          {
+            "ref": "code",
+            "type": "text",
+            "maxLength": 12,
+            "unique": true,
+            "nullable": true,
+            "rules": {
+              "format": {
+                "from": "code_seq",
+                "prefix": "J-",
+                "pad": 2
+              }
+            },
+            "label": {
+              "en-US": "Job number",
+              "de-DE": "Auftragsnummer",
+              "fr-FR": "Numéro de chantier",
+              "da-DK": "Opgavenummer",
+              "cs-CZ": "Číslo zakázky",
+              "ar-EG": "رقم أمر العمل",
+              "zh-CN": "工单号",
+              "zh-TW": "工單編號"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "unique": true,
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "title",
+            "type": "text",
+            "maxLength": 160,
+            "rules": {
+              "copy": {
+                "via": "deal_id",
+                "from": "name",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Title",
+              "de-DE": "Titel",
+              "fr-FR": "Titre",
+              "da-DK": "Titel",
+              "cs-CZ": "Název",
+              "ar-EG": "العنوان",
+              "zh-CN": "标题",
+              "zh-TW": "標題"
+            }
+          },
+          {
+            "ref": "company_id",
+            "type": "int",
+            "rules": {
+              "copy": {
+                "via": "deal_id",
+                "from": "company_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Company",
+              "de-DE": "Firma",
+              "fr-FR": "Société",
+              "da-DK": "Virksomhed",
+              "cs-CZ": "Firma",
+              "ar-EG": "الشركة",
+              "zh-CN": "公司",
+              "zh-TW": "公司"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "deal_id",
+                "from": "contact_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Contact",
+              "de-DE": "Kontakt",
+              "fr-FR": "Contact",
+              "da-DK": "Kontakt",
+              "cs-CZ": "Kontakt",
+              "ar-EG": "جهة الاتصال",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
+            }
+          },
+          {
+            "ref": "site_name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Site name",
+              "de-DE": "Standortname",
+              "fr-FR": "Nom du site",
+              "da-DK": "Stedets navn",
+              "cs-CZ": "Název místa",
+              "ar-EG": "اسم الموقع",
+              "zh-CN": "现场名称",
+              "zh-TW": "現場名稱"
+            }
+          },
+          {
+            "ref": "address_lines",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Address",
+              "de-DE": "Adresse",
+              "fr-FR": "Adresse",
+              "da-DK": "Adresse",
+              "cs-CZ": "Adresa",
+              "ar-EG": "العنوان",
+              "zh-CN": "地址",
+              "zh-TW": "地址"
+            }
+          },
+          {
+            "ref": "town",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Town",
+              "de-DE": "Ort",
+              "fr-FR": "Ville",
+              "da-DK": "By",
+              "cs-CZ": "Město",
+              "ar-EG": "المدينة",
+              "zh-CN": "城市",
+              "zh-TW": "城市"
+            }
+          },
+          {
+            "ref": "lat",
+            "type": "decimal",
+            "nullable": true,
+            "label": {
+              "en-US": "Latitude",
+              "de-DE": "Breitengrad",
+              "fr-FR": "Latitude",
+              "da-DK": "Breddegrad",
+              "cs-CZ": "Zeměpisná šířka",
+              "ar-EG": "خط العرض",
+              "zh-CN": "纬度",
+              "zh-TW": "緯度"
+            }
+          },
+          {
+            "ref": "lng",
+            "type": "decimal",
+            "nullable": true,
+            "label": {
+              "en-US": "Longitude",
+              "de-DE": "Längengrad",
+              "fr-FR": "Longitude",
+              "da-DK": "Længdegrad",
+              "cs-CZ": "Zeměpisná délka",
+              "ar-EG": "خط الطول",
+              "zh-CN": "经度",
+              "zh-TW": "經度"
+            }
+          },
+          {
+            "ref": "access_note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Access note",
+              "de-DE": "Zugangshinweis",
+              "fr-FR": "Consignes d’accès",
+              "da-DK": "Adgangsnote",
+              "cs-CZ": "Poznámka k přístupu",
+              "ar-EG": "ملاحظة الدخول",
+              "zh-CN": "进场说明",
+              "zh-TW": "進場說明"
+            }
+          },
+          {
+            "ref": "ask_for",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "label": {
+              "en-US": "Ask for",
+              "de-DE": "Ansprechpartner vor Ort",
+              "fr-FR": "Personne à demander",
+              "da-DK": "Spørg efter",
+              "cs-CZ": "Ptát se na",
+              "ar-EG": "اسأل عن",
+              "zh-CN": "现场联系人",
+              "zh-TW": "現場聯絡人"
+            }
+          },
+          {
+            "ref": "site_phone",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "label": {
+              "en-US": "Site phone",
+              "de-DE": "Telefon vor Ort",
+              "fr-FR": "Téléphone du site",
+              "da-DK": "Telefon på stedet",
+              "cs-CZ": "Telefon na místě",
+              "ar-EG": "هاتف الموقع",
+              "zh-CN": "现场电话",
+              "zh-TW": "現場電話"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "installed",
+              "signed-off"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouvert",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřená",
+                    "ar-EG": "مفتوح",
+                    "zh-CN": "进行中",
+                    "zh-TW": "進行中"
+                  },
+                  "installed": {
+                    "en-US": "Installed",
+                    "de-DE": "Montiert",
+                    "fr-FR": "Installé",
+                    "da-DK": "Monteret",
+                    "cs-CZ": "Namontovaná",
+                    "ar-EG": "تم التركيب",
+                    "zh-CN": "已安装",
+                    "zh-TW": "已安裝"
+                  },
+                  "signed-off": {
+                    "en-US": "Signed off",
+                    "de-DE": "Abgenommen",
+                    "fr-FR": "Réceptionné",
+                    "da-DK": "Godkendt",
+                    "cs-CZ": "Převzatá",
+                    "ar-EG": "تم الاستلام",
+                    "zh-CN": "已验收",
+                    "zh-TW": "已驗收"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "blocking_snags",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "snags",
+                "via": "job_id",
+                "count": true,
+                "where": {
+                  "column": "stops_sign_off",
+                  "eq": true
+                },
+                "unlessSet": "put_right_on"
+              }
+            },
+            "label": {
+              "en-US": "Open snags that stop sign-off",
+              "de-DE": "Offene Mängel, die die Abnahme verhindern",
+              "fr-FR": "Réserves ouvertes bloquant la réception",
+              "da-DK": "Åbne mangler, der stopper godkendelsen",
+              "cs-CZ": "Otevřené nedodělky bránící převzetí",
+              "ar-EG": "ملاحظات مفتوحة تمنع الاستلام",
+              "zh-CN": "阻碍验收的未整改项",
+              "zh-TW": "阻礙驗收的未改善缺失"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "crews",
+        "label": {
+          "en-US": "Crew",
+          "de-DE": "Montageteam",
+          "fr-FR": "Équipe",
+          "da-DK": "Hold",
+          "cs-CZ": "Montážní tým",
+          "ar-EG": "طاقم",
+          "zh-CN": "施工队",
+          "zh-TW": "施工班"
+        },
+        "labelPlural": {
+          "en-US": "Crews",
+          "de-DE": "Montageteams",
+          "fr-FR": "Équipes",
+          "da-DK": "Hold",
+          "cs-CZ": "Montážní týmy",
+          "ar-EG": "الطواقم",
+          "zh-CN": "施工队",
+          "zh-TW": "施工班"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "nullable": true,
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
+            }
+          },
+          {
+            "ref": "day_hours",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "label": {
+              "en-US": "Hours in a day",
+              "de-DE": "Stunden pro Tag",
+              "fr-FR": "Heures par jour",
+              "da-DK": "Timer pr. dag",
+              "cs-CZ": "Hodin denně",
+              "ar-EG": "ساعات اليوم",
+              "zh-CN": "每日工时",
+              "zh-TW": "每日工時"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "crew_members",
+        "label": {
+          "en-US": "Crew member",
+          "de-DE": "Teammitglied",
+          "fr-FR": "Membre d’équipe",
+          "da-DK": "Holdmedlem",
+          "cs-CZ": "Člen týmu",
+          "ar-EG": "عضو طاقم",
+          "zh-CN": "队员",
+          "zh-TW": "班員"
+        },
+        "labelPlural": {
+          "en-US": "Crew members",
+          "de-DE": "Teammitglieder",
+          "fr-FR": "Membres d’équipe",
+          "da-DK": "Holdmedlemmer",
+          "cs-CZ": "Členové týmu",
+          "ar-EG": "أعضاء الطواقم",
+          "zh-CN": "队员",
+          "zh-TW": "班員"
+        },
+        "unique": [
+          [
+            "crew_id",
+            "user_id"
+          ]
+        ],
+        "belongs": [
+          {
+            "column": "user_id"
+          }
+        ],
+        "indexes": [
+          [
+            "user_id"
+          ],
+          [
+            "crew_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "crew_id",
+            "type": "fk",
+            "references": "crews",
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "user_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Person",
+              "de-DE": "Person",
+              "fr-FR": "Personne",
+              "da-DK": "Person",
+              "cs-CZ": "Osoba",
+              "ar-EG": "الشخص",
+              "zh-CN": "人员",
+              "zh-TW": "人員"
+            }
+          },
+          {
+            "ref": "lead",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Crew lead",
+              "de-DE": "Teamleitung",
+              "fr-FR": "Chef d’équipe",
+              "da-DK": "Holdleder",
+              "cs-CZ": "Vedoucí týmu",
+              "ar-EG": "قائد الطاقم",
+              "zh-CN": "队长",
+              "zh-TW": "班長"
+            }
+          },
+          {
+            "ref": "since",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Since",
+              "de-DE": "Seit",
+              "fr-FR": "Depuis le",
+              "da-DK": "Siden",
+              "cs-CZ": "Od",
+              "ar-EG": "منذ",
+              "zh-CN": "加入日期",
+              "zh-TW": "加入日期"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "job_visits",
+        "label": {
+          "en-US": "Job visit",
+          "de-DE": "Einsatz",
+          "fr-FR": "Intervention",
+          "da-DK": "Montagebesøg",
+          "cs-CZ": "Výjezd",
+          "ar-EG": "زيارة تنفيذ",
+          "zh-CN": "上门作业",
+          "zh-TW": "到場作業"
+        },
+        "labelPlural": {
+          "en-US": "Job visits",
+          "de-DE": "Einsätze",
+          "fr-FR": "Interventions",
+          "da-DK": "Montagebesøg",
+          "cs-CZ": "Výjezdy",
+          "ar-EG": "زيارات التنفيذ",
+          "zh-CN": "上门作业",
+          "zh-TW": "到場作業"
+        },
+        "keyField": "what",
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          },
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "crew_id",
+            "day"
+          ],
+          [
+            "day"
+          ],
+          [
+            "job_id"
+          ],
+          [
+            "vehicle_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "waiting",
+          "moves": {
+            "waiting": [
+              {
+                "to": "booked",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "day",
+                      "isNull": false
+                    },
+                    {
+                      "column": "crew_id",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "booked": [
+              "done",
+              "waiting",
+              {
+                "to": "cancelled",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "cancel_reason",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "id": "book",
+              "label": {
+                "en-US": "Book",
+                "de-DE": "Einplanen",
+                "fr-FR": "Planifier",
+                "da-DK": "Book",
+                "cs-CZ": "Naplánovat",
+                "ar-EG": "احجز",
+                "zh-CN": "排期",
+                "zh-TW": "排程"
+              },
+              "move": {
+                "to": "booked"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "done",
+              "label": {
+                "en-US": "Mark done",
+                "de-DE": "Als erledigt markieren",
+                "fr-FR": "Marquer comme effectuée",
+                "da-DK": "Markér som udført",
+                "cs-CZ": "Označit jako hotový",
+                "ar-EG": "علِّم كمنجزة",
+                "zh-CN": "标记为已完成",
+                "zh-TW": "標記為已完成"
+              },
+              "move": {
+                "to": "done"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "back-to-waiting",
+              "label": {
+                "en-US": "Back to waiting",
+                "de-DE": "Zurück auf wartend",
+                "fr-FR": "Remettre en attente",
+                "da-DK": "Tilbage til afventer",
+                "cs-CZ": "Vrátit mezi čekající",
+                "ar-EG": "أعِد إلى الانتظار",
+                "zh-CN": "退回待排期",
+                "zh-TW": "退回待排程"
+              },
+              "move": {
+                "to": "waiting"
+              }
+            },
+            {
+              "id": "cancel",
+              "label": {
+                "en-US": "Cancel",
+                "de-DE": "Absagen",
+                "fr-FR": "Annuler",
+                "da-DK": "Aflys",
+                "cs-CZ": "Zrušit",
+                "ar-EG": "ألغِ",
+                "zh-CN": "取消",
+                "zh-TW": "取消"
+              },
+              "move": {
+                "to": "cancelled"
+              },
+              "tone": "danger",
+              "ask": [
+                "cancel_reason"
+              ]
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "kind",
+            "type": "enum",
+            "enum": [
+              "install",
+              "drop",
+              "return"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "install": {
+                    "en-US": "Install",
+                    "de-DE": "Montage",
+                    "fr-FR": "Installation",
+                    "da-DK": "Montage",
+                    "cs-CZ": "Montáž",
+                    "ar-EG": "تركيب",
+                    "zh-CN": "安装",
+                    "zh-TW": "安裝"
+                  },
+                  "drop": {
+                    "en-US": "Drop-off",
+                    "de-DE": "Anlieferung",
+                    "fr-FR": "Livraison",
+                    "da-DK": "Levering",
+                    "cs-CZ": "Dovoz",
+                    "ar-EG": "توصيل",
+                    "zh-CN": "送货",
+                    "zh-TW": "送貨"
+                  },
+                  "return": {
+                    "en-US": "Return visit",
+                    "de-DE": "Nacharbeit",
+                    "fr-FR": "Retour sur site",
+                    "da-DK": "Genbesøg",
+                    "cs-CZ": "Opakovaný výjezd",
+                    "ar-EG": "زيارة عودة",
+                    "zh-CN": "返场",
+                    "zh-TW": "返場施工"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Kind",
+              "de-DE": "Art",
+              "fr-FR": "Type",
+              "da-DK": "Type",
+              "cs-CZ": "Druh",
+              "ar-EG": "النوع",
+              "zh-CN": "类型",
+              "zh-TW": "類型"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "What is done",
+              "de-DE": "Leistung",
+              "fr-FR": "Travaux",
+              "da-DK": "Arbejde",
+              "cs-CZ": "Práce",
+              "ar-EG": "العمل",
+              "zh-CN": "作业内容",
+              "zh-TW": "作業內容"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "nullable": true,
+            "rules": {
+              "notBefore": {
+                "column": "stock_ready_on",
+                "when": [
+                  {
+                    "column": "state",
+                    "in": [
+                      "booked"
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "start_time",
+            "type": "text",
+            "maxLength": 5,
+            "nullable": true,
+            "label": {
+              "en-US": "Start time",
+              "de-DE": "Startzeit",
+              "fr-FR": "Heure de début",
+              "da-DK": "Starttid",
+              "cs-CZ": "Čas začátku",
+              "ar-EG": "وقت البدء",
+              "zh-CN": "开始时间",
+              "zh-TW": "開始時間"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "fk",
+            "references": "crews",
+            "nullable": true,
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "nullable": true,
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
+            }
+          },
+          {
+            "ref": "hours",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "label": {
+              "en-US": "Hours",
+              "de-DE": "Stunden",
+              "fr-FR": "Heures",
+              "da-DK": "Timer",
+              "cs-CZ": "Hodiny",
+              "ar-EG": "الساعات",
+              "zh-CN": "工时",
+              "zh-TW": "工時"
+            }
+          },
+          {
+            "ref": "crew_size",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Crew size",
+              "de-DE": "Teamgröße",
+              "fr-FR": "Effectif",
+              "da-DK": "Holdstørrelse",
+              "cs-CZ": "Počet lidí",
+              "ar-EG": "عدد أفراد الطاقم",
+              "zh-CN": "人数",
+              "zh-TW": "人數"
+            }
+          },
+          {
+            "ref": "stock_ready_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Stock ready on",
+              "de-DE": "Material bereit am",
+              "fr-FR": "Stock prêt le",
+              "da-DK": "Varer klar den",
+              "cs-CZ": "Materiál připraven dne",
+              "ar-EG": "تاريخ جاهزية المخزون",
+              "zh-CN": "备货完成日",
+              "zh-TW": "備貨完成日"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "waiting",
+              "booked",
+              "done",
+              "cancelled"
+            ],
+            "default": "waiting",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "waiting": {
+                    "en-US": "Waiting",
+                    "de-DE": "Wartend",
+                    "fr-FR": "En attente",
+                    "da-DK": "Afventer",
+                    "cs-CZ": "Čeká",
+                    "ar-EG": "في الانتظار",
+                    "zh-CN": "待排期",
+                    "zh-TW": "待排程"
+                  },
+                  "booked": {
+                    "en-US": "Booked",
+                    "de-DE": "Eingeplant",
+                    "fr-FR": "Planifiée",
+                    "da-DK": "Booket",
+                    "cs-CZ": "Naplánován",
+                    "ar-EG": "محجوزة",
+                    "zh-CN": "已排期",
+                    "zh-TW": "已排程"
+                  },
+                  "done": {
+                    "en-US": "Done",
+                    "de-DE": "Erledigt",
+                    "fr-FR": "Effectuée",
+                    "da-DK": "Udført",
+                    "cs-CZ": "Hotov",
+                    "ar-EG": "تمت",
+                    "zh-CN": "已完成",
+                    "zh-TW": "已完成"
+                  },
+                  "cancelled": {
+                    "en-US": "Cancelled",
+                    "de-DE": "Abgesagt",
+                    "fr-FR": "Annulée",
+                    "da-DK": "Aflyst",
+                    "cs-CZ": "Zrušen",
+                    "ar-EG": "ملغاة",
+                    "zh-CN": "已取消",
+                    "zh-TW": "已取消"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "cancel_reason",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Reason for cancelling",
+              "de-DE": "Absagegrund",
+              "fr-FR": "Motif d’annulation",
+              "da-DK": "Årsag til aflysning",
+              "cs-CZ": "Důvod zrušení",
+              "ar-EG": "سبب الإلغاء",
+              "zh-CN": "取消原因",
+              "zh-TW": "取消原因"
+            }
+          },
+          {
+            "ref": "tick_loaded",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Loaded",
+              "de-DE": "Geladen",
+              "fr-FR": "Chargé",
+              "da-DK": "Læsset",
+              "cs-CZ": "Naloženo",
+              "ar-EG": "تم التحميل",
+              "zh-CN": "已装车",
+              "zh-TW": "已裝車"
+            }
+          },
+          {
+            "ref": "tick_arrived",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Arrived",
+              "de-DE": "Angekommen",
+              "fr-FR": "Arrivé",
+              "da-DK": "Ankommet",
+              "cs-CZ": "Na místě",
+              "ar-EG": "تم الوصول",
+              "zh-CN": "已到场",
+              "zh-TW": "已到場"
+            }
+          },
+          {
+            "ref": "tick_fitted",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Fitted",
+              "de-DE": "Montiert",
+              "fr-FR": "Posé",
+              "da-DK": "Monteret",
+              "cs-CZ": "Namontováno",
+              "ar-EG": "تم التركيب",
+              "zh-CN": "已安装",
+              "zh-TW": "已安裝"
+            }
+          },
+          {
+            "ref": "tick_cleared",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Cleared",
+              "de-DE": "Aufgeräumt",
+              "fr-FR": "Site dégagé",
+              "da-DK": "Ryddet op",
+              "cs-CZ": "Uklizeno",
+              "ar-EG": "تم التنظيف",
+              "zh-CN": "已清场",
+              "zh-TW": "已清場"
+            }
+          },
+          {
+            "ref": "site_name",
+            "type": "text",
+            "maxLength": 160,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "site_name",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Site name",
+              "de-DE": "Standortname",
+              "fr-FR": "Nom du site",
+              "da-DK": "Stedets navn",
+              "cs-CZ": "Název místa",
+              "ar-EG": "اسم الموقع",
+              "zh-CN": "现场名称",
+              "zh-TW": "現場名稱"
+            }
+          },
+          {
+            "ref": "site_address",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "address_lines",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Site address",
+              "de-DE": "Adresse vor Ort",
+              "fr-FR": "Adresse du site",
+              "da-DK": "Stedets adresse",
+              "cs-CZ": "Adresa místa",
+              "ar-EG": "عنوان الموقع",
+              "zh-CN": "现场地址",
+              "zh-TW": "現場地址"
+            }
+          },
+          {
+            "ref": "site_town",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "town",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Site town",
+              "de-DE": "Ort des Standorts",
+              "fr-FR": "Ville du site",
+              "da-DK": "Stedets by",
+              "cs-CZ": "Město místa",
+              "ar-EG": "مدينة الموقع",
+              "zh-CN": "现场城市",
+              "zh-TW": "現場城市"
+            }
+          },
+          {
+            "ref": "site_phone",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "site_phone",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Site phone",
+              "de-DE": "Telefon vor Ort",
+              "fr-FR": "Téléphone du site",
+              "da-DK": "Telefon på stedet",
+              "cs-CZ": "Telefon na místě",
+              "ar-EG": "هاتف الموقع",
+              "zh-CN": "现场电话",
+              "zh-TW": "現場電話"
+            }
+          },
+          {
+            "ref": "access_note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "access_note",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Access note",
+              "de-DE": "Zugangshinweis",
+              "fr-FR": "Consignes d’accès",
+              "da-DK": "Adgangsnote",
+              "cs-CZ": "Poznámka k přístupu",
+              "ar-EG": "ملاحظة الدخول",
+              "zh-CN": "进场说明",
+              "zh-TW": "進場說明"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "sign_offs",
+        "label": {
+          "en-US": "Sign-off",
+          "de-DE": "Abnahme",
+          "fr-FR": "Réception",
+          "da-DK": "Godkendelse",
+          "cs-CZ": "Převzetí",
+          "ar-EG": "استلام",
+          "zh-CN": "验收",
+          "zh-TW": "驗收"
+        },
+        "labelPlural": {
+          "en-US": "Sign-offs",
+          "de-DE": "Abnahmen",
+          "fr-FR": "Réceptions",
+          "da-DK": "Godkendelser",
+          "cs-CZ": "Převzetí",
+          "ar-EG": "الاستلامات",
+          "zh-CN": "验收",
+          "zh-TW": "驗收"
+        },
+        "keyField": "signer_name",
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          },
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "crew_id"
+          ],
+          [
+            "visit_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "unique": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "nullable": true,
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "作业",
+              "zh-TW": "作業"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "crew_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "check_1",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Check 1",
+              "de-DE": "Prüfpunkt 1",
+              "fr-FR": "Point de contrôle 1",
+              "da-DK": "Kontrolpunkt 1",
+              "cs-CZ": "Kontrolní bod 1",
+              "ar-EG": "بند الفحص 1",
+              "zh-CN": "检查项 1",
+              "zh-TW": "檢查項 1"
+            }
+          },
+          {
+            "ref": "check_2",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Check 2",
+              "de-DE": "Prüfpunkt 2",
+              "fr-FR": "Point de contrôle 2",
+              "da-DK": "Kontrolpunkt 2",
+              "cs-CZ": "Kontrolní bod 2",
+              "ar-EG": "بند الفحص 2",
+              "zh-CN": "检查项 2",
+              "zh-TW": "檢查項 2"
+            }
+          },
+          {
+            "ref": "check_3",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Check 3",
+              "de-DE": "Prüfpunkt 3",
+              "fr-FR": "Point de contrôle 3",
+              "da-DK": "Kontrolpunkt 3",
+              "cs-CZ": "Kontrolní bod 3",
+              "ar-EG": "بند الفحص 3",
+              "zh-CN": "检查项 3",
+              "zh-TW": "檢查項 3"
+            }
+          },
+          {
+            "ref": "check_4",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Check 4",
+              "de-DE": "Prüfpunkt 4",
+              "fr-FR": "Point de contrôle 4",
+              "da-DK": "Kontrolpunkt 4",
+              "cs-CZ": "Kontrolní bod 4",
+              "ar-EG": "بند الفحص 4",
+              "zh-CN": "检查项 4",
+              "zh-TW": "檢查項 4"
+            }
+          },
+          {
+            "ref": "check_5",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Check 5",
+              "de-DE": "Prüfpunkt 5",
+              "fr-FR": "Point de contrôle 5",
+              "da-DK": "Kontrolpunkt 5",
+              "cs-CZ": "Kontrolní bod 5",
+              "ar-EG": "بند الفحص 5",
+              "zh-CN": "检查项 5",
+              "zh-TW": "檢查項 5"
+            }
+          },
+          {
+            "ref": "signer_name",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Signed by (name)",
+              "de-DE": "Unterzeichnet von (Name)",
+              "fr-FR": "Signé par (nom)",
+              "da-DK": "Underskrevet af (navn)",
+              "cs-CZ": "Podepsal(a) (jméno)",
+              "ar-EG": "اسم الموقِّع",
+              "zh-CN": "签字人姓名",
+              "zh-TW": "簽名人姓名"
+            }
+          },
+          {
+            "ref": "signature",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "Signature",
+              "de-DE": "Unterschrift",
+              "fr-FR": "Signature",
+              "da-DK": "Underskrift",
+              "cs-CZ": "Podpis",
+              "ar-EG": "التوقيع",
+              "zh-CN": "签名",
+              "zh-TW": "簽名"
+            }
+          },
+          {
+            "ref": "photos",
+            "type": "json",
+            "nullable": true,
+            "label": {
+              "en-US": "Photos",
+              "de-DE": "Fotos",
+              "fr-FR": "Photos",
+              "da-DK": "Billeder",
+              "cs-CZ": "Fotky",
+              "ar-EG": "الصور",
+              "zh-CN": "照片",
+              "zh-TW": "照片"
+            }
+          },
+          {
+            "ref": "signed_at",
+            "type": "timestamptz",
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Signed at",
+              "de-DE": "Unterzeichnet am",
+              "fr-FR": "Signé le",
+              "da-DK": "Underskrevet den",
+              "cs-CZ": "Podepsáno dne",
+              "ar-EG": "وقت التوقيع",
+              "zh-CN": "签字时间",
+              "zh-TW": "簽名時間"
+            }
+          },
+          {
+            "ref": "copy_sent_to",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Copy sent to",
+              "de-DE": "Kopie gesendet an",
+              "fr-FR": "Copie envoyée à",
+              "da-DK": "Kopi sendt til",
+              "cs-CZ": "Kopie odeslána na",
+              "ar-EG": "أُرسلت نسخة إلى",
+              "zh-CN": "副本发送至",
+              "zh-TW": "副本寄送至"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "snags",
+        "label": {
+          "en-US": "Snag",
+          "de-DE": "Mangel",
+          "fr-FR": "Réserve",
+          "da-DK": "Mangel",
+          "cs-CZ": "Nedodělek",
+          "ar-EG": "ملاحظة استلام",
+          "zh-CN": "整改项",
+          "zh-TW": "缺失項目"
+        },
+        "labelPlural": {
+          "en-US": "Snags",
+          "de-DE": "Mängel",
+          "fr-FR": "Réserves",
+          "da-DK": "Mangler",
+          "cs-CZ": "Nedodělky",
+          "ar-EG": "ملاحظات الاستلام",
+          "zh-CN": "整改项",
+          "zh-TW": "缺失項目"
+        },
+        "keyField": "text",
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          },
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "crew_id",
+            "state"
+          ],
+          [
+            "state",
+            "due_on"
+          ],
+          [
+            "visit_id"
+          ],
+          [
+            "raised_by_contact_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "waiting-part",
+              {
+                "to": "put-right",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "put_right_note",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "waiting-part": [
+              "open",
+              {
+                "to": "put-right",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "put_right_note",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "id": "wait-for-part",
+              "label": {
+                "en-US": "Wait for a part",
+                "de-DE": "Auf Teil warten",
+                "fr-FR": "Attendre une pièce",
+                "da-DK": "Afvent reservedel",
+                "cs-CZ": "Čekat na díl",
+                "ar-EG": "انتظر قطعة",
+                "zh-CN": "等待配件",
+                "zh-TW": "等待零件"
+              },
+              "move": {
+                "to": "waiting-part"
+              }
+            },
+            {
+              "id": "reopen",
+              "label": {
+                "en-US": "Back to open",
+                "de-DE": "Wieder öffnen",
+                "fr-FR": "Rouvrir",
+                "da-DK": "Genåbn",
+                "cs-CZ": "Znovu otevřít",
+                "ar-EG": "أعِد الفتح",
+                "zh-CN": "重新打开",
+                "zh-TW": "重新開啟"
+              },
+              "move": {
+                "to": "open"
+              }
+            },
+            {
+              "id": "put-right",
+              "label": {
+                "en-US": "Put right",
+                "de-DE": "Beheben",
+                "fr-FR": "Lever la réserve",
+                "da-DK": "Udbedr",
+                "cs-CZ": "Odstranit",
+                "ar-EG": "عالِج",
+                "zh-CN": "完成整改",
+                "zh-TW": "完成改善"
+              },
+              "move": {
+                "to": "put-right"
+              },
+              "tone": "primary",
+              "ask": [
+                "put_right_note"
+              ]
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "index": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "nullable": true,
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "作业",
+              "zh-TW": "作業"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "crew_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "maxLength": 400,
+            "label": {
+              "en-US": "Description",
+              "de-DE": "Beschreibung",
+              "fr-FR": "Description",
+              "da-DK": "Beskrivelse",
+              "cs-CZ": "Popis",
+              "ar-EG": "الوصف",
+              "zh-CN": "描述",
+              "zh-TW": "描述"
+            }
+          },
+          {
+            "ref": "severity",
+            "type": "enum",
+            "enum": [
+              "low",
+              "high"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "low": {
+                    "en-US": "Low",
+                    "de-DE": "Gering",
+                    "fr-FR": "Faible",
+                    "da-DK": "Lav",
+                    "cs-CZ": "Nízká",
+                    "ar-EG": "منخفضة",
+                    "zh-CN": "低",
+                    "zh-TW": "低"
+                  },
+                  "high": {
+                    "en-US": "High",
+                    "de-DE": "Hoch",
+                    "fr-FR": "Élevée",
+                    "da-DK": "Høj",
+                    "cs-CZ": "Vysoká",
+                    "ar-EG": "عالية",
+                    "zh-CN": "高",
+                    "zh-TW": "高"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Severity",
+              "de-DE": "Schweregrad",
+              "fr-FR": "Gravité",
+              "da-DK": "Alvorlighed",
+              "cs-CZ": "Závažnost",
+              "ar-EG": "الخطورة",
+              "zh-CN": "严重程度",
+              "zh-TW": "嚴重程度"
+            }
+          },
+          {
+            "ref": "stops_sign_off",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Stops sign-off",
+              "de-DE": "Verhindert die Abnahme",
+              "fr-FR": "Bloque la réception",
+              "da-DK": "Stopper godkendelsen",
+              "cs-CZ": "Brání převzetí",
+              "ar-EG": "يمنع الاستلام",
+              "zh-CN": "阻碍验收",
+              "zh-TW": "阻礙驗收"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "waiting-part",
+              "put-right"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouverte",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřený",
+                    "ar-EG": "مفتوحة",
+                    "zh-CN": "待处理",
+                    "zh-TW": "待處理"
+                  },
+                  "waiting-part": {
+                    "en-US": "Waiting for a part",
+                    "de-DE": "Wartet auf Teil",
+                    "fr-FR": "En attente de pièce",
+                    "da-DK": "Afventer reservedel",
+                    "cs-CZ": "Čeká na díl",
+                    "ar-EG": "في انتظار قطعة",
+                    "zh-CN": "等待配件",
+                    "zh-TW": "等待零件"
+                  },
+                  "put-right": {
+                    "en-US": "Put right",
+                    "de-DE": "Behoben",
+                    "fr-FR": "Levée",
+                    "da-DK": "Udbedret",
+                    "cs-CZ": "Odstraněn",
+                    "ar-EG": "عولجت",
+                    "zh-CN": "已整改",
+                    "zh-TW": "已改善"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "raised_on",
+            "type": "date",
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Raised on",
+              "de-DE": "Gemeldet am",
+              "fr-FR": "Signalé le",
+              "da-DK": "Meldt den",
+              "cs-CZ": "Nahlášeno dne",
+              "ar-EG": "تاريخ الإبلاغ",
+              "zh-CN": "提出日期",
+              "zh-TW": "提出日期"
+            }
+          },
+          {
+            "ref": "raised_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Raised by",
+              "de-DE": "Gemeldet von",
+              "fr-FR": "Signalé par",
+              "da-DK": "Meldt af",
+              "cs-CZ": "Nahlásil(a)",
+              "ar-EG": "أبلغ عنه",
+              "zh-CN": "提出人",
+              "zh-TW": "提出人"
+            }
+          },
+          {
+            "ref": "raised_by_contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Raised by (contact)",
+              "de-DE": "Gemeldet von (Kontakt)",
+              "fr-FR": "Signalé par (contact)",
+              "da-DK": "Meldt af (kontakt)",
+              "cs-CZ": "Nahlásil(a) (kontakt)",
+              "ar-EG": "أبلغت عنه جهة الاتصال",
+              "zh-CN": "提出人（联系人）",
+              "zh-TW": "提出人（聯絡人）"
+            }
+          },
+          {
+            "ref": "due_days",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "default": {
+                "from": {
+                  "table": "settings",
+                  "column": "snag_days"
+                }
+              }
+            },
+            "label": {
+              "en-US": "Days to put it right",
+              "de-DE": "Tage bis zur Behebung",
+              "fr-FR": "Jours pour lever la réserve",
+              "da-DK": "Dage til udbedring",
+              "cs-CZ": "Dny na odstranění",
+              "ar-EG": "أيام المعالجة",
+              "zh-CN": "整改天数",
+              "zh-TW": "改善天數"
+            }
+          },
+          {
+            "ref": "due_on",
+            "type": "date",
+            "rules": {
+              "stamp": {
+                "set": {
+                  "addDays": {
+                    "date": "raised_on",
+                    "days": "due_days"
+                  }
+                },
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Due on",
+              "de-DE": "Fällig am",
+              "fr-FR": "Échéance",
+              "da-DK": "Forfalder den",
+              "cs-CZ": "Termín",
+              "ar-EG": "تاريخ الاستحقاق",
+              "zh-CN": "到期日",
+              "zh-TW": "到期日"
+            }
+          },
+          {
+            "ref": "put_right_on",
+            "type": "date",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "put-right"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Put right on",
+              "de-DE": "Behoben am",
+              "fr-FR": "Levée le",
+              "da-DK": "Udbedret den",
+              "cs-CZ": "Odstraněno dne",
+              "ar-EG": "تاريخ المعالجة",
+              "zh-CN": "整改日期",
+              "zh-TW": "改善日期"
+            }
+          },
+          {
+            "ref": "put_right_note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Note on putting it right",
+              "de-DE": "Notiz zur Behebung",
+              "fr-FR": "Note de levée",
+              "da-DK": "Note om udbedringen",
+              "cs-CZ": "Poznámka k odstranění",
+              "ar-EG": "ملاحظة المعالجة",
+              "zh-CN": "整改说明",
+              "zh-TW": "改善說明"
+            }
+          },
+          {
+            "ref": "photo",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Photo",
+              "de-DE": "Foto",
+              "fr-FR": "Photo",
+              "da-DK": "Billede",
+              "cs-CZ": "Fotka",
+              "ar-EG": "الصورة",
+              "zh-CN": "照片",
+              "zh-TW": "照片"
+            }
+          },
+          {
+            "ref": "put_right_photo",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Photo once put right",
+              "de-DE": "Foto nach Behebung",
+              "fr-FR": "Photo après levée",
+              "da-DK": "Billede efter udbedring",
+              "cs-CZ": "Fotka po odstranění",
+              "ar-EG": "صورة بعد المعالجة",
+              "zh-CN": "整改后照片",
+              "zh-TW": "改善後照片"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "delivery_notes",
+        "label": {
+          "en-US": "Delivery note",
+          "de-DE": "Lieferschein",
+          "fr-FR": "Bon de livraison",
+          "da-DK": "Følgeseddel",
+          "cs-CZ": "Dodací list",
+          "ar-EG": "إشعار تسليم",
+          "zh-CN": "送货单",
+          "zh-TW": "送貨單"
+        },
+        "labelPlural": {
+          "en-US": "Delivery notes",
+          "de-DE": "Lieferscheine",
+          "fr-FR": "Bons de livraison",
+          "da-DK": "Følgesedler",
+          "cs-CZ": "Dodací listy",
+          "ar-EG": "إشعارات التسليم",
+          "zh-CN": "送货单",
+          "zh-TW": "送貨單"
+        },
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          },
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "crew_id"
+          ],
+          [
+            "job_id"
+          ],
+          [
+            "visit_id"
+          ],
+          [
+            "signed_by_contact_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "作业",
+              "zh-TW": "作業"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "crew_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "taken_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Taken by",
+              "de-DE": "Aufgenommen von",
+              "fr-FR": "Établi par",
+              "da-DK": "Udfyldt af",
+              "cs-CZ": "Sepsal(a)",
+              "ar-EG": "حرّره",
+              "zh-CN": "经办人",
+              "zh-TW": "經辦人"
+            }
+          },
+          {
+            "ref": "signed_by_contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Signed by (contact)",
+              "de-DE": "Unterzeichnet von (Kontakt)",
+              "fr-FR": "Signé par (contact)",
+              "da-DK": "Underskrevet af (kontakt)",
+              "cs-CZ": "Podepsal(a) (kontakt)",
+              "ar-EG": "وقّعته جهة الاتصال",
+              "zh-CN": "签收人（联系人）",
+              "zh-TW": "簽收人（聯絡人）"
+            }
+          },
+          {
+            "ref": "signed_name",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Signed by (name)",
+              "de-DE": "Unterzeichnet von (Name)",
+              "fr-FR": "Signé par (nom)",
+              "da-DK": "Underskrevet af (navn)",
+              "cs-CZ": "Podepsal(a) (jméno)",
+              "ar-EG": "اسم الموقِّع",
+              "zh-CN": "签字人姓名",
+              "zh-TW": "簽名人姓名"
+            }
+          },
+          {
+            "ref": "damage",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Damage",
+              "de-DE": "Schaden",
+              "fr-FR": "Dommage",
+              "da-DK": "Skade",
+              "cs-CZ": "Poškození",
+              "ar-EG": "تلف",
+              "zh-CN": "有损坏",
+              "zh-TW": "有損壞"
+            }
+          },
+          {
+            "ref": "note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Note",
+              "de-DE": "Notiz",
+              "fr-FR": "Note",
+              "da-DK": "Note",
+              "cs-CZ": "Poznámka",
+              "ar-EG": "ملاحظة",
+              "zh-CN": "备注",
+              "zh-TW": "備註"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "delivery_note_lines",
+        "label": {
+          "en-US": "Delivery note line",
+          "de-DE": "Lieferscheinposition",
+          "fr-FR": "Ligne de bon de livraison",
+          "da-DK": "Følgeseddellinje",
+          "cs-CZ": "Řádek dodacího listu",
+          "ar-EG": "بند إشعار التسليم",
+          "zh-CN": "送货单明细",
+          "zh-TW": "送貨單明細"
+        },
+        "labelPlural": {
+          "en-US": "Delivery note lines",
+          "de-DE": "Lieferscheinpositionen",
+          "fr-FR": "Lignes de bon de livraison",
+          "da-DK": "Følgeseddellinjer",
+          "cs-CZ": "Řádky dodacího listu",
+          "ar-EG": "بنود إشعارات التسليم",
+          "zh-CN": "送货单明细",
+          "zh-TW": "送貨單明細"
+        },
+        "keyField": "what",
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          },
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "note_id"
+          ],
+          [
+            "crew_id"
+          ],
+          [
+            "job_id"
+          ],
+          [
+            "visit_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "note_id",
+            "type": "fk",
+            "references": "delivery_notes",
+            "label": {
+              "en-US": "Delivery note",
+              "de-DE": "Lieferschein",
+              "fr-FR": "Bon de livraison",
+              "da-DK": "Følgeseddel",
+              "cs-CZ": "Dodací list",
+              "ar-EG": "إشعار التسليم",
+              "zh-CN": "送货单",
+              "zh-TW": "送貨單"
+            }
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "rules": {
+              "copy": {
+                "via": "note_id",
+                "from": "job_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "rules": {
+              "copy": {
+                "via": "note_id",
+                "from": "visit_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "作业",
+              "zh-TW": "作業"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "crew_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "Item",
+              "de-DE": "Artikel",
+              "fr-FR": "Article",
+              "da-DK": "Vare",
+              "cs-CZ": "Položka",
+              "ar-EG": "الصنف",
+              "zh-CN": "物品",
+              "zh-TW": "品項"
+            }
+          },
+          {
+            "ref": "ordered",
+            "type": "int",
+            "label": {
+              "en-US": "Ordered",
+              "de-DE": "Bestellt",
+              "fr-FR": "Commandé",
+              "da-DK": "Bestilt",
+              "cs-CZ": "Objednáno",
+              "ar-EG": "الكمية المطلوبة",
+              "zh-CN": "订购数量",
+              "zh-TW": "訂購數量"
+            }
+          },
+          {
+            "ref": "delivered",
+            "type": "int",
+            "label": {
+              "en-US": "Delivered",
+              "de-DE": "Geliefert",
+              "fr-FR": "Livré",
+              "da-DK": "Leveret",
+              "cs-CZ": "Dodáno",
+              "ar-EG": "الكمية المسلَّمة",
+              "zh-CN": "送达数量",
+              "zh-TW": "送達數量"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "waste_removals",
+        "label": {
+          "en-US": "Waste removal",
+          "de-DE": "Entsorgung",
+          "fr-FR": "Enlèvement de déchets",
+          "da-DK": "Bortskaffelse af affald",
+          "cs-CZ": "Odvoz odpadu",
+          "ar-EG": "إزالة مخلفات",
+          "zh-CN": "废料清运",
+          "zh-TW": "廢棄物清運"
+        },
+        "labelPlural": {
+          "en-US": "Waste removals",
+          "de-DE": "Entsorgungen",
+          "fr-FR": "Enlèvements de déchets",
+          "da-DK": "Bortskaffelser af affald",
+          "cs-CZ": "Odvozy odpadu",
+          "ar-EG": "عمليات إزالة المخلفات",
+          "zh-CN": "废料清运",
+          "zh-TW": "廢棄物清運"
+        },
+        "keyField": "what",
+        "indexes": [
+          [
+            "job_id"
+          ],
+          [
+            "day"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "Waste",
+              "de-DE": "Abfall",
+              "fr-FR": "Déchets",
+              "da-DK": "Affald",
+              "cs-CZ": "Odpad",
+              "ar-EG": "المخلفات",
+              "zh-CN": "废料",
+              "zh-TW": "廢棄物"
+            }
+          },
+          {
+            "ref": "tonnes",
+            "type": "decimal",
+            "scale": 2,
+            "label": {
+              "en-US": "Tonnes",
+              "de-DE": "Tonnen",
+              "fr-FR": "Tonnes",
+              "da-DK": "Ton",
+              "cs-CZ": "Tuny",
+              "ar-EG": "الأطنان",
+              "zh-CN": "吨数",
+              "zh-TW": "噸數"
+            }
+          },
+          {
+            "ref": "route",
+            "type": "enum",
+            "enum": [
+              "reused",
+              "recycled",
+              "landfill"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "reused": {
+                    "en-US": "Reused",
+                    "de-DE": "Wiederverwendet",
+                    "fr-FR": "Réemployé",
+                    "da-DK": "Genbrugt",
+                    "cs-CZ": "Znovu použito",
+                    "ar-EG": "أُعيد استخدامه",
+                    "zh-CN": "再利用",
+                    "zh-TW": "再利用"
+                  },
+                  "recycled": {
+                    "en-US": "Recycled",
+                    "de-DE": "Recycelt",
+                    "fr-FR": "Recyclé",
+                    "da-DK": "Genanvendt",
+                    "cs-CZ": "Recyklováno",
+                    "ar-EG": "أُعيد تدويره",
+                    "zh-CN": "回收",
+                    "zh-TW": "回收"
+                  },
+                  "landfill": {
+                    "en-US": "Landfill",
+                    "de-DE": "Deponie",
+                    "fr-FR": "Mise en décharge",
+                    "da-DK": "Deponi",
+                    "cs-CZ": "Skládka",
+                    "ar-EG": "مكبّ نفايات",
+                    "zh-CN": "填埋",
+                    "zh-TW": "掩埋"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Route",
+              "de-DE": "Entsorgungsweg",
+              "fr-FR": "Filière",
+              "da-DK": "Behandling",
+              "cs-CZ": "Způsob naložení",
+              "ar-EG": "طريقة التخلص",
+              "zh-CN": "处置方式",
+              "zh-TW": "處置方式"
+            }
+          },
+          {
+            "ref": "cost",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "label": {
+              "en-US": "Cost",
+              "de-DE": "Kosten",
+              "fr-FR": "Coût",
+              "da-DK": "Omkostning",
+              "cs-CZ": "Náklady",
+              "ar-EG": "التكلفة",
+              "zh-CN": "费用",
+              "zh-TW": "費用"
+            }
+          },
+          {
+            "ref": "income",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "label": {
+              "en-US": "Income",
+              "de-DE": "Erlös",
+              "fr-FR": "Recette",
+              "da-DK": "Indtægt",
+              "cs-CZ": "Výnos",
+              "ar-EG": "الإيراد",
+              "zh-CN": "收入",
+              "zh-TW": "收入"
+            }
+          },
+          {
+            "ref": "carrier",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Carrier",
+              "de-DE": "Entsorger",
+              "fr-FR": "Transporteur",
+              "da-DK": "Transportør",
+              "cs-CZ": "Přepravce",
+              "ar-EG": "الناقل",
+              "zh-CN": "承运方",
+              "zh-TW": "清運業者"
+            }
+          },
+          {
+            "ref": "note_number",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "label": {
+              "en-US": "Transfer note number",
+              "de-DE": "Nummer des Übernahmescheins",
+              "fr-FR": "Numéro du bordereau",
+              "da-DK": "Nummer på overdragelsesnotat",
+              "cs-CZ": "Číslo předávacího listu",
+              "ar-EG": "رقم مذكرة النقل",
+              "zh-CN": "转移联单号",
+              "zh-TW": "遞送聯單號"
+            }
+          },
+          {
+            "ref": "has_transfer_note",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Has a transfer note",
+              "de-DE": "Übernahmeschein liegt vor",
+              "fr-FR": "Bordereau reçu",
+              "da-DK": "Har overdragelsesnotat",
+              "cs-CZ": "Má předávací list",
+              "ar-EG": "توجد مذكرة نقل",
+              "zh-CN": "有转移联单",
+              "zh-TW": "有遞送聯單"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "feedback",
+        "label": {
+          "en-US": "Feedback",
+          "de-DE": "Rückmeldung",
+          "fr-FR": "Avis",
+          "da-DK": "Tilbagemelding",
+          "cs-CZ": "Zpětná vazba",
+          "ar-EG": "تقييم",
+          "zh-CN": "反馈",
+          "zh-TW": "回饋"
+        },
+        "labelPlural": {
+          "en-US": "Feedback",
+          "de-DE": "Rückmeldungen",
+          "fr-FR": "Avis",
+          "da-DK": "Tilbagemeldinger",
+          "cs-CZ": "Zpětná vazba",
+          "ar-EG": "التقييمات",
+          "zh-CN": "反馈",
+          "zh-TW": "回饋"
+        },
+        "belongs": [
+          {
+            "via": "job_id"
+          }
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "unique": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "score",
+            "type": "int",
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 5
+              }
+            },
+            "label": {
+              "en-US": "Score",
+              "de-DE": "Bewertung",
+              "fr-FR": "Note attribuée",
+              "da-DK": "Score",
+              "cs-CZ": "Hodnocení",
+              "ar-EG": "التقييم",
+              "zh-CN": "评分",
+              "zh-TW": "評分"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 2000
+              }
+            },
+            "label": {
+              "en-US": "What they said",
+              "de-DE": "Wortlaut",
+              "fr-FR": "Commentaire",
+              "da-DK": "Kommentar",
+              "cs-CZ": "Slovní hodnocení",
+              "ar-EG": "التعليق",
+              "zh-CN": "评价内容",
+              "zh-TW": "評價內容"
+            }
+          },
+          {
+            "ref": "theme",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "label": {
+              "en-US": "Theme",
+              "de-DE": "Thema",
+              "fr-FR": "Thème",
+              "da-DK": "Tema",
+              "cs-CZ": "Téma",
+              "ar-EG": "الموضوع",
+              "zh-CN": "主题",
+              "zh-TW": "主題"
+            }
+          },
+          {
+            "ref": "answered_on",
+            "type": "date",
+            "label": {
+              "en-US": "Answered on",
+              "de-DE": "Beantwortet am",
+              "fr-FR": "Répondu le",
+              "da-DK": "Besvaret den",
+              "cs-CZ": "Zodpovězeno dne",
+              "ar-EG": "تاريخ الإجابة",
+              "zh-CN": "答复日期",
+              "zh-TW": "回覆日期"
+            }
+          },
+          {
+            "ref": "replied_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "We replied at",
+              "de-DE": "Geantwortet am",
+              "fr-FR": "Notre réponse le",
+              "da-DK": "Vi svarede den",
+              "cs-CZ": "Odpověděli jsme dne",
+              "ar-EG": "وقت ردّنا",
+              "zh-CN": "回复时间",
+              "zh-TW": "回覆時間"
+            }
+          },
+          {
+            "ref": "fix_written",
+            "type": "text",
+            "maxLength": 600,
+            "nullable": true,
+            "label": {
+              "en-US": "What we will fix",
+              "de-DE": "Was wir verbessern",
+              "fr-FR": "Ce que nous corrigeons",
+              "da-DK": "Hvad vi retter",
+              "cs-CZ": "Co napravíme",
+              "ar-EG": "ما سنصلحه",
+              "zh-CN": "改进措施",
+              "zh-TW": "改善措施"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "complaints",
+        "label": {
+          "en-US": "Complaint",
+          "de-DE": "Beschwerde",
+          "fr-FR": "Réclamation",
+          "da-DK": "Klage",
+          "cs-CZ": "Stížnost",
+          "ar-EG": "شكوى",
+          "zh-CN": "投诉",
+          "zh-TW": "客訴"
+        },
+        "labelPlural": {
+          "en-US": "Complaints",
+          "de-DE": "Beschwerden",
+          "fr-FR": "Réclamations",
+          "da-DK": "Klager",
+          "cs-CZ": "Stížnosti",
+          "ar-EG": "الشكاوى",
+          "zh-CN": "投诉",
+          "zh-TW": "客訴"
+        },
+        "belongs": [
+          {
+            "column": "owner_id",
+            "set": "anyone"
+          }
+        ],
+        "indexes": [
+          [
+            "owner_id"
+          ],
+          [
+            "state",
+            "raised_on"
+          ],
+          [
+            "company_id"
+          ],
+          [
+            "contact_id"
+          ],
+          [
+            "job_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "answered"
+            ],
+            "answered": [
+              "settled"
+            ]
+          },
+          "actions": [
+            {
+              "id": "answered",
+              "label": {
+                "en-US": "Mark answered",
+                "de-DE": "Als beantwortet markieren",
+                "fr-FR": "Marquer comme répondue",
+                "da-DK": "Markér som besvaret",
+                "cs-CZ": "Označit jako zodpovězenou",
+                "ar-EG": "علِّم كمُجابة",
+                "zh-CN": "标记为已答复",
+                "zh-TW": "標記為已回覆"
+              },
+              "move": {
+                "to": "answered"
+              }
+            },
+            {
+              "id": "settle",
+              "label": {
+                "en-US": "Settle",
+                "de-DE": "Abschließen",
+                "fr-FR": "Régler",
+                "da-DK": "Afslut",
+                "cs-CZ": "Vyřídit",
+                "ar-EG": "سوِّ",
+                "zh-CN": "结案",
+                "zh-TW": "結案"
+              },
+              "move": {
+                "to": "settled"
+              },
+              "tone": "primary"
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies",
+            "label": {
+              "en-US": "Company",
+              "de-DE": "Firma",
+              "fr-FR": "Société",
+              "da-DK": "Virksomhed",
+              "cs-CZ": "Firma",
+              "ar-EG": "الشركة",
+              "zh-CN": "公司",
+              "zh-TW": "公司"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Contact",
+              "de-DE": "Kontakt",
+              "fr-FR": "Contact",
+              "da-DK": "Kontakt",
+              "cs-CZ": "Kontakt",
+              "ar-EG": "جهة الاتصال",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
+            }
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "nullable": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Owner",
+              "de-DE": "Zuständig",
+              "fr-FR": "Responsable",
+              "da-DK": "Ansvarlig",
+              "cs-CZ": "Vlastník",
+              "ar-EG": "المسؤول",
+              "zh-CN": "负责人",
+              "zh-TW": "負責人"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 2000
+              }
+            },
+            "label": {
+              "en-US": "What it is about",
+              "de-DE": "Worum es geht",
+              "fr-FR": "Objet de la réclamation",
+              "da-DK": "Hvad klagen handler om",
+              "cs-CZ": "Čeho se týká",
+              "ar-EG": "موضوع الشكوى",
+              "zh-CN": "投诉内容",
+              "zh-TW": "客訴內容"
+            }
+          },
+          {
+            "ref": "cause",
+            "type": "enum",
+            "enum": [
+              "late",
+              "damaged",
+              "wrong",
+              "crew",
+              "silence"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "late": {
+                    "en-US": "Late",
+                    "de-DE": "Verspätung",
+                    "fr-FR": "Retard",
+                    "da-DK": "Forsinkelse",
+                    "cs-CZ": "Zpoždění",
+                    "ar-EG": "تأخير",
+                    "zh-CN": "延误",
+                    "zh-TW": "延誤"
+                  },
+                  "damaged": {
+                    "en-US": "Damage",
+                    "de-DE": "Beschädigung",
+                    "fr-FR": "Dommage",
+                    "da-DK": "Skade",
+                    "cs-CZ": "Poškození",
+                    "ar-EG": "تلف",
+                    "zh-CN": "损坏",
+                    "zh-TW": "損壞"
+                  },
+                  "wrong": {
+                    "en-US": "Wrong item",
+                    "de-DE": "Falsche Ware",
+                    "fr-FR": "Erreur d’article",
+                    "da-DK": "Forkert vare",
+                    "cs-CZ": "Chybné zboží",
+                    "ar-EG": "صنف خاطئ",
+                    "zh-CN": "货不对版",
+                    "zh-TW": "品項錯誤"
+                  },
+                  "crew": {
+                    "en-US": "Crew",
+                    "de-DE": "Montageteam",
+                    "fr-FR": "Équipe",
+                    "da-DK": "Montagehold",
+                    "cs-CZ": "Montážní tým",
+                    "ar-EG": "الطاقم",
+                    "zh-CN": "施工队",
+                    "zh-TW": "施工班"
+                  },
+                  "silence": {
+                    "en-US": "No word from us",
+                    "de-DE": "Keine Rückmeldung",
+                    "fr-FR": "Silence de notre part",
+                    "da-DK": "Tavshed fra os",
+                    "cs-CZ": "Bez odezvy",
+                    "ar-EG": "عدم الرد",
+                    "zh-CN": "无人回应",
+                    "zh-TW": "無人回應"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Cause",
+              "de-DE": "Ursache",
+              "fr-FR": "Cause",
+              "da-DK": "Årsag",
+              "cs-CZ": "Příčina",
+              "ar-EG": "السبب",
+              "zh-CN": "原因",
+              "zh-TW": "原因"
+            }
+          },
+          {
+            "ref": "fairness",
+            "type": "enum",
+            "enum": [
+              "serious",
+              "fair",
+              "misunderstanding"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "serious": {
+                    "en-US": "Serious",
+                    "de-DE": "Schwerwiegend",
+                    "fr-FR": "Grave",
+                    "da-DK": "Alvorlig",
+                    "cs-CZ": "Závažná",
+                    "ar-EG": "خطيرة",
+                    "zh-CN": "严重",
+                    "zh-TW": "嚴重"
+                  },
+                  "fair": {
+                    "en-US": "Fair",
+                    "de-DE": "Berechtigt",
+                    "fr-FR": "Fondée",
+                    "da-DK": "Berettiget",
+                    "cs-CZ": "Oprávněná",
+                    "ar-EG": "مُحقّة",
+                    "zh-CN": "合理",
+                    "zh-TW": "合理"
+                  },
+                  "misunderstanding": {
+                    "en-US": "Misunderstanding",
+                    "de-DE": "Missverständnis",
+                    "fr-FR": "Malentendu",
+                    "da-DK": "Misforståelse",
+                    "cs-CZ": "Nedorozumění",
+                    "ar-EG": "سوء فهم",
+                    "zh-CN": "误会",
+                    "zh-TW": "誤會"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Fairness",
+              "de-DE": "Einschätzung",
+              "fr-FR": "Bien-fondé",
+              "da-DK": "Vurdering",
+              "cs-CZ": "Oprávněnost",
+              "ar-EG": "مدى الأحقية",
+              "zh-CN": "合理性",
+              "zh-TW": "合理性"
+            }
+          },
+          {
+            "ref": "raised_on",
+            "type": "date",
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Raised on",
+              "de-DE": "Gemeldet am",
+              "fr-FR": "Signalé le",
+              "da-DK": "Meldt den",
+              "cs-CZ": "Nahlášeno dne",
+              "ar-EG": "تاريخ الإبلاغ",
+              "zh-CN": "提出日期",
+              "zh-TW": "提出日期"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "answered",
+              "settled"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouverte",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřená",
+                    "ar-EG": "مفتوحة",
+                    "zh-CN": "待处理",
+                    "zh-TW": "待處理"
+                  },
+                  "answered": {
+                    "en-US": "Answered",
+                    "de-DE": "Beantwortet",
+                    "fr-FR": "Répondue",
+                    "da-DK": "Besvaret",
+                    "cs-CZ": "Zodpovězená",
+                    "ar-EG": "تم الرد",
+                    "zh-CN": "已答复",
+                    "zh-TW": "已回覆"
+                  },
+                  "settled": {
+                    "en-US": "Settled",
+                    "de-DE": "Erledigt",
+                    "fr-FR": "Réglée",
+                    "da-DK": "Afsluttet",
+                    "cs-CZ": "Vyřízená",
+                    "ar-EG": "تمت التسوية",
+                    "zh-CN": "已解决",
+                    "zh-TW": "已解決"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "answered_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "answered"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Answered at",
+              "de-DE": "Beantwortet am",
+              "fr-FR": "Répondue le",
+              "da-DK": "Besvaret den",
+              "cs-CZ": "Zodpovězeno dne",
+              "ar-EG": "وقت الرد",
+              "zh-CN": "答复时间",
+              "zh-TW": "回覆時間"
+            }
+          },
+          {
+            "ref": "settled_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "settled"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Settled at",
+              "de-DE": "Erledigt am",
+              "fr-FR": "Réglée le",
+              "da-DK": "Afsluttet den",
+              "cs-CZ": "Vyřízeno dne",
+              "ar-EG": "وقت التسوية",
+              "zh-CN": "解决时间",
+              "zh-TW": "解決時間"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "warranty_claims",
+        "label": {
+          "en-US": "Warranty claim",
+          "de-DE": "Garantiefall",
+          "fr-FR": "Réclamation de garantie",
+          "da-DK": "Garantisag",
+          "cs-CZ": "Reklamace",
+          "ar-EG": "مطالبة ضمان",
+          "zh-CN": "保修索赔",
+          "zh-TW": "保固索賠"
+        },
+        "labelPlural": {
+          "en-US": "Warranty claims",
+          "de-DE": "Garantiefälle",
+          "fr-FR": "Réclamations de garantie",
+          "da-DK": "Garantisager",
+          "cs-CZ": "Reklamace",
+          "ar-EG": "مطالبات الضمان",
+          "zh-CN": "保修索赔",
+          "zh-TW": "保固索賠"
+        },
+        "keyField": "what",
+        "belongs": [
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "job_id"
+          ],
+          [
+            "state"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "to-raise",
+          "moves": {
+            "to-raise": [
+              "with-supplier",
+              "turned-down"
+            ],
+            "with-supplier": [
+              "parts-coming",
+              "turned-down"
+            ],
+            "parts-coming": [
+              "sorted",
+              "turned-down"
+            ],
+            "sorted": [
+              "turned-down"
+            ]
+          },
+          "actions": [
+            {
+              "id": "raise",
+              "label": {
+                "en-US": "Raise with the supplier",
+                "de-DE": "Beim Lieferanten melden",
+                "fr-FR": "Déclarer au fournisseur",
+                "da-DK": "Anmeld til leverandøren",
+                "cs-CZ": "Nahlásit dodavateli",
+                "ar-EG": "ارفع إلى المورّد",
+                "zh-CN": "提交供应商",
+                "zh-TW": "提交供應商"
+              },
+              "move": {
+                "to": "with-supplier"
+              }
+            },
+            {
+              "id": "parts-coming",
+              "label": {
+                "en-US": "Parts on the way",
+                "de-DE": "Teile unterwegs",
+                "fr-FR": "Pièces en route",
+                "da-DK": "Dele på vej",
+                "cs-CZ": "Díly na cestě",
+                "ar-EG": "القطع في الطريق",
+                "zh-CN": "配件在途",
+                "zh-TW": "零件運送中"
+              },
+              "move": {
+                "to": "parts-coming"
+              }
+            },
+            {
+              "id": "sorted",
+              "label": {
+                "en-US": "Mark sorted",
+                "de-DE": "Als erledigt markieren",
+                "fr-FR": "Marquer comme résolue",
+                "da-DK": "Markér som løst",
+                "cs-CZ": "Označit jako vyřešenou",
+                "ar-EG": "علِّم كمحلولة",
+                "zh-CN": "标记为已解决",
+                "zh-TW": "標記為已解決"
+              },
+              "move": {
+                "to": "sorted"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "turn-down",
+              "label": {
+                "en-US": "Turn down",
+                "de-DE": "Ablehnen",
+                "fr-FR": "Refuser",
+                "da-DK": "Afvis",
+                "cs-CZ": "Zamítnout",
+                "ar-EG": "ارفض",
+                "zh-CN": "拒绝",
+                "zh-TW": "拒絕"
+              },
+              "move": {
+                "to": "turned-down"
+              },
+              "tone": "danger"
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "fk",
+            "references": "contacts",
+            "nullable": true,
+            "label": {
+              "en-US": "Contact",
+              "de-DE": "Kontakt",
+              "fr-FR": "Contact",
+              "da-DK": "Kontakt",
+              "cs-CZ": "Kontakt",
+              "ar-EG": "جهة الاتصال",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 300,
+            "label": {
+              "en-US": "Problem",
+              "de-DE": "Problem",
+              "fr-FR": "Problème",
+              "da-DK": "Problem",
+              "cs-CZ": "Problém",
+              "ar-EG": "المشكلة",
+              "zh-CN": "问题",
+              "zh-TW": "問題"
+            }
+          },
+          {
+            "ref": "part",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Part",
+              "de-DE": "Teil",
+              "fr-FR": "Pièce",
+              "da-DK": "Del",
+              "cs-CZ": "Díl",
+              "ar-EG": "القطعة",
+              "zh-CN": "配件",
+              "zh-TW": "零件"
+            }
+          },
+          {
+            "ref": "cover",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "label": {
+              "en-US": "Cover",
+              "de-DE": "Garantieart",
+              "fr-FR": "Type de garantie",
+              "da-DK": "Dækning",
+              "cs-CZ": "Krytí",
+              "ar-EG": "نوع الضمان",
+              "zh-CN": "保修类型",
+              "zh-TW": "保固類型"
+            }
+          },
+          {
+            "ref": "cover_years",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Years of cover",
+              "de-DE": "Garantiejahre",
+              "fr-FR": "Années de garantie",
+              "da-DK": "Års dækning",
+              "cs-CZ": "Roky záruky",
+              "ar-EG": "سنوات الضمان",
+              "zh-CN": "保修年限",
+              "zh-TW": "保固年限"
+            }
+          },
+          {
+            "ref": "raised_on",
+            "type": "date",
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Raised on",
+              "de-DE": "Gemeldet am",
+              "fr-FR": "Signalé le",
+              "da-DK": "Meldt den",
+              "cs-CZ": "Nahlášeno dne",
+              "ar-EG": "تاريخ الإبلاغ",
+              "zh-CN": "提出日期",
+              "zh-TW": "提出日期"
+            }
+          },
+          {
+            "ref": "supplier_name",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "label": {
+              "en-US": "Supplier name",
+              "de-DE": "Name des Lieferanten",
+              "fr-FR": "Nom du fournisseur",
+              "da-DK": "Leverandørens navn",
+              "cs-CZ": "Název dodavatele",
+              "ar-EG": "اسم المورّد",
+              "zh-CN": "供应商名称",
+              "zh-TW": "供應商名稱"
+            }
+          },
+          {
+            "ref": "supplier",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "label": {
+              "en-US": "Supplier",
+              "de-DE": "Lieferant",
+              "fr-FR": "Fournisseur",
+              "da-DK": "Leverandør",
+              "cs-CZ": "Dodavatel",
+              "ar-EG": "المورّد",
+              "zh-CN": "供应商",
+              "zh-TW": "供應商"
+            }
+          },
+          {
+            "ref": "paid_by",
+            "type": "enum",
+            "enum": [
+              "supplier",
+              "us",
+              "none"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "supplier": {
+                    "en-US": "The supplier",
+                    "de-DE": "Lieferant",
+                    "fr-FR": "Le fournisseur",
+                    "da-DK": "Leverandøren",
+                    "cs-CZ": "Dodavatel",
+                    "ar-EG": "المورّد",
+                    "zh-CN": "供应商",
+                    "zh-TW": "供應商"
+                  },
+                  "us": {
+                    "en-US": "Us",
+                    "de-DE": "Wir",
+                    "fr-FR": "Nous",
+                    "da-DK": "Os",
+                    "cs-CZ": "My",
+                    "ar-EG": "نحن",
+                    "zh-CN": "我方",
+                    "zh-TW": "我方"
+                  },
+                  "none": {
+                    "en-US": "Nobody",
+                    "de-DE": "Niemand",
+                    "fr-FR": "Personne",
+                    "da-DK": "Ingen",
+                    "cs-CZ": "Nikdo",
+                    "ar-EG": "لا أحد",
+                    "zh-CN": "无",
+                    "zh-TW": "無"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Paid by",
+              "de-DE": "Bezahlt von",
+              "fr-FR": "Payé par",
+              "da-DK": "Betalt af",
+              "cs-CZ": "Hradí",
+              "ar-EG": "يدفعها",
+              "zh-CN": "费用承担方",
+              "zh-TW": "費用負擔方"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "to-raise",
+              "with-supplier",
+              "parts-coming",
+              "sorted",
+              "turned-down"
+            ],
+            "default": "to-raise",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "to-raise": {
+                    "en-US": "To raise",
+                    "de-DE": "Zu melden",
+                    "fr-FR": "À déclarer",
+                    "da-DK": "Skal anmeldes",
+                    "cs-CZ": "K nahlášení",
+                    "ar-EG": "بانتظار الرفع",
+                    "zh-CN": "待提交",
+                    "zh-TW": "待提出"
+                  },
+                  "with-supplier": {
+                    "en-US": "With the supplier",
+                    "de-DE": "Beim Lieferanten",
+                    "fr-FR": "Chez le fournisseur",
+                    "da-DK": "Hos leverandøren",
+                    "cs-CZ": "U dodavatele",
+                    "ar-EG": "لدى المورّد",
+                    "zh-CN": "供应商处理中",
+                    "zh-TW": "供應商處理中"
+                  },
+                  "parts-coming": {
+                    "en-US": "Parts on the way",
+                    "de-DE": "Teile unterwegs",
+                    "fr-FR": "Pièces en route",
+                    "da-DK": "Dele på vej",
+                    "cs-CZ": "Díly na cestě",
+                    "ar-EG": "القطع في الطريق",
+                    "zh-CN": "配件在途",
+                    "zh-TW": "零件運送中"
+                  },
+                  "sorted": {
+                    "en-US": "Sorted",
+                    "de-DE": "Erledigt",
+                    "fr-FR": "Résolue",
+                    "da-DK": "Løst",
+                    "cs-CZ": "Vyřešená",
+                    "ar-EG": "حُلّت",
+                    "zh-CN": "已解决",
+                    "zh-TW": "已解決"
+                  },
+                  "turned-down": {
+                    "en-US": "Turned down",
+                    "de-DE": "Abgelehnt",
+                    "fr-FR": "Refusée",
+                    "da-DK": "Afvist",
+                    "cs-CZ": "Zamítnutá",
+                    "ar-EG": "مرفوضة",
+                    "zh-CN": "已拒绝",
+                    "zh-TW": "已拒絕"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "deal_stock_needs",
+        "label": {
+          "en-US": "Stock need",
+          "de-DE": "Materialbedarf",
+          "fr-FR": "Besoin en stock",
+          "da-DK": "Lagerbehov",
+          "cs-CZ": "Potřeba materiálu",
+          "ar-EG": "احتياج مخزون",
+          "zh-CN": "备货需求",
+          "zh-TW": "備貨需求"
+        },
+        "labelPlural": {
+          "en-US": "Stock needs",
+          "de-DE": "Materialbedarfe",
+          "fr-FR": "Besoins en stock",
+          "da-DK": "Lagerbehov",
+          "cs-CZ": "Potřeby materiálu",
+          "ar-EG": "احتياجات المخزون",
+          "zh-CN": "备货需求",
+          "zh-TW": "備貨需求"
+        },
+        "keyField": "item",
+        "belongs": [
+          {
+            "via": "deal_id"
+          }
+        ],
+        "indexes": [
+          [
+            "deal_id"
+          ],
+          [
+            "item"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "item",
+            "type": "text",
+            "maxLength": 64,
+            "label": {
+              "en-US": "Stock item",
+              "de-DE": "Lagerartikel",
+              "fr-FR": "Article en stock",
+              "da-DK": "Lagervare",
+              "cs-CZ": "Skladová položka",
+              "ar-EG": "صنف المخزون",
+              "zh-CN": "库存物料",
+              "zh-TW": "庫存品項"
+            }
+          },
+          {
+            "ref": "qty",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "label": {
+              "en-US": "Quantity",
+              "de-DE": "Menge",
+              "fr-FR": "Quantité",
+              "da-DK": "Antal",
+              "cs-CZ": "Množství",
+              "ar-EG": "الكمية",
+              "zh-CN": "数量",
+              "zh-TW": "數量"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "vehicles",
+        "label": {
+          "en-US": "Vehicle",
+          "de-DE": "Fahrzeug",
+          "fr-FR": "Véhicule",
+          "da-DK": "Køretøj",
+          "cs-CZ": "Vozidlo",
+          "ar-EG": "مركبة",
+          "zh-CN": "车辆",
+          "zh-TW": "車輛"
+        },
+        "labelPlural": {
+          "en-US": "Vehicles",
+          "de-DE": "Fahrzeuge",
+          "fr-FR": "Véhicules",
+          "da-DK": "Køretøjer",
+          "cs-CZ": "Vozidla",
+          "ar-EG": "المركبات",
+          "zh-CN": "车辆",
+          "zh-TW": "車輛"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "plate",
+            "type": "text",
+            "maxLength": 20,
+            "nullable": true,
+            "label": {
+              "en-US": "Number plate",
+              "de-DE": "Kennzeichen",
+              "fr-FR": "Immatriculation",
+              "da-DK": "Nummerplade",
+              "cs-CZ": "SPZ",
+              "ar-EG": "رقم اللوحة",
+              "zh-CN": "车牌号",
+              "zh-TW": "車牌號碼"
+            }
+          },
+          {
+            "ref": "model",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Model",
+              "de-DE": "Modell",
+              "fr-FR": "Modèle",
+              "da-DK": "Model",
+              "cs-CZ": "Model",
+              "ar-EG": "الطراز",
+              "zh-CN": "车型",
+              "zh-TW": "車型"
+            }
+          },
+          {
+            "ref": "odometer",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Odometer",
+              "de-DE": "Kilometerstand",
+              "fr-FR": "Compteur kilométrique",
+              "da-DK": "Kilometertæller",
+              "cs-CZ": "Stav tachometru",
+              "ar-EG": "عدّاد المسافات",
+              "zh-CN": "里程表读数",
+              "zh-TW": "里程數"
+            }
+          },
+          {
+            "ref": "inspection_due",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Inspection due",
+              "de-DE": "Prüfung fällig am",
+              "fr-FR": "Contrôle technique à faire le",
+              "da-DK": "Syn senest den",
+              "cs-CZ": "Technická kontrola do",
+              "ar-EG": "موعد الفحص",
+              "zh-CN": "年检到期日",
+              "zh-TW": "檢驗到期日"
+            }
+          },
+          {
+            "ref": "service_due",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Service due",
+              "de-DE": "Wartung fällig am",
+              "fr-FR": "Entretien à faire le",
+              "da-DK": "Service senest den",
+              "cs-CZ": "Servis do",
+              "ar-EG": "موعد الصيانة",
+              "zh-CN": "保养到期日",
+              "zh-TW": "保養到期日"
+            }
+          },
+          {
+            "ref": "tax_to",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Taxed until",
+              "de-DE": "Steuer bezahlt bis",
+              "fr-FR": "Taxe payée jusqu’au",
+              "da-DK": "Afgift betalt til",
+              "cs-CZ": "Daň zaplacena do",
+              "ar-EG": "الضريبة مدفوعة حتى",
+              "zh-CN": "车船税有效期至",
+              "zh-TW": "牌照稅有效至"
+            }
+          },
+          {
+            "ref": "hired",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Hired",
+              "de-DE": "Gemietet",
+              "fr-FR": "Loué",
+              "da-DK": "Lejet",
+              "cs-CZ": "Pronajaté",
+              "ar-EG": "مستأجرة",
+              "zh-CN": "租赁车辆",
+              "zh-TW": "租賃車輛"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "vehicle_checks",
+        "label": {
+          "en-US": "Vehicle check",
+          "de-DE": "Fahrzeugkontrolle",
+          "fr-FR": "Contrôle du véhicule",
+          "da-DK": "Køretøjstjek",
+          "cs-CZ": "Kontrola vozidla",
+          "ar-EG": "فحص مركبة",
+          "zh-CN": "车辆检查",
+          "zh-TW": "車輛檢查"
+        },
+        "labelPlural": {
+          "en-US": "Vehicle checks",
+          "de-DE": "Fahrzeugkontrollen",
+          "fr-FR": "Contrôles des véhicules",
+          "da-DK": "Køretøjstjek",
+          "cs-CZ": "Kontroly vozidel",
+          "ar-EG": "فحوص المركبات",
+          "zh-CN": "车辆检查",
+          "zh-TW": "車輛檢查"
+        },
+        "belongs": [
+          {
+            "column": "by_id"
+          }
+        ],
+        "indexes": [
+          [
+            "vehicle_id"
+          ],
+          [
+            "by_id"
+          ],
+          [
+            "day"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "by_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Checked by",
+              "de-DE": "Geprüft von",
+              "fr-FR": "Contrôlé par",
+              "da-DK": "Tjekket af",
+              "cs-CZ": "Zkontroloval(a)",
+              "ar-EG": "فحصها",
+              "zh-CN": "检查人",
+              "zh-TW": "檢查人"
+            }
+          },
+          {
+            "ref": "tyres",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Tyres",
+              "de-DE": "Reifen",
+              "fr-FR": "Pneus",
+              "da-DK": "Dæk",
+              "cs-CZ": "Pneumatiky",
+              "ar-EG": "الإطارات",
+              "zh-CN": "轮胎",
+              "zh-TW": "輪胎"
+            }
+          },
+          {
+            "ref": "fluids",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Fluids",
+              "de-DE": "Flüssigkeiten",
+              "fr-FR": "Niveaux",
+              "da-DK": "Væsker",
+              "cs-CZ": "Kapaliny",
+              "ar-EG": "السوائل",
+              "zh-CN": "油液",
+              "zh-TW": "油液"
+            }
+          },
+          {
+            "ref": "lights",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Lights",
+              "de-DE": "Beleuchtung",
+              "fr-FR": "Feux",
+              "da-DK": "Lygter",
+              "cs-CZ": "Světla",
+              "ar-EG": "الأضواء",
+              "zh-CN": "灯光",
+              "zh-TW": "燈光"
+            }
+          },
+          {
+            "ref": "straps",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Straps",
+              "de-DE": "Spanngurte",
+              "fr-FR": "Sangles",
+              "da-DK": "Stropper",
+              "cs-CZ": "Popruhy",
+              "ar-EG": "أحزمة التثبيت",
+              "zh-CN": "绑带",
+              "zh-TW": "綁帶"
+            }
+          },
+          {
+            "ref": "tail_lift",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Tail lift",
+              "de-DE": "Ladebordwand",
+              "fr-FR": "Hayon élévateur",
+              "da-DK": "Læssebagsmæk",
+              "cs-CZ": "Hydraulické čelo",
+              "ar-EG": "الرافعة الخلفية",
+              "zh-CN": "尾板",
+              "zh-TW": "尾門升降機"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "vehicle_faults",
+        "label": {
+          "en-US": "Vehicle fault",
+          "de-DE": "Fahrzeugmangel",
+          "fr-FR": "Défaut du véhicule",
+          "da-DK": "Fejl på køretøj",
+          "cs-CZ": "Závada vozidla",
+          "ar-EG": "عطل مركبة",
+          "zh-CN": "车辆故障",
+          "zh-TW": "車輛故障"
+        },
+        "labelPlural": {
+          "en-US": "Vehicle faults",
+          "de-DE": "Fahrzeugmängel",
+          "fr-FR": "Défauts des véhicules",
+          "da-DK": "Fejl på køretøjer",
+          "cs-CZ": "Závady vozidel",
+          "ar-EG": "أعطال المركبات",
+          "zh-CN": "车辆故障",
+          "zh-TW": "車輛故障"
+        },
+        "keyField": "text",
+        "indexes": [
+          [
+            "vehicle_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
+            }
+          },
+          {
+            "ref": "text",
+            "type": "text",
+            "maxLength": 300,
+            "label": {
+              "en-US": "Description",
+              "de-DE": "Beschreibung",
+              "fr-FR": "Description",
+              "da-DK": "Beskrivelse",
+              "cs-CZ": "Popis",
+              "ar-EG": "الوصف",
+              "zh-CN": "描述",
+              "zh-TW": "描述"
+            }
+          },
+          {
+            "ref": "raised_on",
+            "type": "date",
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Raised on",
+              "de-DE": "Gemeldet am",
+              "fr-FR": "Signalé le",
+              "da-DK": "Meldt den",
+              "cs-CZ": "Nahlášeno dne",
+              "ar-EG": "تاريخ الإبلاغ",
+              "zh-CN": "提出日期",
+              "zh-TW": "提出日期"
+            }
+          },
+          {
+            "ref": "raised_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Raised by",
+              "de-DE": "Gemeldet von",
+              "fr-FR": "Signalé par",
+              "da-DK": "Meldt af",
+              "cs-CZ": "Nahlásil(a)",
+              "ar-EG": "أبلغ عنه",
+              "zh-CN": "提出人",
+              "zh-TW": "提出人"
+            }
+          },
+          {
+            "ref": "fixed_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Fixed on",
+              "de-DE": "Behoben am",
+              "fr-FR": "Réparé le",
+              "da-DK": "Udbedret den",
+              "cs-CZ": "Opraveno dne",
+              "ar-EG": "تاريخ الإصلاح",
+              "zh-CN": "修复日期",
+              "zh-TW": "修復日期"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "fuel_fills",
+        "label": {
+          "en-US": "Fuel fill",
+          "de-DE": "Tankfüllung",
+          "fr-FR": "Plein de carburant",
+          "da-DK": "Tankning",
+          "cs-CZ": "Tankování",
+          "ar-EG": "تعبئة وقود",
+          "zh-CN": "加油记录",
+          "zh-TW": "加油紀錄"
+        },
+        "labelPlural": {
+          "en-US": "Fuel fills",
+          "de-DE": "Tankfüllungen",
+          "fr-FR": "Pleins de carburant",
+          "da-DK": "Tankninger",
+          "cs-CZ": "Tankování",
+          "ar-EG": "تعبئات الوقود",
+          "zh-CN": "加油记录",
+          "zh-TW": "加油紀錄"
+        },
+        "belongs": [
+          {
+            "column": "by_id"
+          }
+        ],
+        "indexes": [
+          [
+            "vehicle_id"
+          ],
+          [
+            "by_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "by_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Filled by",
+              "de-DE": "Getankt von",
+              "fr-FR": "Plein fait par",
+              "da-DK": "Tanket af",
+              "cs-CZ": "Tankoval(a)",
+              "ar-EG": "عبّأها",
+              "zh-CN": "加油人",
+              "zh-TW": "加油人"
+            }
+          },
+          {
+            "ref": "litres",
+            "type": "decimal",
+            "scale": 1,
+            "label": {
+              "en-US": "Litres",
+              "de-DE": "Liter",
+              "fr-FR": "Litres",
+              "da-DK": "Liter",
+              "cs-CZ": "Litry",
+              "ar-EG": "اللترات",
+              "zh-CN": "升数",
+              "zh-TW": "公升數"
+            }
+          },
+          {
+            "ref": "cost",
+            "type": "decimal",
+            "scale": "currency",
+            "label": {
+              "en-US": "Cost",
+              "de-DE": "Kosten",
+              "fr-FR": "Coût",
+              "da-DK": "Omkostning",
+              "cs-CZ": "Náklady",
+              "ar-EG": "التكلفة",
+              "zh-CN": "费用",
+              "zh-TW": "費用"
+            }
+          },
+          {
+            "ref": "odometer",
+            "type": "int",
+            "label": {
+              "en-US": "Odometer",
+              "de-DE": "Kilometerstand",
+              "fr-FR": "Compteur kilométrique",
+              "da-DK": "Kilometertæller",
+              "cs-CZ": "Stav tachometru",
+              "ar-EG": "عدّاد المسافات",
+              "zh-CN": "里程表读数",
+              "zh-TW": "里程數"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "time_sheets",
+        "label": {
+          "en-US": "Time sheet",
+          "de-DE": "Stundenzettel",
+          "fr-FR": "Feuille de temps",
+          "da-DK": "Timeseddel",
+          "cs-CZ": "Výkaz práce",
+          "ar-EG": "كشف ساعات",
+          "zh-CN": "工时表",
+          "zh-TW": "工時表"
+        },
+        "labelPlural": {
+          "en-US": "Time sheets",
+          "de-DE": "Stundenzettel",
+          "fr-FR": "Feuilles de temps",
+          "da-DK": "Timesedler",
+          "cs-CZ": "Výkazy práce",
+          "ar-EG": "كشوف الساعات",
+          "zh-CN": "工时表",
+          "zh-TW": "工時表"
+        },
+        "unique": [
+          [
+            "user_id",
+            "week_of"
+          ]
+        ],
+        "belongs": [
+          {
+            "column": "user_id"
+          }
+        ],
+        "indexes": [
+          [
+            "user_id"
+          ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "sent"
+            ],
+            "sent": [
+              "signed-off",
+              {
+                "to": "sent-back",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "sent_back_note",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "sent-back": [
+              "sent"
+            ]
+          },
+          "lock": {
+            "when": [
+              "sent",
+              "signed-off"
+            ],
+            "except": [
+              "sent_back_note"
+            ]
+          },
+          "children": {
+            "time_sheet_lines": {
+              "via": "sheet_id",
+              "lock": true
+            }
+          },
+          "actions": [
+            {
+              "id": "send",
+              "label": {
+                "en-US": "Send",
+                "de-DE": "Einreichen",
+                "fr-FR": "Envoyer",
+                "da-DK": "Send",
+                "cs-CZ": "Odeslat",
+                "ar-EG": "أرسِل",
+                "zh-CN": "提交",
+                "zh-TW": "送出"
+              },
+              "move": {
+                "to": "sent"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "sign-off",
+              "label": {
+                "en-US": "Sign off",
+                "de-DE": "Freigeben",
+                "fr-FR": "Valider",
+                "da-DK": "Godkend",
+                "cs-CZ": "Schválit",
+                "ar-EG": "اعتمد",
+                "zh-CN": "批准",
+                "zh-TW": "核准"
+              },
+              "move": {
+                "to": "signed-off"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "send-back",
+              "label": {
+                "en-US": "Send back",
+                "de-DE": "Zurückgeben",
+                "fr-FR": "Renvoyer",
+                "da-DK": "Send retur",
+                "cs-CZ": "Vrátit",
+                "ar-EG": "أعِد",
+                "zh-CN": "退回",
+                "zh-TW": "退回"
+              },
+              "move": {
+                "to": "sent-back"
+              },
+              "tone": "danger",
+              "ask": [
+                "sent_back_note"
+              ]
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "user_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Person",
+              "de-DE": "Person",
+              "fr-FR": "Personne",
+              "da-DK": "Person",
+              "cs-CZ": "Osoba",
+              "ar-EG": "الشخص",
+              "zh-CN": "人员",
+              "zh-TW": "人員"
+            }
+          },
+          {
+            "ref": "week_of",
+            "type": "date",
+            "label": {
+              "en-US": "Week of",
+              "de-DE": "Woche ab",
+              "fr-FR": "Semaine du",
+              "da-DK": "Uge fra",
+              "cs-CZ": "Týden od",
+              "ar-EG": "أسبوع يبدأ في",
+              "zh-CN": "周起始日",
+              "zh-TW": "週起始日"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "sent",
+              "signed-off",
+              "sent-back"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouverte",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřený",
+                    "ar-EG": "مفتوح",
+                    "zh-CN": "填写中",
+                    "zh-TW": "填寫中"
+                  },
+                  "sent": {
+                    "en-US": "Sent",
+                    "de-DE": "Eingereicht",
+                    "fr-FR": "Envoyée",
+                    "da-DK": "Sendt",
+                    "cs-CZ": "Odeslaný",
+                    "ar-EG": "مُرسَل",
+                    "zh-CN": "已提交",
+                    "zh-TW": "已送出"
+                  },
+                  "signed-off": {
+                    "en-US": "Signed off",
+                    "de-DE": "Freigegeben",
+                    "fr-FR": "Validée",
+                    "da-DK": "Godkendt",
+                    "cs-CZ": "Schválený",
+                    "ar-EG": "معتمد",
+                    "zh-CN": "已批准",
+                    "zh-TW": "已核准"
+                  },
+                  "sent-back": {
+                    "en-US": "Sent back",
+                    "de-DE": "Zurückgegeben",
+                    "fr-FR": "Renvoyée",
+                    "da-DK": "Sendt retur",
+                    "cs-CZ": "Vrácený",
+                    "ar-EG": "مُعاد",
+                    "zh-CN": "已退回",
+                    "zh-TW": "已退回"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "signed_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "signed-off"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Signed off by",
+              "de-DE": "Freigegeben von",
+              "fr-FR": "Validée par",
+              "da-DK": "Godkendt af",
+              "cs-CZ": "Schválil(a)",
+              "ar-EG": "اعتمده",
+              "zh-CN": "批准人",
+              "zh-TW": "核准人"
+            }
+          },
+          {
+            "ref": "signed_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "signed-off"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Signed off at",
+              "de-DE": "Freigegeben am",
+              "fr-FR": "Validée le",
+              "da-DK": "Godkendt den",
+              "cs-CZ": "Schváleno dne",
+              "ar-EG": "وقت الاعتماد",
+              "zh-CN": "批准时间",
+              "zh-TW": "核准時間"
+            }
+          },
+          {
+            "ref": "sent_back_note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Why it was sent back",
+              "de-DE": "Grund der Rückgabe",
+              "fr-FR": "Motif du renvoi",
+              "da-DK": "Hvorfor den blev sendt retur",
+              "cs-CZ": "Důvod vrácení",
+              "ar-EG": "سبب الإعادة",
+              "zh-CN": "退回原因",
+              "zh-TW": "退回原因"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "time_sheet_lines",
+        "label": {
+          "en-US": "Time sheet line",
+          "de-DE": "Stundenzettelzeile",
+          "fr-FR": "Ligne de feuille de temps",
+          "da-DK": "Timeseddellinje",
+          "cs-CZ": "Řádek výkazu",
+          "ar-EG": "بند كشف الساعات",
+          "zh-CN": "工时明细",
+          "zh-TW": "工時明細"
+        },
+        "labelPlural": {
+          "en-US": "Time sheet lines",
+          "de-DE": "Stundenzettelzeilen",
+          "fr-FR": "Lignes de feuille de temps",
+          "da-DK": "Timeseddellinjer",
+          "cs-CZ": "Řádky výkazu",
+          "ar-EG": "بنود كشوف الساعات",
+          "zh-CN": "工时明细",
+          "zh-TW": "工時明細"
+        },
+        "keyField": "what",
+        "belongs": [
+          {
+            "via": "sheet_id"
+          }
+        ],
+        "indexes": [
+          [
+            "sheet_id"
+          ],
+          [
+            "job_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "sheet_id",
+            "type": "fk",
+            "references": "time_sheets",
+            "label": {
+              "en-US": "Time sheet",
+              "de-DE": "Stundenzettel",
+              "fr-FR": "Feuille de temps",
+              "da-DK": "Timeseddel",
+              "cs-CZ": "Výkaz práce",
+              "ar-EG": "كشف الساعات",
+              "zh-CN": "工时表",
+              "zh-TW": "工時表"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "Work done",
+              "de-DE": "Tätigkeit",
+              "fr-FR": "Travail effectué",
+              "da-DK": "Udført arbejde",
+              "cs-CZ": "Vykonaná práce",
+              "ar-EG": "العمل المنجز",
+              "zh-CN": "工作内容",
+              "zh-TW": "工作內容"
+            }
+          },
+          {
+            "ref": "hours",
+            "type": "decimal",
+            "scale": 2,
+            "label": {
+              "en-US": "Hours",
+              "de-DE": "Stunden",
+              "fr-FR": "Heures",
+              "da-DK": "Timer",
+              "cs-CZ": "Hodiny",
+              "ar-EG": "الساعات",
+              "zh-CN": "工时",
+              "zh-TW": "工時"
+            }
+          },
+          {
+            "ref": "travel_hours",
+            "type": "decimal",
+            "scale": 2,
+            "default": 0,
+            "label": {
+              "en-US": "Travel hours",
+              "de-DE": "Fahrtstunden",
+              "fr-FR": "Heures de trajet",
+              "da-DK": "Køretimer",
+              "cs-CZ": "Hodiny na cestě",
+              "ar-EG": "ساعات التنقل",
+              "zh-CN": "路途工时",
+              "zh-TW": "交通工時"
+            }
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "nullable": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "certificates",
+        "label": {
+          "en-US": "Certificate",
+          "de-DE": "Zertifikat",
+          "fr-FR": "Certificat",
+          "da-DK": "Certifikat",
+          "cs-CZ": "Osvědčení",
+          "ar-EG": "شهادة",
+          "zh-CN": "证书",
+          "zh-TW": "證照"
+        },
+        "labelPlural": {
+          "en-US": "Certificates",
+          "de-DE": "Zertifikate",
+          "fr-FR": "Certificats",
+          "da-DK": "Certifikater",
+          "cs-CZ": "Osvědčení",
+          "ar-EG": "الشهادات",
+          "zh-CN": "证书",
+          "zh-TW": "證照"
+        },
+        "keyField": "name",
+        "belongs": [
+          {
+            "column": "user_id"
+          }
+        ],
+        "indexes": [
+          [
+            "user_id",
+            "valid_until"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "user_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Person",
+              "de-DE": "Person",
+              "fr-FR": "Personne",
+              "da-DK": "Person",
+              "cs-CZ": "Osoba",
+              "ar-EG": "الشخص",
+              "zh-CN": "人员",
+              "zh-TW": "人員"
+            }
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "valid_until",
+            "type": "date",
+            "label": {
+              "en-US": "Valid until",
+              "de-DE": "Gültig bis",
+              "fr-FR": "Valable jusqu’au",
+              "da-DK": "Gyldig til",
+              "cs-CZ": "Platí do",
+              "ar-EG": "صالح حتى",
+              "zh-CN": "有效期至",
+              "zh-TW": "有效期限"
+            }
+          },
+          {
+            "ref": "course_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Course on",
+              "de-DE": "Schulung am",
+              "fr-FR": "Formation le",
+              "da-DK": "Kursus den",
+              "cs-CZ": "Školení dne",
+              "ar-EG": "تاريخ الدورة",
+              "zh-CN": "培训日期",
+              "zh-TW": "課程日期"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "subcontractors",
+        "label": {
+          "en-US": "Subcontractor",
+          "de-DE": "Subunternehmer",
+          "fr-FR": "Sous-traitant",
+          "da-DK": "Underentreprenør",
+          "cs-CZ": "Subdodavatel",
+          "ar-EG": "مقاول من الباطن",
+          "zh-CN": "分包商",
+          "zh-TW": "分包商"
+        },
+        "labelPlural": {
+          "en-US": "Subcontractors",
+          "de-DE": "Subunternehmer",
+          "fr-FR": "Sous-traitants",
+          "da-DK": "Underentreprenører",
+          "cs-CZ": "Subdodavatelé",
+          "ar-EG": "مقاولو الباطن",
+          "zh-CN": "分包商",
+          "zh-TW": "分包商"
+        },
+        "keyField": "name",
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "name",
+            "type": "text",
+            "maxLength": 160,
+            "label": {
+              "en-US": "Name",
+              "de-DE": "Name",
+              "fr-FR": "Nom",
+              "da-DK": "Navn",
+              "cs-CZ": "Název",
+              "ar-EG": "الاسم",
+              "zh-CN": "名称",
+              "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "hands",
+            "type": "int",
+            "label": {
+              "en-US": "Hands",
+              "de-DE": "Arbeitskräfte",
+              "fr-FR": "Effectif",
+              "da-DK": "Antal folk",
+              "cs-CZ": "Počet lidí",
+              "ar-EG": "عدد العمال",
+              "zh-CN": "人手",
+              "zh-TW": "人手"
+            }
+          },
+          {
+            "ref": "day_rate",
+            "type": "decimal",
+            "scale": "currency",
+            "label": {
+              "en-US": "Day rate",
+              "de-DE": "Tagessatz",
+              "fr-FR": "Tarif journalier",
+              "da-DK": "Dagspris",
+              "cs-CZ": "Denní sazba",
+              "ar-EG": "الأجر اليومي",
+              "zh-CN": "日费率",
+              "zh-TW": "日費率"
+            }
+          },
+          {
+            "ref": "days_used",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "label": {
+              "en-US": "Days used",
+              "de-DE": "Genutzte Tage",
+              "fr-FR": "Jours utilisés",
+              "da-DK": "Brugte dage",
+              "cs-CZ": "Využité dny",
+              "ar-EG": "الأيام المستخدمة",
+              "zh-CN": "已用天数",
+              "zh-TW": "已用天數"
+            }
+          },
+          {
+            "ref": "insurance_until",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Insured until",
+              "de-DE": "Versichert bis",
+              "fr-FR": "Assuré jusqu’au",
+              "da-DK": "Forsikret til",
+              "cs-CZ": "Pojištěn do",
+              "ar-EG": "التأمين سارٍ حتى",
+              "zh-CN": "保险有效期至",
+              "zh-TW": "保險有效至"
+            }
+          },
+          {
+            "ref": "certificate",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "Insurance certificate",
+              "de-DE": "Versicherungsnachweis",
+              "fr-FR": "Attestation d’assurance",
+              "da-DK": "Forsikringsbevis",
+              "cs-CZ": "Doklad o pojištění",
+              "ar-EG": "شهادة التأمين",
+              "zh-CN": "保险凭证",
+              "zh-TW": "保險證明"
+            }
+          },
+          {
+            "ref": "chased_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Chased at",
+              "de-DE": "Erinnert am",
+              "fr-FR": "Relancé le",
+              "da-DK": "Rykket den",
+              "cs-CZ": "Urgováno dne",
+              "ar-EG": "وقت الاستعجال",
+              "zh-CN": "催办时间",
+              "zh-TW": "催辦時間"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "insurance_incidents",
+        "label": {
+          "en-US": "Insurance incident",
+          "de-DE": "Versicherungsfall",
+          "fr-FR": "Sinistre",
+          "da-DK": "Forsikringssag",
+          "cs-CZ": "Pojistná událost",
+          "ar-EG": "حادثة تأمين",
+          "zh-CN": "保险事件",
+          "zh-TW": "保險事件"
+        },
+        "labelPlural": {
+          "en-US": "Insurance incidents",
+          "de-DE": "Versicherungsfälle",
+          "fr-FR": "Sinistres",
+          "da-DK": "Forsikringssager",
+          "cs-CZ": "Pojistné události",
+          "ar-EG": "حوادث التأمين",
+          "zh-CN": "保险事件",
+          "zh-TW": "保險事件"
+        },
+        "keyField": "what",
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "settled"
+            ]
+          },
+          "actions": [
+            {
+              "id": "settle",
+              "label": {
+                "en-US": "Settle",
+                "de-DE": "Abschließen",
+                "fr-FR": "Clôturer",
+                "da-DK": "Afslut",
+                "cs-CZ": "Uzavřít",
+                "ar-EG": "سوِّ",
+                "zh-CN": "结案",
+                "zh-TW": "結案"
+              },
+              "move": {
+                "to": "settled"
+              },
+              "tone": "primary"
+            }
+          ]
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 400,
+            "label": {
+              "en-US": "What happened",
+              "de-DE": "Was passiert ist",
+              "fr-FR": "Ce qui s’est passé",
+              "da-DK": "Hvad der skete",
+              "cs-CZ": "Co se stalo",
+              "ar-EG": "ما حدث",
+              "zh-CN": "事件经过",
+              "zh-TW": "事件經過"
+            }
+          },
+          {
+            "ref": "company_id",
+            "type": "fk",
+            "references": "companies",
+            "nullable": true,
+            "label": {
+              "en-US": "Company",
+              "de-DE": "Firma",
+              "fr-FR": "Société",
+              "da-DK": "Virksomhed",
+              "cs-CZ": "Firma",
+              "ar-EG": "الشركة",
+              "zh-CN": "公司",
+              "zh-TW": "公司"
+            }
+          },
+          {
+            "ref": "kind",
+            "type": "text",
+            "maxLength": 60,
+            "label": {
+              "en-US": "Kind",
+              "de-DE": "Art",
+              "fr-FR": "Type",
+              "da-DK": "Type",
+              "cs-CZ": "Druh",
+              "ar-EG": "النوع",
+              "zh-CN": "类型",
+              "zh-TW": "類型"
+            }
+          },
+          {
+            "ref": "insurer_ref",
+            "type": "text",
+            "maxLength": 60,
+            "nullable": true,
+            "label": {
+              "en-US": "Insurer’s reference",
+              "de-DE": "Aktenzeichen des Versicherers",
+              "fr-FR": "Référence de l’assureur",
+              "da-DK": "Forsikringsselskabets reference",
+              "cs-CZ": "Číslo u pojišťovny",
+              "ar-EG": "مرجع شركة التأمين",
+              "zh-CN": "保险公司案号",
+              "zh-TW": "保險公司案號"
+            }
+          },
+          {
+            "ref": "claimed",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "label": {
+              "en-US": "Claimed",
+              "de-DE": "Gefordert",
+              "fr-FR": "Montant réclamé",
+              "da-DK": "Krævet",
+              "cs-CZ": "Nárokováno",
+              "ar-EG": "المبلغ المطالَب به",
+              "zh-CN": "索赔金额",
+              "zh-TW": "索賠金額"
+            }
+          },
+          {
+            "ref": "excess",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "label": {
+              "en-US": "Excess",
+              "de-DE": "Selbstbeteiligung",
+              "fr-FR": "Franchise",
+              "da-DK": "Selvrisiko",
+              "cs-CZ": "Spoluúčast",
+              "ar-EG": "مبلغ التحمّل",
+              "zh-CN": "免赔额",
+              "zh-TW": "自負額"
+            }
+          },
+          {
+            "ref": "paid",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "label": {
+              "en-US": "Paid out",
+              "de-DE": "Ausgezahlt",
+              "fr-FR": "Versé",
+              "da-DK": "Udbetalt",
+              "cs-CZ": "Vyplaceno",
+              "ar-EG": "المبلغ المدفوع",
+              "zh-CN": "赔付金额",
+              "zh-TW": "理賠金額"
+            }
+          },
+          {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "open",
+              "settled"
+            ],
+            "default": "open",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "open": {
+                    "en-US": "Open",
+                    "de-DE": "Offen",
+                    "fr-FR": "Ouvert",
+                    "da-DK": "Åben",
+                    "cs-CZ": "Otevřená",
+                    "ar-EG": "مفتوحة",
+                    "zh-CN": "处理中",
+                    "zh-TW": "處理中"
+                  },
+                  "settled": {
+                    "en-US": "Settled",
+                    "de-DE": "Reguliert",
+                    "fr-FR": "Réglé",
+                    "da-DK": "Afsluttet",
+                    "cs-CZ": "Uzavřená",
+                    "ar-EG": "تمت التسوية",
+                    "zh-CN": "已结案",
+                    "zh-TW": "已結案"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "Statut",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
             }
           }
         ]
