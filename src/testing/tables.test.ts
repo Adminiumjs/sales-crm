@@ -230,7 +230,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   vehicle_faults: { nullable: ["raised_by_id", "fixed_on"] },
   fuel_fills: { nullable: [] },
   time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_back_note"] },
-  time_sheet_lines: { nullable: ["job_id"] },
+  time_sheet_lines: { nullable: ["visit_id", "job_id"] },
   certificates: { nullable: ["course_on"] },
   subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "chased_at"] },
   insurance_incidents: { nullable: ["company_id", "insurer_ref"] },

@@ -10835,6 +10835,13 @@
             "type": "fk",
             "references": "jobs",
             "unique": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "job_id",
+                "mode": "default"
+              }
+            },
             "label": {
               "en-US": "Job",
               "de-DE": "Auftrag",
@@ -11194,6 +11201,13 @@
             "type": "fk",
             "references": "jobs",
             "index": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "job_id",
+                "mode": "default"
+              }
+            },
             "label": {
               "en-US": "Job",
               "de-DE": "Auftrag",
@@ -11613,6 +11627,13 @@
             "ref": "job_id",
             "type": "fk",
             "references": "jobs",
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "job_id",
+                "mode": "default"
+              }
+            },
             "label": {
               "en-US": "Job",
               "de-DE": "Auftrag",
@@ -14300,10 +14321,33 @@
             }
           },
           {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "nullable": true,
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "作业",
+              "zh-TW": "作業"
+            }
+          },
+          {
             "ref": "job_id",
             "type": "fk",
             "references": "jobs",
             "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "job_id",
+                "mode": "default"
+              }
+            },
             "label": {
               "en-US": "Job",
               "de-DE": "Auftrag",
@@ -18075,7 +18119,6 @@
       "permissions": [
         "app:@:staff",
         "table:@jobs:read",
-        "table:@jobs:create",
         "table:@jobs:update",
         "table:@crews:read",
         "table:@crews:create",
@@ -18114,7 +18157,6 @@
         "table:@warranty_claims:create",
         "table:@warranty_claims:update",
         "table:@deal_stock_needs:read",
-        "table:@deal_stock_needs:create",
         "table:@deal_stock_needs:update",
         "table:@deal_stock_needs:delete",
         "table:@vehicles:read",
@@ -18176,7 +18218,6 @@
       "limits": {
         "jobs": {
           "writable": [
-            "deal_id",
             "site_name",
             "address_lines",
             "town",
@@ -18186,17 +18227,6 @@
             "ask_for",
             "site_phone",
             "state"
-          ],
-          "creatable": [
-            "deal_id",
-            "site_name",
-            "address_lines",
-            "town",
-            "lat",
-            "lng",
-            "access_note",
-            "ask_for",
-            "site_phone"
           ]
         },
         "job_visits": {
@@ -18399,7 +18429,6 @@
         },
         "sign_offs": {
           "creatable": [
-            "job_id",
             "visit_id",
             "check_1",
             "check_2",
@@ -18427,7 +18456,6 @@
             "put_right_photo"
           ],
           "creatable": [
-            "job_id",
             "visit_id",
             "text",
             "severity",
@@ -18454,7 +18482,6 @@
             "note"
           ],
           "creatable": [
-            "job_id",
             "visit_id",
             "taken_by_id",
             "signed_by_contact_id",
@@ -18563,7 +18590,7 @@
             "what",
             "hours",
             "travel_hours",
-            "job_id"
+            "visit_id"
           ],
           "creatable": [
             "sheet_id",
@@ -18571,7 +18598,7 @@
             "what",
             "hours",
             "travel_hours",
-            "job_id"
+            "visit_id"
           ],
           "rows": {
             "read": {

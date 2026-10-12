@@ -147,10 +147,9 @@ them out again.
 - **Most reminders and digests are not shipped**: the three nudges on a quiet
   deal, the weekly digests, a follow-up falling due, a quote about to run out,
   a mention, the aftercare call after a sign-off, the survey after a job.
-- **Three known gaps in who may write what**, all waiting for a change in
-  Adminium: a job, a sign-off or a snag can be written against a key its writer
-  could not read; a helper or a cover on a deal can change it as its owner
-  could, its owner included; a saved view can be made that belongs to nobody.
+- **Two known gaps in who may write what**, both waiting for a change in
+  Adminium: a helper or a cover on a deal can change it as its owner could, its
+  owner included; a saved view can be made that belongs to nobody.
 - **A limited list is slower than an unlimited one on MySQL**: about a tenth of
   a second for a page of 50 among 50,000 deals.
 

@@ -96,7 +96,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
   [["showroom_spaces", "samples", "display_pieces"], "RCUD", "R", "R", "-", "-", "RCUD", "-", "-", "R"],
   [["showroom_bookings", "sample_loans", "sample_chases"], "RCUD", "R", "RCU", "-", "-", "RCUD", "-", "-", "R"],
-  [["jobs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCU", "-", "R"],
+  // The operations manager reads no deal, so she names none: a job is made by the rule when its deal is won, and she works it.
+  [["jobs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RU", "-", "R"],
   [["crews", "crew_members"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
   [["job_visits"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
   [["sign_offs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCU", "RC:own", "R"],
@@ -106,7 +107,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["feedback"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "R", "-", "R"],
   [["complaints"], "RCUD", "R:team", "RU:own", "RCUD", "-", "-", "R", "-", "R"],
   [["warranty_claims"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
-  [["deal_stock_needs"], "RCUD", "R:team", "RCU:own", "-", "-", "-", "RCUD", "-", "R"],
+  // …and for the same reason she changes and removes a deal's stock need, and a rep (who reads the deal) makes it.
+  [["deal_stock_needs"], "RCUD", "R:team", "RCU:own", "-", "-", "-", "RUD", "-", "R"],
   [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
   [["vehicle_faults"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC", "R"],
   [["vehicle_checks", "fuel_fills"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
