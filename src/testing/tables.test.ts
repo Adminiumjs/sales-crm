@@ -758,7 +758,8 @@ describe("what Adminium copies, numbers and stamps on the jobs tables", () => {
   });
 
   it("numbers a job J-01, J-02 in the order jobs are made", () => {
-    expect(rulesOf("jobs", "code_seq").sequence).toEqual({ gapless: true, start: 1 });
+    // The sample's jobs take J-01 to J-08 in the series, and the first real job follows them.
+    expect(rulesOf("jobs", "code_seq").sequence).toEqual({ gapless: true, start: 1, sample: true });
     expect(rulesOf("jobs", "code").format).toEqual({ from: "code_seq", prefix: "J-", pad: 2 });
     expect(byRef.get("jobs")?.columns.find((c) => c.ref === "code")).toMatchObject({ type: "text", maxLength: 12, unique: true });
   });

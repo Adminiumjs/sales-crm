@@ -94,7 +94,7 @@ describe("the sample is the one the manifest names", () => {
     }
   });
 
-  it("writes only tables and columns the app declares, and no number Adminium gives without gaps", () => {
+  it("writes only tables and columns the app declares, and no number of a series that is not the sample's to take", () => {
     const unknown: string[] = [];
     for (const [table, list] of tables) {
       const shape = declared.get(table);
@@ -103,7 +103,13 @@ describe("the sample is the one the manifest names", () => {
         continue;
       }
       const columns = new Set(shape.columns.map((column) => column.ref));
-      const gapless = shape.columns.filter((column) => (column.rules?.["sequence"] as { gapless?: boolean } | undefined)?.gapless === true).map((column) => column.ref);
+      // A series the app opened to its sample (a job's J-01) is the sample's to number; any other stays off limits.
+      const gapless = shape.columns
+        .filter((column) => {
+          const sequence = column.rules?.["sequence"] as { gapless?: boolean; sample?: boolean } | undefined;
+          return sequence?.gapless === true && sequence.sample !== true;
+        })
+        .map((column) => column.ref);
       for (const row of list) {
         for (const column of Object.keys(row)) if (!column.startsWith("@") && !columns.has(column)) unknown.push(`${table}.${column}`);
         for (const column of gapless) if (row[column] !== null) unknown.push(`${table}.${column} is numbered by the sample`);
@@ -225,8 +231,9 @@ describe("the sample's rows are the ledger's", () => {
   it("jobs: seven signed off, each with its sign-off; five snags not put right; numbers off the app's own series", () => {
     expect([rows("sign_offs").length, rows("jobs").filter((job) => job["state"] === "signed-off").length]).toEqual([7, 7]);
     expect(rows("snags").filter((snag) => snag["state"] !== "put-right")).toHaveLength(5);
-    // A typed "J-01" would meet the first job anybody makes: the sample's are S-01 to S-08.
-    expect(rows("jobs").map((job) => job["code"])).toEqual(["S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08"]);
+    // The sample's jobs hold their numbers in the app's own series, each with its text: the first real job is J-09.
+    expect(rows("jobs").map((job) => job["code"])).toEqual(["J-01", "J-02", "J-03", "J-04", "J-05", "J-06", "J-07", "J-08"]);
+    expect(rows("jobs").map((job) => job["code_seq"])).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it("the crew's week: 123 hours on the job and 31 travelling, on five sheets all sent; one certificate has run out", () => {

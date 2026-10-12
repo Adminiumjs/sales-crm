@@ -9632,7 +9632,8 @@
             "rules": {
               "sequence": {
                 "gapless": true,
-                "start": 1
+                "start": 1,
+                "sample": true
               }
             },
             "label": {

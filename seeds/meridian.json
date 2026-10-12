@@ -11954,8 +11954,8 @@
    "rows": [
     {
      "@label": "job:w1",
-     "code_seq": null,
-     "code": "S-01",
+     "code_seq": 1,
+     "code": "J-01",
      "deal_id": {
       "@ref": "deal:w1"
      },
@@ -11982,8 +11982,8 @@
     },
     {
      "@label": "job:w2",
-     "code_seq": null,
-     "code": "S-02",
+     "code_seq": 2,
+     "code": "J-02",
      "deal_id": {
       "@ref": "deal:w2"
      },
@@ -12010,8 +12010,8 @@
     },
     {
      "@label": "job:w3",
-     "code_seq": null,
-     "code": "S-03",
+     "code_seq": 3,
+     "code": "J-03",
      "deal_id": {
       "@ref": "deal:w3"
      },
@@ -12038,8 +12038,8 @@
     },
     {
      "@label": "job:h3",
-     "code_seq": null,
-     "code": "S-04",
+     "code_seq": 4,
+     "code": "J-04",
      "deal_id": {
       "@ref": "deal:h3"
      },
@@ -12066,8 +12066,8 @@
     },
     {
      "@label": "job:h2",
-     "code_seq": null,
-     "code": "S-05",
+     "code_seq": 5,
+     "code": "J-05",
      "deal_id": {
       "@ref": "deal:h2"
      },
@@ -12094,8 +12094,8 @@
     },
     {
      "@label": "job:h1",
-     "code_seq": null,
-     "code": "S-06",
+     "code_seq": 6,
+     "code": "J-06",
      "deal_id": {
       "@ref": "deal:h1"
      },
@@ -12122,8 +12122,8 @@
     },
     {
      "@label": "job:h5",
-     "code_seq": null,
-     "code": "S-07",
+     "code_seq": 7,
+     "code": "J-07",
      "deal_id": {
       "@ref": "deal:h5"
      },
@@ -12150,8 +12150,8 @@
     },
     {
      "@label": "job:h4",
-     "code_seq": null,
-     "code": "S-08",
+     "code_seq": 8,
+     "code": "J-08",
      "deal_id": {
       "@ref": "deal:h4"
      },
