@@ -15,6 +15,7 @@
     {
      "@label": "settings",
      "@onlyIfEmpty": true,
+     "@fillEmpty": true,
      "approval_threshold_pct": 5,
      "quote_valid_days": 30,
      "quote_warn_days": 3,

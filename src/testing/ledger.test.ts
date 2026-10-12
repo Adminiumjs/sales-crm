@@ -243,6 +243,7 @@ describe("the sample's rows are the ledger's", () => {
 
   it("the settings row goes in first and only into an empty table", () => {
     expect([...tables.keys()][0]).toBe("settings");
-    expect(rows("settings")[0]).toMatchObject({ "@onlyIfEmpty": true, approval_threshold_pct: 5 });
+    // Where the install already wrote the row, the sample fills what it left empty (the depot) and writes over nothing.
+    expect(rows("settings")[0]).toMatchObject({ "@onlyIfEmpty": true, "@fillEmpty": true, approval_threshold_pct: 5, depot_name: "Meridian depot" });
   });
 });

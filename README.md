@@ -22,7 +22,7 @@ and what comes after them, vehicles and crew.
 | Roles | 9 |
 | Shipped rules | 4, switched on at install |
 | E-mails | 3, in eight languages |
-| Starting rows | 1: the settings row, written by the install with its defaults |
+| Starting rows | 1: the settings row, written by the install with its defaults. The sample fills in Meridian's depot on it, and takes it off again |
 | Sample data | "Meridian", an office-furniture wholesaler: 678 rows in 68 tables, 16 people, one team |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic, Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
@@ -137,8 +137,6 @@ them out again.
 - **No screens.** The staff side shows one "being rebuilt" page. `reference/`
   holds the screens the app had before the rebuild; nothing builds, tests or
   ships that folder.
-- **The sample does not fill in the depot.** The settings row is written by the
-  install, so the sample's own (with Meridian's depot on it) is left out.
 - **Two showroom bookings can overlap**, and a job visit can be booked on a day
   its crew does not work. Nothing refuses either yet.
 - **Every part is always on.** Showroom, jobs, aftercare, supply and vehicles
