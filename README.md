@@ -5,10 +5,11 @@
 > the persona switch, the database scripts and the Docker files are gone.
 >
 > **What installs today: nothing useful yet.** `manifest.json` declares the
-> app's key (`crm`), one empty `settings` table, one page for it and a staff
-> side that shows a single "being rebuilt" page. It asks for Adminium 0.3.27,
-> which is not released, so no released Adminium installs it. The tables, the
-> roles and the sample data come first; the screens follow.
+> app's key (`crm`), the tables for selling and for accounts, a `settings`
+> table, one page for it and a staff side that shows a single "being rebuilt"
+> page. It asks for Adminium 0.3.27, which is not released, so no released
+> Adminium installs it. The rest of the tables, the roles and the sample data
+> come first; the screens follow.
 >
 > `reference/` holds the screens the app had before (and the code they stand
 > on). Nothing builds, tests or ships it; it is kept to be read while the new
