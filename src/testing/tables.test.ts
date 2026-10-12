@@ -47,7 +47,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   deal_stage_changes: { nullable: ["from_stage_id", "by_id"] },
-  follow_ups: { nullable: ["deal_id", "call_no", "outcome", "done_by_id", "done_at"] },
+  follow_ups: { nullable: ["deal_id", "job_id", "call_no", "outcome", "done_by_id", "done_at"] },
   activities: { nullable: [] },
   lost_reasons: { nullable: [] },
   // Built on the quote shape of Invoices & Receipts. The first twelve are the
@@ -174,6 +174,61 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   sample_loans: { nullable: ["company_id", "contact_id", "returned_on"] },
   sample_chases: { nullable: [] },
   display_pieces: { nullable: ["promised_booking_id", "lent_company_id", "lent_until", "item"] },
+  // Jobs on site. A job's number and the count behind it are empty on a sample
+  // row, which brings its own text.
+  jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "access_note", "ask_for", "site_phone"] },
+  crews: { nullable: ["vehicle_id", "day_hours"] },
+  crew_members: { nullable: ["since"] },
+  job_visits: {
+    nullable: [
+      "day",
+      "start_time",
+      "crew_id",
+      "vehicle_id",
+      "hours",
+      "crew_size",
+      "stock_ready_on",
+      "cancel_reason",
+      "site_address",
+      "site_town",
+      "site_phone",
+      "access_note",
+    ],
+  },
+  sign_offs: { nullable: ["visit_id", "crew_id", "photos", "copy_sent_to"] },
+  snags: {
+    nullable: [
+      "visit_id",
+      "crew_id",
+      "severity",
+      "raised_by_id",
+      "raised_by_contact_id",
+      "due_days",
+      "put_right_on",
+      "put_right_note",
+      "photo",
+      "put_right_photo",
+    ],
+  },
+  delivery_notes: { nullable: ["crew_id", "taken_by_id", "signed_by_contact_id", "signed_name", "note"] },
+  delivery_note_lines: { nullable: ["crew_id"] },
+  waste_removals: { nullable: ["carrier", "note_number"] },
+  // After the job
+  feedback: { nullable: ["text", "theme", "replied_at", "fix_written"] },
+  complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "fairness", "answered_at", "settled_at"] },
+  warranty_claims: { nullable: ["contact_id", "part", "cover", "cover_years", "supplier_name", "supplier", "paid_by"] },
+  // Supply
+  deal_stock_needs: { nullable: ["qty"] },
+  // Vehicles and crew
+  vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to"] },
+  vehicle_checks: { nullable: [] },
+  vehicle_faults: { nullable: ["raised_by_id", "fixed_on"] },
+  fuel_fills: { nullable: [] },
+  time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_back_note"] },
+  time_sheet_lines: { nullable: ["job_id"] },
+  certificates: { nullable: ["course_on"] },
+  subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "chased_at"] },
+  insurance_incidents: { nullable: ["company_id", "insurer_ref"] },
   // The app's own. Every column of the outbox but its kind and status may be
   // empty: Adminium fills them as it sends, and not every email is about a quote.
   outbox: {
@@ -196,8 +251,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
-/** How many tables the manifest holds after this batch (the plan lists 72 in all). */
-const TABLE_COUNT = 50;
+/** How many tables the manifest holds: all 72 the plan lists. */
+const TABLE_COUNT = 72;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -342,7 +397,7 @@ describe("the manifest holds the tables the plan lists, and no other", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
 
-  it("has fifty of them", () => {
+  it("has seventy-two of them", () => {
     expect(tables).toHaveLength(TABLE_COUNT);
     expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });
@@ -607,6 +662,222 @@ describe("the moves of this batch's three state columns", () => {
   });
 });
 
+/** A column's rules, read loosely: this batch checks more of them than the typed ones above. */
+function rulesOf(table: string, column: string): Record<string, unknown> {
+  const found = byRef.get(table)?.columns.find((c) => c.ref === column) as unknown as { rules?: Record<string, unknown> } | undefined;
+  return found?.rules ?? {};
+}
+
+/** What a move needs, read loosely. */
+function needs(table: string, from: string, to: string): unknown {
+  const move = (byRef.get(table)?.states?.moves[from] ?? []).find((m) => (typeof m === "string" ? m : m.to) === to);
+  return typeof move === "object" ? move.requires : undefined;
+}
+
+/** The listing a crew's rows are read through, on the row's own crew. */
+const CREW_WAY = { through: { table: "crew_members", link: "crew_id", on: "crew_id", user: "user_id" } };
+
+/** A copy that is taken from the linked row and kept in step with it. */
+const follows = (via: string, from: string) => ({ via, from, mode: "always", follow: true });
+
+describe("a crew reaches its own work, and a rep the work on their deals", () => {
+  it("reaches a visit, a sign-off, a snag, a delivery note and its lines by the crew and by the job", () => {
+    for (const ref of ["job_visits", "sign_offs", "snags", "delivery_notes", "delivery_note_lines"]) {
+      expect(byRef.get(ref)?.belongs, ref).toEqual([CREW_WAY, { via: "job_id" }]);
+    }
+  });
+
+  it("lists a crew's people once each, each limited by their own listing", () => {
+    const members = byRef.get("crew_members");
+    expect(members?.unique).toEqual([["crew_id", "user_id"]]);
+    expect(members?.belongs).toEqual([{ column: "user_id" }]);
+    // Who is in which crew is everybody's to read: the crew itself is limited by nothing.
+    expect(byRef.get("crews")?.belongs).toBeUndefined();
+  });
+
+  it("reaches a job, its feedback, its warranty claims and a deal's stock needs through the deal", () => {
+    expect(byRef.get("jobs")?.belongs).toEqual([{ via: "deal_id" }]);
+    expect(byRef.get("feedback")?.belongs).toEqual([{ via: "job_id" }]);
+    expect(byRef.get("warranty_claims")?.belongs).toEqual([{ via: "job_id" }]);
+    expect(byRef.get("deal_stock_needs")?.belongs).toEqual([{ via: "deal_id" }]);
+    expect(byRef.get("time_sheet_lines")?.belongs).toEqual([{ via: "sheet_id" }]);
+  });
+
+  it("limits the rest by the row's own person", () => {
+    expect(byRef.get("complaints")?.belongs).toEqual([{ column: "owner_id", set: "anyone" }]);
+    for (const [ref, column] of [["vehicle_checks", "by_id"], ["fuel_fills", "by_id"], ["time_sheets", "user_id"], ["certificates", "user_id"]] as const) {
+      expect(byRef.get(ref)?.belongs, ref).toEqual([{ column }]);
+    }
+    for (const ref of ["crews", "waste_removals", "vehicles", "vehicle_faults", "subcontractors", "insurance_incidents"]) {
+      expect(byRef.get(ref)?.belongs, ref).toBeUndefined();
+    }
+  });
+
+  it("keeps a line's job, visit and crew in step with its note, since a note is one link too far", () => {
+    // line -> note -> job -> deal is three links and a row is reached through two.
+    expect(rulesOf("delivery_note_lines", "job_id").copy).toEqual(follows("note_id", "job_id"));
+    expect(rulesOf("delivery_note_lines", "visit_id").copy).toEqual(follows("note_id", "visit_id"));
+    expect(rulesOf("delivery_note_lines", "crew_id").copy).toEqual(follows("visit_id", "crew_id"));
+    const withNote = structuredClone(manifest) as unknown as { requiredSchema: { tables: Table[] } };
+    (withNote.requiredSchema.tables.find((t) => t.ref === "delivery_note_lines") as Table).belongs = [{ via: "note_id" }];
+    const result = validateManifest(withNote);
+    expect(result.ok ? [] : result.issues.map((issue) => issue.message)).toEqual(["a row is reached through at most 2 links"]);
+  });
+});
+
+describe("what Adminium copies, numbers and stamps on the jobs tables", () => {
+  it("copies a job's title, company and contact from its deal, and keeps them in step", () => {
+    expect(rulesOf("jobs", "title").copy).toEqual(follows("deal_id", "name"));
+    expect(rulesOf("jobs", "company_id").copy).toEqual(follows("deal_id", "company_id"));
+    expect(rulesOf("jobs", "contact_id").copy).toEqual(follows("deal_id", "contact_id"));
+    expect(byRef.get("jobs")?.columns.find((c) => c.ref === "deal_id")).toMatchObject({ type: "fk", references: "deals", unique: true });
+  });
+
+  it("copies the five site columns of a visit from its job", () => {
+    const pairs = { site_name: "site_name", site_address: "address_lines", site_town: "town", site_phone: "site_phone", access_note: "access_note" };
+    for (const [own, from] of Object.entries(pairs)) expect(rulesOf("job_visits", own).copy, own).toEqual(follows("job_id", from));
+  });
+
+  it("copies the crew of a sign-off, a snag and a delivery note from their visit", () => {
+    for (const ref of ["sign_offs", "snags", "delivery_notes"]) {
+      expect(rulesOf(ref, "crew_id").copy, ref).toEqual(follows("visit_id", "crew_id"));
+      expect(byRef.get(ref)?.columns.find((c) => c.ref === "crew_id"), ref).toMatchObject({ type: "int", nullable: true });
+    }
+  });
+
+  it("numbers a job J-01, J-02 in the order jobs are made", () => {
+    expect(rulesOf("jobs", "code_seq").sequence).toEqual({ gapless: true, start: 1 });
+    expect(rulesOf("jobs", "code").format).toEqual({ from: "code_seq", prefix: "J-", pad: 2 });
+    expect(byRef.get("jobs")?.columns.find((c) => c.ref === "code")).toMatchObject({ type: "text", maxLength: 12, unique: true });
+  });
+
+  it("stamps the day a row is raised, and who raised it", () => {
+    for (const ref of ["snags", "complaints", "warranty_claims", "vehicle_faults"]) {
+      expect(rulesOf(ref, "raised_on").stamp, ref).toEqual({ set: "today", on: "create" });
+    }
+    expect(rulesOf("sign_offs", "signed_at").stamp).toEqual({ set: "now", on: "create" });
+    for (const [ref, column] of [["vehicle_checks", "by_id"], ["fuel_fills", "by_id"], ["vehicle_faults", "raised_by_id"]] as const) {
+      expect(rulesOf(ref, column), `${ref}.${column}`).toMatchObject({ staff: true, stamp: { set: "user-id", on: "create" } });
+    }
+  });
+
+  it("works a snag's due day out from the day it was raised and the setting, taken when it is made", () => {
+    expect(rulesOf("snags", "due_days").default).toEqual({ from: { table: "settings", column: "snag_days" } });
+    expect(rulesOf("snags", "due_on").stamp).toEqual({ set: { addDays: { date: "raised_on", days: "due_days" } }, on: "create" });
+    expect(byRef.get("settings")?.columns.find((c) => c.ref === "snag_days")).toMatchObject({ type: "int" });
+  });
+
+  it("stamps the moves of a complaint, a snag and a time sheet", () => {
+    expect(rulesOf("complaints", "answered_at").stamp).toEqual({ set: "now", on: { column: "state", values: ["answered"] } });
+    expect(rulesOf("complaints", "settled_at").stamp).toEqual({ set: "now", on: { column: "state", values: ["settled"] } });
+    expect(rulesOf("snags", "put_right_on").stamp).toEqual({ set: "today", on: { column: "state", values: ["put-right"] } });
+    expect(rulesOf("time_sheets", "signed_at").stamp).toEqual({ set: "now", on: { column: "state", values: ["signed-off"] } });
+    expect(rulesOf("time_sheets", "signed_by_id")).toMatchObject({ staff: true, stamp: { set: "user-id", on: { column: "state", values: ["signed-off"] } } });
+  });
+
+  it("holds one feedback and one sign-off a job, a score from 1 to 5, and one sheet a person a week", () => {
+    for (const ref of ["feedback", "sign_offs"]) expect(byRef.get(ref)?.columns.find((c) => c.ref === "job_id"), ref).toMatchObject({ unique: true });
+    expect(rulesOf("feedback", "score").validation).toEqual({ min: 1, max: 5 });
+    expect(byRef.get("time_sheets")?.unique).toEqual([["user_id", "week_of"]]);
+  });
+
+  it("links a follow-up to a job, for lookups only", () => {
+    const followUps = byRef.get("follow_ups") as Table;
+    expect(followUps.columns.find((c) => c.ref === "job_id")).toMatchObject({ type: "fk", references: "jobs", nullable: true });
+    expect(followUps.indexes).toEqual([["owner_id", "done", "due_at"], ["deal_id"], ["job_id"]]);
+    // It is still reached by its own person: no way follows the link.
+    expect(followUps.belongs).toEqual([{ column: "owner_id", set: "team" }]);
+  });
+});
+
+describe("the moves of the jobs, aftercare and crew tables", () => {
+  /** Every move of each table, from each state, in order. */
+  const MOVES: Record<string, { initial: string; moves: Record<string, string[]> }> = {
+    jobs: { initial: "open", moves: { open: ["installed"], installed: ["signed-off"] } },
+    job_visits: { initial: "waiting", moves: { waiting: ["booked"], booked: ["done", "waiting", "cancelled"] } },
+    snags: { initial: "open", moves: { open: ["waiting-part", "put-right"], "waiting-part": ["open", "put-right"] } },
+    complaints: { initial: "open", moves: { open: ["answered"], answered: ["settled"] } },
+    warranty_claims: {
+      initial: "to-raise",
+      moves: {
+        "to-raise": ["with-supplier", "turned-down"],
+        "with-supplier": ["parts-coming", "turned-down"],
+        "parts-coming": ["sorted", "turned-down"],
+        sorted: ["turned-down"],
+      },
+    },
+    time_sheets: { initial: "open", moves: { open: ["sent"], sent: ["signed-off", "sent-back"], "sent-back": ["sent"] } },
+    insurance_incidents: { initial: "open", moves: { open: ["settled"] } },
+  };
+
+  it("writes exactly the moves the plan lists", () => {
+    for (const [ref, expected] of Object.entries(MOVES)) {
+      const table = byRef.get(ref) as Table;
+      expect(table.states, ref).toMatchObject({ column: "state", initial: expected.initial });
+      const actual = Object.fromEntries(Object.keys(table.states?.moves ?? {}).map((from) => [from, movesFrom(table, from).map((move) => move.to)]));
+      expect(actual, ref).toEqual(expected.moves);
+    }
+  });
+
+  it("keeps no move for a role yet: that is the roles' task", () => {
+    const kept: string[] = [];
+    for (const ref of Object.keys(MOVES)) {
+      for (const [from, moves] of Object.entries(byRef.get(ref)?.states?.moves ?? {})) {
+        for (const move of moves) if (typeof move === "object" && (move as unknown as { roles?: unknown }).roles !== undefined) kept.push(`${ref} ${from}`);
+      }
+    }
+    expect(kept).toEqual([]);
+  });
+
+  it("books a visit only with a day and a crew, and not before its stock is ready", () => {
+    expect(needs("job_visits", "waiting", "booked")).toEqual({ where: [{ column: "day", isNull: false }, { column: "crew_id", isNull: false }] });
+    expect(rulesOf("job_visits", "day").notBefore).toEqual({ column: "stock_ready_on", when: [{ column: "state", in: ["booked"] }] });
+    expect(needs("job_visits", "booked", "cancelled")).toEqual({ where: [{ column: "cancel_reason", isNull: false }] });
+    expect(byRef.get("job_visits")?.states?.actions?.find((action) => action.id === "cancel")).toMatchObject({ ask: ["cancel_reason"] });
+  });
+
+  it("signs a job off only with a sign-off, and with no open snag that stops it", () => {
+    const jobs = byRef.get("jobs") as Table;
+    expect(needs("jobs", "installed", "signed-off")).toEqual({ children: { sign_offs: 1 }, where: [{ column: "blocking_snags", eq: 0 }] });
+    expect((jobs.states as unknown as { children?: unknown }).children).toEqual({ sign_offs: { via: "job_id", createIn: ["open", "installed"] } });
+    // The count Adminium keeps: snags of the job that stop sign-off and are not put right.
+    expect(rulesOf("jobs", "blocking_snags").rollup).toEqual({
+      from: "snags",
+      via: "job_id",
+      count: true,
+      where: { column: "stops_sign_off", eq: true },
+      unlessSet: "put_right_on",
+    });
+    expect(jobs.columns.find((c) => c.ref === "blocking_snags")).toMatchObject({ type: "int", default: 0 });
+    // The link the count goes by is the one link of this batch indexed as such.
+    expect(byRef.get("snags")?.columns.find((c) => c.ref === "job_id")).toMatchObject({ index: true });
+    expect(byRef.get("snags")?.columns.find((c) => c.ref === "stops_sign_off")).toMatchObject({ type: "bool", default: false });
+  });
+
+  it("puts a snag right only with a note, from either state", () => {
+    for (const from of ["open", "waiting-part"]) {
+      expect(needs("snags", from, "put-right"), from).toEqual({ where: [{ column: "put_right_note", isNull: false }] });
+    }
+    expect(byRef.get("snags")?.states?.actions?.find((action) => action.id === "put-right")).toMatchObject({ ask: ["put_right_note"] });
+  });
+
+  it("sends a time sheet back only with a note, and locks a sent sheet and its lines", () => {
+    expect(needs("time_sheets", "sent", "sent-back")).toEqual({ where: [{ column: "sent_back_note", isNull: false }] });
+    const states = byRef.get("time_sheets")?.states as unknown as { lock?: unknown; children?: unknown; actions?: Action[] };
+    expect(states.lock).toEqual({ when: ["sent", "signed-off"], except: ["sent_back_note"] });
+    expect(states.children).toEqual({ time_sheet_lines: { via: "sheet_id", lock: true } });
+    expect(states.actions?.find((action) => action.id === "send-back")).toMatchObject({ move: { to: "sent-back" }, ask: ["sent_back_note"] });
+  });
+
+  it("offers a button for every state a move reaches by hand", () => {
+    for (const [ref, expected] of Object.entries(MOVES)) {
+      const reached = new Set(Object.values(expected.moves).flat());
+      const offered = new Set((byRef.get(ref)?.states?.actions ?? []).map((action) => action.move?.to));
+      expect([...offered].sort(), ref).toEqual([...reached].sort());
+    }
+  });
+});
+
 describe("what this batch leaves for a later one", () => {
   it("holds no overlap rule on a showroom booking yet", () => {
     // The core's booking rule needs a kind, a table of who does what, weekly
@@ -623,6 +894,21 @@ describe("what this batch leaves for a later one", () => {
       expect(item, ref).toEqual(expect.objectContaining({ type: "text", maxLength: 64, nullable: true }));
       expect(item.rules, ref).toBeUndefined();
     }
+    // A stock need is of something: its item may not be empty. A claim's supplier may.
+    const need = byRef.get("deal_stock_needs")?.columns.find((c) => c.ref === "item") as unknown as { type: string; maxLength?: number; nullable?: boolean; rules?: unknown };
+    expect(need).toEqual(expect.objectContaining({ type: "text", maxLength: 64 }));
+    expect(need.nullable).toBeUndefined();
+    expect(need.rules).toBeUndefined();
+    const supplier = byRef.get("warranty_claims")?.columns.find((c) => c.ref === "supplier") as unknown as { type: string; rules?: unknown };
+    expect(supplier).toEqual(expect.objectContaining({ type: "text", maxLength: 64, nullable: true }));
+    expect(supplier.rules).toBeUndefined();
+  });
+
+  it("writes no rule that fits a crew's day: a visit on a day without hours is not refused yet", () => {
+    // The plan wants it refused. The only word that knows a person's hours is
+    // the booking rule, which this app's tables do not have what it asks for.
+    expect(byRef.get("job_visits")?.booking).toBeUndefined();
+    expect(byRef.get("job_visits")?.capacity).toBeUndefined();
   });
 
   it("declares no outbox yet: no kind has a template", () => {
