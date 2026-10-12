@@ -15069,6 +15069,1781 @@
   },
   "pages": [
     {
+      "ref": "crm-stages",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.stages",
+        "fallback": "Stages"
+      },
+      "titles": {
+        "de-DE": "Phasen",
+        "fr-FR": "Étapes",
+        "da-DK": "Faser",
+        "cs-CZ": "Fáze",
+        "ar-EG": "المراحل",
+        "zh-CN": "阶段",
+        "zh-TW": "階段"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "milestone",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "stages"
+      }
+    },
+    {
+      "ref": "crm-deals",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.deals",
+        "fallback": "Deals"
+      },
+      "titles": {
+        "de-DE": "Deals",
+        "fr-FR": "Affaires",
+        "da-DK": "Deals",
+        "cs-CZ": "Obchody",
+        "ar-EG": "الصفقات",
+        "zh-CN": "商机",
+        "zh-TW": "案件"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "handshake",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "deals"
+      }
+    },
+    {
+      "ref": "crm-deal-stage-changes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.deal_stage_changes",
+        "fallback": "Stage changes"
+      },
+      "titles": {
+        "de-DE": "Phasenwechsel",
+        "fr-FR": "Changements d’étape",
+        "da-DK": "Faseskift",
+        "cs-CZ": "Změny fáze",
+        "ar-EG": "تغييرات المرحلة",
+        "zh-CN": "阶段变更",
+        "zh-TW": "階段變更"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "history",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "deal_stage_changes"
+      }
+    },
+    {
+      "ref": "crm-follow-ups",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.follow_ups",
+        "fallback": "Follow-ups"
+      },
+      "titles": {
+        "de-DE": "Wiedervorlagen",
+        "fr-FR": "Relances",
+        "da-DK": "Opfølgninger",
+        "cs-CZ": "Následné kroky",
+        "ar-EG": "المتابعات",
+        "zh-CN": "跟进",
+        "zh-TW": "跟進"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "bell",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "follow_ups"
+      }
+    },
+    {
+      "ref": "crm-activities",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.activities",
+        "fallback": "Activities"
+      },
+      "titles": {
+        "de-DE": "Aktivitäten",
+        "fr-FR": "Activités",
+        "da-DK": "Aktiviteter",
+        "cs-CZ": "Aktivity",
+        "ar-EG": "الأنشطة",
+        "zh-CN": "活动记录",
+        "zh-TW": "活動紀錄"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "activity",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "activities"
+      }
+    },
+    {
+      "ref": "crm-lost-reasons",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.lost_reasons",
+        "fallback": "Lost reasons"
+      },
+      "titles": {
+        "de-DE": "Verlustgründe",
+        "fr-FR": "Motifs de perte",
+        "da-DK": "Tabsårsager",
+        "cs-CZ": "Důvody ztráty",
+        "ar-EG": "أسباب الخسارة",
+        "zh-CN": "丢单原因",
+        "zh-TW": "流失原因"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "circle-slash",
+        "order": 6
+      },
+      "bindings": {
+        "rows": "lost_reasons"
+      }
+    },
+    {
+      "ref": "crm-quotes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.quotes",
+        "fallback": "Quotes"
+      },
+      "titles": {
+        "de-DE": "Angebote",
+        "fr-FR": "Devis",
+        "da-DK": "Tilbud",
+        "cs-CZ": "Nabídky",
+        "ar-EG": "عروض الأسعار",
+        "zh-CN": "报价单",
+        "zh-TW": "報價單"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "file-text",
+        "order": 7
+      },
+      "bindings": {
+        "rows": "quotes"
+      }
+    },
+    {
+      "ref": "crm-quote-lines",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.quote_lines",
+        "fallback": "Quote lines"
+      },
+      "titles": {
+        "de-DE": "Angebotspositionen",
+        "fr-FR": "Lignes de devis",
+        "da-DK": "Tilbudslinjer",
+        "cs-CZ": "Položky nabídek",
+        "ar-EG": "بنود عروض الأسعار",
+        "zh-CN": "报价明细",
+        "zh-TW": "報價明細"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "list",
+        "order": 8
+      },
+      "bindings": {
+        "rows": "quote_lines"
+      }
+    },
+    {
+      "ref": "crm-comments",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.comments",
+        "fallback": "Comments"
+      },
+      "titles": {
+        "de-DE": "Kommentare",
+        "fr-FR": "Commentaires",
+        "da-DK": "Kommentarer",
+        "cs-CZ": "Komentáře",
+        "ar-EG": "التعليقات",
+        "zh-CN": "评论",
+        "zh-TW": "留言"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "message-square",
+        "order": 9
+      },
+      "bindings": {
+        "rows": "comments"
+      }
+    },
+    {
+      "ref": "crm-saved-views",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.saved_views",
+        "fallback": "Saved views"
+      },
+      "titles": {
+        "de-DE": "Gespeicherte Ansichten",
+        "fr-FR": "Vues enregistrées",
+        "da-DK": "Gemte visninger",
+        "cs-CZ": "Uložené pohledy",
+        "ar-EG": "العروض المحفوظة",
+        "zh-CN": "已存视图",
+        "zh-TW": "已儲存的檢視"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "bookmark",
+        "order": 10
+      },
+      "bindings": {
+        "rows": "saved_views"
+      }
+    },
+    {
+      "ref": "crm-saved-searches",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.saved_searches",
+        "fallback": "Saved searches"
+      },
+      "titles": {
+        "de-DE": "Gespeicherte Suchen",
+        "fr-FR": "Recherches enregistrées",
+        "da-DK": "Gemte søgninger",
+        "cs-CZ": "Uložená hledání",
+        "ar-EG": "عمليات البحث المحفوظة",
+        "zh-CN": "已存搜索",
+        "zh-TW": "已儲存的搜尋"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "search",
+        "order": 11
+      },
+      "bindings": {
+        "rows": "saved_searches"
+      }
+    },
+    {
+      "ref": "crm-nudge-snoozes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.nudge_snoozes",
+        "fallback": "Snoozed nudges"
+      },
+      "titles": {
+        "de-DE": "Zurückgestellte Hinweise",
+        "fr-FR": "Rappels mis en veille",
+        "da-DK": "Udsatte påmindelser",
+        "cs-CZ": "Odložená upozornění",
+        "ar-EG": "التنبيهات المؤجَّلة",
+        "zh-CN": "已暂缓的提醒",
+        "zh-TW": "已延後的提醒"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "alarm-clock-off",
+        "order": 12
+      },
+      "bindings": {
+        "rows": "nudge_snoozes"
+      }
+    },
+    {
+      "ref": "crm-deal-members",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.deal_members",
+        "fallback": "People on deals"
+      },
+      "titles": {
+        "de-DE": "Deal-Beteiligte",
+        "fr-FR": "Participants aux affaires",
+        "da-DK": "Deltagere på deals",
+        "cs-CZ": "Účastníci obchodů",
+        "ar-EG": "المشاركون في الصفقات",
+        "zh-CN": "商机协作人",
+        "zh-TW": "案件協作人"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "users",
+        "order": 13
+      },
+      "bindings": {
+        "rows": "deal_members"
+      }
+    },
+    {
+      "ref": "crm-deal-marks",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.deal_marks",
+        "fallback": "Deal marks"
+      },
+      "titles": {
+        "de-DE": "Deal-Markierungen",
+        "fr-FR": "Repères d’affaires",
+        "da-DK": "Deal-markeringer",
+        "cs-CZ": "Značky obchodů",
+        "ar-EG": "علامات الصفقات",
+        "zh-CN": "商机标记",
+        "zh-TW": "案件標記"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "flag",
+        "order": 14
+      },
+      "bindings": {
+        "rows": "deal_marks"
+      }
+    },
+    {
+      "ref": "crm-site-visits",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.site_visits",
+        "fallback": "Site visits"
+      },
+      "titles": {
+        "de-DE": "Vor-Ort-Termine",
+        "fr-FR": "Visites de site",
+        "da-DK": "Besøg på stedet",
+        "cs-CZ": "Obhlídky",
+        "ar-EG": "زيارات الموقع",
+        "zh-CN": "现场拜访",
+        "zh-TW": "現場拜訪"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "map-pin",
+        "order": 15
+      },
+      "bindings": {
+        "rows": "site_visits"
+      }
+    },
+    {
+      "ref": "crm-visit-notes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.visit_notes",
+        "fallback": "Visit notes"
+      },
+      "titles": {
+        "de-DE": "Besuchsnotizen",
+        "fr-FR": "Comptes rendus de visite",
+        "da-DK": "Besøgsnotater",
+        "cs-CZ": "Zápisy z obhlídek",
+        "ar-EG": "ملاحظات الزيارات",
+        "zh-CN": "拜访记录",
+        "zh-TW": "拜訪紀錄"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "notebook-pen",
+        "order": 16
+      },
+      "bindings": {
+        "rows": "visit_notes"
+      }
+    },
+    {
+      "ref": "crm-visit-agreed",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.visit_agreed",
+        "fallback": "Agreed points"
+      },
+      "titles": {
+        "de-DE": "Vereinbarungen",
+        "fr-FR": "Points convenus",
+        "da-DK": "Aftalte punkter",
+        "cs-CZ": "Dohodnuté body",
+        "ar-EG": "البنود المتفق عليها",
+        "zh-CN": "约定事项",
+        "zh-TW": "約定事項"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "list-checks",
+        "order": 17
+      },
+      "bindings": {
+        "rows": "visit_agreed"
+      }
+    },
+    {
+      "ref": "crm-companies",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.companies",
+        "fallback": "Companies"
+      },
+      "titles": {
+        "de-DE": "Firmen",
+        "fr-FR": "Sociétés",
+        "da-DK": "Virksomheder",
+        "cs-CZ": "Firmy",
+        "ar-EG": "الشركات",
+        "zh-CN": "公司",
+        "zh-TW": "公司"
+      },
+      "nav": {
+        "group": "accounts",
+        "icon": "building-2",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "companies"
+      }
+    },
+    {
+      "ref": "crm-contacts",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.contacts",
+        "fallback": "Contacts"
+      },
+      "titles": {
+        "de-DE": "Kontakte",
+        "fr-FR": "Contacts",
+        "da-DK": "Kontakter",
+        "cs-CZ": "Kontakty",
+        "ar-EG": "جهات الاتصال",
+        "zh-CN": "联系人",
+        "zh-TW": "聯絡人"
+      },
+      "nav": {
+        "group": "accounts",
+        "icon": "contact",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "contacts"
+      }
+    },
+    {
+      "ref": "crm-territories",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.territories",
+        "fallback": "Territories"
+      },
+      "titles": {
+        "de-DE": "Gebiete",
+        "fr-FR": "Territoires",
+        "da-DK": "Distrikter",
+        "cs-CZ": "Oblasti",
+        "ar-EG": "مناطق البيع",
+        "zh-CN": "销售区域",
+        "zh-TW": "銷售區域"
+      },
+      "nav": {
+        "group": "accounts",
+        "icon": "map",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "territories"
+      }
+    },
+    {
+      "ref": "crm-territory-places",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.territory_places",
+        "fallback": "Territory places"
+      },
+      "titles": {
+        "de-DE": "Orte im Gebiet",
+        "fr-FR": "Lieux du territoire",
+        "da-DK": "Steder i distrikter",
+        "cs-CZ": "Místa v oblastech",
+        "ar-EG": "أماكن مناطق البيع",
+        "zh-CN": "区域内地点",
+        "zh-TW": "區域內地點"
+      },
+      "nav": {
+        "group": "accounts",
+        "icon": "map-pinned",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "territory_places"
+      }
+    },
+    {
+      "ref": "crm-renewals",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.renewals",
+        "fallback": "Renewals"
+      },
+      "titles": {
+        "de-DE": "Folgegeschäfte",
+        "fr-FR": "Renouvellements",
+        "da-DK": "Fornyelser",
+        "cs-CZ": "Navazující zakázky",
+        "ar-EG": "التجديدات",
+        "zh-CN": "续单",
+        "zh-TW": "續單"
+      },
+      "nav": {
+        "group": "accounts",
+        "icon": "repeat",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "renewals"
+      }
+    },
+    {
+      "ref": "crm-referrals",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.referrals",
+        "fallback": "Referrals"
+      },
+      "titles": {
+        "de-DE": "Empfehlungen",
+        "fr-FR": "Recommandations",
+        "da-DK": "Henvisninger",
+        "cs-CZ": "Doporučení",
+        "ar-EG": "الإحالات",
+        "zh-CN": "转介绍",
+        "zh-TW": "轉介紹"
+      },
+      "nav": {
+        "group": "accounts",
+        "icon": "share-2",
+        "order": 6
+      },
+      "bindings": {
+        "rows": "referrals"
+      }
+    },
+    {
+      "ref": "crm-reps",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.reps",
+        "fallback": "Rep profiles"
+      },
+      "titles": {
+        "de-DE": "Vertriebsprofile",
+        "fr-FR": "Profils commerciaux",
+        "da-DK": "Sælgerprofiler",
+        "cs-CZ": "Profily obchodníků",
+        "ar-EG": "ملفات المندوبين",
+        "zh-CN": "销售档案",
+        "zh-TW": "業務檔案"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "id-card",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "reps"
+      }
+    },
+    {
+      "ref": "crm-targets",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.targets",
+        "fallback": "Targets"
+      },
+      "titles": {
+        "de-DE": "Ziele",
+        "fr-FR": "Objectifs",
+        "da-DK": "Mål",
+        "cs-CZ": "Cíle",
+        "ar-EG": "الأهداف",
+        "zh-CN": "销售目标",
+        "zh-TW": "業績目標"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "target",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "targets"
+      }
+    },
+    {
+      "ref": "crm-one-to-ones",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.one_to_ones",
+        "fallback": "One-to-ones"
+      },
+      "titles": {
+        "de-DE": "Einzelgespräche",
+        "fr-FR": "Entretiens individuels",
+        "da-DK": "En-til-en-samtaler",
+        "cs-CZ": "Schůzky jeden na jednoho",
+        "ar-EG": "اللقاءات الفردية",
+        "zh-CN": "一对一面谈",
+        "zh-TW": "一對一面談"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "users-round",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "one_to_ones"
+      }
+    },
+    {
+      "ref": "crm-one-to-one-sessions",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.one_to_one_sessions",
+        "fallback": "One-to-one sessions"
+      },
+      "titles": {
+        "de-DE": "Einzelgespräch-Termine",
+        "fr-FR": "Séances d’entretien individuel",
+        "da-DK": "En-til-en-møder",
+        "cs-CZ": "Sezení jeden na jednoho",
+        "ar-EG": "جلسات اللقاءات الفردية",
+        "zh-CN": "一对一面谈记录",
+        "zh-TW": "一對一面談紀錄"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "notebook",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "one_to_one_sessions"
+      }
+    },
+    {
+      "ref": "crm-coaching-plans",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.coaching_plans",
+        "fallback": "Coaching plans"
+      },
+      "titles": {
+        "de-DE": "Coaching-Pläne",
+        "fr-FR": "Plans de coaching",
+        "da-DK": "Coachingplaner",
+        "cs-CZ": "Plány koučinku",
+        "ar-EG": "خطط التدريب",
+        "zh-CN": "辅导计划",
+        "zh-TW": "輔導計畫"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "graduation-cap",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "coaching_plans"
+      }
+    },
+    {
+      "ref": "crm-coaching-areas",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.coaching_areas",
+        "fallback": "Coaching areas"
+      },
+      "titles": {
+        "de-DE": "Coaching-Schwerpunkte",
+        "fr-FR": "Axes de coaching",
+        "da-DK": "Coachingområder",
+        "cs-CZ": "Oblasti koučinku",
+        "ar-EG": "مجالات التدريب",
+        "zh-CN": "辅导重点",
+        "zh-TW": "輔導重點"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "list-tree",
+        "order": 6
+      },
+      "bindings": {
+        "rows": "coaching_areas"
+      }
+    },
+    {
+      "ref": "crm-actions",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.actions",
+        "fallback": "Actions"
+      },
+      "titles": {
+        "de-DE": "Aufgaben",
+        "fr-FR": "Actions",
+        "da-DK": "Handlinger",
+        "cs-CZ": "Úkoly",
+        "ar-EG": "الإجراءات",
+        "zh-CN": "行动项",
+        "zh-TW": "行動項目"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "square-check",
+        "order": 7
+      },
+      "bindings": {
+        "rows": "actions"
+      }
+    },
+    {
+      "ref": "crm-meetings",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.meetings",
+        "fallback": "Team meetings"
+      },
+      "titles": {
+        "de-DE": "Teammeetings",
+        "fr-FR": "Réunions d’équipe",
+        "da-DK": "Teammøder",
+        "cs-CZ": "Týmové porady",
+        "ar-EG": "اجتماعات الفريق",
+        "zh-CN": "团队会议",
+        "zh-TW": "團隊會議"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "presentation",
+        "order": 8
+      },
+      "bindings": {
+        "rows": "meetings"
+      }
+    },
+    {
+      "ref": "crm-meeting-slots",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.meeting_slots",
+        "fallback": "Agenda items"
+      },
+      "titles": {
+        "de-DE": "Tagesordnungspunkte",
+        "fr-FR": "Points à l’ordre du jour",
+        "da-DK": "Dagsordenspunkter",
+        "cs-CZ": "Body programu",
+        "ar-EG": "بنود جدول الأعمال",
+        "zh-CN": "议程项",
+        "zh-TW": "議程項目"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "list-ordered",
+        "order": 9
+      },
+      "bindings": {
+        "rows": "meeting_slots"
+      }
+    },
+    {
+      "ref": "crm-meeting-decisions",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.meeting_decisions",
+        "fallback": "Decisions"
+      },
+      "titles": {
+        "de-DE": "Beschlüsse",
+        "fr-FR": "Décisions",
+        "da-DK": "Beslutninger",
+        "cs-CZ": "Rozhodnutí",
+        "ar-EG": "القرارات",
+        "zh-CN": "会议决定",
+        "zh-TW": "會議決議"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "gavel",
+        "order": 10
+      },
+      "bindings": {
+        "rows": "meeting_decisions"
+      }
+    },
+    {
+      "ref": "crm-threads",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.threads",
+        "fallback": "Conversations"
+      },
+      "titles": {
+        "de-DE": "Unterhaltungen",
+        "fr-FR": "Conversations",
+        "da-DK": "Samtaler",
+        "cs-CZ": "Konverzace",
+        "ar-EG": "المحادثات",
+        "zh-CN": "会话",
+        "zh-TW": "對話"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "messages-square",
+        "order": 11
+      },
+      "bindings": {
+        "rows": "threads"
+      }
+    },
+    {
+      "ref": "crm-thread-members",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.thread_members",
+        "fallback": "Conversation members"
+      },
+      "titles": {
+        "de-DE": "Teilnehmer der Unterhaltungen",
+        "fr-FR": "Participants aux conversations",
+        "da-DK": "Samtaledeltagere",
+        "cs-CZ": "Účastníci konverzací",
+        "ar-EG": "أعضاء المحادثات",
+        "zh-CN": "会话成员",
+        "zh-TW": "對話成員"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "user-plus",
+        "order": 12
+      },
+      "bindings": {
+        "rows": "thread_members"
+      }
+    },
+    {
+      "ref": "crm-messages",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.messages",
+        "fallback": "Messages"
+      },
+      "titles": {
+        "de-DE": "Nachrichten",
+        "fr-FR": "Messages",
+        "da-DK": "Beskeder",
+        "cs-CZ": "Zprávy",
+        "ar-EG": "الرسائل",
+        "zh-CN": "消息",
+        "zh-TW": "訊息"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "message-circle",
+        "order": 13
+      },
+      "bindings": {
+        "rows": "messages"
+      }
+    },
+    {
+      "ref": "crm-starters",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.starters",
+        "fallback": "New starters"
+      },
+      "titles": {
+        "de-DE": "Neuzugänge",
+        "fr-FR": "Nouvelles recrues",
+        "da-DK": "Nye medarbejdere",
+        "cs-CZ": "Nováčci",
+        "ar-EG": "الموظفون الجدد",
+        "zh-CN": "新员工",
+        "zh-TW": "新進人員"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "user-round-plus",
+        "order": 14
+      },
+      "bindings": {
+        "rows": "starters"
+      }
+    },
+    {
+      "ref": "crm-starter-steps",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.starter_steps",
+        "fallback": "Onboarding steps"
+      },
+      "titles": {
+        "de-DE": "Einarbeitungsschritte",
+        "fr-FR": "Étapes d’intégration",
+        "da-DK": "Onboardingtrin",
+        "cs-CZ": "Kroky zaškolení",
+        "ar-EG": "خطوات التهيئة",
+        "zh-CN": "入职步骤",
+        "zh-TW": "到職步驟"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "list-todo",
+        "order": 15
+      },
+      "bindings": {
+        "rows": "starter_steps"
+      }
+    },
+    {
+      "ref": "crm-covers",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.covers",
+        "fallback": "Covers"
+      },
+      "titles": {
+        "de-DE": "Vertretungen",
+        "fr-FR": "Remplacements",
+        "da-DK": "Afløsninger",
+        "cs-CZ": "Zástupy",
+        "ar-EG": "التغطيات",
+        "zh-CN": "代班",
+        "zh-TW": "代理"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "umbrella",
+        "order": 16
+      },
+      "bindings": {
+        "rows": "covers"
+      }
+    },
+    {
+      "ref": "crm-cover-notes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.cover_notes",
+        "fallback": "Cover notes"
+      },
+      "titles": {
+        "de-DE": "Vertretungsnotizen",
+        "fr-FR": "Notes de remplacement",
+        "da-DK": "Afløsningsnoter",
+        "cs-CZ": "Poznámky k zástupu",
+        "ar-EG": "ملاحظات التغطية",
+        "zh-CN": "代班备注",
+        "zh-TW": "代理備註"
+      },
+      "nav": {
+        "group": "team",
+        "icon": "sticky-note",
+        "order": 17
+      },
+      "bindings": {
+        "rows": "cover_notes"
+      }
+    },
+    {
+      "ref": "crm-enquiries",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.enquiries",
+        "fallback": "Enquiries"
+      },
+      "titles": {
+        "de-DE": "Anfragen",
+        "fr-FR": "Demandes",
+        "da-DK": "Henvendelser",
+        "cs-CZ": "Poptávky",
+        "ar-EG": "الاستفسارات",
+        "zh-CN": "询盘",
+        "zh-TW": "詢問"
+      },
+      "nav": {
+        "group": "inbox",
+        "icon": "inbox",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "enquiries"
+      }
+    },
+    {
+      "ref": "crm-shows",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.shows",
+        "fallback": "Trade shows"
+      },
+      "titles": {
+        "de-DE": "Messen",
+        "fr-FR": "Salons",
+        "da-DK": "Messer",
+        "cs-CZ": "Veletrhy",
+        "ar-EG": "المعارض",
+        "zh-CN": "展会",
+        "zh-TW": "展覽"
+      },
+      "nav": {
+        "group": "inbox",
+        "icon": "ticket",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "shows"
+      }
+    },
+    {
+      "ref": "crm-showroom-spaces",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.showroom_spaces",
+        "fallback": "Showroom spaces"
+      },
+      "titles": {
+        "de-DE": "Showroom-Bereiche",
+        "fr-FR": "Espaces du showroom",
+        "da-DK": "Showroomområder",
+        "cs-CZ": "Prostory showroomu",
+        "ar-EG": "مساحات صالة العرض",
+        "zh-CN": "展厅空间",
+        "zh-TW": "展示間空間"
+      },
+      "nav": {
+        "group": "showroom",
+        "icon": "door-open",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "showroom_spaces"
+      }
+    },
+    {
+      "ref": "crm-showroom-bookings",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.showroom_bookings",
+        "fallback": "Showroom bookings"
+      },
+      "titles": {
+        "de-DE": "Showroom-Termine",
+        "fr-FR": "Réservations du showroom",
+        "da-DK": "Showroombookinger",
+        "cs-CZ": "Rezervace showroomu",
+        "ar-EG": "حجوزات صالة العرض",
+        "zh-CN": "展厅预约",
+        "zh-TW": "展示間預約"
+      },
+      "nav": {
+        "group": "showroom",
+        "icon": "calendar-check",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "showroom_bookings"
+      }
+    },
+    {
+      "ref": "crm-samples",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.samples",
+        "fallback": "Samples"
+      },
+      "titles": {
+        "de-DE": "Muster",
+        "fr-FR": "Échantillons",
+        "da-DK": "Prøver",
+        "cs-CZ": "Vzorky",
+        "ar-EG": "العينات",
+        "zh-CN": "样品",
+        "zh-TW": "樣品"
+      },
+      "nav": {
+        "group": "showroom",
+        "icon": "swatch-book",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "samples"
+      }
+    },
+    {
+      "ref": "crm-sample-loans",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.sample_loans",
+        "fallback": "Sample loans"
+      },
+      "titles": {
+        "de-DE": "Musterausleihen",
+        "fr-FR": "Prêts d’échantillons",
+        "da-DK": "Prøveudlån",
+        "cs-CZ": "Zápůjčky vzorků",
+        "ar-EG": "إعارات العينات",
+        "zh-CN": "样品借出",
+        "zh-TW": "樣品借出"
+      },
+      "nav": {
+        "group": "showroom",
+        "icon": "package-open",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "sample_loans"
+      }
+    },
+    {
+      "ref": "crm-sample-chases",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.sample_chases",
+        "fallback": "Sample chases"
+      },
+      "titles": {
+        "de-DE": "Muster-Erinnerungen",
+        "fr-FR": "Relances d’échantillons",
+        "da-DK": "Rykkere for prøver",
+        "cs-CZ": "Urgence vzorků",
+        "ar-EG": "استعجالات العينات",
+        "zh-CN": "样品催还",
+        "zh-TW": "樣品催還"
+      },
+      "nav": {
+        "group": "showroom",
+        "icon": "bell-ring",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "sample_chases"
+      }
+    },
+    {
+      "ref": "crm-display-pieces",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.display_pieces",
+        "fallback": "Display pieces"
+      },
+      "titles": {
+        "de-DE": "Ausstellungsstücke",
+        "fr-FR": "Pièces d’exposition",
+        "da-DK": "Udstillingsmodeller",
+        "cs-CZ": "Vystavené kusy",
+        "ar-EG": "قطع العرض",
+        "zh-CN": "展品",
+        "zh-TW": "展示品"
+      },
+      "nav": {
+        "group": "showroom",
+        "icon": "armchair",
+        "order": 6
+      },
+      "bindings": {
+        "rows": "display_pieces"
+      }
+    },
+    {
+      "ref": "crm-jobs",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.jobs",
+        "fallback": "Jobs"
+      },
+      "titles": {
+        "de-DE": "Aufträge",
+        "fr-FR": "Chantiers",
+        "da-DK": "Opgaver",
+        "cs-CZ": "Zakázky",
+        "ar-EG": "أوامر العمل",
+        "zh-CN": "工单",
+        "zh-TW": "工單"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "hard-hat",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "jobs"
+      }
+    },
+    {
+      "ref": "crm-crews",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.crews",
+        "fallback": "Crews"
+      },
+      "titles": {
+        "de-DE": "Montageteams",
+        "fr-FR": "Équipes",
+        "da-DK": "Hold",
+        "cs-CZ": "Montážní týmy",
+        "ar-EG": "الطواقم",
+        "zh-CN": "施工队",
+        "zh-TW": "施工班"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "users",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "crews"
+      }
+    },
+    {
+      "ref": "crm-crew-members",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.crew_members",
+        "fallback": "Crew members"
+      },
+      "titles": {
+        "de-DE": "Teammitglieder",
+        "fr-FR": "Membres d’équipe",
+        "da-DK": "Holdmedlemmer",
+        "cs-CZ": "Členové týmu",
+        "ar-EG": "أعضاء الطواقم",
+        "zh-CN": "队员",
+        "zh-TW": "班員"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "user-cog",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "crew_members"
+      }
+    },
+    {
+      "ref": "crm-job-visits",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.job_visits",
+        "fallback": "Job visits"
+      },
+      "titles": {
+        "de-DE": "Einsätze",
+        "fr-FR": "Interventions",
+        "da-DK": "Montagebesøg",
+        "cs-CZ": "Výjezdy",
+        "ar-EG": "زيارات التنفيذ",
+        "zh-CN": "上门作业",
+        "zh-TW": "到場作業"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "calendar-days",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "job_visits"
+      }
+    },
+    {
+      "ref": "crm-sign-offs",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.sign_offs",
+        "fallback": "Sign-offs"
+      },
+      "titles": {
+        "de-DE": "Abnahmen",
+        "fr-FR": "Réceptions",
+        "da-DK": "Godkendelser",
+        "cs-CZ": "Převzetí",
+        "ar-EG": "الاستلامات",
+        "zh-CN": "验收",
+        "zh-TW": "驗收"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "signature",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "sign_offs"
+      }
+    },
+    {
+      "ref": "crm-snags",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.snags",
+        "fallback": "Snags"
+      },
+      "titles": {
+        "de-DE": "Mängel",
+        "fr-FR": "Réserves",
+        "da-DK": "Mangler",
+        "cs-CZ": "Nedodělky",
+        "ar-EG": "ملاحظات الاستلام",
+        "zh-CN": "整改项",
+        "zh-TW": "缺失項目"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "triangle-alert",
+        "order": 6
+      },
+      "bindings": {
+        "rows": "snags"
+      }
+    },
+    {
+      "ref": "crm-delivery-notes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.delivery_notes",
+        "fallback": "Delivery notes"
+      },
+      "titles": {
+        "de-DE": "Lieferscheine",
+        "fr-FR": "Bons de livraison",
+        "da-DK": "Følgesedler",
+        "cs-CZ": "Dodací listy",
+        "ar-EG": "إشعارات التسليم",
+        "zh-CN": "送货单",
+        "zh-TW": "送貨單"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "clipboard-list",
+        "order": 7
+      },
+      "bindings": {
+        "rows": "delivery_notes"
+      }
+    },
+    {
+      "ref": "crm-delivery-note-lines",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.delivery_note_lines",
+        "fallback": "Delivery note lines"
+      },
+      "titles": {
+        "de-DE": "Lieferscheinpositionen",
+        "fr-FR": "Lignes de bon de livraison",
+        "da-DK": "Følgeseddellinjer",
+        "cs-CZ": "Řádky dodacího listu",
+        "ar-EG": "بنود إشعارات التسليم",
+        "zh-CN": "送货单明细",
+        "zh-TW": "送貨單明細"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "list",
+        "order": 8
+      },
+      "bindings": {
+        "rows": "delivery_note_lines"
+      }
+    },
+    {
+      "ref": "crm-waste-removals",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.waste_removals",
+        "fallback": "Waste removals"
+      },
+      "titles": {
+        "de-DE": "Entsorgungen",
+        "fr-FR": "Enlèvements de déchets",
+        "da-DK": "Bortskaffelser af affald",
+        "cs-CZ": "Odvozy odpadu",
+        "ar-EG": "عمليات إزالة المخلفات",
+        "zh-CN": "废料清运",
+        "zh-TW": "廢棄物清運"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "recycle",
+        "order": 9
+      },
+      "bindings": {
+        "rows": "waste_removals"
+      }
+    },
+    {
+      "ref": "crm-feedback",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.feedback",
+        "fallback": "Feedback"
+      },
+      "titles": {
+        "de-DE": "Rückmeldungen",
+        "fr-FR": "Avis",
+        "da-DK": "Tilbagemeldinger",
+        "cs-CZ": "Zpětná vazba",
+        "ar-EG": "التقييمات",
+        "zh-CN": "反馈",
+        "zh-TW": "回饋"
+      },
+      "nav": {
+        "group": "aftercare",
+        "icon": "star",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "feedback"
+      }
+    },
+    {
+      "ref": "crm-complaints",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.complaints",
+        "fallback": "Complaints"
+      },
+      "titles": {
+        "de-DE": "Beschwerden",
+        "fr-FR": "Réclamations",
+        "da-DK": "Klager",
+        "cs-CZ": "Stížnosti",
+        "ar-EG": "الشكاوى",
+        "zh-CN": "投诉",
+        "zh-TW": "客訴"
+      },
+      "nav": {
+        "group": "aftercare",
+        "icon": "message-square-warning",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "complaints"
+      }
+    },
+    {
+      "ref": "crm-warranty-claims",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.warranty_claims",
+        "fallback": "Warranty claims"
+      },
+      "titles": {
+        "de-DE": "Garantiefälle",
+        "fr-FR": "Réclamations de garantie",
+        "da-DK": "Garantisager",
+        "cs-CZ": "Reklamace",
+        "ar-EG": "مطالبات الضمان",
+        "zh-CN": "保修索赔",
+        "zh-TW": "保固索賠"
+      },
+      "nav": {
+        "group": "aftercare",
+        "icon": "shield-check",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "warranty_claims"
+      }
+    },
+    {
+      "ref": "crm-deal-stock-needs",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.deal_stock_needs",
+        "fallback": "Stock needs"
+      },
+      "titles": {
+        "de-DE": "Materialbedarfe",
+        "fr-FR": "Besoins en stock",
+        "da-DK": "Lagerbehov",
+        "cs-CZ": "Potřeby materiálu",
+        "ar-EG": "احتياجات المخزون",
+        "zh-CN": "备货需求",
+        "zh-TW": "備貨需求"
+      },
+      "nav": {
+        "group": "supply",
+        "icon": "boxes",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "deal_stock_needs"
+      }
+    },
+    {
+      "ref": "crm-vehicles",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.vehicles",
+        "fallback": "Vehicles"
+      },
+      "titles": {
+        "de-DE": "Fahrzeuge",
+        "fr-FR": "Véhicules",
+        "da-DK": "Køretøjer",
+        "cs-CZ": "Vozidla",
+        "ar-EG": "المركبات",
+        "zh-CN": "车辆",
+        "zh-TW": "車輛"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "truck",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "vehicles"
+      }
+    },
+    {
+      "ref": "crm-vehicle-checks",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.vehicle_checks",
+        "fallback": "Vehicle checks"
+      },
+      "titles": {
+        "de-DE": "Fahrzeugkontrollen",
+        "fr-FR": "Contrôles des véhicules",
+        "da-DK": "Køretøjstjek",
+        "cs-CZ": "Kontroly vozidel",
+        "ar-EG": "فحوص المركبات",
+        "zh-CN": "车辆检查",
+        "zh-TW": "車輛檢查"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "clipboard-check",
+        "order": 2
+      },
+      "bindings": {
+        "rows": "vehicle_checks"
+      }
+    },
+    {
+      "ref": "crm-vehicle-faults",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.vehicle_faults",
+        "fallback": "Vehicle faults"
+      },
+      "titles": {
+        "de-DE": "Fahrzeugmängel",
+        "fr-FR": "Défauts des véhicules",
+        "da-DK": "Fejl på køretøjer",
+        "cs-CZ": "Závady vozidel",
+        "ar-EG": "أعطال المركبات",
+        "zh-CN": "车辆故障",
+        "zh-TW": "車輛故障"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "wrench",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "vehicle_faults"
+      }
+    },
+    {
+      "ref": "crm-fuel-fills",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.fuel_fills",
+        "fallback": "Fuel fills"
+      },
+      "titles": {
+        "de-DE": "Tankfüllungen",
+        "fr-FR": "Pleins de carburant",
+        "da-DK": "Tankninger",
+        "cs-CZ": "Tankování",
+        "ar-EG": "تعبئات الوقود",
+        "zh-CN": "加油记录",
+        "zh-TW": "加油紀錄"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "fuel",
+        "order": 4
+      },
+      "bindings": {
+        "rows": "fuel_fills"
+      }
+    },
+    {
+      "ref": "crm-time-sheets",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.time_sheets",
+        "fallback": "Time sheets"
+      },
+      "titles": {
+        "de-DE": "Stundenzettel",
+        "fr-FR": "Feuilles de temps",
+        "da-DK": "Timesedler",
+        "cs-CZ": "Výkazy práce",
+        "ar-EG": "كشوف الساعات",
+        "zh-CN": "工时表",
+        "zh-TW": "工時表"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "clock",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "time_sheets"
+      }
+    },
+    {
+      "ref": "crm-time-sheet-lines",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.time_sheet_lines",
+        "fallback": "Time sheet lines"
+      },
+      "titles": {
+        "de-DE": "Stundenzettelzeilen",
+        "fr-FR": "Lignes de feuille de temps",
+        "da-DK": "Timeseddellinjer",
+        "cs-CZ": "Řádky výkazu",
+        "ar-EG": "بنود كشوف الساعات",
+        "zh-CN": "工时明细",
+        "zh-TW": "工時明細"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "list",
+        "order": 6
+      },
+      "bindings": {
+        "rows": "time_sheet_lines"
+      }
+    },
+    {
+      "ref": "crm-certificates",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.certificates",
+        "fallback": "Certificates"
+      },
+      "titles": {
+        "de-DE": "Zertifikate",
+        "fr-FR": "Certificats",
+        "da-DK": "Certifikater",
+        "cs-CZ": "Osvědčení",
+        "ar-EG": "الشهادات",
+        "zh-CN": "证书",
+        "zh-TW": "證照"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "award",
+        "order": 7
+      },
+      "bindings": {
+        "rows": "certificates"
+      }
+    },
+    {
+      "ref": "crm-subcontractors",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.subcontractors",
+        "fallback": "Subcontractors"
+      },
+      "titles": {
+        "de-DE": "Subunternehmer",
+        "fr-FR": "Sous-traitants",
+        "da-DK": "Underentreprenører",
+        "cs-CZ": "Subdodavatelé",
+        "ar-EG": "مقاولو الباطن",
+        "zh-CN": "分包商",
+        "zh-TW": "分包商"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "briefcase",
+        "order": 8
+      },
+      "bindings": {
+        "rows": "subcontractors"
+      }
+    },
+    {
+      "ref": "crm-insurance-incidents",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.insurance_incidents",
+        "fallback": "Insurance incidents"
+      },
+      "titles": {
+        "de-DE": "Versicherungsfälle",
+        "fr-FR": "Sinistres",
+        "da-DK": "Forsikringssager",
+        "cs-CZ": "Pojistné události",
+        "ar-EG": "حوادث التأمين",
+        "zh-CN": "保险事件",
+        "zh-TW": "保險事件"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "shield-alert",
+        "order": 9
+      },
+      "bindings": {
+        "rows": "insurance_incidents"
+      }
+    },
+    {
+      "ref": "crm-outbox",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.outbox",
+        "fallback": "Emails"
+      },
+      "titles": {
+        "de-DE": "E-Mails",
+        "fr-FR": "E-mails",
+        "da-DK": "E-mails",
+        "cs-CZ": "E-maily",
+        "ar-EG": "رسائل البريد",
+        "zh-CN": "邮件",
+        "zh-TW": "電子郵件"
+      },
+      "nav": {
+        "group": "setup",
+        "icon": "mail",
+        "order": 1
+      },
+      "bindings": {
+        "rows": "outbox"
+      }
+    },
+    {
       "ref": "crm-settings",
       "template": "page-crud",
       "title": {
@@ -15085,13 +16860,155 @@
         "zh-TW": "Sales CRM 設定"
       },
       "nav": {
-        "group": "manifest:crm",
+        "group": "setup",
         "icon": "settings",
-        "order": 1
+        "order": 2
       },
       "bindings": {
         "rows": "settings"
       }
+    }
+  ],
+  "navGroups": [
+    {
+      "key": "selling",
+      "label": {
+        "en-US": "Selling",
+        "de-DE": "Vertrieb",
+        "fr-FR": "Vente",
+        "da-DK": "Salg",
+        "cs-CZ": "Prodej",
+        "ar-EG": "المبيعات",
+        "zh-CN": "销售",
+        "zh-TW": "銷售"
+      },
+      "order": 1
+    },
+    {
+      "key": "accounts",
+      "label": {
+        "en-US": "Accounts",
+        "de-DE": "Kunden",
+        "fr-FR": "Comptes",
+        "da-DK": "Kunder",
+        "cs-CZ": "Zákazníci",
+        "ar-EG": "العملاء",
+        "zh-CN": "客户",
+        "zh-TW": "客戶"
+      },
+      "order": 2
+    },
+    {
+      "key": "team",
+      "label": {
+        "en-US": "The team",
+        "de-DE": "Das Team",
+        "fr-FR": "L’équipe",
+        "da-DK": "Teamet",
+        "cs-CZ": "Tým",
+        "ar-EG": "الفريق",
+        "zh-CN": "团队",
+        "zh-TW": "團隊"
+      },
+      "order": 3
+    },
+    {
+      "key": "inbox",
+      "label": {
+        "en-US": "Inbox",
+        "de-DE": "Eingang",
+        "fr-FR": "Boîte de réception",
+        "da-DK": "Indbakke",
+        "cs-CZ": "Doručené",
+        "ar-EG": "الوارد",
+        "zh-CN": "收件箱",
+        "zh-TW": "收件匣"
+      },
+      "order": 4
+    },
+    {
+      "key": "showroom",
+      "label": {
+        "en-US": "Showroom and samples",
+        "de-DE": "Showroom und Muster",
+        "fr-FR": "Showroom et échantillons",
+        "da-DK": "Showroom og prøver",
+        "cs-CZ": "Showroom a vzorky",
+        "ar-EG": "صالة العرض والعينات",
+        "zh-CN": "展厅与样品",
+        "zh-TW": "展示間與樣品"
+      },
+      "order": 5
+    },
+    {
+      "key": "jobs",
+      "label": {
+        "en-US": "Jobs on site",
+        "de-DE": "Aufträge vor Ort",
+        "fr-FR": "Chantiers sur site",
+        "da-DK": "Opgaver på stedet",
+        "cs-CZ": "Zakázky na místě",
+        "ar-EG": "أعمال الموقع",
+        "zh-CN": "现场工单",
+        "zh-TW": "現場工單"
+      },
+      "order": 6
+    },
+    {
+      "key": "aftercare",
+      "label": {
+        "en-US": "After the job",
+        "de-DE": "Nach dem Auftrag",
+        "fr-FR": "Après le chantier",
+        "da-DK": "Efter opgaven",
+        "cs-CZ": "Po zakázce",
+        "ar-EG": "بعد التنفيذ",
+        "zh-CN": "售后",
+        "zh-TW": "售後"
+      },
+      "order": 7
+    },
+    {
+      "key": "supply",
+      "label": {
+        "en-US": "Supply",
+        "de-DE": "Beschaffung",
+        "fr-FR": "Approvisionnement",
+        "da-DK": "Forsyning",
+        "cs-CZ": "Zásobování",
+        "ar-EG": "التوريد",
+        "zh-CN": "供应",
+        "zh-TW": "供應"
+      },
+      "order": 8
+    },
+    {
+      "key": "fleet",
+      "label": {
+        "en-US": "Vehicles and crew",
+        "de-DE": "Fahrzeuge und Teams",
+        "fr-FR": "Véhicules et équipes",
+        "da-DK": "Køretøjer og hold",
+        "cs-CZ": "Vozidla a týmy",
+        "ar-EG": "المركبات والطواقم",
+        "zh-CN": "车辆与施工队",
+        "zh-TW": "車輛與施工班"
+      },
+      "order": 9
+    },
+    {
+      "key": "setup",
+      "label": {
+        "en-US": "Setup",
+        "de-DE": "Einrichtung",
+        "fr-FR": "Configuration",
+        "da-DK": "Opsætning",
+        "cs-CZ": "Nastavení",
+        "ar-EG": "الإعداد",
+        "zh-CN": "设置",
+        "zh-TW": "設定"
+      },
+      "order": 10
     }
   ],
   "addOns": {
