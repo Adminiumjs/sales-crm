@@ -10,7 +10,10 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test": "vitest run --dir src"
+    "test": "vitest run --dir src",
+    "build:surface:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff tsc -b && VITE_ADMINIUM_SURFACE_SIDE=staff vite build --base=/apps/crm/staff/ --outDir dist-surface/crm/staff",
+    "build:surface": "npm run build:surface:staff",
+    "dev:hosted": "VITE_ADMINIUM_SURFACE_SIDE=staff vite"
   },
   "dependencies": {
     "@adminiumjs/public-client": "^0.2.2",

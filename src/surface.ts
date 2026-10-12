@@ -17,8 +17,10 @@
  * ─── The four modes ──────────────────────────────────────────────────────────
  *
  *   demo             no side, no API vars   seeded fiction + the demo dock.
- *                                           Built by `build:demo`, served only
- *                                           by the adminium.dev marketplace.
+ *                                           `build:demo`, served by the
+ *                                           adminium.dev marketplace — and ANY
+ *                                           build given neither (a plain
+ *                                           `npm run build`).
  *   connected        no side, API vars set  standalone SPA against the public
  *                                           API with a publishable key.
  *   hosted-staff     side=staff             served BY Adminium at
@@ -51,10 +53,8 @@ export const CONNECTED = !!(
 );
 
 /**
- * The seeded fiction and the demo dock ship in exactly one build.
- *
- * Note this is the INVERTED default the fleet is moving to: demo is what a
- * deliberate `build:demo` produces, not what you get by forgetting to configure
- * something.
+ * The seeded fiction and the demo dock ship in every build that is neither
+ * hosted nor connected: `build:demo`, and a plain build nobody configured. A
+ * standalone deployment sets the API vars, or it serves the sample kitchen.
  */
 export const DEMO = !HOSTED && !CONNECTED;
