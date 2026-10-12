@@ -34,7 +34,6 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     nullable: [
       "scope",
       "contact_id",
-      "owner_id",
       "expected_close",
       "closed_at",
       "lost_reason_id",
@@ -69,6 +68,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "family_no",
       "replaces_id",
       "threshold_pct",
+      "approved_pct",
+      "approved_unlisted_lines",
+      "approved_unlisted_value",
       "asked_by_id",
       "asked_at",
       "ask_reason",

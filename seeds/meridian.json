@@ -5425,7 +5425,10 @@
      },
      "sent_to_contact_id": {
       "@ref": "ct:callum"
-     }
+     },
+     "approved_pct": 7.46,
+     "approved_unlisted_lines": 0,
+     "approved_unlisted_value": 0
     },
     {
      "@label": "quote:Q-1007",
@@ -5513,7 +5516,10 @@
       "@day": 0,
       "@time": "08:05",
       "@week": true
-     }
+     },
+     "approved_pct": 9.09,
+     "approved_unlisted_lines": 0,
+     "approved_unlisted_value": 0
     }
    ]
   },

@@ -195,6 +195,9 @@ describe("the sample's rows are the ledger's", () => {
       if (first.has(ref(one["document_id"])!) && pence(one["rate"]) !== listed) under.push(ref(one["document_id"])!);
     }
     expect(under).toEqual([]);
+    // The two approved versions say how far under list they were approved: 9.09 % (d1) and 7.46 % (d14).
+    const approved = rows("quotes").filter((quote) => quote["approval"] === "approved");
+    expect(approved.map((quote) => [ref(quote["deal_id"]), quote["approved_pct"], quote["approved_unlisted_lines"]]).sort()).toEqual([["deal:d1", 9.09, 0], ["deal:d14", 7.46, 0]]);
   });
 
   it("closed: 8 won for 130,000, 18 lost for 294,400; booked this year 81,600", () => {

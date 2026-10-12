@@ -371,7 +371,6 @@
             "ref": "owner_id",
             "type": "text",
             "maxLength": 36,
-            "nullable": true,
             "rules": {
               "staff": true
             },
@@ -2280,6 +2279,92 @@
             }
           },
           {
+            "ref": "approved_pct",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": {
+                  "copy": "under_list_pct"
+                },
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "approved"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approved at % under list",
+              "de-DE": "Genehmigt bei % unter Liste",
+              "fr-FR": "Approuvé à % sous le catalogue",
+              "da-DK": "Godkendt ved % under liste",
+              "cs-CZ": "Schváleno při % pod ceníkem",
+              "ar-EG": "اعتُمد عند ٪ تحت القائمة",
+              "zh-CN": "批准时低于目录价 %",
+              "zh-TW": "核准時低於牌價 %"
+            }
+          },
+          {
+            "ref": "approved_unlisted_lines",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": {
+                  "copy": "unlisted_lines"
+                },
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "approved"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approved lines with no list price",
+              "de-DE": "Genehmigte Positionen ohne Listenpreis",
+              "fr-FR": "Lignes sans prix catalogue approuvées",
+              "da-DK": "Godkendte linjer uden listepris",
+              "cs-CZ": "Schválené řádky bez ceníkové ceny",
+              "ar-EG": "البنود المعتمدة بلا سعر قائمة",
+              "zh-CN": "已批准的无目录价行数",
+              "zh-TW": "已核准的無牌價行數"
+            }
+          },
+          {
+            "ref": "approved_unlisted_value",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": {
+                  "copy": "unlisted_value"
+                },
+                "on": {
+                  "column": "approval",
+                  "values": [
+                    "approved"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Approved value with no list price",
+              "de-DE": "Genehmigter Wert ohne Listenpreis",
+              "fr-FR": "Valeur sans prix catalogue approuvée",
+              "da-DK": "Godkendt værdi uden listepris",
+              "cs-CZ": "Schválená hodnota bez ceníkové ceny",
+              "ar-EG": "القيمة المعتمدة بلا سعر قائمة",
+              "zh-CN": "已批准的无目录价金额",
+              "zh-TW": "已核准的無牌價金額"
+            }
+          },
+          {
             "ref": "may_send",
             "type": "int",
             "rules": {
@@ -2288,9 +2373,46 @@
                   {
                     "or": [
                       {
-                        "eq": [
-                          "approval",
-                          "approved"
+                        "and": [
+                          {
+                            "eq": [
+                              "approval",
+                              "approved"
+                            ]
+                          },
+                          {
+                            "lte": [
+                              "under_list_pct",
+                              {
+                                "coalesce": [
+                                  "approved_pct",
+                                  -1
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "lte": [
+                              "unlisted_lines",
+                              {
+                                "coalesce": [
+                                  "approved_unlisted_lines",
+                                  -1
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "gte": [
+                              "unlisted_value",
+                              {
+                                "coalesce": [
+                                  "approved_unlisted_value",
+                                  0
+                                ]
+                              }
+                            ]
+                          }
                         ]
                       },
                       {

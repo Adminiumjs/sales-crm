@@ -117,7 +117,14 @@ function version(lines: readonly Row[], typed: Row = {}): Row {
   row["list_value"] = total("quotes", "list_value", lines);
   row["unlisted_lines"] = total("quotes", "unlisted_lines", lines);
   row["unlisted_value"] = total("quotes", "unlisted_value", lines);
-  for (const ref of ["tax", "total", "under_list_pct", "needs_approval", "may_send"]) row[ref] = formula("quotes", ref, row);
+  for (const ref of ["tax", "total", "under_list_pct", "needs_approval"]) row[ref] = formula("quotes", ref, row);
+  // An approval remembers what it covered: the three are stamped as the version stands when "approved" is written.
+  if (row["approval"] === "approved" && !("approved_pct" in typed)) {
+    row["approved_pct"] = row["under_list_pct"];
+    row["approved_unlisted_lines"] = row["unlisted_lines"];
+    row["approved_unlisted_value"] = row["unlisted_value"];
+  }
+  row["may_send"] = formula("quotes", "may_send", row);
   return row;
 }
 
@@ -291,7 +298,7 @@ describe("a version says whether it needs approval, and whether it may be sent",
       // Nor a figure Adminium keeps on the version.
       const version = role.limits?.["quotes"];
       expect(version?.writable, role.key).toBeDefined();
-      for (const kept of ["may_send", "needs_approval", "under_list_pct", "list_value", "unlisted_lines", "unlisted_value"]) expect(version?.writable ?? [], `${role.key} ${kept}`).not.toContain(kept);
+      for (const kept of ["approved_pct", "approved_unlisted_lines", "approved_unlisted_value", "may_send", "needs_approval", "under_list_pct", "list_value", "unlisted_lines", "unlisted_value"]) expect(version?.writable ?? [], `${role.key} ${kept}`).not.toContain(kept);
     }
     // Who writes the price list: the CRM admin and the Sales manager. A rep reads it.
     const may = (key: string, action: string) => roles.find((role) => role.key === key)!.permissions.includes(`table:@price_list:${action}`);
@@ -305,20 +312,38 @@ describe("a version says whether it needs approval, and whether it may be sent",
   });
 
   /*
-   * NOT YET (ruling F, second half): an approval should remember how far under
-   * list it approved, so that a version cut further afterwards needs asking
-   * again. The word for it is a stamp that copies a column of the row on
-   * approval, and Adminium's server refuses such a stamp on any column that is
-   * not text (it takes it for a stamp that names a person) and then installs
-   * the app without the rule. Until that is fixed in Adminium the hole stands,
-   * and this test holds it: the day `may_send` reads a remembered figure, it
-   * fails and is turned round.
+   * AN APPROVAL REMEMBERS WHAT IT COVERED (ruling F, second half). Three
+   * columns are stamped, as the version stands, the moment "approved" is
+   * written; `may_send` then holds the version to them. Nobody types them.
    */
-  it("does not yet remember what an approval covered: approved at 6 % under, cut to 50 %, it may still be sent", () => {
-    const approved = (rate: number) => version([line({ qty: 1, rate, list_rate: 1000 })], { approval: "approved" });
-    expect(approved(940)).toMatchObject({ under_list_pct: "6.00", may_send: "1" });
-    expect(approved(500)).toMatchObject({ under_list_pct: "50.00", may_send: "1" });
-    expect(table("quotes").columns.map((c) => c.ref).filter((ref) => ref.startsWith("approved_"))).toEqual([]);
+  it("remembers what an approval covered: further under list, or another unlisted line, needs asking again", () => {
+    const stamps = (ref: string) => column("quotes", ref).rules?.stamp;
+    const approved = { column: "approval", values: ["approved"] };
+    expect(stamps("approved_pct")).toEqual({ set: { copy: "under_list_pct" }, on: approved });
+    expect(stamps("approved_unlisted_lines")).toEqual({ set: { copy: "unlisted_lines" }, on: approved });
+    expect(stamps("approved_unlisted_value")).toEqual({ set: { copy: "unlisted_value" }, on: approved });
+    // A stamp copies a column of its own kind: Adminium refuses any other, and would stop the install.
+    for (const [kept, from] of [["approved_pct", "under_list_pct"], ["approved_unlisted_lines", "unlisted_lines"], ["approved_unlisted_value", "unlisted_value"]] as const) {
+      expect(column("quotes", kept).type, kept).toBe(column("quotes", from).type);
+      expect(column("quotes", kept).nullable, kept).toBe(true);
+    }
+    // Approved at 6 % under list.
+    const held = { approval: "approved", approved_pct: "6.00", approved_unlisted_lines: "0", approved_unlisted_value: "0.00" };
+    const at = (rate: number, more: Row[] = []) => version([line({ qty: 1, rate, list_rate: 1000 }), ...more], held);
+    expect(at(940)).toMatchObject({ under_list_pct: "6.00", may_send: "1" });
+    // A typo put right upwards: still approved.
+    expect(at(950)).toMatchObject({ under_list_pct: "5.00", may_send: "1" });
+    // Edited to 50 % under: the approval no longer covers it.
+    expect(at(500)).toMatchObject({ under_list_pct: "50.00", may_send: "0" });
+    // A line with no list price added after the approval: not covered either.
+    expect(at(940, [line({ qty: 1, rate: 10 })])["may_send"]).toBe("0");
+    // An unlisted line that was approved at 600 and is then cut to 100: asked again; raised to 700: not.
+    const withBare = { approval: "approved", approved_pct: "0.00", approved_unlisted_lines: "1", approved_unlisted_value: "600.00" };
+    expect(version([line({ qty: 1, rate: 600 })], withBare)["may_send"]).toBe("1");
+    expect(version([line({ qty: 1, rate: 100 })], withBare)["may_send"]).toBe("0");
+    expect(version([line({ qty: 1, rate: 700 })], withBare)["may_send"]).toBe("1");
+    // An "approved" that nothing stamped covers nothing under list.
+    expect(version([line({ qty: 1, rate: 940, list_rate: 1000 })], { approval: "approved", approved_pct: null, approved_unlisted_lines: null, approved_unlisted_value: null })["may_send"]).toBe("0");
   });
 
   /*
