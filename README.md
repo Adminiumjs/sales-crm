@@ -125,6 +125,13 @@ and the people away again.
 Dates are written as days from the day the sample is added, so the three late
 follow-ups are late on any day.
 
+Where Inventory is installed, the sample also brings Meridian's goods into it:
+ten stock lines, six suppliers and the depot, and which open deal waits for which
+line. Nothing of the stock is typed. The sample asks Inventory to post an
+opening receipt and to send four orders, so what is on hand, what it cost and
+what is on order are Inventory's own figures, and "Remove sample data" takes
+them out again.
+
 ## What does not work yet
 
 - **No screens.** The staff side shows one "being rebuilt" page. `reference/`
@@ -132,8 +139,6 @@ follow-ups are late on any day.
   ships that folder.
 - **The sample does not fill in the depot.** The settings row is written by the
   install, so the sample's own (with Meridian's depot on it) is left out.
-- **The sample has no stock.** Stock lines and suppliers are Inventory's, and an
-  app's sample cannot yet bring an add-on's items. The Supply page opens empty.
 - **Two showroom bookings can overlap**, and a job visit can be booked on a day
   its crew does not work. Nothing refuses either yet.
 - **Every part is always on.** Showroom, jobs, aftercare, supply and vehicles

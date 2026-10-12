@@ -18758,6 +18758,11 @@
   ],
   "sampleData": {
     "file": "seeds/meridian.json",
+    "addOns": {
+      "inventory": {
+        "file": "seeds/meridian.inventory.json"
+      }
+    },
     "people": [
       {
         "key": "dana",
