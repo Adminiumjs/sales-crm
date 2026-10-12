@@ -22,6 +22,7 @@ and what comes after them, vehicles and crew.
 | Roles | 9 |
 | Shipped rules | 4, switched on at install |
 | E-mails | 3, in eight languages |
+| Starting rows | 1: the settings row, written by the install with its defaults |
 | Sample data | "Meridian", an office-furniture wholesaler: 678 rows in 68 tables, 16 people, one team |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic, Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
@@ -129,9 +130,8 @@ follow-ups are late on any day.
 - **No screens.** The staff side shows one "being rebuilt" page. `reference/`
   holds the screens the app had before the rebuild; nothing builds, tests or
   ships that folder.
-- **No settings row on an install without the sample.** Until the row exists a
-  snag cannot be made, and no role of the app may make the row. The sample
-  brings it. This waits for a change in Adminium.
+- **The sample does not fill in the depot.** The settings row is written by the
+  install, so the sample's own (with Meridian's depot on it) is left out.
 - **The sample has no stock.** Stock lines and suppliers are Inventory's, and an
   app's sample cannot yet bring an add-on's items. The Supply page opens empty.
 - **Two showroom bookings can overlap**, and a job visit can be booked on a day

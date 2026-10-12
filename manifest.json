@@ -18748,6 +18748,14 @@
       }
     }
   ],
+  "seeds": [
+    {
+      "table": "settings",
+      "rows": [
+        {}
+      ]
+    }
+  ],
   "sampleData": {
     "file": "seeds/meridian.json",
     "people": [
