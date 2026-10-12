@@ -174,6 +174,131 @@
             "contact_id"
           ]
         ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "won",
+              {
+                "to": "lost",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "lost_reason_id",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "won": [
+              {
+                "to": "open",
+                "undo": true
+              }
+            ],
+            "lost": [
+              {
+                "to": "open",
+                "undo": true,
+                "clears": [
+                  "lost_reason_id"
+                ]
+              }
+            ]
+          },
+          "lock": {
+            "when": [
+              "won",
+              "lost"
+            ],
+            "except": [
+              "close_note",
+              "lost_reason_id"
+            ]
+          },
+          "actions": [
+            {
+              "id": "mark-won",
+              "label": {
+                "en-US": "Mark won",
+                "de-DE": "Als gewonnen markieren",
+                "fr-FR": "Marquer comme gagnée",
+                "da-DK": "Markér som vundet",
+                "cs-CZ": "Označit jako vyhraný",
+                "ar-EG": "علِّم كمكسوبة",
+                "zh-CN": "标记为赢单",
+                "zh-TW": "標記為成交"
+              },
+              "move": {
+                "to": "won"
+              },
+              "tone": "primary",
+              "ask": [
+                "close_note"
+              ]
+            },
+            {
+              "id": "mark-lost",
+              "label": {
+                "en-US": "Mark lost",
+                "de-DE": "Als verloren markieren",
+                "fr-FR": "Marquer comme perdue",
+                "da-DK": "Markér som tabt",
+                "cs-CZ": "Označit jako prohraný",
+                "ar-EG": "علِّم كمخسورة",
+                "zh-CN": "标记为丢单",
+                "zh-TW": "標記為流失"
+              },
+              "move": {
+                "to": "lost"
+              },
+              "tone": "danger",
+              "ask": [
+                "lost_reason_id",
+                "close_note"
+              ]
+            },
+            {
+              "id": "reopen",
+              "label": {
+                "en-US": "Reopen",
+                "de-DE": "Wieder öffnen",
+                "fr-FR": "Rouvrir",
+                "da-DK": "Genåbn",
+                "cs-CZ": "Znovu otevřít",
+                "ar-EG": "أعِد الفتح",
+                "zh-CN": "重新打开",
+                "zh-TW": "重新開啟"
+              },
+              "move": {
+                "to": "open"
+              }
+            },
+            {
+              "id": "hand-over",
+              "label": {
+                "en-US": "Hand over",
+                "de-DE": "Übergeben",
+                "fr-FR": "Transmettre",
+                "da-DK": "Overdrag",
+                "cs-CZ": "Předat",
+                "ar-EG": "سلِّم",
+                "zh-CN": "移交",
+                "zh-TW": "移交"
+              },
+              "set": {},
+              "in": [
+                "open"
+              ],
+              "ask": [
+                "owner_id"
+              ],
+              "handOver": true
+            }
+          ]
+        },
         "columns": [
           {
             "ref": "id",
@@ -404,7 +529,8 @@
                     "won",
                     "lost"
                   ]
-                }
+                },
+                "clearOnBack": true
               }
             },
             "label": {
@@ -3895,6 +4021,65 @@
             "deal_id"
           ]
         ],
+        "states": {
+          "column": "state",
+          "initial": "booked",
+          "moves": {
+            "booked": [
+              "done",
+              {
+                "to": "cancelled",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "cancel_reason",
+                      "isNull": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "id": "done",
+              "label": {
+                "en-US": "Mark done",
+                "de-DE": "Als erledigt markieren",
+                "fr-FR": "Marquer comme faite",
+                "da-DK": "Markér som udført",
+                "cs-CZ": "Označit jako hotové",
+                "ar-EG": "علِّم كمنجزة",
+                "zh-CN": "标记为已完成",
+                "zh-TW": "標記為已完成"
+              },
+              "move": {
+                "to": "done"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "cancel",
+              "label": {
+                "en-US": "Cancel",
+                "de-DE": "Absagen",
+                "fr-FR": "Annuler",
+                "da-DK": "Aflys",
+                "cs-CZ": "Zrušit",
+                "ar-EG": "ألغِ",
+                "zh-CN": "取消拜访",
+                "zh-TW": "取消拜訪"
+              },
+              "move": {
+                "to": "cancelled"
+              },
+              "tone": "danger",
+              "ask": [
+                "cancel_reason"
+              ]
+            }
+          ]
+        },
         "columns": [
           {
             "ref": "id",
@@ -4953,6 +5138,52 @@
             "due_on"
           ]
         ],
+        "states": {
+          "column": "state",
+          "initial": "open",
+          "moves": {
+            "open": [
+              "done",
+              "dropped"
+            ]
+          },
+          "actions": [
+            {
+              "id": "done",
+              "label": {
+                "en-US": "Mark done",
+                "de-DE": "Als erledigt markieren",
+                "fr-FR": "Marquer comme fait",
+                "da-DK": "Markér som udført",
+                "cs-CZ": "Označit jako hotové",
+                "ar-EG": "علِّم كمنجز",
+                "zh-CN": "标记为已完成",
+                "zh-TW": "標記為已完成"
+              },
+              "move": {
+                "to": "done"
+              },
+              "tone": "primary"
+            },
+            {
+              "id": "drop",
+              "label": {
+                "en-US": "Drop",
+                "de-DE": "Verwerfen",
+                "fr-FR": "Abandonner",
+                "da-DK": "Drop",
+                "cs-CZ": "Zahodit",
+                "ar-EG": "أسقِط",
+                "zh-CN": "放弃",
+                "zh-TW": "放棄"
+              },
+              "move": {
+                "to": "dropped"
+              },
+              "tone": "danger"
+            }
+          ]
+        },
         "columns": [
           {
             "ref": "id",

@@ -138,6 +138,8 @@ const SELLING_KEYS = ["approval_threshold_pct", "quote_valid_days", "quote_warn_
 
 /** Each button that hands a row to a colleague, and the roles that press it. */
 const HAND_OVERS: Record<string, readonly RoleKey[]> = {
+  // A deal is handed over by its owner, their manager or the CRM admin: the three roles that change a deal.
+  "deals.hand-over": ["admin", "sales-manager", "rep"],
   "enquiries.pass": ["admin", "sales-manager", "rep", "front-desk"],
 };
 

@@ -631,9 +631,9 @@ describe("the moves of this batch's three state columns", () => {
     expect(pass?.requires?.where).toEqual([{ column: "passed_to_id", isNull: false }]);
     const button = enquiries.states?.actions?.find((action) => action.id === "pass");
     expect(button).toMatchObject({ move: { to: "passed" }, ask: ["passed_to_id"], handOver: true });
-    // No other button of this batch hands a row over.
+    // Two buttons hand a row over: a deal's and an enquiry's.
     const handOvers = tables.flatMap((table) => (table.states?.actions ?? []).filter((action) => action.handOver === true).map((action) => `${table.ref}.${action.id}`));
-    expect(handOvers).toEqual(["enquiries.pass"]);
+    expect(handOvers).toEqual(["deals.hand-over", "enquiries.pass"]);
   });
 
   it("writes who claimed an enquiry when it is claimed", () => {
