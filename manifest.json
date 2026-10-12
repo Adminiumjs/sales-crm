@@ -1,379 +1,59 @@
 {
+  "kind": "app",
   "manifestVersion": 1,
   "key": "crm",
   "name": "Sales CRM",
   "version": "0.1.0",
   "publisher": {
     "id": "adminium",
-    "name": "Adminium",
-    "url": "https://adminium.dev"
+    "name": "Adminium"
   },
   "license": "AGPL-3.0-only",
   "description": {
     "key": "mft.crm.desc",
-    "fallback": "A working sales day — a weighted pipeline board, a follow-up queue and deal rooms with a full activity history — backed by your own database."
+    "fallback": "Sales CRM is being rebuilt. This version installs one empty settings table and no screens; deals, quotes, accounts and the team's week follow."
   },
   "categories": [
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "1.0.0",
+    "minAdminiumVersion": "0.3.27",
     "engines": [
       "postgres",
       "mysql",
       "sqlite"
-    ],
-    "requires": [
-      "realtime"
     ]
   },
   "requiredSchema": {
+    "prefixed": true,
     "tables": [
       {
-        "ref": "users",
+        "ref": "settings",
+        "label": {
+          "en-US": "Sales CRM settings",
+          "de-DE": "Sales-CRM-Einstellungen",
+          "fr-FR": "Réglages de Sales CRM",
+          "da-DK": "Sales CRM-indstillinger",
+          "cs-CZ": "Nastavení Sales CRM",
+          "ar-EG": "إعدادات Sales CRM",
+          "zh-CN": "Sales CRM 设置",
+          "zh-TW": "Sales CRM 設定"
+        },
+        "labelPlural": {
+          "en-US": "Sales CRM settings",
+          "de-DE": "Sales-CRM-Einstellungen",
+          "fr-FR": "Réglages de Sales CRM",
+          "da-DK": "Sales CRM-indstillinger",
+          "cs-CZ": "Nastavení Sales CRM",
+          "ar-EG": "إعدادات Sales CRM",
+          "zh-CN": "Sales CRM 设置",
+          "zh-TW": "Sales CRM 設定"
+        },
         "columns": [
           {
             "ref": "id",
             "type": "int",
             "role": "pk"
-          },
-          {
-            "ref": "name",
-            "type": "text"
-          },
-          {
-            "ref": "email",
-            "type": "text",
-            "semantic": "email"
-          },
-          {
-            "ref": "initials",
-            "type": "text"
-          },
-          {
-            "ref": "avatar",
-            "type": "text",
-            "semantic": "image"
-          },
-          {
-            "ref": "tint",
-            "type": "text"
-          },
-          {
-            "ref": "role",
-            "type": "enum",
-            "enum": [
-              "rep",
-              "manager"
-            ]
-          },
-          {
-            "ref": "created_at",
-            "type": "timestamptz"
-          }
-        ]
-      },
-      {
-        "ref": "companies",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "name",
-            "type": "text"
-          },
-          {
-            "ref": "domain",
-            "type": "text"
-          },
-          {
-            "ref": "industry",
-            "type": "enum",
-            "enum": [
-              "law",
-              "health",
-              "data",
-              "freight",
-              "film",
-              "grocery",
-              "accountancy",
-              "robotics",
-              "aerospace"
-            ]
-          },
-          {
-            "ref": "city",
-            "type": "text"
-          },
-          {
-            "ref": "headcount",
-            "type": "int"
-          },
-          {
-            "ref": "initials",
-            "type": "text"
-          },
-          {
-            "ref": "tint",
-            "type": "text"
-          },
-          {
-            "ref": "icon",
-            "type": "text"
-          },
-          {
-            "ref": "since_note",
-            "type": "text"
-          },
-          {
-            "ref": "note",
-            "type": "text"
-          },
-          {
-            "ref": "created_at",
-            "type": "timestamptz"
-          }
-        ]
-      },
-      {
-        "ref": "contacts",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "company_id",
-            "type": "fk",
-            "references": "companies"
-          },
-          {
-            "ref": "name",
-            "type": "text"
-          },
-          {
-            "ref": "email",
-            "type": "text",
-            "semantic": "email"
-          },
-          {
-            "ref": "phone",
-            "type": "text"
-          },
-          {
-            "ref": "title",
-            "type": "text"
-          },
-          {
-            "ref": "initials",
-            "type": "text"
-          },
-          {
-            "ref": "created_at",
-            "type": "timestamptz"
-          }
-        ]
-      },
-      {
-        "ref": "pipelines",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "name",
-            "type": "text"
-          }
-        ]
-      },
-      {
-        "ref": "stages",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "pipeline_id",
-            "type": "fk",
-            "references": "pipelines"
-          },
-          {
-            "ref": "name",
-            "type": "text"
-          },
-          {
-            "ref": "position",
-            "type": "int"
-          },
-          {
-            "ref": "probability",
-            "type": "int"
-          }
-        ]
-      },
-      {
-        "ref": "deals",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "name",
-            "type": "text"
-          },
-          {
-            "ref": "company_id",
-            "type": "fk",
-            "references": "companies"
-          },
-          {
-            "ref": "contact_id",
-            "type": "fk",
-            "references": "contacts"
-          },
-          {
-            "ref": "stage_id",
-            "type": "fk",
-            "references": "stages"
-          },
-          {
-            "ref": "amount",
-            "type": "money"
-          },
-          {
-            "ref": "currency",
-            "type": "text"
-          },
-          {
-            "ref": "expected_close",
-            "type": "date"
-          },
-          {
-            "ref": "status",
-            "type": "enum",
-            "enum": [
-              "open",
-              "won",
-              "lost"
-            ]
-          },
-          {
-            "ref": "lost_reason",
-            "type": "text"
-          },
-          {
-            "ref": "owner_id",
-            "type": "fk",
-            "references": "users"
-          },
-          {
-            "ref": "scope",
-            "type": "text"
-          },
-          {
-            "ref": "stage_entered_at",
-            "type": "timestamptz"
-          },
-          {
-            "ref": "closed_on",
-            "type": "date"
-          },
-          {
-            "ref": "created_at",
-            "type": "timestamptz"
-          },
-          {
-            "ref": "updated_at",
-            "type": "timestamptz"
-          }
-        ]
-      },
-      {
-        "ref": "activities",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "deal_id",
-            "type": "fk",
-            "references": "deals"
-          },
-          {
-            "ref": "type",
-            "type": "enum",
-            "enum": [
-              "call",
-              "email",
-              "meeting",
-              "note",
-              "stage_change"
-            ]
-          },
-          {
-            "ref": "summary",
-            "type": "text"
-          },
-          {
-            "ref": "due_at",
-            "type": "timestamptz"
-          },
-          {
-            "ref": "done",
-            "type": "bool"
-          },
-          {
-            "ref": "created_by",
-            "type": "fk",
-            "references": "users"
-          },
-          {
-            "ref": "created_at",
-            "type": "timestamptz"
-          }
-        ]
-      },
-      {
-        "ref": "tasks",
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "deal_id",
-            "type": "fk",
-            "references": "deals"
-          },
-          {
-            "ref": "title",
-            "type": "text"
-          },
-          {
-            "ref": "due_at",
-            "type": "timestamptz"
-          },
-          {
-            "ref": "done",
-            "type": "bool"
-          },
-          {
-            "ref": "owner_id",
-            "type": "fk",
-            "references": "users"
           }
         ]
       }
@@ -381,109 +61,84 @@
   },
   "pages": [
     {
-      "ref": "crm-dashboard",
-      "template": "page-dashboard",
-      "title": {
-        "key": "mft.crm.page.dashboard",
-        "fallback": "Dashboard"
-      },
-      "nav": {
-        "group": "manifest:crm",
-        "icon": "layout-dashboard",
-        "order": 1
-      }
-    },
-    {
-      "ref": "crm-board",
-      "template": "page-master-detail",
-      "title": {
-        "key": "mft.crm.page.board",
-        "fallback": "Pipeline"
-      },
-      "nav": {
-        "group": "manifest:crm",
-        "icon": "columns-3",
-        "order": 2
-      },
-      "bindings": {
-        "rows": "deals"
-      }
-    },
-    {
-      "ref": "crm-companies",
-      "template": "page-master-detail",
-      "title": {
-        "key": "mft.crm.page.companies",
-        "fallback": "Companies"
-      },
-      "nav": {
-        "group": "manifest:crm",
-        "icon": "building-2",
-        "order": 3
-      },
-      "bindings": {
-        "rows": "companies"
-      }
-    },
-    {
-      "ref": "crm-contacts",
+      "ref": "crm-settings",
       "template": "page-crud",
       "title": {
-        "key": "mft.crm.page.contacts",
-        "fallback": "People"
+        "key": "mft.crm.settings",
+        "fallback": "Sales CRM settings"
+      },
+      "titles": {
+        "de-DE": "Sales-CRM-Einstellungen",
+        "fr-FR": "Réglages de Sales CRM",
+        "da-DK": "Sales CRM-indstillinger",
+        "cs-CZ": "Nastavení Sales CRM",
+        "ar-EG": "إعدادات Sales CRM",
+        "zh-CN": "Sales CRM 设置",
+        "zh-TW": "Sales CRM 設定"
       },
       "nav": {
         "group": "manifest:crm",
-        "icon": "contact",
-        "order": 4
+        "icon": "settings",
+        "order": 1
       },
       "bindings": {
-        "rows": "contacts"
-      }
-    },
-    {
-      "ref": "crm-tasks",
-      "template": "page-queue-inbox",
-      "title": {
-        "key": "mft.crm.page.tasks",
-        "fallback": "Follow-ups"
-      },
-      "nav": {
-        "group": "manifest:crm",
-        "icon": "list-checks",
-        "order": 5
-      },
-      "bindings": {
-        "rows": "tasks"
+        "rows": "settings"
       }
     }
   ],
-  "capabilities": [
-    "email-delivery",
-    "realtime",
-    "file-storage"
-  ],
-  "kind": "app",
+  "addOns": {
+    "suggests": [
+      {
+        "key": "invoices",
+        "range": ">=1.0.12",
+        "checked": true,
+        "reason": {
+          "en-US": "Quotes are made, numbered and sent by this add-on.",
+          "de-DE": "Angebote werden von diesem Add-on erstellt, nummeriert und verschickt.",
+          "fr-FR": "Les devis sont créés, numérotés et envoyés par ce module.",
+          "da-DK": "Tilbud laves, nummereres og sendes af denne tilføjelse.",
+          "cs-CZ": "Nabídky vytváří, čísluje a odesílá tento doplněk.",
+          "ar-EG": "يُنشئ هذا الملحق عروض الأسعار ويرقّمها ويرسلها.",
+          "zh-CN": "报价单由此插件生成、编号并发送。",
+          "zh-TW": "報價單由此外掛產生、編號並寄出。"
+        }
+      },
+      {
+        "key": "inventory",
+        "range": ">=1.0.12",
+        "checked": true,
+        "reason": {
+          "en-US": "Stock for a deal, suppliers and what the showroom holds are kept by this add-on.",
+          "de-DE": "Bestand für ein Geschäft, Lieferanten und der Bestand des Showrooms werden von diesem Add-on geführt.",
+          "fr-FR": "Le stock d’une affaire, les fournisseurs et ce que contient le showroom sont tenus par ce module.",
+          "da-DK": "Lager til en handel, leverandører og det, showroomet har, holdes af denne tilføjelse.",
+          "cs-CZ": "Zásoby pro obchod, dodavatele a to, co je v showroomu, vede tento doplněk.",
+          "ar-EG": "يحتفظ هذا الملحق بمخزون الصفقة والمورّدين وما في صالة العرض.",
+          "zh-CN": "一笔交易所需的库存、供应商和展厅的存货由此插件管理。",
+          "zh-TW": "一筆交易所需的庫存、供應商和展示間的存貨由此外掛管理。"
+        }
+      },
+      {
+        "key": "offers",
+        "range": ">=1.0.12",
+        "reason": {
+          "en-US": "A reward for a customer who refers another.",
+          "de-DE": "Eine Prämie für Kunden, die einen weiteren empfehlen.",
+          "fr-FR": "Une récompense pour un client qui en recommande un autre.",
+          "da-DK": "En belønning til en kunde, der henviser en anden.",
+          "cs-CZ": "Odměna pro zákazníka, který doporučí dalšího.",
+          "ar-EG": "مكافأة للعميل الذي يرشّح عميلاً آخر.",
+          "zh-CN": "给推荐新客户的客户一份奖励。",
+          "zh-TW": "給推薦新客戶的客戶一份獎勵。"
+        }
+      }
+    ]
+  },
   "frontends": [
     {
       "side": "staff",
       "kind": "spa",
-      "entry": "index.html",
-      "env": {
-        "VITE_ADMINIUM_API_BASE_URL": {
-          "required": false,
-          "example": "https://admin.example.com"
-        },
-        "VITE_ADMINIUM_PUBLISHABLE_KEY": {
-          "required": false,
-          "example": "adm_pub_..."
-        }
-      },
-      "routes": {
-        "today": "/",
-        "board": "/",
-        "manager": "/"
-      }
+      "entry": "index.html"
     }
   ]
 }
