@@ -1,5 +1,21 @@
 # Sales CRM
 
+> **This app is being rebuilt.** Everything below the line describes the app
+> as it was before the rebuild and no longer matches the code: the demo data,
+> the persona switch, the database scripts and the Docker files are gone.
+>
+> **What installs today: nothing useful yet.** `manifest.json` declares the
+> app's key (`crm`), one empty `settings` table, one page for it and a staff
+> side that shows a single "being rebuilt" page. It asks for Adminium 0.3.27,
+> which is not released, so no released Adminium installs it. The tables, the
+> roles and the sample data come first; the screens follow.
+>
+> `reference/` holds the screens the app had before (and the code they stand
+> on). Nothing builds, tests or ships it; it is kept to be read while the new
+> screens are drawn. A full README is written when the foundation is done.
+
+---
+
 A complete, production-shaped sales workspace — built with Vite + React +
 TypeScript, no CSS framework, no backend required. It's an example app that
 ships with [Adminium](https://adminium.dev): work a follow-up queue, drag deals
