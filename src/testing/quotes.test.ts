@@ -259,17 +259,20 @@ describe("a version says whether it needs approval, and whether it may be sent",
   });
 
   /*
-   * THE GAP. The plan holds the send itself to the approval: draft → sent only
-   * while `may_send` is 1. A table built on a shape may not say so: its moves
-   * are the shape's, and the install refuses the manifest. So the move below is
-   * the shape's own, the figure is kept for a screen and a role to read, and
-   * nothing on the server stops a write that sends a quote which needs approval.
+   * THE GAP, WHICH CAN NOW BE CLOSED. The plan holds the send itself to the
+   * approval: draft → sent only while `may_send` is 1. A table built on a shape
+   * could not say so: its moves were the shape's, and the install refused the
+   * manifest. Adminium has since learned to let an app hold a shape's move to a
+   * condition on a column the app added, and the validator vendored here says
+   * so. The manifest does not write the condition yet: that is a later task's,
+   * with its proof on three databases. Until then the move below is the shape's
+   * own, and nothing on the server stops a write that sends a quote which needs
+   * approval.
    *
-   * When this test fails because the check came back empty, Adminium has
-   * learned to let an app narrow a shape's move: write the condition on the
-   * move in `manifest.json`, and turn this test round.
+   * When the condition is written in `manifest.json`, the first two lines fail:
+   * turn this test round.
    */
-  it("cannot hold the send to the approval: the shape's moves are the shape's", () => {
+  it("could hold the send to the approval, and does not yet", () => {
     const send = table("quotes").states?.moves["draft"]?.[0] as Move;
     expect(send.to).toBe("sent");
     expect(send.requires?.where?.map((condition) => condition.column)).toEqual(["total"]);
@@ -279,9 +282,16 @@ describe("a version says whether it needs approval, and whether it may be sent",
       move.requires!.where!.push({ column: "may_send", eq: 1 } as never);
     });
     expect(validateManifest(gated).ok).toBe(true);
-    expect(shapeConformanceIssues(gated as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([
-      "SHAPE_MISMATCH: the moves between states are the shape's (an app may only keep a move for some roles)",
-    ]);
+    expect(shapeConformanceIssues(gated as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([]);
+
+    // Only on a column the app added: a condition on one of the shape's own is still refused.
+    const onTheShapes = changed((copy) => {
+      const move = copy.requiredSchema.tables.find((t) => t.ref === "quotes")!.states!.moves["draft"]![0] as Move;
+      move.requires!.where!.push({ column: "valid_until", isNull: false } as never);
+    });
+    expect(validateManifest(onTheShapes).ok).toBe(true);
+    const refused = shapeConformanceIssues(onTheShapes as never, shapes).map((issue) => issue.message);
+    expect(refused.some((message) => message.includes("reads a column the app added, never valid_until"))).toBe(true);
   });
 });
 
