@@ -739,7 +739,14 @@ interface PublicAccessContext {
   /** The table's limits, as it declares them (absent: the caller does not say). */
   capacityOf?: (table: string) => Capacity | undefined;
   publicKeys: Readonly<Record<string, PublicKey>> | undefined;
-  roles: readonly { key: string; screensOnly?: boolean | undefined; cloneFrom?: string | undefined; permissions?: readonly string[] | undefined }[];
+  roles: readonly {
+    key: string;
+    screensOnly?: boolean | undefined;
+    cloneFrom?: string | undefined;
+    permissions?: readonly string[] | undefined;
+    /** What the role is limited to, by table: read here only for whether its rows are (`rows`). */
+    limits?: Readonly<Record<string, { rows?: unknown } | undefined>> | undefined;
+  }[];
   /** The app's outbox, for a new link it emails (absent: the app has none). */
   outbox?:
     | { table: string; kinds: Readonly<Record<string, string>>; columns: { repeatKey?: string | undefined }; links?: Readonly<Record<string, string>> | undefined; recipient?: ResendOutbox['recipient'] | undefined; producers?: ResendOutbox['producers'] }
@@ -872,6 +879,26 @@ export function publicAccessIssues(entries: readonly PublicAccess[], ctx: Public
         message: `"${role.key}" signs in a screen anyone can walk up to, so it opens only the app's screens: screensOnly, and no grant but app:@:staff`,
       });
     }
+    /*
+     * A SCREEN'S KEY IS NOT HELD TO A PERSON'S ROWS: its entries show what
+     * they declare to everybody who signs the screen in. The screen's own role
+     * holds no table at all, so the person in front of it is somebody who
+     * also holds another role of the app — and where that role reaches only
+     * some rows of a table, the screen would show them the rest. So a table
+     * any role of the app limits by rows is not served through a screen's
+     * key: it is either shown on the screen to everybody, or limited by rows
+     * and kept off it.
+     */
+    entries.forEach((entry, i) => {
+      if (entry.key !== name) return;
+      const limiting = ctx.roles.find((candidate) => candidate.limits?.[entry.table]?.rows !== undefined);
+      if (limiting !== undefined) {
+        out.push({
+          path: ['publicAccess', i, 'table'],
+          message: `"${name}" shows "${entry.table}" to everybody who signs the screen in, and "${limiting.key}" reaches only some of its rows: a screen's key is not held to a person's rows, so give the table one or the other`,
+        });
+      }
+    });
     if (key.enabledBy !== undefined) {
       const column = index.column(key.enabledBy.table, key.enabledBy.column);
       if (column?.type !== 'bool') {
