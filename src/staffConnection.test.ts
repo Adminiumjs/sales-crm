@@ -109,6 +109,8 @@ describe("loadStaffConfig", () => {
       modules: { selling: true, jobs: false, odd: "yes" },
       locale: "ar-EG",
       dir: "rtl",
+      kit: { contract: 1, entry: "/assets/kit/kit-abc.js", styles: ["/assets/kit/root-abc.css", 7, ""] },
+      maps: { enabled: true, server: "https://tiles.example", routing: false },
     });
     expect(await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl })).toEqual({
       connectionId: "con_42",
@@ -130,7 +132,20 @@ describe("loadStaffConfig", () => {
       modules: { selling: true, jobs: false },
       locale: "ar-EG",
       dir: "rtl",
+      // Where Adminium's own parts are, and whether maps are on.
+      kit: { contract: 1, entry: "/assets/kit/kit-abc.js", styles: ["/assets/kit/root-abc.css"] },
+      maps: { enabled: true, server: "https://tiles.example", routing: false },
     });
+  });
+
+  it("says there is no kit and nothing of maps when the server names neither, or names a kit with no file to import", async () => {
+    const none = await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl: ok({ connectionId: "con_42" }) });
+    expect([none?.kit, none?.maps]).toEqual([null, null]);
+    const broken = await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl: ok({ connectionId: "con_42", kit: { contract: 1 }, maps: { enabled: "yes" } }) });
+    expect([broken?.kit, broken?.maps]).toEqual([null, { enabled: false, server: null, routing: false }]);
+    // An Adminium from before the list: one stylesheet, as text.
+    const old = await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl: ok({ connectionId: "con_42", kit: { contract: 1, entry: "/assets/kit/k.js", styles: "/assets/kit/k.css" } }) });
+    expect(old?.kit?.styles).toEqual(["/assets/kit/k.css"]);
   });
 
   it("says nothing of parts or language when the server said nothing: no screen is left out, and the app keeps its own choice", async () => {

@@ -196,6 +196,32 @@ describe("a figure, and the live stream", () => {
     });
   });
 
+  it("sends figures asked together as one request, and lets each answer or fail by itself", async () => {
+    const count = { table: "deals", shape: "single-metric" as const, aggregations: [{ fn: "count" as const, alias: "n" }] };
+    const { calls, session } = open([
+      json(200, { results: { f0: { ok: true, result: { value: 14 }, cached: false }, f1: { ok: false, error: { code: "FORBIDDEN", message: "No.", statusCode: 403 } }, f2: { ok: false, error: { code: "INTERNAL", message: "The widget query failed.", statusCode: 500 } } } }),
+    ]);
+    const s = await session;
+    const [first, second, third] = await Promise.allSettled([s.figure<{ value: number }>(count), s.figure({ ...count, table: "stages" }), s.figure({ ...count, filters: [{ column: "state", op: "eq", value: "won" }] })]);
+    expect(calls.length).toBe(1);
+    expect(calls[0]!.url).toBe("/api/v1/widget-data/batch");
+    expect((calls[0]!.body as { requests: { instanceId: string; descriptor: { source: { name: string } } }[] }).requests.map((one) => [one.instanceId, one.descriptor.source.name])).toEqual([["f0", "public.crm_deals"], ["f1", "public.crm_stages"], ["f2", "public.crm_deals"]]);
+    expect(first).toEqual({ status: "fulfilled", value: { value: 14 } });
+    // A refusal is that figure's own; one the server fell over on is a lost reply, not a "no".
+    expect(second.status === "rejected" && second.reason instanceof StaffError && second.reason.status).toBe(403);
+    expect(third.status === "rejected" && third.reason instanceof LostReply).toBe(true);
+  });
+
+  it("sends more figures than one request takes as several", async () => {
+    const count = { table: "deals", shape: "single-metric" as const, aggregations: [{ fn: "count" as const, alias: "n" }] };
+    const answer = (call: Call) => json(200, { results: Object.fromEntries((call.body as { requests: { instanceId: string }[] }).requests.map((one) => [one.instanceId, { ok: true, result: { value: 1 }, cached: false }])) });
+    const { calls, session } = open([answer, json(200, { result: { value: 1 }, cached: false })]);
+    const s = await session;
+    await Promise.all(Array.from({ length: 41 }, (_, i) => s.figure({ ...count, filters: [{ column: "id", op: "eq", value: i }] })));
+    expect(calls.map((call) => call.url)).toEqual(["/api/v1/widget-data/batch", "/api/v1/widget-data/query"]);
+    expect((calls[0]!.body as { requests: unknown[] }).requests.length).toBe(40);
+  });
+
   it("hears every kind of frame on its tables, and reads again after a break", async () => {
     const frame = (type: string) => `event: ${type}\ndata: ${JSON.stringify({ channel: "widget-data:con_1:public.crm_deals", type, data: { pk: { id: 7 } }, ts: 1 })}\n\n`;
     const stream = (text: string) => new Response(new Blob([`retry: 5000\n\n: keep-alive\n\n${text}`]).stream(), { status: 200, headers: { "content-type": "text/event-stream" } });

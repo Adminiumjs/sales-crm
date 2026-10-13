@@ -150,7 +150,8 @@ export interface Figure {
 /** A `categorical` figure's answer. */
 export interface Grouped {
   shape: "categorical";
-  items: { key: string | number | null; label: string | null; value: number; values: Record<string, number | null> }[];
+  /** `values` holds every aggregation by its alias when several were asked; a figure asked for one number answers it as `value` alone. */
+  items: { key: string | number | null; label: string | null; value: number; values?: Record<string, number | null> }[];
   total: number;
 }
 
@@ -180,6 +181,8 @@ export interface StaffSessionOptions {
 
 const API = "/api/v1";
 const CSRF_HEADER = "x-adminium-csrf";
+/** The most figures the server takes in one request. */
+const FIGURES_PER_REQUEST = 40;
 const KEY_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 /** A key for one save: 32 letters the server takes (22 to 64 of `A-Z a-z 0-9 - _`). Made once per save, and kept while it is retried. */
@@ -340,6 +343,37 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     }
   }
 
+  /*
+   * FIGURES ASKED TOGETHER GO AS ONE REQUEST. A screen asks several at once
+   * (a board: its header, each column, the year's closed deals), and the
+   * server counts figure requests per person per minute. One request for the
+   * lot keeps a busy screen well inside that, and each figure still answers
+   * or fails by itself.
+   */
+  const asked: { descriptor: unknown; resolve: (value: unknown) => void; reject: (error: unknown) => void }[] = [];
+  const flush = (): void => {
+    const all = asked.splice(0, asked.length);
+    for (let from = 0; from < all.length; from += FIGURES_PER_REQUEST) {
+      const some = all.slice(from, from + FIGURES_PER_REQUEST);
+      if (some.length === 1) {
+        send("POST", "/widget-data/query", { descriptor: some[0]!.descriptor }).then((doc) => some[0]!.resolve((doc as { result: unknown }).result), some[0]!.reject);
+        continue;
+      }
+      send("POST", "/widget-data/batch", { requests: some.map((one, i) => ({ instanceId: `f${String(i)}`, descriptor: one.descriptor })) }).then(
+        (doc) => {
+          const results = (doc as { results: Record<string, { ok: true; result: unknown } | { ok: false; error: { code: string; message: string; statusCode: number } }> }).results;
+          some.forEach((one, i) => {
+            const answer = results[`f${String(i)}`];
+            if (answer === undefined) one.reject(new LostReply());
+            else if (answer.ok) one.resolve(answer.result);
+            else one.reject(answer.error.statusCode >= 500 ? new LostReply(answer.error.statusCode) : new StaffError(answer.error.statusCode, answer.error.code, answer.error.message));
+          });
+        },
+        (error: unknown) => some.forEach((one) => one.reject(error)),
+      );
+    }
+  };
+
   const session: StaffSession = {
     get config() {
       return config!;
@@ -407,10 +441,14 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
       return { entries: doc.entries, next: doc.nextCursor ?? null };
     },
 
-    async figure<T>(figure: Figure) {
+    figure<T>(figure: Figure) {
       const { table, ...rest } = figure;
       const descriptor = { connectionId, source: { name: tableId(table) }, ...rest };
-      return ((await send("POST", "/widget-data/query", { descriptor })) as { result: T }).result;
+      return new Promise<T>((resolve, reject) => {
+        asked.push({ descriptor, resolve: resolve as (value: unknown) => void, reject });
+        // Everything a screen asks in one go leaves together, a moment from now.
+        if (asked.length === 1) setTimeout(flush, 0);
+      });
     },
 
     async people(q, limit = 20) {

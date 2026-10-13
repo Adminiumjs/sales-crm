@@ -140,6 +140,45 @@ export interface StaffConfig {
    */
   locale?: string | null;
   dir?: "ltr" | "rtl" | null;
+  /**
+   * Where Adminium's own larger parts are (the board, the map, the import,
+   * the text box that mentions people): see `kitParts.ts`. Null from an
+   * Adminium with no kit, or one older than it: a screen then says the part
+   * is not available here.
+   */
+  kit?: StaffKit | null;
+  /** Whether maps are on in this Adminium, and where its map server is. Null from a server that does not say. */
+  maps?: StaffMaps | null;
+}
+
+export interface StaffKit {
+  /** The number of the mount call's contract. */
+  contract: number;
+  /** The file to import. Its name changes with every version of Adminium: never kept. */
+  entry: string;
+  styles: string[];
+}
+
+export interface StaffMaps {
+  enabled: boolean;
+  server: string | null;
+  /** Whether routes along roads can be asked. */
+  routing: boolean;
+}
+
+/** `kit` as the server sent it; null when it sent none, or one with no address to import. */
+function kitOf(value: unknown): StaffKit | null {
+  const doc = record(value);
+  const entry = text(doc.entry);
+  if (entry === null || typeof doc.contract !== "number") return null;
+  const styles = Array.isArray(doc.styles) ? doc.styles.filter((one): one is string => typeof one === "string" && one !== "") : typeof doc.styles === "string" && doc.styles !== "" ? [doc.styles] : [];
+  return { contract: doc.contract, entry, styles };
+}
+
+function mapsOf(value: unknown): StaffMaps | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+  const doc = value as Record<string, unknown>;
+  return { enabled: doc.enabled === true, server: text(doc.server), routing: doc.routing === true || text(doc.routing) !== null };
 }
 
 export interface StaffAddOn {
@@ -238,6 +277,8 @@ export async function loadStaffConfig(opts: StaffConfigOptions = {}): Promise<St
           : null,
       locale: text(d.locale),
       dir: d.dir === "rtl" || d.dir === "ltr" ? d.dir : null,
+      kit: kitOf(d.kit),
+      maps: mapsOf(d.maps),
       sharedTables: Object.fromEntries(
         Object.entries(record(d.sharedTables))
           .map(([ref, keys]) => [ref, Array.isArray(keys) ? keys.filter((k): k is string => typeof k === "string") : []] as const)
