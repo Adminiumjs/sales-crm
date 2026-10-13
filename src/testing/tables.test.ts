@@ -576,10 +576,50 @@ describe("a deal is reached by its owner, by the people on it, and by whoever co
     const covers = byRef.get("covers");
     expect(covers?.columns.find((c) => c.ref === "starts_on")).toMatchObject({ type: "date" });
     expect(covers?.columns.find((c) => c.ref === "ends_on")).toMatchObject({ type: "date", nullable: true });
-    // Who covers whom is everybody's to read. A cover is written for its own rep: a manager held to
-    // their team writes one for somebody they lead, never for another manager's rep (whose deals the
-    // cover would open to whoever it names). roles.test.ts holds the roles to it.
-    expect(covers?.belongs).toEqual([{ column: "owner_id", set: "team" }]);
+    // Who covers whom is everybody's to read. A cover is written for its own rep and its own
+    // covering rep: a manager held to their team names somebody they lead in both places, never
+    // another manager's rep (whose deals the cover would open to whoever it names) and never a
+    // covering person outside her teams. roles.test.ts holds the roles to it.
+    expect(covers?.belongs).toEqual([
+      { column: "owner_id", set: "team" },
+      { column: "cover_id", set: "team" },
+    ]);
+  });
+
+  it("lends one person's book once at a time, with an open end allowed (F17, the critique's E10)", () => {
+    const covers = byRef.get("covers") as unknown as { occupies?: unknown };
+    // The person is the one away: two covers of her book never overlap. Whoever covers may cover two colleagues at once.
+    expect(covers.occupies).toEqual({ resource: "owner_id", day: "starts_on", until: "ends_on" });
+  });
+});
+
+describe("a site visit that is cancelled is removed, never marked (F17)", () => {
+  const visits = byRef.get("site_visits") as unknown as {
+    states: { moves: Record<string, unknown[]>; noDelete?: unknown; actions: { id: string }[] };
+    columns: { ref: string; type: string; enum?: string[]; nullable?: boolean; default?: unknown; rules?: { rollup?: unknown } }[];
+  };
+  const column = (ref: string) => visits.columns.find((one) => one.ref === ref);
+
+  it("has no cancelled state and no cancel button", () => {
+    expect(column("state")?.enum).toEqual(["booked", "done"]);
+    expect(visits.states.moves).toEqual({ booked: ["done"] });
+    expect(visits.states.actions.map((action) => action.id)).toEqual(["done"]);
+  });
+
+  it("keeps a visit that was made, and takes the why of a cancel in a column of its own", () => {
+    expect(visits.states.noDelete).toEqual({ when: ["done"] });
+    // Written a moment before the row is removed, so the removal's audit entry holds it. Never required: a delete cannot be made to ask for it.
+    expect(column("cancel_reason")).toMatchObject({ type: "text", nullable: true });
+  });
+
+  it("counts its write-ups itself, so the screen adds up no rows", () => {
+    expect(column("written")).toMatchObject({ type: "int", default: 0, rules: { rollup: { from: "visit_notes", via: "visit_id", count: true } } });
+    // A write-up hangs on its visit by a link the database keeps: a visit with one cannot be removed.
+    expect(byRef.get("visit_notes")?.columns.find((one) => one.ref === "visit_id")).toMatchObject({ type: "fk", references: "site_visits", unique: true });
+  });
+
+  it("has no column for a move's old day: it is read from the record's history", () => {
+    expect(visits.columns.map((one) => one.ref)).toEqual(["id", "deal_id", "contact_id", "rep_id", "starts_at", "minutes", "purpose", "state", "cancel_reason", "note", "written", "retry_key"]);
   });
 });
 

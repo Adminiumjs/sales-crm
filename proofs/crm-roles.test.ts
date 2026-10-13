@@ -612,8 +612,9 @@ for (const [dialect, reachable] of LEGS) {
         expect(said(await post('priya', 'follow_ups', { deal_id: open, owner_id: s.id['priya'], due_at: `${day(3)}T10:00:00Z`, text: 'Ring while Leo is away', kind: 'step' }))).toBe('ok');
         expect(String((await one(`SELECT owner_id FROM ${s.real('deals')} WHERE id = ${String(open)}`))['owner_id'])).toBe(s.id['leo']);
       }
-      // The cover ended two days ago: the deals are not there for her any more.
-      expect(said(await patch('ivy', 'covers', made(cover), { starts_on: day(-9), ends_on: day(-2) }))).toBe('ok');
+      // The cover ended three days ago: the deals are not there for her any more. (Three, not two: a later test covers Leo
+      // again from two days ago, and since F17 two covers of one person may not share a day.)
+      expect(said(await patch('ivy', 'covers', made(cover), { starts_on: day(-9), ends_on: day(-3) }))).toBe('ok');
       expect(await keys('priya', 'deals')).toEqual(priyas);
       await gone('priya', 'deals', leos[0]);
 

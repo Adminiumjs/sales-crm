@@ -1,0 +1,295 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+/**
+ * Plan 67, F17 (stage 1): SITE VISITS AND COVER, against the whole server on
+ * SQLite, Postgres and MySQL, with the app's own manifest, each try made
+ * signed in as the person it is about.
+ *
+ * Site visits: a rep books for herself only, and only on a deal she opens; a
+ * manager books for the people she leads; a visit is moved and its old day,
+ * who moved it and when are read from the record's history; a cancel REMOVES
+ * the row, and the why is in the removal's own audit entry; a visit that was
+ * made, or written up, is not removed; "written up" is the server's count.
+ *
+ * Cover: made by the sales manager for people she leads (both the person away
+ * and whoever covers) or by the CRM admin; no two covers of one person
+ * overlap; until further notice; "End today"; new dates; a cancel removes the
+ * row and the lent deal is gone the same moment.
+ *
+ * To run: `npm run proofs -- visits` (copies itself into the engine lane's test folder, runs, removes itself).
+ */
+import { readFileSync } from 'node:fs';
+
+import { teamsRepo } from '@adminium/meta';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
+
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.28' }));
+
+const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
+const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
+const DAY = 86_400_000;
+
+for (const [dialect, reachable] of LEGS) {
+  describe.skipIf(!reachable)(`the CRM's site visits and cover, on ${dialect}`, () => {
+    let s: WholeServer;
+    const deal: Record<string, number> = { nowhere: 999_999 };
+    const contact: Record<string, number> = {};
+    const day = (days: number): string => new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
+    const at = (days: number, time = '10:00'): string => `${day(days)}T${time}:00.000Z`;
+    const made = (res: Reply): number => {
+      expect(res.statusCode, res.body).toBe(201);
+      return Number((res.json() as { data: { id: number } }).data.id);
+    };
+    const url = (ref: string, rest = ''): string => `/api/v1/data/${s.connectionId}/${s.t(ref)}${rest}`;
+    const row = async (who: string, ref: string, id: number): Promise<Record<string, unknown> | null> => {
+      const res = await s.get(who, url(ref, `/${String(id)}`));
+      return res.statusCode === 200 ? (res.json() as { data: Record<string, unknown> }).data : null;
+    };
+    const list = async (who: string, ref: string): Promise<Record<string, unknown>[]> => {
+      const res = await s.get(who, url(ref, '?limit=200'));
+      expect(res.statusCode, res.body).toBe(200);
+      return (res.json() as { data: Record<string, unknown>[] }).data;
+    };
+    const remove = (who: string, ref: string, id: number): Promise<Reply> => s.send(who, 'DELETE', url(ref, `/${String(id)}?confirm=true`));
+    const book = (who: string, rep: string, on: string, extra: Record<string, unknown> = {}): Promise<Reply> =>
+      s.make(who, 'site_visits', { deal_id: deal[on], contact_id: contact['petra'], rep_id: s.ids[rep], starts_at: at(3), minutes: 60, purpose: 'Walk the floor', ...extra });
+    const details = (res: Reply): Record<string, unknown> => ((res.json() as { error?: { details?: Record<string, unknown> } }).error?.details ?? {}) as Record<string, unknown>;
+
+    beforeAll(async () => {
+      s = await wholeServer(dialect, manifest(), {
+        people: { dana: ['rep'], sam: ['rep'], priya: ['rep'], noor: ['rep'], ivy: ['sales-manager'], tessa: ['admin'], grace: ['read-only'], corin: ['front-desk'], lena: ['marketer'] },
+      });
+      // Ivy leads the team Dana, Sam and Priya are in. Noor is a rep in no team of hers.
+      const team = await teamsRepo(s.meta).create('Sales');
+      await teamsRepo(s.meta).setMember(team.id, s.ids['ivy']!, true);
+      for (const rep of ['dana', 'sam', 'priya']) await teamsRepo(s.meta).setMember(team.id, s.ids[rep]!, false);
+      const stage = made(await s.make('owner', 'stages', { label: 'Proposal', odds: 0.5, position: 3 }));
+      const company = made(await s.make('owner', 'companies', { name: 'Nordwind Logistics' }));
+      contact['petra'] = made(await s.make('owner', 'contacts', { company_id: company, name: 'Petra Lindqvist', email: 'petra@nordwind.test', may_email: true }));
+      for (const [name, owner] of [['danas', 'dana'], ['sams', 'sam'], ['noors', 'noor'], ['priyas', 'priya']] as const) {
+        deal[name] = made(await s.make('owner', 'deals', { name: `${name} deal`, company_id: company, owner_id: s.ids[owner], stage_id: stage }));
+      }
+      await s.jobs();
+    }, 240_000);
+    afterAll(async () => {
+      await s?.close();
+    });
+
+    it('lets a rep book for herself on a deal she opens, and nobody else or anywhere else', async () => {
+      const own = await book('dana', 'dana', 'danas', { note: 'Lift booking runs out at noon.' });
+      const id = made(own);
+      expect((await row('dana', 'site_visits', id))?.['note']).toBe('Lift booking runs out at noon.');
+      // For a colleague, on her own deal: refused, and nothing is written.
+      const forSam = await book('dana', 'sam', 'danas');
+      expect(forSam.statusCode, forSam.body).toBe(403);
+      // On a colleague's deal, which she cannot open: refused in the words of "no such deal".
+      const onSams = await book('dana', 'dana', 'sams');
+      expect(onSams.statusCode, onSams.body).toBe(409);
+      const missing = await s.make('dana', 'site_visits', { deal_id: 999_999, contact_id: contact['petra'], rep_id: s.ids['dana'], starts_at: at(3), minutes: 60, purpose: 'Nowhere' });
+      expect(missing.statusCode).toBe(onSams.statusCode);
+      expect(said(missing)).toBe(said(onSams));
+      // With nobody named: the row would be nobody's.
+      const nobody = await s.make('dana', 'site_visits', { deal_id: deal['danas'], starts_at: at(3), minutes: 60, purpose: 'Nobody' });
+      expect(nobody.statusCode, nobody.body).toBeGreaterThanOrEqual(400);
+      expect((await list('dana', 'site_visits')).map((one) => Number(one['id']))).toEqual([id]);
+      // Somebody who holds no right on visits at all, and Read-only.
+      expect((await book('corin', 'dana', 'danas')).statusCode).toBe(403);
+      expect((await book('lena', 'dana', 'danas')).statusCode).toBe(403);
+      expect((await book('grace', 'dana', 'danas')).statusCode).toBe(403);
+      expect((await s.get('lena', url('site_visits', '?limit=5'))).statusCode).toBe(403);
+      expect(said(await remove('dana', 'site_visits', id))).toBe('ok');
+    });
+
+    it('lets a manager book for the people she leads, and for nobody else', async () => {
+      const forDana = made(await book('ivy', 'dana', 'danas'));
+      const forSam = made(await book('ivy', 'sam', 'sams'));
+      // Noor is in no team of hers: neither Noor's name nor Noor's deal.
+      expect((await book('ivy', 'noor', 'danas')).statusCode).toBe(403);
+      const onNoors = await book('ivy', 'dana', 'noors');
+      expect(said(onNoors)).toBe(said(await book('ivy', 'dana', 'nowhere')));
+      expect(onNoors.statusCode).toBe(409);
+      // The CRM admin books for anybody.
+      const forNoor = made(await book('tessa', 'noor', 'noors'));
+      // Each rep reads her own; the manager her team's; Read-only all of them and changes none.
+      expect((await list('dana', 'site_visits')).map((one) => Number(one['id']))).toEqual([forDana]);
+      expect((await list('sam', 'site_visits')).map((one) => Number(one['id']))).toEqual([forSam]);
+      expect((await list('ivy', 'site_visits')).map((one) => Number(one['id'])).sort()).toEqual([forDana, forSam].sort());
+      expect(await list('grace', 'site_visits')).toHaveLength(3);
+      expect((await s.change('grace', 'site_visits', forDana, { minutes: 30 })).statusCode).toBe(403);
+      expect((await remove('grace', 'site_visits', forDana)).statusCode).toBe(403);
+      // A rep does not give her visit to a colleague, nor take one.
+      expect((await s.change('dana', 'site_visits', forDana, { rep_id: s.ids['sam'] })).statusCode).toBeGreaterThanOrEqual(400);
+      expect(await row('sam', 'site_visits', forDana)).toBeNull();
+      expect((await s.change('sam', 'site_visits', forDana, { minutes: 30 })).statusCode).toBe(404);
+      expect((await remove('sam', 'site_visits', forDana)).statusCode).toBe(404);
+      for (const id of [forDana, forSam]) expect(said(await remove('ivy', 'site_visits', id))).toBe('ok');
+      expect(said(await remove('tessa', 'site_visits', forNoor))).toBe('ok');
+    });
+
+    it('keeps a visit on a shared deal its own rep\'s to move or cancel', async () => {
+      // Dana adds Sam to her deal: he reads it, and the visits on it.
+      made(await s.make('dana', 'deal_members', { deal_id: deal['danas'], user_id: s.ids['sam'] }));
+      const danas = made(await book('dana', 'dana', 'danas'));
+      expect(Number((await row('sam', 'site_visits', danas))?.['id'])).toBe(danas);
+      // He does not move it, and does not cancel it.
+      expect((await s.change('sam', 'site_visits', danas, { minutes: 30 })).statusCode).toBeGreaterThanOrEqual(403);
+      expect((await remove('sam', 'site_visits', danas)).statusCode).toBeGreaterThanOrEqual(403);
+      expect(Number((await row('dana', 'site_visits', danas))?.['minutes'])).toBe(60);
+      // He books his own visit on it, and Dana reads that one and does not move it.
+      const sams = made(await book('sam', 'sam', 'danas'));
+      expect(Number((await row('dana', 'site_visits', sams))?.['id'])).toBe(sams);
+      expect((await s.change('dana', 'site_visits', sams, { minutes: 30 })).statusCode).toBeGreaterThanOrEqual(403);
+      expect(said(await remove('sam', 'site_visits', sams))).toBe('ok');
+      expect(said(await remove('dana', 'site_visits', danas))).toBe('ok');
+    });
+
+    it('reads a move\'s old day, who moved it and when from the record\'s history', async () => {
+      const id = made(await book('dana', 'dana', 'danas'));
+      const before = String((await row('dana', 'site_visits', id))?.['starts_at']);
+      // Her manager moves it two days on.
+      expect(said(await s.change('ivy', 'site_visits', id, { starts_at: at(5, '14:30'), minutes: 90 }))).toBe('ok');
+      const res = await s.get('dana', url('site_visits', `/${String(id)}/history?limit=20`));
+      expect(res.statusCode, res.body).toBe(200);
+      const entries = (res.json() as { entries: { createdAt: number; actorLabel: string | null; action: string; changes: { before?: Record<string, unknown>; after?: Record<string, unknown> } | null }[] }).entries;
+      const move = entries.find((entry) => entry.changes?.before !== undefined && 'starts_at' in (entry.changes.before ?? {}));
+      expect(move, JSON.stringify(entries)).toBeDefined();
+      expect(new Date(String(move!.changes!.before!['starts_at'])).getTime()).toBe(new Date(before).getTime());
+      expect(new Date(String(move!.changes!.after!['starts_at'])).getTime()).toBe(new Date(at(5, '14:30')).getTime());
+      expect(Number(move!.changes!.before!['minutes'])).toBe(60);
+      expect(move!.actorLabel).toMatch(/ivy/i);
+      expect(Math.abs(Number(move!.createdAt) - Date.now())).toBeLessThan(120_000);
+      // No column holds the old day.
+      expect(Object.keys((await row('dana', 'site_visits', id)) ?? {}).filter((key) => /old|was|moved|previous/.test(key))).toEqual([]);
+      expect(said(await remove('dana', 'site_visits', id))).toBe('ok');
+    });
+
+    it('removes a cancelled visit, with the why in the removal\'s audit entry, and has no cancelled state', async () => {
+      const id = made(await book('dana', 'dana', 'danas'));
+      // There is no cancelled mark to set, by the column or by a button.
+      expect((await s.change('dana', 'site_visits', id, { state: 'cancelled', cancel_reason: 'x' })).statusCode).toBeGreaterThanOrEqual(400);
+      expect((await s.send('dana', 'POST', url('site_visits', `/${String(id)}/actions/cancel`), { from: 'booked', values: { cancel_reason: 'x' } })).statusCode).toBeGreaterThanOrEqual(400);
+      expect((await row('dana', 'site_visits', id))?.['state']).toBe('booked');
+      // The why is written, then the row is removed.
+      expect(said(await s.change('dana', 'site_visits', id, { cancel_reason: 'Petra is off sick' }))).toBe('ok');
+      expect(said(await remove('dana', 'site_visits', id))).toBe('ok');
+      expect(await row('dana', 'site_visits', id)).toBeNull();
+      expect(await row('tessa', 'site_visits', id)).toBeNull();
+      expect(await s.rows(`select id from crm_site_visits where id = ${String(id)}`)).toEqual([]);
+      const logged = await s.meta.db.selectFrom('adminium_audit_log').select(['action', 'changes', 'actorLabel']).where('entityId', '=', String(id)).where('action', 'like', '%delete%').execute();
+      const mine = logged.filter((entry) => JSON.stringify(entry.changes).includes('Petra is off sick'));
+      expect(mine, JSON.stringify(logged)).toHaveLength(1);
+      expect(String(mine[0]!.actorLabel)).toMatch(/dana/i);
+    });
+
+    it('counts a write-up on the visit, and keeps a visit that was written up or made', async () => {
+      const id = made(await book('dana', 'dana', 'danas', { starts_at: at(-2) }));
+      expect(Number((await row('dana', 'site_visits', id))?.['written'])).toBe(0);
+      const note = made(await s.make('dana', 'visit_notes', { visit_id: id, saw: 'Narrow door', said: 'Keep the keypads', next: 'Re-cut the run' }));
+      const agreed = made(await s.make('dana', 'visit_agreed', { visit_note_id: note, text: 'Layout by Friday', position: 0 }));
+      expect(Number((await row('dana', 'site_visits', id))?.['written'])).toBe(1);
+      // Nobody types the count.
+      await s.change('dana', 'site_visits', id, { written: 7 });
+      expect(Number((await row('dana', 'site_visits', id))?.['written'])).toBe(1);
+      // A second write-up of the same visit is refused.
+      expect((await s.make('dana', 'visit_notes', { visit_id: id, saw: 'Again' })).statusCode).toBe(409);
+      // A written-up visit is not removed.
+      expect((await remove('dana', 'site_visits', id)).statusCode).toBe(409);
+      // Marked done, it stays whatever is taken off it.
+      const done = await s.send('dana', 'POST', url('site_visits', `/${String(id)}/actions/done`), { from: 'booked' });
+      expect(done.statusCode, done.body).toBe(200);
+      expect(said(await remove('dana', 'visit_agreed', agreed))).toBe('ok');
+      expect(said(await remove('dana', 'visit_notes', note))).toBe('ok');
+      expect(Number((await row('dana', 'site_visits', id))?.['written'])).toBe(0);
+      const kept = await remove('dana', 'site_visits', id);
+      expect(said(kept)).toBe('409 DELETE_REFUSED');
+      expect(said(await remove('tessa', 'site_visits', id))).toBe('409 DELETE_REFUSED');
+      // A rep who is not on the deal reads and writes none of its visits' notes (Sam is on this deal since Dana added him, and may).
+      expect((await s.make('priya', 'visit_notes', { visit_id: id, saw: 'Not mine' })).statusCode).toBeGreaterThanOrEqual(400);
+      expect(await list('priya', 'visit_notes')).toEqual([]);
+      expect(await s.rows(`select id from crm_visit_notes where visit_id = ${String(id)}`)).toEqual([]);
+    });
+
+    it('lets the manager make cover for people she leads, the admin for anybody who reads deals, and nobody else', async () => {
+      // Dana is away; Priya covers. Both are Ivy's.
+      const cover = made(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['priya'], starts_on: day(-1), ends_on: day(5), note: 'Dana is on leave' }));
+      // Somebody she does not lead, on either side.
+      expect((await s.make('ivy', 'covers', { owner_id: s.ids['noor'], cover_id: s.ids['sam'], starts_on: day(40), ends_on: day(44) })).statusCode).toBe(403);
+      expect((await s.make('ivy', 'covers', { owner_id: s.ids['sam'], cover_id: s.ids['noor'], starts_on: day(40), ends_on: day(44) })).statusCode).toBe(403);
+      // A rep makes none, for herself or anybody; nor does Read-only.
+      expect((await s.make('dana', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(40), ends_on: day(44) })).statusCode).toBe(403);
+      expect((await s.make('grace', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(40), ends_on: day(44) })).statusCode).toBe(403);
+      // Whoever covers must read deals: the front desk does not, whoever writes.
+      const desk = await s.make('tessa', 'covers', { owner_id: s.ids['sam'], cover_id: s.ids['corin'], starts_on: day(40), ends_on: day(44) });
+      expect(desk.statusCode, desk.body).toBe(422);
+      expect((details(desk)['fields'] as Record<string, { code?: string }>)['cover_id']?.code).toBe('cannot-open');
+      // The CRM admin names anybody who does.
+      const across = made(await s.make('tessa', 'covers', { owner_id: s.ids['noor'], cover_id: s.ids['sam'], starts_on: day(40), ends_on: day(44) }));
+      // From the first day Priya reads Dana's deal as hers; Sam does not (he is on it only as a helper of the earlier test, so use Priya's view of a deal nobody added her to).
+      expect(Number((await row('priya', 'deals', deal['danas']!))?.['id'])).toBe(deal['danas']);
+      // A rep reads who covers whom and when, and not why.
+      const seen = await row('dana', 'covers', cover);
+      expect(seen?.['starts_on']).toBeDefined();
+      expect(seen?.['note'] ?? null).toBeNull();
+      // The covering rep ends nothing and re-dates nothing.
+      expect((await s.change('priya', 'covers', cover, { ends_on: day(30) })).statusCode).toBe(403);
+      expect((await remove('priya', 'covers', cover)).statusCode).toBe(403);
+      expect(said(await remove('tessa', 'covers', across))).toBe('ok');
+      expect(said(await remove('ivy', 'covers', cover))).toBe('ok');
+      // Cancelled: the row is gone, and the lent deal with it, the same moment.
+      expect(await row('priya', 'deals', deal['danas']!)).toBeNull();
+    });
+
+    it('holds one person\'s book to one cover at a time, open ends included', async () => {
+      const first = made(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['priya'], starts_on: day(10), ends_on: day(14) }));
+      // The same days, the last day, a span around it: all overlap, whoever covers.
+      for (const [from, to] of [[10, 14], [14, 20], [8, 10], [5, 30], [12, 12]] as const) {
+        const again = await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(from), ends_on: day(to) });
+        expect(said(again), `${String(from)}–${String(to)}`).toBe('409 BOOKING_TAKEN');
+        // The refusal names nothing of the cover in the way.
+        expect(again.body).not.toContain(s.ids['priya']!);
+      }
+      expect(said(await s.make('tessa', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(12) }))).toBe('409 BOOKING_TAKEN');
+      // The day after is free, and so is another person's book over the same days: Priya may cover two colleagues at once.
+      const next = made(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(15), ends_on: day(16) }));
+      const other = made(await s.make('ivy', 'covers', { owner_id: s.ids['sam'], cover_id: s.ids['priya'], starts_on: day(10), ends_on: day(14) }));
+      // Until further notice: it runs on, and nothing later fits beside it.
+      const open = made(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['priya'], starts_on: day(20) }));
+      expect((await row('ivy', 'covers', open))?.['ends_on'] ?? null).toBeNull();
+      expect(said(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(200), ends_on: day(201) }))).toBe('409 BOOKING_TAKEN');
+      expect(said(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(300) }))).toBe('409 BOOKING_TAKEN');
+      // New dates are judged the same way: onto the first cover, refused; clear of it, taken.
+      expect(said(await s.change('ivy', 'covers', next, { starts_on: day(13), ends_on: day(16) }))).toBe('409 BOOKING_TAKEN');
+      expect(said(await s.change('ivy', 'covers', next, { starts_on: day(17), ends_on: day(18) }))).toBe('ok');
+      // "End today" on the open one: it ends, and a later cover fits again.
+      expect(said(await s.change('ivy', 'covers', open, { ends_on: day(20) }))).toBe('ok');
+      const later = made(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['sam'], starts_on: day(200), ends_on: day(201) }));
+      for (const id of [first, next, other, open, later]) expect(said(await remove('ivy', 'covers', id))).toBe('ok');
+      expect(await list('ivy', 'covers')).toEqual([]);
+    });
+
+    it('ends a running cover today, and the lent deals leave the covering rep the day after', async () => {
+      const cover = made(await s.make('ivy', 'covers', { owner_id: s.ids['dana'], cover_id: s.ids['priya'], starts_on: day(-3) }));
+      expect(Number((await row('priya', 'deals', deal['danas']!))?.['id'])).toBe(deal['danas']);
+      // While she covers she books her own visit on the lent deal, and does not move Dana's.
+      const danas = made(await book('dana', 'dana', 'danas'));
+      const hers = made(await book('priya', 'priya', 'danas'));
+      expect((await s.change('priya', 'site_visits', danas, { minutes: 30 })).statusCode).toBeGreaterThanOrEqual(403);
+      // A briefing note on the deal, by its owner; the cover is not removed while it holds one.
+      const note = await s.make('dana', 'cover_notes', { cover_id: cover, deal_id: deal['danas'], text: 'Petra decides on the 14th.' });
+      const noteId = made(note);
+      expect((await remove('ivy', 'covers', cover)).statusCode).toBe(409);
+      // Ended yesterday (a cover ends with its last day): the deal is no longer hers, by key or in a list.
+      expect(said(await s.change('ivy', 'covers', cover, { ends_on: day(-1) }))).toBe('ok');
+      expect(await row('priya', 'deals', deal['danas']!)).toBeNull();
+      expect((await list('priya', 'deals')).map((one) => Number(one['id']))).toEqual([deal['priyas']]);
+      // Its note goes first, then the row.
+      expect(said(await remove('ivy', 'cover_notes', noteId))).toBe('ok');
+      expect(said(await remove('ivy', 'covers', cover))).toBe('ok');
+      expect(said(await remove('dana', 'site_visits', danas))).toBe('ok');
+      // Her own visit on a deal she no longer opens is still hers to read and to cancel.
+      expect(Number((await row('priya', 'site_visits', hers))?.['id'])).toBe(hers);
+      expect(said(await remove('priya', 'site_visits', hers))).toBe('ok');
+    });
+  });
+}

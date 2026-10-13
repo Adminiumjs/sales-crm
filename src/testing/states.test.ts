@@ -51,7 +51,8 @@ const moves = (ref: string): string[] =>
 const EXPECTED: Record<string, { column: string; initial: string; moves: string[] }> = {
   deals: { column: "state", initial: "open", moves: ["open → won", "open → lost: lost_reason_id filled", "won → open: back", "lost → open: back; empties lost_reason_id"] },
   quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; to_email filled; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
-  site_visits: { column: "state", initial: "booked", moves: ["booked → done", "booked → cancelled: cancel_reason filled"] },
+  // A cancelled visit is removed, never marked (F17): the only move left is "it was made".
+  site_visits: { column: "state", initial: "booked", moves: ["booked → done"] },
   renewals: { column: "state", initial: "open", moves: ["open → done", "open → dropped"] },
   meeting_decisions: { column: "state", initial: "open", moves: ["open → done", "open → carried"] },
   enquiries: { column: "state", initial: "open", moves: ["open → claimed", "open → passed: passed_to_id filled", "open → dropped", "passed → claimed", "passed → dropped"] },
@@ -188,7 +189,7 @@ describe("every button", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("there are thirty-six", () => {
-    expect(buttons).toHaveLength(36);
+  it("there are thirty-five", () => {
+    expect(buttons).toHaveLength(35);
   });
 });

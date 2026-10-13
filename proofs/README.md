@@ -16,6 +16,7 @@ product does not: give a sample person a password. `npm run proofs` copies them 
 | `crm-rules` | the shipped rules run by themselves |
 | `crm-inventory` | Supply on the real Inventory add-on (needs `ADD_ONS_REPO`, built) |
 | `crm-g3` | the pipeline board, a pasted list, places and areas |
+| `crm-visits` | site visits and cover: who books for whom, a move read from the history, a cancel that removes the row, one cover of a person at a time |
 
 ```bash
 ADMINIUM_REPO=~/Work/lanes/p67 ADD_ONS_REPO=~/Work/lanes/p67-add-ons-read npm run proofs

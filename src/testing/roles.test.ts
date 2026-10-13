@@ -79,7 +79,9 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["deal_members"], "RCUD", "RCUD;r=team;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R", "-", "-", "-", "-", "R"],
   // The marketer counts a company's open deals from the mark, and reads nothing else of a deal.
   [["deal_marks"], "R", "R", "R", "R", "R", "-", "-", "-", "R"],
-  [["site_visits", "visit_notes", "visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
+  // A visit is read by whoever reaches its deal; it is moved and cancelled by the rep it names (a manager, those of her people).
+  [["site_visits"], "RCUD", "RCUD;r=team;u=team-named;d=team-named", "RCUD;r=own;u=own-named;d=own-named", "-", "-", "-", "-", "-", "R"],
+  [["visit_notes", "visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
   [["companies"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "R", "-", "-", "RX"],
   [["contacts"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "RC", "-", "-", "RX"],
   [["territories", "territory_places"], "RCUD", "RCUD", "R", "R", "R", "-", "-", "-", "R"],
@@ -201,6 +203,9 @@ const REACHES: Record<string, Reach> = {
   // Of the people on the deals they reach, only those of a deal that names them as its owner.
   "own-owner's": { reach: "own", by: "deal_owner_id" },
   "team-owner's": { reach: "team", by: "deal_owner_id" },
+  // Of the visits they reach, only the ones that name them as the rep who goes.
+  "own-named": { reach: "own", by: "rep_id" },
+  "team-named": { reach: "team", by: "rep_id" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
@@ -291,6 +296,7 @@ interface Table {
   labelPlural?: Record<string, string>;
   private?: boolean;
   belongs?: unknown[];
+  occupies?: unknown;
   columns: Column[];
   states?: { column: string; moves: Record<string, (string | Move)[]>; actions?: StateAction[] };
 }
@@ -906,9 +912,15 @@ describe("a listing a table is read through is not a way in", () => {
   });
 
   it("lets a manager write cover for the people they lead, and for nobody else's rep", () => {
-    // The rep away is the cover's own person, and a writer held to their team names there only
-    // themselves or somebody they lead. Who covers is anybody: that is the manager's choice.
-    expect(tableOf.get("covers")?.belongs).toEqual([{ column: "owner_id", set: "team" }]);
+    // The rep away and whoever covers are both the cover's own people, and a writer held to their
+    // team names in either place only themselves or somebody they lead (the critique's A9: a manager
+    // lends a book inside her own teams, never to anybody on the staff). The CRM admin names anybody.
+    expect(tableOf.get("covers")?.belongs).toEqual([
+      { column: "owner_id", set: "team" },
+      { column: "cover_id", set: "team" },
+    ]);
+    // One person's book is lent once at a time; an empty end runs until further notice.
+    expect(tableOf.get("covers")?.occupies).toEqual({ resource: "owner_id", day: "starts_on", until: "ends_on" });
     expect(ROLES.filter((key) => held(key, "covers").some((action) => action !== "read"))).toEqual(["admin", "sales-manager"]);
     expect(limitOf("sales-manager", "covers")?.rows).toEqual({ update: { reach: "team" }, delete: { reach: "team" } });
     // Everybody who holds the table still reads every cover.

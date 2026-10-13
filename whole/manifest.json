@@ -4959,18 +4959,12 @@
           "initial": "booked",
           "moves": {
             "booked": [
-              "done",
-              {
-                "to": "cancelled",
-                "requires": {
-                  "where": [
-                    {
-                      "column": "cancel_reason",
-                      "isNull": false
-                    }
-                  ]
-                }
-              }
+              "done"
+            ]
+          },
+          "noDelete": {
+            "when": [
+              "done"
             ]
           },
           "actions": [
@@ -4990,26 +4984,6 @@
                 "to": "done"
               },
               "tone": "primary"
-            },
-            {
-              "id": "cancel",
-              "label": {
-                "en-US": "Cancel",
-                "de-DE": "Absagen",
-                "fr-FR": "Annuler",
-                "da-DK": "Aflys",
-                "cs-CZ": "Zrušit",
-                "ar-EG": "ألغِ",
-                "zh-CN": "取消拜访",
-                "zh-TW": "取消拜訪"
-              },
-              "move": {
-                "to": "cancelled"
-              },
-              "tone": "danger",
-              "ask": [
-                "cancel_reason"
-              ]
             }
           ]
         },
@@ -5116,8 +5090,7 @@
             "type": "enum",
             "enum": [
               "booked",
-              "done",
-              "cancelled"
+              "done"
             ],
             "default": "booked",
             "rules": {
@@ -5142,16 +5115,6 @@
                     "ar-EG": "تمت",
                     "zh-CN": "已完成",
                     "zh-TW": "已完成"
-                  },
-                  "cancelled": {
-                    "en-US": "Cancelled",
-                    "de-DE": "Abgesagt",
-                    "fr-FR": "Annulée",
-                    "da-DK": "Aflyst",
-                    "cs-CZ": "Zrušena",
-                    "ar-EG": "ملغاة",
-                    "zh-CN": "已取消",
-                    "zh-TW": "已取消"
                   }
                 }
               }
@@ -5173,10 +5136,10 @@
             "maxLength": 200,
             "nullable": true,
             "label": {
-              "en-US": "Reason for cancelling",
-              "de-DE": "Absagegrund",
-              "fr-FR": "Motif d’annulation",
-              "da-DK": "Årsag til aflysning",
+              "en-US": "Why it is cancelled",
+              "de-DE": "Grund der Absage",
+              "fr-FR": "Motif de l’annulation",
+              "da-DK": "Årsag til aflysningen",
               "cs-CZ": "Důvod zrušení",
               "ar-EG": "سبب الإلغاء",
               "zh-CN": "取消原因",
@@ -5197,6 +5160,28 @@
               "ar-EG": "ملاحظة",
               "zh-CN": "备注",
               "zh-TW": "備註"
+            }
+          },
+          {
+            "ref": "written",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "visit_notes",
+                "via": "visit_id",
+                "count": true
+              }
+            },
+            "label": {
+              "en-US": "Write-ups",
+              "de-DE": "Besuchsnotizen",
+              "fr-FR": "Comptes rendus",
+              "da-DK": "Besøgsnotater",
+              "cs-CZ": "Zápisy",
+              "ar-EG": "الملاحظات المكتوبة",
+              "zh-CN": "拜访记录数",
+              "zh-TW": "拜訪紀錄數"
             }
           },
           {
@@ -8960,6 +8945,10 @@
           {
             "column": "owner_id",
             "set": "team"
+          },
+          {
+            "column": "cover_id",
+            "set": "team"
           }
         ],
         "indexes": [
@@ -8971,6 +8960,11 @@
             "cover_id"
           ]
         ],
+        "occupies": {
+          "resource": "owner_id",
+          "day": "starts_on",
+          "until": "ends_on"
+        },
         "columns": [
           {
             "ref": "id",
@@ -18511,6 +18505,7 @@
         "table:@site_visits:read",
         "table:@site_visits:create",
         "table:@site_visits:update",
+        "table:@site_visits:delete",
         "table:@visit_notes:read",
         "table:@visit_notes:create",
         "table:@visit_notes:update",
@@ -18945,12 +18940,36 @@
           }
         },
         "site_visits": {
+          "writable": [
+            "contact_id",
+            "rep_id",
+            "starts_at",
+            "minutes",
+            "purpose",
+            "state",
+            "cancel_reason",
+            "note"
+          ],
+          "creatable": [
+            "deal_id",
+            "contact_id",
+            "rep_id",
+            "starts_at",
+            "minutes",
+            "purpose",
+            "note"
+          ],
           "rows": {
             "read": {
               "reach": "team"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "by": "rep_id"
+            },
+            "delete": {
+              "reach": "team",
+              "by": "rep_id"
             }
           }
         },
@@ -19710,15 +19729,35 @@
           }
         },
         "site_visits": {
+          "writable": [
+            "contact_id",
+            "starts_at",
+            "minutes",
+            "purpose",
+            "state",
+            "cancel_reason",
+            "note"
+          ],
+          "creatable": [
+            "deal_id",
+            "contact_id",
+            "rep_id",
+            "starts_at",
+            "minutes",
+            "purpose",
+            "note"
+          ],
           "rows": {
             "read": {
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "by": "rep_id"
             },
             "delete": {
-              "reach": "own"
+              "reach": "own",
+              "by": "rep_id"
             }
           }
         },

@@ -454,6 +454,12 @@ export function Pipeline(_props: ScreenProps) {
               </div>
             )}
           </dl>
+          {canOpen("visits", facts) && session.can("site_visits", "create") && (
+            <ScreenLink to="visits" rest={["book", looked.id]} className="crm-btn crm-btn-ghost crm-btn-40 crm-look-visit mr-gi" onGo={() => setLook(null)}>
+              <Icon name="map-pin" />
+              {t("visits.book")}
+            </ScreenLink>
+          )}
         </Dialog>
       )}
     </div>
