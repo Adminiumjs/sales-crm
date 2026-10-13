@@ -3,7 +3,7 @@
  * person is who the sample says, the staff side opens for whoever is signed
  * in and speaks their language, and a refusal is the server's.
  */
-import { expect, picture, test } from "./fixtures.ts";
+import { expect, picture, signIn, test } from "./fixtures.ts";
 
 const STAFF = "/apps/crm/staff/";
 const open = { column: "state", op: "eq", value: "open" };
@@ -28,7 +28,7 @@ test("the staff side opens for a rep, and says who is signed in", async ({ as })
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto(STAFF);
-  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Dana Whitlock");
+  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Dana Whitlock · Sales rep");
   expect(errors).toEqual([]);
   await picture(page, "1-dana-signed-in");
 });
@@ -69,10 +69,40 @@ test("signed out, the staff side is Adminium's sign-in, and nothing of the app",
   await context.close();
 });
 
-test("a deep address under the staff side is still the app", async ({ as }) => {
+test("a deep address under the staff side is still the app, and an address that names no screen says so", async ({ as }) => {
   const page = await (await as("dana")).newPage();
-  await page.goto(`${STAFF}deals/12`);
+  await page.goto(`${STAFF}nowhere/12`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("That page has moved on");
+  // The frame is still there: her name and role in the bar.
+  await expect(page.getByRole("button", { name: "Your menu" })).toContainText("Dana Whitlock");
+  await expect(page.getByRole("button", { name: "Your menu" })).toContainText("Sales rep");
+  await picture(page, "4-dana-no-such-page");
+});
+
+test("signing out from the app ends the session, and the app's address is the sign-in again", async ({ browser, stand }) => {
+  // A session of its own, so the kept cookies of the other specs stay good.
+  const context = await browser.newContext({ baseURL: stand.url });
+  await signIn(context, "leo");
+  const page = await context.newPage();
+  await page.goto(STAFF);
+  await page.getByRole("button", { name: "Your menu" }).click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/login|sign-in|signin/);
+  expect([401, 302, 303]).toContain((await context.request.get(`${STAFF}surface-config.json`, { maxRedirects: 0 })).status());
+  await context.close();
+});
+
+test("below 900 wide the menu is a drawer, and the page has no sideways scroll at 390", async ({ as }) => {
+  const context = await as("dana", { viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  await page.goto(STAFF);
   await expect(page.getByTestId("signed-in-as")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole("button", { name: "Open the menu" }).click();
+  await expect(page.getByRole("dialog", { name: "Menu" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Menu" })).toHaveCount(0);
+  await picture(page, "3-dana-390");
 });
 
 test("the app speaks the language the person chose in Adminium, right to left for Arabic", async ({ as }) => {
@@ -88,7 +118,7 @@ test("the app speaks the language the person chose in Adminium, right to left fo
     await expect(page.locator("html")).toHaveAttribute("lang", "ar-EG");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByTestId("signed-in-as")).toContainText("Priya Raman");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("يُعاد بناء Sales CRM");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("يُعاد بناء الشاشات");
     await picture(page, "2-priya-arabic-right-to-left");
   } finally {
     await context.request.patch("/api/v1/me/prefs", { data: { locale: "en_US" }, headers: { "x-adminium-csrf": config.csrfToken } });

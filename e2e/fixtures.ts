@@ -38,15 +38,11 @@ async function takeTurn(): Promise<void> {
   }
 }
 
-/** The file a person's cookies are kept in, signing them in if they have not been. `owner` is the install's owner. */
-export async function authOf(browser: Browser, person: string): Promise<string> {
+/** Sign a person in on a context of their own, waiting for a turn. For a spec that needs a session it may end (signing out); every other spec uses `as`. */
+export async function signIn(context: BrowserContext, person: string): Promise<void> {
   const state = stand();
-  const file = join(AUTH_DIR, `${person}.json`);
-  if (existsSync(file)) return file;
-  mkdirSync(AUTH_DIR, { recursive: true });
   const who = person === "owner" ? { email: state.owner.email, password: state.owner.password } : { email: state.people[person]?.email, password: state.staffPassword };
   if (who.email === undefined) throw new Error(`the sample has no "${person}"`);
-  const context = await browser.newContext({ baseURL: state.url });
   for (let tries = 0; ; tries += 1) {
     await takeTurn();
     const res = await context.request.post("/api/v1/auth/login", { data: who });
@@ -57,8 +53,18 @@ export async function authOf(browser: Browser, person: string): Promise<string> 
       continue;
     }
     expect(res.status(), `${person} signs in: ${await res.text()}`).toBe(200);
-    break;
+    return;
   }
+}
+
+/** The file a person's cookies are kept in, signing them in if they have not been. `owner` is the install's owner. */
+export async function authOf(browser: Browser, person: string): Promise<string> {
+  const state = stand();
+  const file = join(AUTH_DIR, `${person}.json`);
+  if (existsSync(file)) return file;
+  mkdirSync(AUTH_DIR, { recursive: true });
+  const context = await browser.newContext({ baseURL: state.url });
+  await signIn(context, person);
   await context.storageState({ path: file });
   await context.close();
   return file;

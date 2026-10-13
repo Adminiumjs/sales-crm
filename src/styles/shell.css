@@ -1,0 +1,560 @@
+/*
+ * The frame: the menu down the side, the bar across the top, the page.
+ * Measures are the design's (sidebar 214, bar items 36, menu lines 34).
+ * Everything positional is logical, so the frame mirrors for Arabic.
+ */
+.crm-shell {
+  display: flex;
+  min-block-size: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+}
+.crm-skip {
+  position: absolute;
+  inset-inline-start: 12px;
+  inset-block-start: -60px;
+  z-index: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 13px;
+  font-weight: 700;
+}
+.crm-skip:focus {
+  inset-block-start: 12px;
+}
+
+/* ── the side ─────────────────────────────────────────────────────────────── */
+.crm-side {
+  flex-shrink: 0;
+  inline-size: 214px;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px 0;
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+}
+.crm-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-inline: 10px;
+  padding-block-end: 18px;
+}
+.crm-brand-mark {
+  inline-size: 31px;
+  block-size: 31px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.crm-brand-words {
+  min-inline-size: 0;
+}
+.crm-brand-name {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crm-brand-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-brand-small {
+  gap: 9px;
+  padding: 0;
+}
+.crm-brand-small .crm-brand-mark {
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 9px;
+}
+.crm-brand-small .crm-brand-name {
+  font-size: 15.5px;
+}
+.crm-side-scroll {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  margin-inline: -2px;
+  padding-inline: 2px;
+  padding-block-end: 18px;
+}
+
+/* ── the menu ─────────────────────────────────────────────────────────────── */
+.crm-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.crm-menu-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  margin-block-start: 11px;
+  padding: 5px 10px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-menu-head[data-active="1"] {
+  color: var(--fg-muted);
+}
+.crm-menu-head > span {
+  flex: 1;
+  min-inline-size: 0;
+  text-align: start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crm-menu-chev {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.crm-menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.crm-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  block-size: 34px;
+  padding-inline: 11px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-align: start;
+  text-decoration: none;
+  background: transparent;
+  color: var(--fg-muted);
+}
+.crm-menu-item:hover {
+  filter: none;
+}
+.crm-menu-item[aria-current="page"] {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+}
+.crm-menu-item > svg {
+  flex-shrink: 0;
+}
+.crm-menu-item > span {
+  flex: 1;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crm-menu-head:focus-visible,
+.crm-menu-item:focus-visible,
+.crm-user-item:focus-visible,
+.crm-btn:focus-visible,
+.crm-icon-btn:focus-visible,
+.crm-user-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent);
+}
+
+/* ── the bar ──────────────────────────────────────────────────────────────── */
+.crm-main {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+}
+.crm-top {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  border-block-end: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 100;
+}
+.crm-top-end {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.crm-icon-btn {
+  inline-size: 36px;
+  block-size: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.crm-user {
+  position: relative;
+}
+.crm-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 9px 5px 5px;
+  padding-inline: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-family: inherit;
+  cursor: pointer;
+}
+.crm-user-chip[data-open="1"] {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+.crm-avatar {
+  inline-size: 30px;
+  block-size: 30px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-avatar-lg {
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.crm-user-words {
+  min-inline-size: 0;
+  text-align: start;
+}
+.crm-user-name {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crm-user-role {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 200px;
+}
+.crm-user-chev {
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+}
+.crm-scrim-clear {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+}
+.crm-user-panel {
+  position: absolute;
+  inset-block-start: 47px;
+  inset-inline-end: 0;
+  z-index: 140;
+  inline-size: 252px;
+  max-inline-size: calc(100vw - 32px);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 15px;
+  box-shadow: 0 26px 54px -22px rgba(10, 10, 25, 0.45);
+  animation: mr-drop 0.13s ease;
+  overflow: hidden;
+}
+.crm-user-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 13px 13px;
+  border-block-end: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-user-card .crm-user-name {
+  font-size: 13.5px;
+  letter-spacing: -0.025em;
+}
+.crm-user-mail {
+  display: block;
+  margin-block-start: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+.crm-user-items {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+.crm-user-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  inline-size: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-user-item > span {
+  flex: 1;
+}
+.crm-user-out {
+  color: var(--danger);
+}
+
+/* ── the page ─────────────────────────────────────────────────────────────── */
+.crm-page {
+  flex: 1;
+  min-inline-size: 0;
+  padding-block-end: 80px;
+  outline: none;
+}
+.crm-plain {
+  max-inline-size: 560px;
+  margin-inline: auto;
+  padding: 96px 26px 26px;
+  text-align: center;
+}
+.crm-plain-icon {
+  display: inline-flex;
+  inline-size: 58px;
+  block-size: 58px;
+  border-radius: 18px;
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+  align-items: center;
+  justify-content: center;
+}
+.crm-plain-address {
+  margin-block-start: 18px;
+  min-block-size: 1em;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+  overflow-wrap: anywhere;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+.crm-plain h1 {
+  margin: 10px 0 0;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.crm-plain p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-plain-who {
+  margin-block-start: 6px;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-plain-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-block-start: 24px;
+}
+.crm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  block-size: 42px;
+  padding-inline: 17px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.crm-btn-primary {
+  border: none;
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.crm-btn-ghost {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg);
+}
+
+/* ── the drawer, below 900 wide ───────────────────────────────────────────── */
+.crm-drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 510;
+  background: rgba(10, 10, 15, 0.55);
+  backdrop-filter: blur(4px);
+  animation: mr-scrim 0.14s ease;
+}
+.crm-drawer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: min(302px, 86%);
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  animation: mr-sheet 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+[dir="rtl"] .crm-drawer {
+  animation-name: crm-sheet-rtl;
+}
+@keyframes crm-sheet-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(102%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.crm-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-end: 16px;
+}
+.crm-drawer-scroll {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  margin-inline: -4px;
+  padding-inline: 4px;
+}
+.crm-drawer .crm-menu,
+.crm-drawer .crm-menu-items {
+  gap: 2px;
+}
+.crm-drawer .crm-menu-item {
+  block-size: 44px;
+}
+.crm-drawer-foot {
+  margin-block-start: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-block-start: 14px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-drawer-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 9px;
+}
+.crm-drawer-foot .crm-user-item {
+  min-block-size: 44px;
+}
+@media (max-width: 899px) {
+  .crm-top {
+    padding-inline: 16px;
+  }
+  .crm-plain {
+    padding-block-start: 56px;
+    padding-inline: 16px;
+  }
+  .crm-icon-btn {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crm-drawer,
+  .crm-drawer-scrim,
+  .crm-user-panel {
+    animation: none;
+  }
+}
+
+/* Hover and press, as the design's `mr-nav`, `mr-row` and `mr-gi`. */
+.crm-menu-item,
+.crm-menu-head,
+.crm-user-item,
+.crm-icon-btn,
+.crm-user-chip {
+  transition: background 0.13s ease, color 0.13s ease, border-color 0.13s ease, transform 0.1s ease;
+}
+.crm-menu-item:hover,
+.crm-menu-head:hover,
+.crm-user-item:hover,
+.crm-icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+.crm-user-out:hover {
+  color: var(--danger);
+}
+.crm-icon-btn:active,
+.crm-user-chip:active {
+  transform: scale(0.97);
+}

@@ -5,12 +5,13 @@
  * draws the screens or says plainly why it cannot: opened outside Adminium,
  * or Adminium did not answer.
  *
- * The screens themselves arrive with the shell (the next step of the plan);
- * until then the signed-in page says who is signed in and that the screens
- * are being rebuilt.
+ * Once a session is open everything is drawn inside the frame (`shell/Shell.tsx`):
+ * the person's menu, the bar, and the page their address names.
  */
 import { I18nProvider, useT } from "../i18n/index.tsx";
-import { SessionProvider, useBoot, useSession, type Boot } from "../session/session.tsx";
+import { SessionProvider, useBoot, type Boot } from "../session/session.tsx";
+import { NavProvider } from "../shell/nav.tsx";
+import { Shell } from "../shell/Shell.tsx";
 import type { StaffSession } from "../staffSession.ts";
 
 function Notice({ heading, body, children }: { heading: string; body: string; children?: React.ReactNode }) {
@@ -39,19 +40,6 @@ function Unreachable({ again }: { again: () => void }) {
   );
 }
 
-function Ground() {
-  const t = useT();
-  const session = useSession();
-  const name = session.config.user?.name ?? "";
-  return (
-    <Notice heading={t("base.rebuilding.heading")} body={t("base.rebuilding.body")}>
-      <p className="crm-notice-who" data-testid="signed-in-as">
-        {t("base.signedInAs", { name })}
-      </p>
-    </Notice>
-  );
-}
-
 export function Booted({ boot, again }: { boot: Boot; again: () => void }) {
   // Nothing is drawn while the config is on its way: it is one small read, and a flash of a page in the wrong language is worse.
   if (boot.state === "loading") return null;
@@ -59,7 +47,9 @@ export function Booted({ boot, again }: { boot: Boot; again: () => void }) {
     return (
       <I18nProvider person={boot.session.config.locale ?? null}>
         <SessionProvider session={boot.session}>
-          <Ground />
+          <NavProvider>
+            <Shell />
+          </NavProvider>
         </SessionProvider>
       </I18nProvider>
     );
