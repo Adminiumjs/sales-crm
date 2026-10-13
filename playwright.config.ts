@@ -19,6 +19,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   globalSetup: "./e2e/global-setup.ts",
   globalTeardown: "./e2e/global-teardown.ts",
-  use: { ...devices["Desktop Chrome"], trace: "retain-on-failure", screenshot: "only-on-failure", video: "off" },
+  // The browser is where the sample's business is; "now" is the server's, which the app reads from its config.
+  use: { ...devices["Desktop Chrome"], timezoneId: "Europe/London", locale: "en-GB", trace: "retain-on-failure", screenshot: "only-on-failure", video: "off" },
   outputDir: "./e2e/.results",
 });

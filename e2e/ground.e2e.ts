@@ -124,3 +124,14 @@ test("the app speaks the language the person chose in Adminium, right to left fo
     await context.request.patch("/api/v1/me/prefs", { data: { locale: "en_US" }, headers: { "x-adminium-csrf": config.csrfToken } });
   }
 });
+
+test("the stand's clock is the ledger's: Tuesday 28 July 2026, and Dana has three follow-ups overdue", async ({ api, data, stand }) => {
+  const dana = await api("dana");
+  const config = (await (await dana.get(`${STAFF}surface-config.json`)).json()) as { now: string; timezone?: string };
+  expect(config.now.slice(0, 10)).toBe("2026-07-28");
+  expect(stand.startedAt).toBe("2026-07-28T08:35:00.000Z");
+  // Her queue: seven steps, three of them due before the moment the sample was added.
+  const steps = (await (await dana.get(data("follow_ups", `?limit=200&where=${encodeURIComponent(JSON.stringify({ and: [{ column: "kind", op: "eq", value: "step" }, { column: "done", op: "eq", value: false }] }))}`))).json()) as { data: { due_at: string }[] };
+  expect(steps.data.length).toBe(7);
+  expect(steps.data.filter((step) => new Date(step.due_at).getTime() < new Date(stand.startedAt!).getTime()).length).toBe(3);
+});

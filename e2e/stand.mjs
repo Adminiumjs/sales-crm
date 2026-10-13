@@ -21,6 +21,8 @@
  * ADD_ONS_REPO (built: `packages/invoices`, `packages/inventory`),
  * CRM_STAND_PORT (default 4774), CRM_STAND_ENGINE (sqlite | postgres | mysql),
  * CRM_STAND_VERSION (the version the server says, while the engine is unreleased),
+ * CRM_STAND_NOW (the moment the sample is added at; the ledger's, unless set;
+ * `real` for the real clock) and CRM_STAND_TZ (the server's time zone),
  * TEST_POSTGRES_URL / TEST_MYSQL_URL for the other two engines.
  */
 import { execFileSync, spawn } from "node:child_process";
@@ -39,6 +41,9 @@ export const STATE_FILE = join(STAND_DIR, "state.json");
 /** One password for the owner and one for everybody else: test values, of this stand only. */
 const OWNER = { email: "owner@crm.test", name: "Ava Reyes", password: "stand-owner-password-1" };
 export const STAFF_PASSWORD = "stand-staff-password-2";
+/** The moment every figure of the ledger is true at: 09:35 on Tuesday 28 July 2026, where the sample's business is. */
+export const LEDGER_NOW = "2026-07-28T09:35:00+01:00";
+export const LEDGER_TZ = "Europe/London";
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const log = (line) => console.log(`[stand] ${line}`);
@@ -186,7 +191,13 @@ export async function standUp() {
   const says = JSON.parse(readFileSync(join(adminiumRepo, "apps", "server", "package.json"), "utf8")).version;
   const standIn = process.env.CRM_STAND_VERSION ?? "";
 
+  const asked = process.env.CRM_STAND_NOW ?? LEDGER_NOW;
+  const startAt = asked === "real" ? null : new Date(asked).getTime();
+  if (startAt !== null && !Number.isFinite(startAt)) throw new Error(`CRM_STAND_NOW is a moment (${LEDGER_NOW}) or "real", not ${asked}`);
+  const timeZone = process.env.CRM_STAND_TZ ?? LEDGER_TZ;
+
   const work = mkdtempSync(join(tmpdir(), "crm-stand-"));
+  const clockFile = join(work, "clock");
   const dataDir = join(work, "data");
   mkdirSync(dataDir, { recursive: true });
   const source = await sourceDatabase(engine, work, engineRequire);
@@ -203,14 +214,23 @@ export async function standUp() {
     ADMINIUM_SECRET: createHash("sha256").update(`crm-stand-${work}`).digest("hex"),
     ADMINIUM_ADD_ON_DEV_TRUST: "invoices,inventory",
     ...(standIn === "" ? {} : { CRM_STAND_VERSION: standIn }),
+    ...(startAt === null ? {} : { CRM_STAND_NOW: String(startAt), CRM_STAND_CLOCK_FILE: clockFile }),
+    TZ: timeZone,
   });
   const logFile = join(STAND_DIR, "server.log");
   const fd = openSync(logFile, "w");
-  const args = [...(standIn === "" ? [] : ["--import", pathToFileURL(join(here, "version-shim.mjs")).href]), cli, "start", "--port", String(port), "--host", "127.0.0.1"];
+  const preload = (file) => ["--import", pathToFileURL(join(here, file)).href];
+  const args = [...(standIn === "" ? [] : preload("version-shim.mjs")), ...(startAt === null ? [] : preload("clock.mjs")), cli, "start", "--port", String(port), "--host", "127.0.0.1"];
   const child = spawn(process.execPath, args, { cwd: work, detached: true, stdio: ["ignore", fd, fd], env });
   closeSync(fd);
   child.unref();
-  const state = { pid: child.pid, url, port, engine, work, dataDir, adminiumRepo, drop: source.drop, owner: OWNER, staffPassword: STAFF_PASSWORD, version: { server: says, standIn: standIn === "" ? null : standIn, manifestAsks: manifest.compatibility.minAdminiumVersion } };
+  /** Set the server's clock; `still` holds it there. */
+  const setClock = (at, still) => {
+    if (startAt === null) return;
+    writeFileSync(clockFile, still ? `${String(at)} still` : String(at));
+    process.kill(child.pid, "SIGUSR2");
+  };
+  const state = { pid: child.pid, url, port, engine, work, dataDir, adminiumRepo, drop: source.drop, owner: OWNER, staffPassword: STAFF_PASSWORD, timeZone, startedAt: startAt === null ? null : new Date(startAt).toISOString(), version: { server: says, standIn: standIn === "" ? null : standIn, manifestAsks: manifest.compatibility.minAdminiumVersion } };
   const save = () => writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), { mode: 0o600 });
   save();
   log(`server pid ${String(child.pid)} on ${url} (${engine}); log ${logFile}`);
@@ -280,11 +300,15 @@ export async function standUp() {
     const installed = await call("the install", "POST", "/api/v1/apps/install", { key: manifest.key, version: manifest.version, connectionId: state.connectionId, addOns: staged, modules: parts, maps: true });
     state.skippedRules = installed.rules?.skipped ?? [];
 
+    // The sample goes in at the ledger's moment exactly, however long the install took; the clock runs on from there after.
+    setClock(startAt, true);
+    await sleep(150);
     await call("the sample", "POST", `/api/v1/apps/${manifest.key}/sample-data`, {});
     for (const deadline = Date.now() + 300_000; ; await sleep(1000)) {
       const status = await call("the sample's state", "GET", `/api/v1/apps/${manifest.key}/sample-data`);
       if (status.loaded) {
         state.sampleRows = status.total;
+        setClock(startAt, false);
         break;
       }
       if (Date.now() > deadline) throw new Error(`the sample never loaded: ${JSON.stringify(status).slice(0, 800)}`);
