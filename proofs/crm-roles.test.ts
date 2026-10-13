@@ -907,6 +907,13 @@ for (const [dialect, reachable] of LEGS) {
       const priced = made(await post('ivy', 'price_list', { name: 'Rule check item', list_rate: 300 }));
       const quote = made(await post('dana', 'quotes', { deal_id: deal, sent_to_contact_id: contact['id'] }));
       expect(said(await post('dana', 'quote_lines', { document_id: quote, qty: 2, rate: 300, price_id: priced }))).toBe('ok');
+      // A line of a draft is taken out by the rep whose deal it is, and by nobody who does not reach the deal.
+      const del = (person: string, ref: string, key: unknown) => s.app.inject({ method: 'DELETE', url: url(ref, `/${String(key)}?confirm=true`), headers: { cookie: who(person) } });
+      const spare = made(await post('dana', 'quote_lines', { document_id: quote, qty: 1, rate: 300, price_id: priced }));
+      expect((await del('sam', 'quote_lines', spare)).statusCode, 'Sam removes a line of Dana\'s quote').toBeGreaterThanOrEqual(403);
+      expect((await del('grace', 'quote_lines', spare)).statusCode, 'Read-only removes a line').toBe(403);
+      expect((await del('dana', 'quote_lines', spare)).statusCode, 'Dana removes a line of her draft').toBeLessThan(300);
+      expect(await count('quote_lines', `document_id = ${String(quote)}`)).toBe(1);
       // Not sent yet: it shows where it will go, and says nothing of where it went.
       expect((await one(`SELECT to_email, to_name, sent_to_email, sent_to_name FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ to_email: contact['email'], to_name: contact['name'], sent_to_email: null, sent_to_name: null });
       expect(await count('outbox', `quote_id = ${String(quote)}`)).toBe(0);
@@ -918,6 +925,10 @@ for (const [dialect, reachable] of LEGS) {
       expect((await one(`SELECT sent_to_email, sent_to_name FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ sent_to_email: contact['email'], sent_to_name: contact['name'] });
       const lines = await s.rows(`SELECT quote_id, amount FROM ${s.real('deal_amount_changes')} WHERE deal_id = ${String(deal)}`);
       expect(lines.map((row) => [Number(row['quote_id']), Number(row['amount'])])).toEqual([[quote, 600]]);
+      // Sent: its lines are kept. Nobody takes one out, the rep and the CRM admin included.
+      const keptLine = Number((await one(`SELECT id FROM ${s.real('quote_lines')} WHERE document_id = ${String(quote)}`))['id']);
+      for (const person of ['dana', 'ivy', 'tessa']) expect((await del(person, 'quote_lines', keptLine)).statusCode, `${person} removes a line of a sent quote`).toBeGreaterThanOrEqual(400);
+      expect(await count('quote_lines', `document_id = ${String(quote)}`)).toBe(1);
       // Dana reads the line of her own deal; a rep whose deal it is not reads none, and nobody writes one by hand.
       const seenBy = async (person: string) => ((await get(person, 'deal_amount_changes', '?limit=200')).json() as { data: { quote_id: number }[] }).data.map((row) => Number(row.quote_id));
       expect(await seenBy('dana')).toContain(quote);

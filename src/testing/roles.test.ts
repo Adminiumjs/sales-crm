@@ -68,7 +68,9 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
   [["activities", "comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "-", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
-  [["quotes", "quote_lines"], "RCUDX", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "RX"],
+  [["quotes"], "RCUDX", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "RX"],
+  // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
+  [["quote_lines"], "RCUDX", "RCUD:team", "RCUD:own", "-", "-", "-", "-", "-", "RX"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   [["saved_views", "saved_searches"], "RCUD:own+free", "RCUD:own+free", SAVED, SAVED, "-", "-", "-", "-", "R:own+free"],

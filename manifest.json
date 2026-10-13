@@ -11307,6 +11307,7 @@
         "table:@quote_lines:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
+        "table:@quote_lines:delete",
         "table:@comments:read",
         "table:@comments:create",
         "table:@comments:update",
@@ -11631,6 +11632,9 @@
               "reach": "team"
             },
             "update": {
+              "reach": "team"
+            },
+            "delete": {
               "reach": "team"
             }
           }
@@ -12012,6 +12016,7 @@
         "table:@quote_lines:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
+        "table:@quote_lines:delete",
         "table:@comments:read",
         "table:@comments:create",
         "table:@comments:update",
@@ -12313,6 +12318,9 @@
               "reach": "own"
             },
             "update": {
+              "reach": "own"
+            },
+            "delete": {
               "reach": "own"
             }
           }
