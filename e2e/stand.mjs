@@ -136,6 +136,48 @@ function alive(pid) {
   }
 }
 
+/**
+ * THE CUSTOMER'S INBOX, stood in for. The code of a quote's link leaves
+ * Adminium only inside the e-mail to the customer: nobody on the staff reads
+ * it, by any door, and the stand sends no mail. A spec that plays the
+ * customer takes the code here, straight from the stand's own database: the
+ * second thing the stand does that the product does not.
+ */
+export async function linkCodeOf(quoteId) {
+  const state = readState();
+  if (state === null) throw new Error("the stand is not up");
+  const id = Number(quoteId);
+  if (!Number.isInteger(id)) throw new Error("a quote's number, please");
+  const engineRequire = createRequire(join(state.adminiumRepo, "apps", "server", "package.json"));
+  if (state.engine === "sqlite") {
+    const db = new (engineRequire("better-sqlite3"))(join(state.work, "source.db"), { readonly: true });
+    try {
+      return String(db.prepare("SELECT share_code FROM crm_quotes WHERE id = ?").get(id)?.share_code ?? "");
+    } finally {
+      db.close();
+    }
+  }
+  const url = new URL(state.drop.base);
+  url.pathname = `/${state.drop.name}`;
+  if (state.engine === "postgres") {
+    const { Client } = engineRequire("pg");
+    const client = new Client({ connectionString: url.toString() });
+    await client.connect();
+    try {
+      return String((await client.query("SELECT share_code FROM crm_quotes WHERE id = $1", [id])).rows[0]?.share_code ?? "");
+    } finally {
+      await client.end();
+    }
+  }
+  const connection = await engineRequire("mysql2/promise").createConnection(url.toString());
+  try {
+    const [rows] = await connection.query("SELECT share_code FROM crm_quotes WHERE id = ?", [id]);
+    return String(rows[0]?.share_code ?? "");
+  } finally {
+    await connection.end();
+  }
+}
+
 export async function standDown() {
   const state = readState();
   if (state === null) return;
@@ -218,6 +260,8 @@ export async function standUp() {
     ADMINIUM_DATA_DIR: dataDir,
     ADMINIUM_SECRET: createHash("sha256").update(`crm-stand-${work}`).digest("hex"),
     ADMINIUM_ADD_ON_DEV_TRUST: "invoices,inventory",
+    // The customer's quote page is served by this same server and calls its public API: "self" is that page's origin.
+    ADMINIUM_PUBLIC_API_ORIGINS: "self",
     ...(standIn === "" ? {} : { CRM_STAND_VERSION: standIn }),
     ...(startAt === null ? {} : { CRM_STAND_NOW: String(startAt), CRM_STAND_CLOCK_FILE: clockFile }),
     TZ: timeZone,
@@ -300,11 +344,17 @@ export async function standUp() {
     // This app, as built here: the manifest, the sample, and the staff side the browser will open.
     const files = { ...staged_.files };
     walk(surface, "staff/", files);
+    // …and the customer side, the one page a quote's link opens.
+    const customer = join(APP, "dist-surface", "crm", "customer");
+    if (!existsSync(join(customer, "index.html"))) throw new Error(`the stand needs: the customer side is built (npm run build:surface) — nothing at ${customer}`);
+    walk(customer, "customer/", files);
     const bytes = tarball(files);
     await call("the app", "POST", `/api/v1/apps/upload?expectedSha512=${encodeURIComponent(integrityOf(bytes))}`, bytes, [200, 201], { "content-type": "application/octet-stream" });
     const parts = Object.fromEntries(manifest.modules.filter((part) => part.default !== "always").map((part) => [part.id, true]));
     const installed = await call("the install", "POST", "/api/v1/apps/install", { key: manifest.key, version: manifest.version, connectionId: state.connectionId, addOns: staged, modules: parts, maps: true });
     state.skippedRules = installed.rules?.skipped ?? [];
+    // The public API is off until an owner switches it on (Studio → Settings → Public API): the customer's page needs it.
+    await call("the public API switched on", "PUT", "/api/v1/public-api", { enabled: true });
 
     // The sample goes in at the ledger's moment exactly, however long the install took; the clock runs on from there after.
     setClock(startAt, true);

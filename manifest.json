@@ -3043,7 +3043,8 @@
             "unique": true,
             "rules": {
               "code": {
-                "length": 16
+                "length": 16,
+                "hiddenFromStaff": true
               }
             },
             "label": {
@@ -3108,6 +3109,35 @@
               "ar-EG": "قُبل عبر",
               "zh-CN": "接受途径",
               "zh-TW": "接受途徑"
+            }
+          },
+          {
+            "ref": "answered_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "accepted",
+                    "declined"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Marked by",
+              "de-DE": "Markiert von",
+              "fr-FR": "Marqué par",
+              "da-DK": "Markeret af",
+              "cs-CZ": "Označil(a)",
+              "ar-EG": "سجّله",
+              "zh-CN": "标记人",
+              "zh-TW": "標記者"
             }
           },
           {
@@ -3190,8 +3220,18 @@
               }
             ],
             "sent": [
-              "accepted",
-              "declined",
+              {
+                "to": "accepted",
+                "requires": {
+                  "notPast": "valid_until"
+                }
+              },
+              {
+                "to": "declined",
+                "requires": {
+                  "notPast": "valid_until"
+                }
+              },
               "withdrawn"
             ]
           },
@@ -13175,6 +13215,7 @@
             "notes",
             "accepted_name",
             "accepted_via",
+            "answered_by_id",
             "withdrawn_at"
           ]
         },
@@ -14533,6 +14574,101 @@
       }
     }
   ],
+  "publicKeys": {
+    "quote": {}
+  },
+  "publicAccess": [
+    {
+      "table": "quotes",
+      "key": "quote",
+      "module": "quotes",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "select": [
+        "id",
+        "number",
+        "version",
+        "status",
+        "valid_until",
+        "currency",
+        "tax_name",
+        "tax_rate",
+        "subtotal",
+        "tax",
+        "total",
+        "notes",
+        "sent_at",
+        "decided_at",
+        "accepted_name"
+      ],
+      "filters": [
+        {
+          "column": "status",
+          "op": "in",
+          "value": [
+            "sent",
+            "accepted",
+            "declined"
+          ]
+        }
+      ],
+      "writable": [
+        "status",
+        "accepted_name"
+      ],
+      "writableValues": {
+        "status": [
+          "accepted",
+          "declined"
+        ]
+      },
+      "writableWhen": {
+        "status": [
+          "sent"
+        ]
+      },
+      "claim": {
+        "by": "token",
+        "column": "share_code",
+        "own": true,
+        "address": "sent_to_email"
+      },
+      "requiresWhen": {
+        "accepted_name": {
+          "status": [
+            "accepted"
+          ]
+        }
+      }
+    },
+    {
+      "table": "quote_lines",
+      "key": "quote",
+      "module": "quotes",
+      "methods": [
+        "GET"
+      ],
+      "level": "verified",
+      "select": [
+        "id",
+        "document_id",
+        "position",
+        "description",
+        "qty",
+        "rate",
+        "discount_kind",
+        "discount",
+        "currency",
+        "amount"
+      ],
+      "visibleWith": {
+        "table": "quotes",
+        "via": "document_id"
+      }
+    }
+  ],
   "outbox": {
     "table": "outbox",
     "columns": {
@@ -14575,6 +14711,9 @@
           "table": "quotes",
           "column": "status",
           "to": "sent"
+        },
+        "replyTo": {
+          "staff": "deal_id.owner_id"
         }
       }
     ]
@@ -14586,7 +14725,9 @@
       "vars": [
         "quote.number",
         "quote.sent_to_name",
-        "quote.valid_until.day_month"
+        "quote.valid_until.day_month",
+        "manage_url",
+        "quote.share_code"
       ],
       "locales": {
         "en-US": {
@@ -14602,6 +14743,19 @@
               "block": "email.text",
               "data": {
                 "text": "Hello {{quote.sent_to_name}}, here is the quote we talked about."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "You can read it and accept or decline it on this page."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Open the quote",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -14630,6 +14784,19 @@
             {
               "block": "email.text",
               "data": {
+                "text": "Auf dieser Seite können Sie es lesen und annehmen oder ablehnen."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Angebot öffnen",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
                 "text": "Es gilt bis {{quote.valid_until.day_month}}. Bei Fragen antworten Sie einfach auf diese Nachricht."
               }
             }
@@ -14648,6 +14815,19 @@
               "block": "email.text",
               "data": {
                 "text": "Bonjour {{quote.sent_to_name}}, voici le devis dont nous avons parlé."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Vous pouvez le consulter, puis l’accepter ou le refuser sur cette page."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Ouvrir le devis",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -14676,6 +14856,19 @@
             {
               "block": "email.text",
               "data": {
+                "text": "På denne side kan du læse det og acceptere eller afslå det."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Åbn tilbuddet",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
                 "text": "Det gælder til {{quote.valid_until.day_month}}. Svar på denne besked, hvis du har spørgsmål."
               }
             }
@@ -14694,6 +14887,19 @@
               "block": "email.text",
               "data": {
                 "text": "Dobrý den, {{quote.sent_to_name}}, posíláme nabídku, o které jsme mluvili."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Na této stránce si ji můžete přečíst a přijmout nebo odmítnout."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Otevřít nabídku",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -14722,6 +14928,19 @@
             {
               "block": "email.text",
               "data": {
+                "text": "يمكنك قراءته وقبوله أو رفضه من هذه الصفحة."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "افتح عرض السعر",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
                 "text": "يسري حتى {{quote.valid_until.day_month}}. ردّ على هذه الرسالة لأي سؤال."
               }
             }
@@ -14745,6 +14964,19 @@
             {
               "block": "email.text",
               "data": {
+                "text": "您可以在此页面查看报价单，并选择接受或拒绝。"
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "打开报价单",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
                 "text": "有效期至 {{quote.valid_until.day_month}}。如有疑问，请直接回复此邮件。"
               }
             }
@@ -14763,6 +14995,19 @@
               "block": "email.text",
               "data": {
                 "text": "{{quote.sent_to_name}} 您好，這是我們談過的報價單。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "您可以在此頁面查看報價單，並選擇接受或婉拒。"
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "開啟報價單",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -17723,6 +17968,14 @@
       "kind": "spa",
       "entry": "index.html",
       "placement": "external"
+    },
+    {
+      "side": "customer",
+      "kind": "spa",
+      "entry": "index.html",
+      "routes": {
+        "manage": "/"
+      }
     }
   ]
 }

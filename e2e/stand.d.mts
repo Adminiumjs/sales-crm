@@ -36,3 +36,5 @@ export const LEDGER_TZ: string;
 export function readState(): StandState | null;
 export function standUp(): Promise<StandState>;
 export function standDown(): Promise<void>;
+/** The code of a quote's own link, read from the stand's database: the customer's inbox, stood in for. */
+export function linkCodeOf(quoteId: number): Promise<string>;

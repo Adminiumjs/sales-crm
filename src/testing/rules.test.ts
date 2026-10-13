@@ -187,8 +187,9 @@ describe("the e-mails the app ships", () => {
       for (const locale of LOCALES) {
         const content = template.locales[locale]!;
         expect(content.subject.trim(), `${template.key} ${locale}`).not.toBe("");
-        expect(content.blocks.map((block) => block.block), `${template.key} ${locale}`).toEqual(["email.heading", "email.text", "email.text"]);
-        for (const block of content.blocks) expect(block.data.text.trim(), `${template.key} ${locale}`).not.toBe("");
+        // The quote's own e-mail also says where the quote can be read and answered, and carries the button that goes there.
+        expect(content.blocks.map((block) => block.block), `${template.key} ${locale}`).toEqual(template.key === "crm-quote-sent" ? ["email.heading", "email.text", "email.text", "email.button", "email.text"] : ["email.heading", "email.text", "email.text"]);
+        for (const block of content.blocks) expect(String(block.block === "email.button" ? (block.data as { label?: string }).label : block.data.text).trim(), `${template.key} ${locale}`).not.toBe("");
       }
     }
   });
@@ -213,7 +214,8 @@ describe("the outbox", () => {
   });
 
   it("has one producer: a quote that reaches \"sent\" is mailed to the address kept on it", () => {
-    expect(m.outbox.producers).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" } }]);
+    expect(m.outbox.producers).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" }, replyTo: { staff: "deal_id.owner_id" } }]);
+    // A reply to the quote's e-mail goes to the rep who owns its deal (her sign-in address, read when the mail goes).
     const quotes = m.requiredSchema.tables.find((one) => one.ref === "quotes")!;
     const column = (ref: string) => quotes.columns.find((one) => one.ref === ref)!;
     // Until it is sent, a quote shows where it will go: the contact's address as it is today, personal data like the contact's own.

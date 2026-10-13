@@ -891,7 +891,7 @@ describe("a listing a table is read through is not a way in", () => {
   });
 
   it("opens the app's own screens outside the dashboard's frame", () => {
-    expect((manifest as unknown as { frontends: { side: string; placement?: string }[] }).frontends).toMatchObject([{ side: "staff", placement: "external" }]);
+    expect((manifest as unknown as { frontends: { side: string; placement?: string }[] }).frontends).toMatchObject([{ side: "staff", placement: "external" }, { side: "customer" }]);
   });
 
   it("lets a member of a conversation add a colleague, and change no row there but their own", () => {

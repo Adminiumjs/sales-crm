@@ -125,10 +125,14 @@ export const INSTALL_FLOOR_WORD_NAMES = [
   'automations.digest',
   'automations.stepName',
   'automations.many',
+  'automations.replyTo',
+  'outbox.replyTo',
   'column.mentions',
   'column.place',
   'column.area',
   'config.board',
+  'states.notPast',
+  'publicAccess.requiresWhen',
 ] as const;
 export type ManifestWordName = (typeof INSTALL_FLOOR_WORD_NAMES)[number];
 
@@ -187,6 +191,9 @@ export const WORD_FLOORS: Readonly<Partial<Record<ManifestWordName, string>>> = 
   'automations.stepName': '0.3.28',
   // More rules than a manifest could ship before (twelve).
   'automations.many': '0.3.28',
+  // A reply that goes to the person a staff column of the row names: a rule's email, an outbox producer's message.
+  'automations.replyTo': '0.3.28',
+  'outbox.replyTo': '0.3.28',
   // A text column in which people are mentioned.
   'column.mentions': '0.3.28',
   // A json column that holds a position on the map, read and checked on every write; one that holds an area.
@@ -194,6 +201,10 @@ export const WORD_FLOORS: Readonly<Partial<Record<ManifestWordName, string>>> = 
   'column.area': '0.3.28',
   // A board whose columns an app names: the rows of a table, or the values of an enum it picks.
   'config.board': '0.3.28',
+  // A move refused once a date of its row has passed, for every writer.
+  'states.notPast': '0.3.28',
+  // A column a public write must fill only with some values of another, and may write at no other time.
+  'publicAccess.requiresWhen': '0.3.28',
 };
 
 /** Every word of `document` that needs the install floor, in document order. */
@@ -259,6 +270,7 @@ export function installFloorWords(document: unknown): ManifestWord[] {
       for (const [from, moves] of Object.entries(isDoc(table['states']['moves']) ? table['states']['moves'] : {})) {
         list(moves).forEach((move, m) => {
           if (isDoc(move) && move['planned'] === true) out.push({ word: 'states.planned', path: `${at}.states.moves.${from}.${String(m)}.planned` });
+          if (isDoc(move) && isDoc(move['requires']) && move['requires']['notPast'] !== undefined) out.push({ word: 'states.notPast', path: `${at}.states.moves.${from}.${String(m)}.requires.notPast` });
         });
       }
     }
@@ -317,6 +329,9 @@ export function installFloorWords(document: unknown): ManifestWord[] {
   // An email block sent only with, or without, a variable; an add-on's links into its app; rows found by a table-and-row pair.
   const outbox = isDoc(document['outbox']) ? document['outbox'] : {};
   if (isDoc(outbox['pages']) && outbox['pages']['app'] !== undefined) out.push({ word: 'outbox.pages.app', path: 'outbox.pages.app' });
+  list(outbox['producers']).forEach((producer, p) => {
+    if (isDoc(producer) && producer['replyTo'] !== undefined) out.push({ word: 'outbox.replyTo', path: `outbox.producers.${String(p)}.replyTo` });
+  });
   list(document['emailTemplates']).forEach((template, t) => {
     for (const [locale, content] of Object.entries(isDoc(template) && isDoc(template['locales']) ? template['locales'] : {})) {
       list(isDoc(content) ? content['blocks'] : undefined).forEach((block, b) => {
@@ -345,6 +360,7 @@ export function installFloorWords(document: unknown): ManifestWord[] {
         const action = isDoc(node['action']) ? node['action'] : {};
         const to = isDoc(action['to']) ? action['to'] : {};
         if ((action['kind'] === 'notification' && to['column'] !== undefined) || (action['kind'] === 'email' && to['kind'] === 'staff')) out.push({ word: 'automations.staffRecipient', path: `${at}.${String(n)}.action.to` });
+        if (action['kind'] === 'email' && action['replyTo'] !== undefined) out.push({ word: 'automations.replyTo', path: `${at}.${String(n)}.action.replyTo` });
         if (action['urgent'] !== undefined) out.push({ word: 'automations.urgent', path: `${at}.${String(n)}.action.urgent` });
         if (action['kind'] === 'digest') out.push({ word: 'automations.digest', path: `${at}.${String(n)}.action` });
         if (action['kind'] === 'record.create' && action['name'] !== undefined) out.push({ word: 'automations.stepName', path: `${at}.${String(n)}.action.name` });
@@ -367,6 +383,7 @@ export function installFloorWords(document: unknown): ManifestWord[] {
       out.push({ word: 'unlockBy.self', path: `publicAccess.${String(e)}.unlockBy` });
     }
     if (isDoc(entry) && entry['words'] !== undefined) out.push({ word: 'availability.words', path: `publicAccess.${String(e)}.words` });
+    if (isDoc(entry) && entry['requiresWhen'] !== undefined) out.push({ word: 'publicAccess.requiresWhen', path: `publicAccess.${String(e)}.requiresWhen` });
   });
   return out;
 }

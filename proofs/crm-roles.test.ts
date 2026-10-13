@@ -704,7 +704,8 @@ for (const [dialect, reachable] of LEGS) {
       const quote = await one(`SELECT q.id, q.share_code FROM ${s.real('quotes')} q JOIN ${s.real('deals')} d ON d.id = q.deal_id WHERE d.owner_id = '${s.id['dana']!}' ORDER BY q.id`);
       const quoteRow = async (person: string) => ((await get(person, 'quotes', `/${String(quote['id'])}`)).json() as { data: Record<string, unknown> }).data;
       t('9 the sample quote has a code', String(quote['share_code']).length >= 16, true);
-      for (const person of ['dana', 'ivy', 'tessa']) t(`9 ${person} reads the code`, (await quoteRow(person))['share_code'], quote['share_code']);
+      // The code is the customer's own link (F16): nobody on the staff reads it, the rep who owns the quote and the install's owner included.
+      for (const person of ['dana', 'ivy', 'tessa', 'owner']) t(`9 ${person} reads the quote and not its code`, ['number' in (await quoteRow(person)), 'share_code' in (await quoteRow(person))], [true, false]);
       const graces = await quoteRow('grace');
       t('9 Read-only reads the quote and not its code', ['number' in graces, 'share_code' in graces], [true, false]);
       const listed = (await get('grace', 'quotes', '?limit=200')).body;

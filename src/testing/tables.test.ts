@@ -92,7 +92,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "notes",
       "share_code",
       "accepted_name",
-      "accepted_via",
+      "accepted_via", "answered_by_id",
       "withdrawn_at",
     ],
   },

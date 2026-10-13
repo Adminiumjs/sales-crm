@@ -447,13 +447,31 @@ export function QuotePage({ id }: { id: string }) {
                           )}
                         </>
                       ) : (
-                        <p className="crm-side-note">{t("quote.send.body", { name: contact, until: f.date(noonOf(addDays(today, data.validDays))), amount: f.money(quote.subtotal) })}{has !== null && has.id !== quote.id ? ` ${t("quote.send.replaces", { number: has.number ?? "" })}` : ""}</p>
+                        <p className="crm-side-note">{t("quote.send.body", { name: contact, until: f.date(noonOf(addDays(today, data.validDays))), amount: f.money(quote.subtotal) })} {t("quote.send.link")}{has !== null && has.id !== quote.id ? ` ${t("quote.send.replaces", { number: has.number ?? "" })}` : ""}</p>
                       )}
                       {!linesOk && <p className="crm-side-check">{t("quote.linesCheck")}</p>}
                       <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" disabled={busy || !linesOk || contact === null} onClick={() => void send()}>
                         <Icon name="send" />
                         {contact === null ? t("quote.send") : t("quote.send.to", { name: contact })}
                       </button>
+                    </section>
+                  )}
+
+                  {(state === "sent" || state === "ranOut" || state === "accepted" || state === "declined") && (
+                    // The link is the customer's own: it leaves by e-mail and nobody on the staff reads it, so there is nothing here to copy.
+                    <section className="crm-side-card" data-info="customer-page">
+                      <h2>{t("quote.page.title")}</h2>
+                      <p className="crm-side-note" data-testid="quote-customer-page">
+                        {state === "sent"
+                          ? t("quote.page.open", { name: contact ?? t("quote.page.someone"), day: quote.valid_until === null ? "" : f.date(noonOf(quote.valid_until)) })
+                          : state === "ranOut"
+                            ? t("quote.page.ranOut", { day: quote.valid_until === null ? "" : f.date(noonOf(quote.valid_until)) })
+                            : state === "accepted"
+                              ? quote.accepted_via === "staff"
+                                ? t("quote.page.accepted.staff", { when: moment(quote.decided_at) })
+                                : t("quote.page.accepted", { name: quote.accepted_name ?? contact ?? t("quote.page.someone"), when: moment(quote.decided_at) })
+                              : t("quote.page.declined", { when: moment(quote.decided_at) })}
+                      </p>
                     </section>
                   )}
 

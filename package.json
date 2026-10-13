@@ -12,7 +12,8 @@
     "typecheck": "tsc -b",
     "test": "vitest run --dir src",
     "build:surface:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff tsc -b && VITE_ADMINIUM_SURFACE_SIDE=staff vite build --base=/apps/crm/staff/ --outDir dist-surface/crm/staff",
-    "build:surface": "npm run build:surface:staff",
+    "build:surface:customer": "VITE_ADMINIUM_SURFACE_SIDE=customer tsc -b && VITE_ADMINIUM_SURFACE_SIDE=customer vite build --base=/apps/crm/customer/ --outDir dist-surface/crm/customer",
+    "build:surface": "npm run build:surface:staff && npm run build:surface:customer",
     "dev:hosted": "VITE_ADMINIUM_SURFACE_SIDE=staff vite",
     "e2e": "npm run build:surface && playwright test",
     "stand:up": "npm run build:surface && node e2e/stand.mjs up",
@@ -22,7 +23,7 @@
     "stage:check": "node scripts/stage-manifest.mjs --check"
   },
   "dependencies": {
-    "@adminiumjs/public-client": "^0.2.2",
+    "@adminiumjs/public-client": "^0.3.4",
     "lucide-react": "^0.462.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
