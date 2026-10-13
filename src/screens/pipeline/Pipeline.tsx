@@ -148,8 +148,9 @@ interface BoardProps {
   locale: string;
   dir: "ltr" | "rtl";
   theme?: "light" | "dark";
-  columns: { id: string; label: string; tone?: string; count?: number; total?: string }[];
-  cards: { id: string; columnId: string; title: string; subtitle?: string; amount?: string; tag?: string; tagTone?: string; owner?: string; due?: string; meta?: string[] }[];
+  columns: { id: string; label: string; badge?: string; tone?: string; count?: number; total?: string }[];
+  cards: { id: string; columnId: string; title: string; subtitle?: string; amount?: string; tag?: string; tagTone?: string; owner?: string; due?: string; meta?: string[]; actions?: { id: string; label: string }[] }[];
+  onAction?: (cardId: string, actionId: string) => void;
   onMove?: (cardId: string, toColumnId: string, fromColumnId: string) => Promise<void | { refused: string }>;
   canMove?: boolean;
   onOpen?: (cardId: string) => void;
@@ -183,6 +184,7 @@ export function Pipeline(_props: ScreenProps) {
     [config, session],
   );
   const canWork = session.can("deals", "update");
+  const closeDeal = actions.close;
   const [look, setLook] = useState<number | null>(null);
   const data = load.state === "ready" ? load.data : null;
   // What the latest read holds, for a move's answer that arrives after it.
@@ -233,7 +235,8 @@ export function Pipeline(_props: ScreenProps) {
       emptyLabel: t("board.empty"),
       columns: data.stages.map((stage, index) => ({
         id: String(stage.id),
-        label: t("board.column", { stage: stage.label, odds: f.percent(Number(stage.odds)) }),
+        label: stage.label,
+        badge: f.percent(Number(stage.odds)),
         tone: TONES[Math.min(index, TONES.length - 1)]!,
         count: data.onBoard[String(stage.id)] ?? 0,
         total: f.money(data.counted[String(stage.id)]?.weighted ?? 0),
@@ -255,13 +258,19 @@ export function Pipeline(_props: ScreenProps) {
           ...(owner === undefined ? {} : { owner }),
           ...(deal.expected_close === null ? {} : { due: f.dayShort(noonOf(deal.expected_close)) }),
           ...(mark === null ? {} : { meta: [mark] }),
+          // The card's own menu: what can be done to the deal from here.
+          ...(canWork ? { actions: [{ id: "close", label: t("board.look.close") }] } : {}),
         };
       }),
       canMove: canWork,
       ...(canWork ? { onMove: move } : {}),
       onOpen: (cardId: string) => setLook(Number(cardId)),
+      onAction: (cardId: string, actionId: string) => {
+        const deal = held.current?.deals.find((one) => String(one.id) === cardId);
+        if (deal !== undefined && actionId === "close") closeDeal({ id: deal.id, name: deal.name, company: deal.company, amount: f.money(deal.amount) });
+      },
     };
-  }, [data, config, locale, theme, t, f, now, markOf, canWork, move]);
+  }, [data, config, locale, theme, t, f, now, markOf, canWork, move, closeDeal]);
 
   const marked = data === null || !mine ? [] : data.deals.filter((deal) => deal.owner_id !== me);
   const coveringN = marked.filter((deal) => deal.owner_id !== null && data!.covering.includes(deal.owner_id)).length;

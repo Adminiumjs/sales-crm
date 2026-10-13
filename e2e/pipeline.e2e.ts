@@ -33,6 +33,10 @@ test("Dana opens her board from the menu, with the ledger's figures", async ({ a
   const stages = await rows<Stage>(context.request, data, "stages", undefined, "&order=position");
   expect(stages.map((stage) => stage.label)).toEqual(["Discovery", "Qualified", "Proposal", "Negotiation", "Verbal"]);
   await expect(page.getByRole("group", { name: "Pipeline board" })).toBeVisible();
+  // Each column says its stage and, beside it, the stage's odds.
+  await expect(column(page, stages[0]!.id)).toContainText("Discovery");
+  await expect(column(page, stages[0]!.id)).toContainText("10%");
+  await expect(column(page, stages[4]!.id)).toContainText("90%");
   const want = [["1", "£320"], ["0", "£0"], ["2", "£24,500"], ["2", "£55,800"], ["1", "£15,120"]] as const;
   for (const [index, stage] of stages.entries()) {
     await expect(count(page, stage), stage.label).toHaveText(want[index]![0]);
@@ -176,6 +180,8 @@ test("Read-only sees the team's board and can move nothing; the server refuses h
   await expect(page.getByTestId("board-count")).toHaveText("14");
   await expect(page.getByRole("button", { name: /New deal/ })).toHaveCount(0);
   const stages = await rows<Stage>(context.request, data, "stages", undefined, "&order=position");
+  // No card has a menu for her: there is nothing she may do to a deal.
+  await expect(page.getByRole("button", { name: /^Actions for/ })).toHaveCount(0);
   // Enter on a card she cannot move opens it; there is nothing to close it with.
   await card(page, "Edit-suite chairs").focus();
   await page.keyboard.press("Enter");

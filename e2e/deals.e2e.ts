@@ -153,12 +153,17 @@ test("a deal is closed from its card: lost needs its reason, won is booked; both
   const problems = watch(page);
   await page.goto(`${STAFF}pipeline`);
   await expect(page.getByTestId("board-count")).toHaveText("8");
-
-  // LOST. The card opens a short look at the deal; Close is there.
+  // A click on a card opens a short look at the deal, with Close in it too.
   await card(page, "Spec: to lose").click();
   const look = page.getByRole("dialog", { name: "Spec: to lose" });
   await expect(look).toContainText("£4,000");
-  await look.getByRole("button", { name: "Close: won or lost…" }).click();
+  await expect(look.getByRole("button", { name: "Close: won or lost…" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(look).toHaveCount(0);
+
+  // LOST, from the card's own menu.
+  await page.getByRole("button", { name: "Actions for Spec: to lose" }).click();
+  await page.getByRole("menuitem", { name: "Close: won or lost…" }).click();
   const box = page.getByRole("dialog", { name: "Close this deal" });
   await expect(box).toContainText("Spec: to lose · Low Orbit");
   const confirm = box.getByRole("button", { name: /Mark it/ });
@@ -177,15 +182,19 @@ test("a deal is closed from its card: lost needs its reason, won is booked; both
   await expect(page.getByTestId("board-count")).toHaveText("7");
   await expect(page.getByTestId("zone-lost")).toHaveText("4 · £23,400");
 
-  // WON, by keyboard from the look.
-  await card(page, "Spec: to win").click();
-  await page.getByRole("dialog", { name: "Spec: to win" }).getByRole("button", { name: "Close: won or lost…" }).click();
+  // WON, with the keyboard alone: Tab from the card to its menu button, open it, choose Close, pick Won, confirm.
+  await card(page, "Spec: to win").focus();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Actions for Spec: to win" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitem", { name: "Close: won or lost…" })).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(box.getByRole("radio", { name: "Won" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(box).toContainText("Booked value");
   await expect(box.locator(".crm-booked-value")).toHaveText("£6,000");
-  await expect(box.getByRole("button", { name: "Mark it won" })).toBeEnabled();
-  await box.getByRole("button", { name: "Mark it won" }).click();
+  await box.getByRole("button", { name: "Mark it won" }).focus();
+  await page.keyboard.press("Enter");
   await expect(page.locator(".crm-toast")).toHaveText("Spec: to win is won. £6,000 booked.");
   await expect(page.getByTestId("zone-won")).toHaveText("3 · £34,400");
   await expect(page.getByTestId("board-count")).toHaveText("6");
