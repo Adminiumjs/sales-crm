@@ -382,6 +382,10 @@
      "country": "GB",
      "lat": 53.8008,
      "lng": -1.5491,
+     "place": {
+      "lat": 53.8008,
+      "lng": -1.5491
+     },
      "territory_id": {
       "@ref": "terr:0"
      },
@@ -422,6 +426,9 @@
      "country": "GB",
      "lat": 51.4545,
      "lng": -2.5879,
+     "place": {
+      "placeId": 2654675
+     },
      "territory_id": {
       "@ref": "terr:3"
      },
@@ -462,6 +469,9 @@
      "country": "GB",
      "lat": 53.4808,
      "lng": -2.2426,
+     "place": {
+      "placeId": 2643123
+     },
      "territory_id": {
       "@ref": "terr:0"
      },
@@ -502,6 +512,9 @@
      "country": "GB",
      "lat": 53.7676,
      "lng": -0.3274,
+     "place": {
+      "placeId": 2645425
+     },
      "territory_id": {
       "@ref": "terr:0"
      },
@@ -542,6 +555,9 @@
      "country": "GB",
      "lat": 55.8642,
      "lng": -4.2518,
+     "place": {
+      "placeId": 2648579
+     },
      "territory_id": {
       "@ref": "terr:1"
      },

@@ -111,6 +111,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "country",
       "lat",
       "lng",
+      "place",
       "territory_id",
       "website",
       "logo",

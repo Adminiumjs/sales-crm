@@ -292,6 +292,7 @@ interface Page {
   titles?: Record<string, string>;
   nav: { group: string; icon: string; order: number };
   bindings?: Record<string, string>;
+  config?: { board?: { column: string; columnsFrom?: { table: string; label: string; order?: string }; title?: string; totals?: { column: string; fn: string }[] } };
 }
 interface NavGroup {
   key: string;
@@ -303,7 +304,10 @@ const doc = manifest as unknown as { roles?: Role[]; pages: Page[]; navGroups?: 
 const roles = doc.roles ?? [];
 const tables = doc.requiredSchema.tables;
 const tableOf = new Map(tables.map((table) => [table.ref, table]));
-const pages = doc.pages;
+/** A records page per table (`pages`), and the boards beside them. */
+const everyPage = doc.pages;
+const pages = everyPage.filter((page) => page.template === "page-crud");
+const boards = everyPage.filter((page) => page.template !== "page-crud");
 const groups = doc.navGroups ?? [];
 
 function role(key: RoleKey): Role {
@@ -379,7 +383,7 @@ describe("the app brings nine roles", () => {
   });
 
   it("names only tables and pages the manifest declares", () => {
-    const pageRefs = new Set(pages.map((page) => page.ref));
+    const pageRefs = new Set(everyPage.map((page) => page.ref));
     for (const r of roles) {
       for (const grant of r.permissions) {
         const [kind, at] = grant.split(":");
@@ -540,7 +544,9 @@ describe("a personal column is shown to the roles that ring or write to the pers
 });
 
 describe("one records page per table, under the heading of its part", () => {
-  it("has a page for each table and no other page", () => {
+  it("has a records page for each table, and one board beside them", () => {
+    expect(everyPage).toHaveLength(tables.length + 1);
+    expect(boards.map((page) => page.ref)).toEqual(["crm-pipeline"]);
     expect(pages).toHaveLength(tables.length);
     expect(pages.map((page) => Object.values(page.bindings ?? {})).flat().sort()).toEqual(tables.map((table) => table.ref).sort());
     for (const page of pages) {
@@ -569,6 +575,11 @@ describe("one records page per table, under the heading of its part", () => {
       const inGroup = pages.filter((page) => page.nav.group === key).sort((a, b) => a.nav.order - b.nav.order);
       expect(inGroup.map((page) => page.bindings?.["rows"]), key).toEqual([...refs]);
     }
+    // No two entries of a heading share a place in it, the board among them.
+    for (const group of groups) {
+      const orders = everyPage.filter((page) => page.nav.group === group.key).map((page) => page.nav.order);
+      expect(new Set(orders).size, group.key).toBe(orders.length);
+    }
     expect(PARTS.flatMap(([, refs]) => refs).sort()).toEqual(tables.map((table) => table.ref).sort());
   });
 
@@ -580,10 +591,13 @@ describe("one records page per table, under the heading of its part", () => {
       for (const ref of reads) expect(viewed, `${key} reads ${ref} and has no page for it`).toContain(pageOfTable.get(ref)?.ref);
       // No page on the menu shows a table the role cannot read.
       for (const ref of viewed) {
-        const table = pages.find((page) => page.ref === ref)?.bindings?.["rows"] ?? "";
+        const table = everyPage.find((page) => page.ref === ref)?.bindings?.["rows"] ?? "";
         expect(holds(key, table, "read"), `${key} sees the page ${ref} and cannot read ${table}`).toBe(true);
       }
-      expect(viewed).toHaveLength(reads.length);
+      // A board is on the menu of exactly the roles that read its cards and its columns.
+      const boarded = boards.filter((board) => holds(key, board.bindings?.["rows"] ?? "", "read") && holds(key, board.config?.board?.columnsFrom?.table ?? "", "read"));
+      for (const board of boards) expect(viewed.includes(board.ref), `${key} and the board ${board.ref}`).toBe(boarded.includes(board));
+      expect(viewed).toHaveLength(reads.length + boarded.length);
       // A role with a right on a table always reads it: no write into a table it cannot see.
       for (const ref of MATRIX_TABLES) if (held(key, ref).length > 0) expect(holds(key, ref, "read"), `${key} writes ${ref} unread`).toBe(true);
     });
@@ -591,7 +605,41 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 70, "sales-manager": 58, rep: 58, "account-manager": 29, marketer: 7, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 64 });
+    expect(menu).toEqual({ admin: 71, "sales-manager": 59, rep: 59, "account-manager": 30, marketer: 7, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 65 });
+  });
+});
+
+describe("the pipeline is a board whose columns are the stages people keep", () => {
+  const board = boards.find((page) => page.ref === "crm-pipeline")!;
+
+  it("places a deal by its stage, heads a column with the stage's name in the stages' own order, and totals the deals' amounts", () => {
+    expect(board.template).toBe("page-board");
+    expect(board.bindings).toEqual({ rows: "deals" });
+    expect(board.config).toEqual({
+      // `only`: the pipeline is the open deals. A won or lost deal still names its stage, and is no card and in no header's figure.
+      board: { column: "stage_id", columnsFrom: { table: "stages", label: "label", order: "position" }, title: "name", totals: [{ column: "amount", fn: "sum" }], only: { state: "open" } },
+    });
+    expect((tableOf.get("deals") as unknown as { states: { column: string; initial: string } }).states).toMatchObject({ column: "state", initial: "open" });
+    // The stage is a link to the table the columns come from, and the total is the amount Adminium keeps (the newest sent quote, else what was typed).
+    const column = (table: string, ref: string) => tableOf.get(table)?.columns.find((c) => c.ref === ref) as unknown as { type: string; references?: string; rules?: { formula?: unknown } };
+    expect(column("deals", "stage_id")).toMatchObject({ type: "fk", references: "stages" });
+    expect(column("deals", "amount").rules?.formula).toEqual({ coalesce: [{ coalesce: ["quoted_amount", "typed_amount"] }, 0] });
+  });
+
+  it("sits beside the deals list, named in eight languages", () => {
+    const deals = pages.find((page) => page.ref === "crm-deals")!;
+    expect([board.nav.group, board.nav.order]).toEqual([deals.nav.group, deals.nav.order + 1]);
+    const titles: Record<string, string> = { "en-US": board.title.fallback, ...(board.titles ?? {}) };
+    expect(Object.keys(titles).sort()).toEqual([...LOCALES].sort());
+    for (const locale of LOCALES) expect((titles[locale] ?? "").trim(), locale).not.toBe("");
+  });
+
+  it("lets a column be added by whoever keeps the stages, and a card be moved by whoever may change the deal's stage", () => {
+    expect(ROLES.filter((key) => holds(key, "stages", "create"))).toEqual(["admin"]);
+    for (const key of ["sales-manager", "rep"] as const) {
+      expect(holds(key, "deals", "update"), key).toBe(true);
+      expect(limitOf(key, "deals")?.writable, key).toContain("stage_id");
+    }
   });
 });
 

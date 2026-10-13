@@ -24,6 +24,7 @@
       "sqlite"
     ]
   },
+  "maps": true,
   "requiredSchema": {
     "prefixed": true,
     "tables": [
@@ -4943,6 +4944,24 @@
             }
           },
           {
+            "ref": "place",
+            "type": "json",
+            "nullable": true,
+            "rules": {
+              "place": true
+            },
+            "label": {
+              "en-US": "Place on the map",
+              "de-DE": "Ort auf der Karte",
+              "fr-FR": "Emplacement sur la carte",
+              "da-DK": "Sted på kortet",
+              "cs-CZ": "Místo na mapě",
+              "ar-EG": "الموقع على الخريطة",
+              "zh-CN": "地图位置",
+              "zh-TW": "地圖位置"
+            }
+          },
+          {
             "ref": "territory_id",
             "type": "fk",
             "references": "territories",
@@ -5269,6 +5288,9 @@
             "ref": "area",
             "type": "json",
             "nullable": true,
+            "rules": {
+              "area": true
+            },
             "label": {
               "en-US": "Area",
               "de-DE": "Gebietsgrenzen",
@@ -16367,6 +16389,7 @@
         "table:@settings:update",
         "page:@crm-stages:view",
         "page:@crm-deals:view",
+        "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
@@ -16744,6 +16767,7 @@
         "table:@settings:update",
         "page:@crm-stages:view",
         "page:@crm-deals:view",
+        "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
@@ -17481,6 +17505,7 @@
         "table:@settings:read",
         "page:@crm-stages:view",
         "page:@crm-deals:view",
+        "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
@@ -18144,6 +18169,7 @@
         "table:@settings:read",
         "page:@crm-stages:view",
         "page:@crm-deals:view",
+        "page:@crm-pipeline:view",
         "page:@crm-follow-ups:view",
         "page:@crm-lost-reasons:view",
         "page:@crm-saved-views:view",
@@ -19158,6 +19184,7 @@
         "table:@settings:read",
         "page:@crm-stages:view",
         "page:@crm-deals:view",
+        "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
@@ -22344,6 +22371,52 @@
       "module": "selling"
     },
     {
+      "ref": "crm-pipeline",
+      "template": "page-board",
+      "title": {
+        "key": "mft.crm.page.pipeline",
+        "fallback": "Pipeline"
+      },
+      "titles": {
+        "de-DE": "Pipeline",
+        "fr-FR": "Pipeline",
+        "da-DK": "Pipeline",
+        "cs-CZ": "Pipeline",
+        "ar-EG": "مسار الصفقات",
+        "zh-CN": "商机看板",
+        "zh-TW": "案件看板"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "square-kanban",
+        "order": 3
+      },
+      "bindings": {
+        "rows": "deals"
+      },
+      "config": {
+        "board": {
+          "column": "stage_id",
+          "columnsFrom": {
+            "table": "stages",
+            "label": "label",
+            "order": "position"
+          },
+          "title": "name",
+          "totals": [
+            {
+              "column": "amount",
+              "fn": "sum"
+            }
+          ],
+          "only": {
+            "state": "open"
+          }
+        }
+      },
+      "module": "selling"
+    },
+    {
       "ref": "crm-deal-stage-changes",
       "template": "page-crud",
       "title": {
@@ -22362,7 +22435,7 @@
       "nav": {
         "group": "selling",
         "icon": "history",
-        "order": 3
+        "order": 4
       },
       "bindings": {
         "rows": "deal_stage_changes"
@@ -22388,7 +22461,7 @@
       "nav": {
         "group": "selling",
         "icon": "bell",
-        "order": 4
+        "order": 5
       },
       "bindings": {
         "rows": "follow_ups"
@@ -22414,7 +22487,7 @@
       "nav": {
         "group": "selling",
         "icon": "activity",
-        "order": 5
+        "order": 6
       },
       "bindings": {
         "rows": "activities"
@@ -22440,7 +22513,7 @@
       "nav": {
         "group": "selling",
         "icon": "circle-slash",
-        "order": 6
+        "order": 7
       },
       "bindings": {
         "rows": "lost_reasons"
@@ -22466,7 +22539,7 @@
       "nav": {
         "group": "selling",
         "icon": "file-text",
-        "order": 7
+        "order": 8
       },
       "bindings": {
         "rows": "quotes"
@@ -22492,7 +22565,7 @@
       "nav": {
         "group": "selling",
         "icon": "list",
-        "order": 8
+        "order": 9
       },
       "bindings": {
         "rows": "quote_lines"
@@ -22518,7 +22591,7 @@
       "nav": {
         "group": "selling",
         "icon": "message-square",
-        "order": 9
+        "order": 10
       },
       "bindings": {
         "rows": "comments"
@@ -22544,7 +22617,7 @@
       "nav": {
         "group": "selling",
         "icon": "bookmark",
-        "order": 10
+        "order": 11
       },
       "bindings": {
         "rows": "saved_views"
@@ -22570,7 +22643,7 @@
       "nav": {
         "group": "selling",
         "icon": "search",
-        "order": 11
+        "order": 12
       },
       "bindings": {
         "rows": "saved_searches"
@@ -22596,7 +22669,7 @@
       "nav": {
         "group": "selling",
         "icon": "alarm-clock-off",
-        "order": 12
+        "order": 13
       },
       "bindings": {
         "rows": "nudge_snoozes"
@@ -22622,7 +22695,7 @@
       "nav": {
         "group": "selling",
         "icon": "users",
-        "order": 13
+        "order": 14
       },
       "bindings": {
         "rows": "deal_members"
@@ -22648,7 +22721,7 @@
       "nav": {
         "group": "selling",
         "icon": "flag",
-        "order": 14
+        "order": 15
       },
       "bindings": {
         "rows": "deal_marks"
@@ -22674,7 +22747,7 @@
       "nav": {
         "group": "selling",
         "icon": "map-pin",
-        "order": 15
+        "order": 16
       },
       "bindings": {
         "rows": "site_visits"
@@ -22700,7 +22773,7 @@
       "nav": {
         "group": "selling",
         "icon": "notebook-pen",
-        "order": 16
+        "order": 17
       },
       "bindings": {
         "rows": "visit_notes"
@@ -22726,7 +22799,7 @@
       "nav": {
         "group": "selling",
         "icon": "list-checks",
-        "order": 17
+        "order": 18
       },
       "bindings": {
         "rows": "visit_agreed"
@@ -22752,7 +22825,7 @@
       "nav": {
         "group": "selling",
         "icon": "tags",
-        "order": 18
+        "order": 19
       },
       "bindings": {
         "rows": "price_list"
