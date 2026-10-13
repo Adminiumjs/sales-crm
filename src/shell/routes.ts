@@ -142,9 +142,9 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     ["team", [it("messages"), it("targets", "teamTargets"), it("meeting")]],
     ["settings", [it("appsettings"), it("nudges", "nudgeRules"), it("import"), it("onboarding"), it("patch")]],
   ],
+  // "Deals I am on" joins this menu with stage 2: until then he reads a deal only once it is won (ruling R6), and an open-deals board would always be empty for him.
   "account-manager": [
     ["top", [it("amhome", "home")]],
-    ["selling", [it("pipeline", "dealsIAmOn")]],
     ["customers", [it("renewals"), it("repeat"), it("referrals")]],
     ["wonWork", [it("archive", "wonDeals")]],
     ["accounts", [it("companies"), it("contacts")]],

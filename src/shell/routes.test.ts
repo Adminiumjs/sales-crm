@@ -58,7 +58,10 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
   it("calls a screen by the role's own words", () => {
     const label = (role: RoleKey, route: RouteKey) => menuFor(facts([role])).flatMap((group) => group.items).find((item) => item.route === route)?.label;
     expect([label("rep", "targets"), label("sales-manager", "targets")]).toEqual(["myTargets", "teamTargets"]);
-    expect([label("rep", "pipeline"), label("sales-manager", "pipeline"), label("account-manager", "pipeline")]).toEqual(["pipeline", "teamBoard", "dealsIAmOn"]);
+    expect([label("rep", "pipeline"), label("sales-manager", "pipeline")]).toEqual(["pipeline", "teamBoard"]);
+    // The account manager's "Deals I am on" arrives with stage 2: until then he reads a deal only once it is won, and holds "Won deals".
+    expect(MENUS["account-manager"].flatMap(([, items]) => items.map((item) => item.route))).not.toContain("pipeline");
+    expect(label("account-manager", "archive")).toBe("wonDeals");
   });
 
   it("takes a part's screens out when the part is off, and the group with them", () => {

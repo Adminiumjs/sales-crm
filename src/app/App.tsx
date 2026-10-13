@@ -9,6 +9,7 @@
  * the person's menu, the bar, and the page their address names.
  */
 import { I18nProvider, useT } from "../i18n/index.tsx";
+import { DealActionsProvider } from "../selling/actions.tsx";
 import { SessionProvider, useBoot, type Boot } from "../session/session.tsx";
 import { NavProvider } from "../shell/nav.tsx";
 import { Shell } from "../shell/Shell.tsx";
@@ -50,7 +51,9 @@ export function Booted({ boot, again }: { boot: Boot; again: () => void }) {
         <SessionProvider session={boot.session}>
           <NavProvider>
             <ToastProvider>
-              <Shell />
+              <DealActionsProvider>
+                <Shell />
+              </DealActionsProvider>
             </ToastProvider>
           </NavProvider>
         </SessionProvider>

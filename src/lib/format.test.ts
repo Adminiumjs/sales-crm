@@ -62,3 +62,33 @@ describe("the month and the week a day is in", () => {
     expect(weekOf("2026-07-27")).toEqual(["2026-07-27", "2026-08-03"]);
   });
 });
+
+describe("what a person types as an amount", () => {
+  it("is read the way their language writes a number", () => {
+    expect([formatters(LONDON).readAmount("18,000.50"), formatters(LONDON).readAmount("£ 18000"), formatters(LONDON).readAmount("0.5")]).toEqual([18000.5, 18000, 0.5]);
+    const german = formatters({ ...LONDON, locale: "de-DE", currency: "EUR" });
+    expect([german.readAmount("18.000,50"), german.readAmount("18000")]).toEqual([18000.5, 18000]);
+    expect(formatters({ ...LONDON, locale: "fr-FR" }).readAmount("18\u202f000,5")).toBe(18000.5);
+    expect(formatters({ ...LONDON, locale: "ar-EG" }).readAmount("١٨٬٠٠٠٫٥")).toBe(18000.5);
+  });
+
+  it("is nothing when it is not a number above nothing", () => {
+    const f = formatters(LONDON);
+    expect([f.readAmount(""), f.readAmount("about ten"), f.readAmount("0"), f.readAmount("1.2.3")]).toEqual([null, null, null, null]);
+  });
+});
+
+describe("a day and a time where the business is, as a moment", () => {
+  it("is that clock's moment in summer and in winter, and on a day the clocks change", () => {
+    const f = formatters(LONDON);
+    expect([f.at("2026-07-30", "10:00").toISOString(), f.at("2026-12-01", "10:00").toISOString()]).toEqual(["2026-07-30T09:00:00.000Z", "2026-12-01T10:00:00.000Z"]);
+    // The clocks go back on 25 October 2026: 10:00 that day is 10:00 UTC.
+    expect(f.at("2026-10-25", "10:00").toISOString()).toBe("2026-10-25T10:00:00.000Z");
+    expect(formatters({ ...LONDON, timeZone: "Asia/Kolkata" }).at("2026-07-30", "10:00").toISOString()).toBe("2026-07-30T04:30:00.000Z");
+  });
+
+  it("writes a day with its year, and a share as a percentage", () => {
+    const f = formatters(LONDON);
+    expect([f.date(at("2026-05-12T11:00:00Z")), f.percent(3 / 8)]).toEqual(["12 May 2026", "38%"]);
+  });
+});

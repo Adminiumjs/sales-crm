@@ -39,6 +39,18 @@ export interface Formatters {
   dayDiff: (from: Date, to: Date) => number;
   /** The hour of the day where the business is, 0–23. */
   hour: (at: Date) => number;
+  /** `12 May 2026`: a day with its year, short enough for a list. */
+  date: (at: Date) => string;
+  /** `38%`, from a share between 0 and 1. */
+  percent: (share: number) => string;
+  /**
+   * What a person typed as an amount, read the way their language writes one
+   * (`18,000.50` in English, `18.000,50` in German, Arabic digits too). Null
+   * when it is not a number above nothing.
+   */
+  readAmount: (typed: string) => number | null;
+  /** The moment a clock where the business is shows this day and time: `at("2026-07-30", "10:00")`. */
+  at: (dayKey: string, time: string) => Date;
 }
 
 const amount = (value: unknown): number => {
@@ -78,6 +90,44 @@ export function formatters(facts: FormatFacts): Formatters {
     }
   })();
   const plain = new Intl.NumberFormat(facts.locale);
+  const date = make({ day: "numeric", month: "short", year: "numeric" });
+  const share = new Intl.NumberFormat(facts.locale, { style: "percent", maximumFractionDigits: 0 });
+  // How this language writes a number: its decimal mark, and its ten digits.
+  const parts = new Intl.NumberFormat(facts.locale).formatToParts(1234567.5);
+  const decimal = parts.find((part) => part.type === "decimal")?.value ?? ".";
+  const digits = [...new Intl.NumberFormat(facts.locale, { useGrouping: false }).format(9876543210)].reverse();
+  const readAmount = (typed: string): number | null => {
+    let text = "";
+    for (const letter of typed.trim()) {
+      const digit = digits.indexOf(letter);
+      if (digit !== -1) text += String(digit);
+      else if (letter >= "0" && letter <= "9") text += letter;
+      else if (letter === decimal || (letter === "." && !typed.includes(decimal))) text += ".";
+      // Anything else (a grouping mark, a space, a currency sign) is how the number was dressed, not the number.
+    }
+    if (text === "" || text.split(".").length > 2) return null;
+    const value = Math.round(Number(text) * 100) / 100;
+    return Number.isFinite(value) && value > 0 ? value : null;
+  };
+  // The minutes this zone is ahead of UTC at a moment (a clock change moves it).
+  const wall = (() => {
+    try {
+      return new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23", ...zone });
+    } catch {
+      return new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    }
+  })();
+  const ahead = (moment: Date): number => {
+    const got = Object.fromEntries(wall.formatToParts(moment).map((part) => [part.type, part.value]));
+    const shown = Date.UTC(Number(got["year"]), Number(got["month"]) - 1, Number(got["day"]), Number(got["hour"]), Number(got["minute"]));
+    return Math.round((shown - moment.getTime()) / 60_000);
+  };
+  const at = (day: string, clock: string): Date => {
+    const naive = Date.parse(`${day}T${clock}:00Z`);
+    // Twice: the first guess may fall on the other side of a clock change.
+    const first = new Date(naive - ahead(new Date(naive)) * 60_000);
+    return new Date(naive - ahead(first) * 60_000);
+  };
   const dayKey = (at: Date): string => key.format(at);
   const money = (value: unknown): string => {
     const v = amount(value);
@@ -105,6 +155,10 @@ export function formatters(facts: FormatFacts): Formatters {
     dayKey,
     dayDiff: (from, to) => Math.round((Date.parse(`${dayKey(to)}T00:00:00Z`) - Date.parse(`${dayKey(from)}T00:00:00Z`)) / 86_400_000),
     hour: (at) => Number(hour.format(at)),
+    date: (moment) => date.format(moment),
+    percent: (value) => share.format(value),
+    readAmount,
+    at,
   };
 }
 

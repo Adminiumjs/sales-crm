@@ -21,8 +21,8 @@ test("the stand holds the sample as the ledger counts it, for each person as the
 });
 
 test("the staff side opens for whoever is signed in; somebody none of whose screens is built yet is told so", async ({ as }) => {
-  // The account manager's screens come later in the plan: until the first lands he gets the frame and one plain page.
-  const page = await (await as("hugo")).newPage();
+  // The front desk's screens come later in the plan: until the first lands she gets the frame and one plain page.
+  const page = await (await as("corin")).newPage();
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
   page.on("console", (message) => {
@@ -30,9 +30,9 @@ test("the staff side opens for whoever is signed in; somebody none of whose scre
   });
   await page.goto(STAFF);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("The screens are being rebuilt");
-  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Hugo Brandt · Account manager");
+  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Corin Hale · Front desk");
   expect(errors).toEqual([]);
-  await picture(page, "1-hugo-no-screen-yet");
+  await picture(page, "1-corin-no-screen-yet");
 });
 
 test("the config says who they are, what they may do and which parts are on; nothing of anybody else", async ({ api, stand }) => {

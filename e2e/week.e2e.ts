@@ -103,7 +103,9 @@ test("a card is moved to another day by its Move button with the keyboard, and b
 test("the sales manager sees her team's week, says whose each card is, and narrows it to one person", async ({ as }) => {
   const page = await (await as("ivy")).newPage();
   await page.goto(STAFF);
-  // Her own home is not built yet: she lands on the first screen she has.
+  // Her own home is not built yet: she lands on the first screen her menu holds, the team's board, and opens This week from the menu.
+  await expect(page).toHaveURL(/\/pipeline$/);
+  await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "This week" }).click();
   await expect(page).toHaveURL(/\/week$/);
   await expect(page.getByTestId("week-count")).toHaveText("7");
   await expect.poll(() => facts(page)).toEqual(LEDGER);
