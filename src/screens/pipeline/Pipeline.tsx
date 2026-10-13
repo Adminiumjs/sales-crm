@@ -26,7 +26,7 @@ import { useDealActions } from "../../selling/actions.tsx";
 import { closedFigures, scopeOf, yearOf, type Closed } from "../../selling/figures.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
-import { ScreenLink } from "../../shell/nav.tsx";
+import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import { canOpen, type MenuFacts, type PartId } from "../../shell/routes.ts";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
@@ -164,6 +164,7 @@ export function Pipeline(props: ScreenProps) {
   const { locale } = useI18n();
   const session = useSession();
   const toasts = useToasts();
+  const nav = useNav();
   const actions = useDealActions();
   const config = session.config;
   const f = useMemo(() => formatters({ locale, currency: config.currency, timeZone: config.timezone ?? config.serverTimezone }), [locale, config]);
@@ -185,6 +186,7 @@ export function Pipeline(props: ScreenProps) {
     [config, session],
   );
   const canWork = session.can("deals", "update");
+  const canHand = canWork && canOpen("handover", facts);
   const closeDeal = actions.close;
   const [look, setLook] = useState<number | null>(null);
   const data = load.state === "ready" ? load.data : null;
@@ -260,7 +262,15 @@ export function Pipeline(props: ScreenProps) {
           ...(deal.expected_close === null ? {} : { due: f.dayShort(noonOf(deal.expected_close)) }),
           ...(mark === null ? {} : { meta: [mark] }),
           // The card's own menu: what can be done to the deal from here.
-          ...(canWork ? { actions: [{ id: "close", label: t("board.look.close") }] } : {}),
+          ...(canWork
+            ? {
+                actions: [
+                  { id: "close", label: t("board.look.close") },
+                  { id: "open", label: t("room.open") },
+                  ...(canHand && (!mine || deal.owner_id === me) ? [{ id: "handover", label: t("room.handOver") }] : []),
+                ],
+              }
+            : {}),
         };
       }),
       canMove: canWork,
@@ -268,10 +278,13 @@ export function Pipeline(props: ScreenProps) {
       onOpen: (cardId: string) => setLook(Number(cardId)),
       onAction: (cardId: string, actionId: string) => {
         const deal = held.current?.deals.find((one) => String(one.id) === cardId);
-        if (deal !== undefined && actionId === "close") closeDeal({ id: deal.id, name: deal.name, company: deal.company, amount: f.money(deal.amount) });
+        if (deal === undefined) return;
+        if (actionId === "close") closeDeal({ id: deal.id, name: deal.name, company: deal.company, amount: f.money(deal.amount) });
+        else if (actionId === "open") nav.go("deal", deal.id);
+        else if (actionId === "handover") nav.go("handover", deal.id);
       },
     };
-  }, [data, config, locale, theme, t, f, now, markOf, canWork, move, closeDeal]);
+  }, [data, config, locale, theme, t, f, now, markOf, canWork, canHand, mine, me, nav, move, closeDeal]);
 
   const marked = data === null || !mine ? [] : data.deals.filter((deal) => deal.owner_id !== me);
   const coveringN = marked.filter((deal) => deal.owner_id !== null && data!.covering.includes(deal.owner_id)).length;
@@ -412,6 +425,12 @@ export function Pipeline(props: ScreenProps) {
               <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" onClick={() => setLook(null)}>
                 {t("ui.close")}
               </button>
+              {canOpen("deal", facts) && (
+                <ScreenLink to="deal" rest={[looked.id]} className="crm-btn crm-btn-ghost crm-btn-44 mr-gi">
+                  <Icon name="panel-right-open" />
+                  {t("room.open")}
+                </ScreenLink>
+              )}
               {canWork && (
                 <button
                   type="button"

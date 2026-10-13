@@ -19,6 +19,7 @@ import { useI18n, useT } from "../../i18n/index.tsx";
 import { formatters, monthOf, weekOf, type Formatters } from "../../lib/format.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
+import { DealLink } from "../../selling/DealLink.tsx";
 import { ScreenLink } from "../../shell/nav.tsx";
 import { canOpen, type MenuFacts, type PartId } from "../../shell/routes.ts";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
@@ -290,7 +291,9 @@ export function Today(_props: ScreenProps) {
                             </button>
                             <div className="crm-step-main">
                               <div className="crm-step-title">
-                                <span className="crm-step-deal">{step.deal}</span>
+                                <DealLink id={step.deal_id} className="crm-step-deal">
+                                  {step.deal}
+                                </DealLink>
                                 {step.company !== null && (
                                   <span className="crm-chip">
                                     <span className="crm-dot" data-tone="accent" />

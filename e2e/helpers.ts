@@ -62,3 +62,8 @@ export async function inArabic(person: APIRequestContext, run: () => Promise<voi
     await person.patch("/api/v1/me/prefs", { data: { locale: "en_US" }, headers });
   }
 }
+
+/**
+ * Let a person's minute run out. The server counts each person's requests by the minute (300), every sample person is signed in once and reused, and a run of heavy screens as one person can spend the lot: the next spec as that person would then be made to wait by the server, past its own patience. Called between such runs, not inside one.
+ */
+export const minuteOut = (): Promise<void> => new Promise((done) => setTimeout(done, 45_000));

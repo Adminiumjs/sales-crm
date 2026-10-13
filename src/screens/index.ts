@@ -4,6 +4,8 @@
  */
 import { register } from "../shell/screens.tsx";
 import { Closed } from "./closed/Closed.tsx";
+import { DealScreen } from "./deal/Deal.tsx";
+import { Handover } from "./deal/Handover.tsx";
 import { Pipeline } from "./pipeline/Pipeline.tsx";
 import { Approvals } from "./quotes/Approvals.tsx";
 import { Quotes } from "./quotes/Quotes.tsx";
@@ -28,3 +30,5 @@ register("health", Health);
 register("lost", Lost);
 register("feed", Feed);
 register("nudges", Nudges);
+register("deal", DealScreen);
+register("handover", Handover);

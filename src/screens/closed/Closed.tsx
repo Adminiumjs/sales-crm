@@ -15,6 +15,7 @@ import { useI18n, useT } from "../../i18n/index.tsx";
 import { formatters, noonOf } from "../../lib/format.ts";
 import { useDealActions } from "../../selling/actions.tsx";
 import { closedFigures, scopeOf, winRate, yearOf, type Closed as Figures, type Scope } from "../../selling/figures.ts";
+import { DealLink } from "../../selling/DealLink.tsx";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
@@ -209,7 +210,9 @@ export function Closed(_props: ScreenProps) {
                     </span>
                     <div className="crm-closed-main">
                       <div className="crm-step-title">
-                        <span className="crm-closed-name">{row.name}</span>
+                        <DealLink id={row.id} className="crm-closed-name">
+                          {row.name}
+                        </DealLink>
                         {row.company !== null && (
                           <span className="crm-chip">
                             <span className="crm-dot" data-tone="accent" />

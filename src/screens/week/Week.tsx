@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } fro
 import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { addDays, formatters, noonOf, weekOf } from "../../lib/format.ts";
+import { DealLink } from "../../selling/DealLink.tsx";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink } from "../../shell/nav.tsx";
@@ -311,7 +312,9 @@ export function Week(_props: ScreenProps) {
                               <button type="button" className="crm-card-tick mr-gi" aria-label={t("week.done", { deal: step.deal ?? "" })} disabled={!canWrite || busy !== null} onClick={() => void done(step)}>
                                 <Icon name="check" size={14} />
                               </button>
-                              <span className="crm-card-deal">{step.deal}</span>
+                              <DealLink id={step.deal_id} className="crm-card-deal">
+                                {step.deal}
+                              </DealLink>
                             </div>
                             <div className="crm-card-text">{step.text}</div>
                             <div className="crm-card-foot">

@@ -1,0 +1,992 @@
+/*
+ * The Deal room, a deal's comments, and handing a deal over.
+ * Logical properties throughout: the same rules draw Arabic right to left.
+ */
+
+/* ── the head: name, who, amount, stage steps, the bar ───────────────────── */
+.crm-room-head {
+  margin-block-start: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-room-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.crm-room-title {
+  flex: 1 1 240px;
+  min-inline-size: 0;
+}
+.crm-room-title h1 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-room-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+}
+.crm-room-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 5px;
+  padding-inline: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg);
+  min-inline-size: 0;
+}
+.crm-room-pill[data-quiet="1"] {
+  color: var(--fg-muted);
+}
+.crm-room-amount {
+  text-align: end;
+  min-inline-size: 0;
+}
+.crm-room-amount-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-room-amount-source {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.crm-room-amount-value {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.crm-room-amount-plain,
+.crm-room-amount-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-block-start: 6px;
+  padding: 5px 9px;
+}
+.crm-room-amount-edit {
+  border-radius: 11px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  font-family: inherit;
+}
+.crm-room-amount-edit:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.crm-room-amount-edit:focus-visible,
+.crm-room-step:focus-visible,
+.crm-room-add:focus-visible,
+.crm-room-pool-item:focus-visible,
+.crm-hand-deal:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent);
+}
+.crm-room-amount-form {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-block-start: 6px;
+}
+.crm-room-amount-form .crm-input {
+  inline-size: 140px;
+  block-size: 38px;
+  font-size: 15px;
+  text-align: end;
+}
+.crm-room-weighted {
+  margin-block-start: 4px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-room-closed-note {
+  color: var(--fg-muted);
+}
+
+.crm-room-steps {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-room-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-block: 9px;
+  padding-inline: 9px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+  font-family: inherit;
+  text-align: start;
+}
+button.crm-room-step {
+  cursor: pointer;
+}
+button.crm-room-step:disabled {
+  cursor: progress;
+}
+.crm-room-step[data-past="1"] {
+  color: var(--fg);
+}
+.crm-room-step[data-on="1"] {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.crm-room-step-no {
+  display: flex;
+  inline-size: 24px;
+  block-size: 24px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+}
+.crm-room-step[data-past="1"] .crm-room-step-no {
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.crm-room-step[data-on="1"] .crm-room-step-no {
+  background: color-mix(in srgb, var(--accent-fg) 18%, transparent);
+  color: inherit;
+}
+.crm-room-step-words {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-inline-size: 0;
+}
+.crm-room-step-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.crm-room-step-odds {
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.crm-room-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-start: 14px;
+  padding-block-start: 13px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-room-close-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-room-bar-end {
+  margin-inline-start: auto;
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+/* ── the body: the timeline and composer, the rail ───────────────────────── */
+.crm-room-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 336px;
+  gap: 16px;
+  margin-block-start: 16px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .crm-room-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crm-room-main,
+.crm-room-side {
+  min-inline-size: 0;
+}
+.crm-room-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.crm-room-activity {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-room-activity-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 16px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-room-activity-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-room-activity-order {
+  margin-inline-start: auto;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-room-activity > .crm-room-quiet,
+.crm-room-activity > .crm-skeleton {
+  margin: 0;
+  padding: 16px;
+}
+.crm-room-lines {
+  margin: 0;
+  padding-block: 2px 12px;
+  padding-inline: 16px;
+  list-style: none;
+}
+.crm-room-line {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-block: 13px;
+  padding-inline-start: 44px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-room-line:last-child {
+  border-block-end: none;
+}
+.crm-room-line-mark {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 16px;
+  inline-size: 31px;
+  block-size: 31px;
+  border-radius: 10px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crm-room-line-mark[data-tone="accent"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-room-line-mark[data-tone="info"] {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.crm-room-line-mark[data-tone="warn"] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.crm-room-line-body {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-room-line-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-room-line-label {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.crm-room-line-dot {
+  inline-size: 4px;
+  block-size: 4px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.crm-room-line-who {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-room-line-when {
+  margin-inline-start: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+.crm-room-line p,
+.crm-hand-last p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-room-composer {
+  margin-block-start: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-room-composer .crm-textarea {
+  margin-block-start: 11px;
+}
+.crm-room-kind,
+.crm-hand-taker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+}
+.crm-room-kind[data-on="1"],
+.crm-hand-taker[data-on="1"] {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.crm-room-composer-foot {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  margin-block-start: 11px;
+}
+.crm-room-next-when {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-room-log {
+  margin-inline-start: auto;
+}
+
+/* ── the rail's cards ────────────────────────────────────────────────────── */
+.crm-room-facts > div {
+  align-items: baseline;
+  padding-block-end: 9px;
+  border-block-end: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.crm-room-facts dd[data-tone="accent"] {
+  color: var(--accent);
+}
+.crm-room-facts dd[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-room-facts dd[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-room-scope,
+.crm-room-note,
+.crm-room-quiet {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--fg-subtle);
+  text-wrap: pretty;
+}
+.crm-room-quiet {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-room-sub {
+  margin: 15px 0 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-room-people,
+.crm-room-contacts,
+.crm-hand-last,
+.crm-hand-steps,
+.crm-hand-moved,
+.crm-cmt-threads,
+.crm-cmt-replies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-room-people {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-block-start: 10px;
+}
+.crm-room-person {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-inline-size: 0;
+}
+.crm-room-person-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-room-person-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-room-person-sub {
+  display: block;
+  margin-block-start: 2px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-room-mark {
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: 10.5px;
+  padding: 2px 8px;
+}
+.crm-room-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  inline-size: 100%;
+  min-block-size: 36px;
+  margin-block-start: 13px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crm-room-pool {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-block-size: 244px;
+  overflow-y: auto;
+  margin-block-start: 8px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.crm-room-pool-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  padding: 7px 9px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-room-pool-item:hover {
+  background: var(--surface-2);
+}
+.crm-room-pool-note {
+  margin-block: 4px 2px;
+  margin-inline: 4px;
+  padding-block-start: 7px;
+  border-block-start: 1px solid var(--border);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+.crm-room-pool .crm-room-quiet {
+  margin: 4px;
+}
+.crm-room-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.crm-room-contact {
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-room-contact-ways {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-block-start: 11px;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.crm-room-contact-ways span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+}
+.crm-room-contact-ways bdi {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crm-room-company-name,
+.crm-hand-brief-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.crm-room-quote-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crm-room-quote-head h2 {
+  margin: 0;
+}
+.crm-room-quote-head .crm-room-quiet {
+  margin: 0;
+  margin-inline-start: auto;
+}
+.crm-room-quote-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-start: 11px;
+}
+.crm-room-quote-doc {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.crm-room-quote-total {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-side-card .crm-btn-wide {
+  inline-size: 100%;
+  justify-content: center;
+  margin-block-start: 12px;
+}
+.crm-room-cover {
+  background: var(--surface-2);
+  box-shadow: none;
+}
+.crm-room-cover-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--fg-subtle);
+}
+.crm-room-cover-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.crm-room-cover-when {
+  margin-inline-start: auto;
+  font-size: 11px;
+}
+.crm-room-cover-note {
+  margin: 9px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.crm-room-cover .crm-btn {
+  margin-block-start: 10px;
+}
+.crm-room-cover-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── comments ────────────────────────────────────────────────────────────── */
+.crm-cmt {
+  max-inline-size: 900px;
+}
+.crm-cmt-intro {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+.crm-cmt-settled-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 38px;
+  border-radius: 10px;
+}
+.crm-cmt-threads {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-block-start: 18px;
+}
+.crm-cmt-thread {
+  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-cmt-thread[data-settled="1"] {
+  border-color: var(--border);
+}
+.crm-cmt-thread[data-settled="1"] .crm-cmt-text {
+  color: var(--fg-muted);
+}
+.crm-cmt-first,
+.crm-cmt-reply {
+  display: flex;
+  gap: 12px;
+  padding: 15px 16px;
+}
+.crm-cmt-replies {
+  padding-inline-start: 46px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-cmt-reply {
+  padding-block: 12px;
+}
+.crm-cmt-reply + .crm-cmt-reply {
+  border-block-start: 1px solid var(--border);
+}
+.crm-cmt-body {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-cmt-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-cmt-who {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-cmt-settle {
+  margin-inline-start: auto;
+}
+.crm-cmt-text {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.68;
+  color: var(--fg);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.crm-cmt-mention {
+  padding: 1px 6px;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.crm-cmt-answer {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px 16px;
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-cmt-box {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-cmt-new {
+  margin-block-start: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-cmt-new .crm-label {
+  margin-block-start: 0;
+}
+.crm-cmt-quiet {
+  margin-block-start: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--warn-soft);
+}
+.crm-cmt-quiet p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+.crm-cmt-quiet p + p {
+  margin-block-start: 6px;
+}
+.crm-cmt-quiet svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+  color: var(--warn);
+}
+.crm-cmt-new-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-start: 11px;
+}
+.crm-cmt-new-foot .crm-room-quiet {
+  margin: 0;
+}
+
+/* ── handing a deal over ─────────────────────────────────────────────────── */
+.crm-hand-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-block-start: 24px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .crm-hand-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crm-hand-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-inline-size: 0;
+}
+.crm-hand-form h2 label {
+  font: inherit;
+  letter-spacing: inherit;
+}
+.crm-hand-deals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-block-size: 380px;
+  overflow-y: auto;
+  padding: 3px;
+}
+.crm-hand-deal {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  inline-size: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-hand-deal[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.crm-hand-deal[aria-checked="true"] .crm-why-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: inset 0 0 0 3px var(--surface);
+}
+.crm-hand-deal-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-hand-deal-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-hand-deal-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+.crm-hand-form .crm-switch {
+  margin-block-start: 10px;
+}
+.crm-hand-brief .crm-room-facts {
+  margin-block-start: 14px;
+}
+.crm-hand-last li,
+.crm-hand-steps li {
+  padding-block: 10px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-hand-last li:last-child,
+.crm-hand-steps li:last-child {
+  border-block-end: none;
+}
+.crm-hand-steps li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+.crm-hand-steps li .crm-mono {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+.crm-hand-steps li[data-late="1"] .crm-mono {
+  color: var(--danger);
+}
+.crm-hand-done {
+  margin-block-start: 24px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-hand-done-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.crm-hand-done-head > div {
+  flex: 1 1 220px;
+  min-inline-size: 0;
+}
+.crm-hand-done-head .crm-room-quiet {
+  margin: 3px 0 0;
+}
+.crm-hand-done-icon {
+  display: flex;
+  inline-size: 40px;
+  block-size: 40px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  align-items: center;
+  justify-content: center;
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.crm-hand-done-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.crm-hand-moved {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-block: 16px;
+}
+.crm-hand-moved li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.crm-hand-moved svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+}
+
+/* ── a link to a deal from a row of another screen ───────────────────────── */
+.crm-deal-link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 6px;
+}
+.crm-deal-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.crm-deal-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent);
+}
+
+@media (max-width: 560px) {
+  .crm-room-amount {
+    flex: 1 1 100%;
+    text-align: start;
+  }
+  .crm-room-amount-form {
+    justify-content: flex-start;
+  }
+  .crm-room-bar-end {
+    margin-inline-start: 0;
+  }
+  .crm-room-line-when {
+    margin-inline-start: 0;
+    flex-basis: 100%;
+  }
+  .crm-cmt-replies {
+    padding-inline-start: 16px;
+  }
+  .crm-cmt-answer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

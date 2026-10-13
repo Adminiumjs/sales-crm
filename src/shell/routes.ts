@@ -37,7 +37,9 @@ export type RouteKey =
   | "messages" | "targets" | "meeting" | "notes" | "coaching" | "onboarding" | "patch"
   | "appsettings"
   | "amhome" | "mkhome"
-  | "stock" | "suppliers";
+  | "stock" | "suppliers"
+  /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
+  | "deal";
 
 export interface RouteDef {
   /** The address under the app's base: `today`, `pipeline`. A record page adds to it: `pipeline/12`. */
@@ -89,7 +91,11 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   mkhome: { path: "home", part: "inbox", reads: ["enquiries", "shows"], icon: "house" },
   stock: { path: "stock", part: "supply", reads: ["deal_stock_needs"], icon: "package" },
   suppliers: { path: "suppliers", part: "supply", reads: ["deal_stock_needs"], icon: "factory" },
+  deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
 };
+
+/** A record page lights the menu line it was reached from: the first of these the person's menu holds. */
+export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"] };
 
 /** The groups of a menu, in the design's words. `top` has no heading. */
 export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "supply" | "team" | "settings";
@@ -215,7 +221,9 @@ export function canOpen(route: RouteKey, facts: MenuFacts): boolean {
  * refuses is a separate matter, and is the server's.)
  */
 export function inMenu(route: RouteKey, slugs: readonly string[]): boolean {
-  return rolesOf(slugs).some((role) => MENUS[role].some(([, items]) => items.some((item) => item.route === route)));
+  // A screen reached from another and not from the menu (a deal's room, from the board or from Closed) is a role's when the screen it is reached from is.
+  const held = [route, ...(LIT_BY[route] ?? [])];
+  return rolesOf(slugs).some((role) => MENUS[role].some(([, items]) => items.some((item) => held.includes(item.route))));
 }
 
 /** The person's menu: their roles' menus merged, less what they cannot open. A group left with nothing is dropped. */

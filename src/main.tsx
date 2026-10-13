@@ -39,6 +39,7 @@ if (SURFACE_SIDE === "customer") {
     import("./styles/screens.css"),
     import("./styles/selling.css"),
     import("./styles/quotes.css"),
+    import("./styles/deal.css"),
     import("./styles/visits.css"),
     import("./styles/team.css"),
   ]).then(([{ default: App }]) => {

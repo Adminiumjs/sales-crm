@@ -22,7 +22,11 @@ test("Dana lands on Today from the app's address, with the ledger's figures", as
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/today$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Good morning, Dana.");
   // Her language in Adminium is English (US), so a date is written the American way.
-  await expect(page.locator(".crm-now")).toContainText("Tuesday, July 28, 2026 · 09:3");
+  // The stand's clock starts at 09:35 and runs on while the specs before this one do: the time shown is the server's, to the ten minutes.
+  const now = new Date(((await (await page.request.get(`${STAFF}surface-config.json`)).json()) as { now: string }).now);
+  const clock = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Europe/London" }).format(now);
+  expect(clock.startsWith("09:")).toBe(true);
+  await expect(page.locator(".crm-now")).toContainText(`Tuesday, July 28, 2026 · ${clock.slice(0, 4)}`);
 
   // The menu holds Today, and it is where she is.
   const today = page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Today" });

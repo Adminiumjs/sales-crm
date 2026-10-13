@@ -250,6 +250,12 @@ export function QuotePage({ id }: { id: string }) {
                     {quote.owner_id !== null && <span>{who(quote.owner_id)}</span>}
                   </div>
                 </div>
+                {canOpen("deal", facts) && (
+                  <ScreenLink to="deal" rest={[quote.deal_id]} className="crm-btn crm-btn-ghost crm-btn-38 mr-gi">
+                    <Icon name="panel-right-open" size={15} />
+                    {t("room.open")}
+                  </ScreenLink>
+                )}
                 {canOpen("pipeline", facts) && isBuilt("pipeline") && (
                   <ScreenLink to="pipeline" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi">
                     <Icon name="columns-3" size={15} />

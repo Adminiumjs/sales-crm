@@ -15,7 +15,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, dealNamed, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data } from "./helpers.ts";
 
 const row = (page: Page, family: string) => page.locator(".crm-quote-row").filter({ has: page.locator(".crm-quote-no", { hasText: new RegExp(`^${family}$`) }) });
 const quoteNumbered = async (person: APIRequestContext, data: Data, number: string) => (await rows<Record<string, unknown> & { id: number }>(person, data, "quotes", { column: "number", op: "eq", value: number }))[0]!;
@@ -364,6 +364,8 @@ test("Approvals: the four requests, a decline with its line, a question that lan
 });
 
 test("Quotes at 390 wide in the dark, and in Arabic right to left", async ({ as, data }) => {
+  // The specs above worked a quote as Dana, save after save: her minute of requests is let run out before she opens one more.
+  await minuteOut();
   const context = await as("dana", { viewport: { width: 390, height: 844 }, colorScheme: "dark" });
   const narrow = await context.newPage();
   await narrow.goto(`${STAFF}quotes`);
@@ -384,4 +386,9 @@ test("Quotes at 390 wide in the dark, and in Arabic right to left", async ({ as,
     expect(await page.evaluate(() => document.documentElement.dir)).toBe("rtl");
     await picture(page, "9-priya-quotes-arabic");
   });
+});
+
+// The next file's first spec is Dana's too.
+test.afterAll(async () => {
+  await minuteOut();
 });

@@ -51,6 +51,8 @@ export function useLive(tables: readonly string[], reload: () => void): void {
   const session = useSession();
   const key = tables.join(",");
   useEffect(() => {
+    // Nothing to hear: a reader who may read none of the tables a screen would listen to.
+    if (key === "") return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const soon = (): void => {
       if (timer !== null) return;

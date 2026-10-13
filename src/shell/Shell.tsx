@@ -29,7 +29,7 @@ import { useSession } from "../session/session.tsx";
 import { Icon } from "./icons.tsx";
 import { ScreenLink, useNav } from "./nav.tsx";
 import { NothingOn, NotFound, Rebuilding, Refused, type RefusedWhy, type WayHome } from "./pages.tsx";
-import { canOpen, homeFor, inMenu, menuFor, MENUS, rolesOf, routeForPath, ROUTES, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
+import { canOpen, homeFor, inMenu, LIT_BY, menuFor, MENUS, rolesOf, routeForPath, ROUTES, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
 import { PageBoundary } from "../ui/boundary.tsx";
 import { LoadFailed } from "../ui/load.tsx";
@@ -208,7 +208,8 @@ export function Shell() {
     page = why !== null ? <Refused why={why} who={who} home={wayHome} /> : <Screen rest={here.rest} />;
   }
 
-  const current = here?.route ?? null;
+  const listed = groups.flatMap((group) => group.items.map((item) => item.route));
+  const current = here === null ? null : listed.includes(here.route) ? here.route : ((LIT_BY[here.route] ?? []).find((route) => listed.includes(route)) ?? here.route);
   return (
     <div className="crm-shell">
       <a className="crm-skip" href="#crm-page">
