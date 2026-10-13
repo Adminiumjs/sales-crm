@@ -214,6 +214,14 @@ describe("the sample's rows are the ledger's", () => {
     expect(sum(thisYear, amount)).toBe(81600);
   });
 
+  it("closed: every closed deal says the day it closed; won deals took 54 days on average, the longest 77", () => {
+    const days = (deal: Row): number => moment(deal["closed_on"])!.day - moment(deal["opened_on"])!.day;
+    for (const deal of [...deals("won"), ...deals("lost")]) expect(moment(deal["closed_on"])!.day, String(deal["@label"])).toBe(moment(deal["closed_at"])!.day);
+    for (const deal of deals("open")) expect(deal["closed_on"], String(deal["@label"])).toBeUndefined();
+    const won = deals("won").map(days);
+    expect([Math.round(won.reduce((a, b) => a + b, 0) / won.length), Math.max(...won)]).toEqual([54, 77]);
+  });
+
   it("every deal has its mark, every won deal its job, and each closed deal one opening in its history", () => {
     expect(rows("deal_marks").map((mark) => ref(mark["deal_id"])).sort()).toEqual(rows("deals").map((deal) => String(deal["@label"])).sort());
     expect(rows("jobs").map((job) => ref(job["deal_id"])).sort()).toEqual(deals("won").map((deal) => String(deal["@label"])).sort());

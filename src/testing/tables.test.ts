@@ -36,6 +36,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "contact_id",
       "expected_close",
       "closed_at",
+      "closed_on",
+      "cycle_days",
       "lost_reason_id",
       "close_note",
       "typed_amount",

@@ -595,6 +595,57 @@
             }
           },
           {
+            "ref": "closed_on",
+            "type": "date",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "won",
+                    "lost"
+                  ]
+                },
+                "clearOnBack": true
+              }
+            },
+            "label": {
+              "en-US": "Closed on",
+              "de-DE": "Abgeschlossen am (Tag)",
+              "fr-FR": "Jour de clôture",
+              "da-DK": "Lukket (dag)",
+              "cs-CZ": "Den uzavření",
+              "ar-EG": "يوم الإغلاق",
+              "zh-CN": "关闭日期",
+              "zh-TW": "結案日期"
+            }
+          },
+          {
+            "ref": "cycle_days",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "daysBetween": [
+                  "opened_on",
+                  "closed_on"
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Days open",
+              "de-DE": "Tage offen",
+              "fr-FR": "Jours ouverte",
+              "da-DK": "Dage åben",
+              "cs-CZ": "Dnů otevřeno",
+              "ar-EG": "أيام مفتوحة",
+              "zh-CN": "历时天数",
+              "zh-TW": "歷時天數"
+            }
+          },
+          {
             "ref": "lost_reason_id",
             "type": "fk",
             "references": "lost_reasons",

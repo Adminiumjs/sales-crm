@@ -65,6 +65,11 @@ for (const [dialect, reachable] of LEGS) {
       expect(await two(`state = 'open' AND owner_id = '${dana.id}'`)).toEqual([6, 143400, 95740]);
       expect((await two(`state = 'won'`)).slice(0, 2)).toEqual([8, 130000]);
       expect((await two(`state = 'lost'`)).slice(0, 2)).toEqual([18, 294400]);
+      // Closed (ledger 8): every closed deal says the day it closed and the days it was open; won deals took 54 days on average, the longest 77.
+      expect(await n(`SELECT COUNT(*) AS n FROM ${deals} WHERE state <> 'open' AND (closed_on IS NULL OR cycle_days IS NULL)`)).toBe(0);
+      expect(await n(`SELECT COUNT(*) AS n FROM ${deals} WHERE state = 'open' AND (closed_on IS NOT NULL OR cycle_days IS NOT NULL)`)).toBe(0);
+      const cycle = (await h.rows(`SELECT SUM(cycle_days) AS s, MAX(cycle_days) AS m, COUNT(*) AS n FROM ${deals} WHERE state = 'won'`))[0]!;
+      expect([Math.round(Number(cycle['s']) / Number(cycle['n'])), Number(cycle['m'])]).toEqual([54, 77]);
       // S1: the five quoted deals stand at their newest SENT version.
       const quoted = await h.rows(`SELECT quoted_amount FROM ${deals} WHERE quoted_amount IS NOT NULL`);
       expect(quoted.map((r) => Number(r['quoted_amount'])).sort((a, b) => a - b)).toEqual([21500, 27500, 31000, 38000, 52800]);

@@ -270,6 +270,7 @@ for (const [dialect, reachable] of LEGS) {
       expect([Number(d['amount']), Number(d['stage_odds']), Number(d['weighted_value']), d['state']]).toEqual([48000, 0.5, 24000, 'open']);
       expect(d['opened_on']).not.toBeNull();
       expect(d['closed_at']).toBeNull();
+      expect([(await read('deals', 'closed_on, cycle_days', deal['id']))['closed_on'], (await read('deals', 'closed_on, cycle_days', deal['id']))['cycle_days']]).toEqual([null, null]);
       const entered = d['entered_stage_at'];
       await new Promise((r) => setTimeout(r, 1100));
       await w.update('deals', deal['id'], { stage_id: s2['id'] });
@@ -287,8 +288,11 @@ for (const [dialect, reachable] of LEGS) {
       await w.update('deals', deal['id'], { state: 'won' });
       m = await read('deal_marks', 'state', mark['id']);
       expect(m['state']).toBe('won');
-      d = await read('deals', 'closed_at', deal['id']);
+      d = await read('deals', 'closed_at, closed_on, opened_on, cycle_days', deal['id']);
       expect(d['closed_at']).not.toBeNull();
+      // The day it closed, and the whole days it was open: opened and closed today, so none.
+      expect(String(d['closed_on']).slice(0, 10)).toBe(String(d['opened_on']).slice(0, 10));
+      expect(Number(d['cycle_days'])).toBe(0);
       // a visit, its note, an agreed line three links from the deal
       const visit = await w.create('site_visits', { deal_id: deal['id'], rep_id: dana.id, starts_at: '2026-07-29T10:30:00Z', minutes: 90, purpose: 'Walk the floor' });
       const note = await w.create('visit_notes', { visit_id: visit['id'], saw: 'x'.repeat(1500) });

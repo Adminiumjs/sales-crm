@@ -1820,6 +1820,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -91,
+      "@week": true
+     },
      "typed_amount": 19500
     },
     {
@@ -1861,6 +1865,10 @@
      "closed_at": {
       "@day": -110,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -110,
       "@week": true
      },
      "typed_amount": 11200
@@ -1906,6 +1914,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -124,
+      "@week": true
+     },
      "typed_amount": 26400
     },
     {
@@ -1947,6 +1959,10 @@
      "closed_at": {
       "@day": -46,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -46,
       "@week": true
      },
      "typed_amount": 8900
@@ -1992,6 +2008,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -55,
+      "@week": true
+     },
      "typed_amount": 15600
     },
     {
@@ -2033,6 +2053,10 @@
      "closed_at": {
       "@day": -281,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -281,
       "@week": true
      },
      "typed_amount": 17400
@@ -2078,6 +2102,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -235,
+      "@week": true
+     },
      "typed_amount": 6200
     },
     {
@@ -2121,6 +2149,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -218,
+      "@week": true
+     },
      "typed_amount": 24800
     },
     {
@@ -2162,6 +2194,10 @@
      "closed_at": {
       "@day": -28,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -28,
       "@week": true
      },
      "lost_reason_id": {
@@ -2210,6 +2246,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -28,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:0"
      },
@@ -2254,6 +2294,10 @@
      "closed_at": {
       "@day": -74,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -74,
       "@week": true
      },
      "lost_reason_id": {
@@ -2302,6 +2346,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -8,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:1"
      },
@@ -2346,6 +2394,10 @@
      "closed_at": {
       "@day": -87,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -87,
       "@week": true
      },
      "lost_reason_id": {
@@ -2394,6 +2446,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -101,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:3"
      },
@@ -2438,6 +2494,10 @@
      "closed_at": {
       "@day": -123,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -123,
       "@week": true
      },
      "lost_reason_id": {
@@ -2486,6 +2546,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -139,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:1"
      },
@@ -2530,6 +2594,10 @@
      "closed_at": {
       "@day": -158,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -158,
       "@week": true
      },
      "lost_reason_id": {
@@ -2578,6 +2646,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -172,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:4"
      },
@@ -2622,6 +2694,10 @@
      "closed_at": {
       "@day": -186,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -186,
       "@week": true
      },
      "lost_reason_id": {
@@ -2670,6 +2746,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -193,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:0"
      },
@@ -2714,6 +2794,10 @@
      "closed_at": {
       "@day": -228,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -228,
       "@week": true
      },
      "lost_reason_id": {
@@ -2762,6 +2846,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -242,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:0"
      },
@@ -2806,6 +2894,10 @@
      "closed_at": {
       "@day": -263,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -263,
       "@week": true
      },
      "lost_reason_id": {
@@ -2854,6 +2946,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -277,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:3"
      },
@@ -2900,6 +2996,10 @@
       "@time": "17:00",
       "@week": true
      },
+     "closed_on": {
+      "@day": -298,
+      "@week": true
+     },
      "lost_reason_id": {
       "@ref": "lost:4"
      },
@@ -2944,6 +3044,10 @@
      "closed_at": {
       "@day": -312,
       "@time": "17:00",
+      "@week": true
+     },
+     "closed_on": {
+      "@day": -312,
       "@week": true
      },
      "lost_reason_id": {

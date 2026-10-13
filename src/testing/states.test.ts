@@ -114,6 +114,15 @@ describe("a deal", () => {
     expect(table("deals").columns.find((one) => one.ref === "lost_reason_id")!.nullable).toBe(true);
   });
 
+  it("keeps the day it closed and how many days it was open, both emptied by a reopen", () => {
+    // "Average cycle" is the server's average of a stored figure: whole days from the day it opened to the day it closed.
+    const closedOn = table("deals").columns.find((one) => one.ref === "closed_on")!;
+    expect([closedOn.type, closedOn.nullable]).toEqual(["date", true]);
+    expect(closedOn.rules?.stamp).toEqual({ set: "today", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
+    const cycle = table("deals").columns.find((one) => one.ref === "cycle_days")!;
+    expect([cycle.type, cycle.nullable, (cycle.rules as { formula?: unknown } | undefined)?.formula]).toEqual(["int", true, { daysBetween: ["opened_on", "closed_on"] }]);
+  });
+
   it("has four buttons: won, lost (asks why), reopen, and a hand-over that asks to whom", () => {
     expect((deal.actions ?? []).map((one) => [one.id, one.move?.to ?? null, one.ask ?? [], one.handOver === true])).toEqual([
       ["mark-won", "won", ["close_note"], false],
