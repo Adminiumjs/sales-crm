@@ -27,6 +27,8 @@ export interface Formatters {
   dayShort: (at: Date) => string;
   /** `Fri`. */
   weekdayShort: (at: Date) => string;
+  /** `Friday`. */
+  weekdayLong: (at: Date) => string;
   /** `July`. */
   monthLong: (at: Date) => string;
   /** `16:00`, always on the 24-hour clock. */
@@ -57,6 +59,7 @@ export function formatters(facts: FormatFacts): Formatters {
   const dayLong = make({ weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const dayShort = make({ weekday: "short", day: "numeric", month: "short" });
   const weekdayShort = make({ weekday: "short" });
+  const weekdayLong = make({ weekday: "long" });
   const monthLong = make({ month: "long" });
   const time = make({ hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   // Latin digits, year first: a key to compare days by, never shown.
@@ -96,6 +99,7 @@ export function formatters(facts: FormatFacts): Formatters {
     dayLong: (at) => dayLong.format(at),
     dayShort: (at) => dayShort.format(at),
     weekdayShort: (at) => weekdayShort.format(at),
+    weekdayLong: (at) => weekdayLong.format(at),
     monthLong: (at) => monthLong.format(at),
     time: (at) => time.format(at),
     dayKey,
@@ -119,4 +123,14 @@ export function weekOf(dayKey: string): [string, string] {
   const monday = new Date(at.getTime() - back * 86_400_000);
   const next = new Date(monday.getTime() + 7 * 86_400_000);
   return [monday.toISOString().slice(0, 10), next.toISOString().slice(0, 10)];
+}
+
+/** A day key some days on (or back): `addDays("2026-07-27", 6)` is `2026-08-02`. */
+export function addDays(dayKey: string, days: number): string {
+  return new Date(Date.parse(`${dayKey}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** The middle of a calendar day, as a moment: for writing a day's name or date from its key in any time zone near the business's. */
+export function noonOf(dayKey: string): Date {
+  return new Date(`${dayKey}T12:00:00Z`);
 }
