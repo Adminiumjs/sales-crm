@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 
 import manifest from "../../whole/manifest.json";
-import { canOpen, homeFor, HOMES, menuFor, MENUS, rolesOf, ROLE_ORDER, routeForPath, ROUTES, type MenuFacts, type PartId, type RoleKey, type RouteKey } from "./routes.ts";
+import { canOpen, homeFor, HOMES, inMenu, menuFor, MENUS, rolesOf, ROLE_ORDER, routeForPath, ROUTES, type MenuFacts, type PartId, type RoleKey, type RouteKey } from "./routes.ts";
 
 type Role = { key: string; permissions: string[] };
 const roles = (manifest as unknown as { roles: Role[] }).roles;
@@ -97,6 +97,44 @@ describe("a person with two roles, and a person with none", () => {
     const owner: MenuFacts = { roles: [], part: () => true, reads: () => true, built: () => true };
     expect(routesOf(owner)).toEqual(routesOf(facts(["admin"])));
     expect(homeFor(owner)).toBe("team");
+  });
+});
+
+describe("a screen is a role's, or it is not", () => {
+  it("holds the manager's screens out of a rep's reach, though she reads every table they read", () => {
+    const dana = facts(["rep"]);
+    for (const route of ["team", "health", "nudges", "feed", "lost", "approvals"] as const) {
+      expect(canOpen(route, dana), `${route}: the tables are hers to read`).toBe(true);
+      expect(inMenu(route, dana.roles), route).toBe(false);
+    }
+    expect(inMenu("today", dana.roles)).toBe(true);
+  });
+
+  it("gives the CRM admin Nudges (under Settings) and Read-only none", () => {
+    expect(inMenu("nudges", ["crm-admin"])).toBe(true);
+    expect(inMenu("nudges", ["crm-read-only"])).toBe(false);
+    for (const route of ["team", "health", "feed", "lost"] as const) for (const role of ["crm-admin", "crm-sales-manager", "crm-read-only"]) expect(inMenu(route, [role]), `${role} ${route}`).toBe(true);
+    // Nobody but those three: not the account manager, the marketer, the front desk, operations or the crew.
+    for (const route of ["team", "health", "feed", "lost", "nudges"] as const) for (const role of ["crm-account-manager", "crm-marketer", "crm-front-desk", "crm-ops-manager", "crm-crew"]) expect(inMenu(route, [role]), `${role} ${route}`).toBe(false);
+  });
+
+  it("opens a screen for somebody with two roles when either holds it, and reads the install's owner as the CRM admin", () => {
+    expect(inMenu("team", ["crm-rep", "crm-sales-manager"])).toBe(true);
+    expect(inMenu("today", ["crm-rep", "crm-sales-manager"])).toBe(true);
+    expect(inMenu("nudges", [])).toBe(true);
+    expect(inMenu("today", [])).toBe(false);
+  });
+
+  it("lands the CRM admin and Read-only on the Team view, and a rep who is also Read-only on Today", () => {
+    expect(homeFor(facts(["admin"]))).toBe("team");
+    expect(homeFor(facts(["read-only"]))).toBe("team");
+    expect(homeFor(facts(["rep", "read-only"]))).toBe("today");
+    // The union of the two menus, the rep's leading: her Today first, and Read-only's Team view after it.
+    const both = routesOf(facts(["rep", "read-only"]));
+    expect(both[0]).toBe("today");
+    expect(both).toContain("team");
+    expect(both).toContain("lost");
+    expect(new Set(both).size).toBe(both.length);
   });
 });
 

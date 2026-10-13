@@ -29,7 +29,7 @@ import { useSession } from "../session/session.tsx";
 import { Icon } from "./icons.tsx";
 import { ScreenLink, useNav } from "./nav.tsx";
 import { NothingOn, NotFound, Rebuilding, Refused, type RefusedWhy, type WayHome } from "./pages.tsx";
-import { canOpen, homeFor, menuFor, MENUS, rolesOf, routeForPath, ROUTES, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
+import { canOpen, homeFor, inMenu, menuFor, MENUS, rolesOf, routeForPath, ROUTES, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
 import { PageBoundary } from "../ui/boundary.tsx";
 import { LoadFailed } from "../ui/load.tsx";
@@ -203,7 +203,7 @@ export function Shell() {
     const def = ROUTES[here.route];
     let why: RefusedWhy | null = null;
     if (def.part !== null && !facts.part(def.part)) why = { kind: "part", part: t(`nav.group.${def.part}` as MessageKey), owner: appRoles.length === 0 };
-    else if (!def.reads.every((table) => facts.reads(table))) why = (here.route === "notes" || here.route === "coaching") && appRoles.some((role) => role.slug === "crm-admin") ? { kind: "private" } : { kind: "role" };
+    else if (!def.reads.every((table) => facts.reads(table)) || !inMenu(here.route, facts.roles)) why = (here.route === "notes" || here.route === "coaching") && appRoles.some((role) => role.slug === "crm-admin") ? { kind: "private" } : { kind: "role" };
     const Screen = SCREENS[here.route]!;
     page = why !== null ? <Refused why={why} who={who} home={wayHome} /> : <Screen rest={here.rest} />;
   }

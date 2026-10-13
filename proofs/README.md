@@ -1,6 +1,6 @@
 # The proofs
 
-Six test files that install this app on a real Adminium server, with its sample, on SQLite,
+Seven test files that install this app on a real Adminium server, with its sample, on SQLite,
 Postgres and MySQL, and try it signed in as each of the sample's sixteen people.
 
 They are not this repository's unit tests. They run **inside an Adminium checkout**, because
@@ -17,6 +17,7 @@ product does not: give a sample person a password. `npm run proofs` copies them 
 | `crm-inventory` | Supply on the real Inventory add-on (needs `ADD_ONS_REPO`, built) |
 | `crm-g3` | the pipeline board, a pasted list, places and areas |
 | `crm-visits` | site visits and cover: who books for whom, a move read from the history, a cancel that removes the row, one cover of a person at a time |
+| `crm-manager` | the figures the manager's screens ask, at the ledger's moment; whose rows each reader's are; who is refused |
 
 ```bash
 ADMINIUM_REPO=~/Work/lanes/p67 ADD_ONS_REPO=~/Work/lanes/p67-add-ons-read npm run proofs

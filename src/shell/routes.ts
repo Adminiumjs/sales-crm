@@ -207,6 +207,17 @@ export function canOpen(route: RouteKey, facts: MenuFacts): boolean {
   return facts.built(route) && (def.part === null || facts.part(def.part)) && def.reads.every((table) => facts.reads(table));
 }
 
+/**
+ * Whether one of the person's roles holds this screen in its menu. A screen
+ * is a role's or it is not: a rep reads her own deals, and the Team view is
+ * still not hers. The address of a screen no role of the person lists says
+ * "not part of your role", whatever tables they read. (What the server
+ * refuses is a separate matter, and is the server's.)
+ */
+export function inMenu(route: RouteKey, slugs: readonly string[]): boolean {
+  return rolesOf(slugs).some((role) => MENUS[role].some(([, items]) => items.some((item) => item.route === route)));
+}
+
 /** The person's menu: their roles' menus merged, less what they cannot open. A group left with nothing is dropped. */
 export function menuFor(facts: MenuFacts): ShownGroup[] {
   const out: ShownGroup[] = [];
@@ -239,6 +250,6 @@ export function routeForPath(path: string, facts: MenuFacts): { route: RouteKey;
   if (parts.length === 0) return null;
   const candidates = (Object.keys(ROUTES) as RouteKey[]).filter((key) => ROUTES[key].path === parts[0]);
   if (candidates.length === 0) return null;
-  const route = candidates.find((key) => canOpen(key, facts)) ?? candidates[0]!;
+  const route = candidates.find((key) => canOpen(key, facts) && inMenu(key, facts.roles)) ?? candidates.find((key) => canOpen(key, facts)) ?? candidates[0]!;
   return { route, rest: parts.slice(1) };
 }

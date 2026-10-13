@@ -159,7 +159,7 @@ interface BoardProps {
   ariaLabel?: string;
 }
 
-export function Pipeline(_props: ScreenProps) {
+export function Pipeline(props: ScreenProps) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();
@@ -171,7 +171,8 @@ export function Pipeline(_props: ScreenProps) {
   const mine = scope === "mine";
   const [now, setNow] = useState(() => session.now());
   const today = f.dayKey(now);
-  const [who, setWho] = useState<string | null>(null);
+  // `pipeline/of/<person>` opens the board on one person's deals (the Team view's "Board").
+  const [who, setWho] = useState<string | null>(() => (props.rest[0] === "of" && props.rest[1] !== undefined ? props.rest[1] : null));
   const { load, reload } = useLoad(() => read(session, mine, who, today), [session, mine, who, today, actions.changed]);
   const again = useCallback(() => {
     setNow(session.now());
