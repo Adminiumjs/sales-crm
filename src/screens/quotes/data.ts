@@ -46,6 +46,8 @@ export interface Quote extends Record<string, unknown> {
   sent_to_contact_id: number | null;
   to_name: string | null;
   sent_to_name: string | null;
+  /** The address the quote (and its link) went to, stamped at sending. Only on a quote read by itself, and only for a role that is shown it: no list asks for it. */
+  sent_to_email?: string | null;
   accepted_name: string | null;
   accepted_via: string | null;
   notes: string | null;

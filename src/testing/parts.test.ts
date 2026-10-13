@@ -142,7 +142,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
   });
 
   it("queues the quote's e-mail only while quotes are on", () => {
-    expect((manifest.outbox.producers as unknown as { kind: string; module?: string }[]).map((producer) => [producer.kind, producer.module])).toEqual([["quote-sent", "quotes"]]);
+    expect((manifest.outbox.producers as unknown as { kind: string; module?: string }[]).map((producer) => [producer.kind, producer.module])).toEqual([["quote-sent", "quotes"], ["quote-accepted", "quotes"]]);
   });
 });
 

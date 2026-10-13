@@ -960,7 +960,7 @@ describe("what this batch leaves for a later one", () => {
     expect(days.columns.find((c) => c.ref === "weekday")?.enum).toEqual(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
   });
 
-  it("declares the outbox over the table, with a template for each of its three kinds", () => {
+  it("declares the outbox over the table, with a template for each of its four kinds", () => {
     const box = (manifest as unknown as { outbox: typeof OUTBOX_WORD & { kinds: Record<string, string> } }).outbox;
     expect({ ...box, kinds: {}, producers: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
     expect(Object.keys(box.kinds)).toEqual(byRef.get("outbox")?.columns.find((c) => c.ref === "kind")?.enum);

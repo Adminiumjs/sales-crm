@@ -139,6 +139,7 @@ test("Accept asks for a name, the server keeps it, and the rep's open quote turn
   const staff = await (await as("dana")).newPage();
   await staff.goto(`${STAFF}quotes/${String(first)}`);
   await expect(staff.getByTestId("quote-customer-page")).toContainText("Petra Lindqvist has the link to this quote by e-mail");
+  await expect(staff.getByTestId("quote-link-went-to")).toContainText("The link went to ");
   await expect(staff.locator("body")).not.toContainText(code);
   expect(await (await dana.get(data("quotes", `/${String(first)}`))).text()).not.toContain(code);
 

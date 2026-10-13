@@ -422,6 +422,11 @@ for (const [dialect, reachable] of LEGS) {
       expect((await answer(quote.id, session, { accepted_name: 'Renamed Later' })).statusCode).toBeGreaterThanOrEqual(400);
       const after = await quoteRow(quote.id);
       expect([after['status'], after['accepted_name'], String(after['decided_at'])]).toEqual(['accepted', 'Petra Lindqvist', String(row['decided_at'])]);
+      // The address the quote went to is told that it was accepted: an acceptance nobody there made does not pass unseen.
+      await s.jobs();
+      const told = await s.rows(`SELECT * FROM ${s.real('outbox')} WHERE quote_id = ${String(quote.id)} AND kind = 'quote-accepted'`);
+      expect(told).toHaveLength(1);
+      expect(told[0]!['to']).toBe(row['sent_to_email']);
       // Staff read who accepted and how; nobody on the staff rewrites it.
       const seen = ((await get('dana', 'quotes', `/${String(quote.id)}`)).json() as { data: Record<string, unknown> }).data;
       expect([seen['accepted_name'], seen['accepted_via']]).toEqual(['Petra Lindqvist', 'customer']);

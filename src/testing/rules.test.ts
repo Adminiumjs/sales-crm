@@ -179,10 +179,10 @@ describe("a comment on a deal may mention a colleague", () => {
 });
 
 describe("the e-mails the app ships", () => {
-  it("are five: three to one address, each in eight languages with a subject, a heading and its text, and two weekly summaries", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager"]);
+  it("are six: four to one address, each in eight languages with a subject, a heading and its text, and two weekly summaries", () => {
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager"]);
     for (const template of m.emailTemplates) expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
-    for (const template of m.emailTemplates.slice(0, 3)) {
+    for (const template of m.emailTemplates.slice(0, 4)) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
         const content = template.locales[locale]!;
@@ -204,7 +204,7 @@ describe("the e-mails the app ships", () => {
 
 describe("the outbox", () => {
   it("has a template for each kind", () => {
-    expect(m.outbox.kinds).toEqual({ "quote-sent": "crm-quote-sent", "handover-intro": "crm-handover-intro", "approval-asked": "crm-approval-asked" });
+    expect(m.outbox.kinds).toEqual({ "quote-sent": "crm-quote-sent", "quote-accepted": "crm-quote-accepted", "handover-intro": "crm-handover-intro", "approval-asked": "crm-approval-asked" });
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });
 
@@ -213,8 +213,11 @@ describe("the outbox", () => {
     expect(steps("quote-sent-amount")).toEqual([{ kind: "record.create", table: "deal_amount_changes", values: { deal_id: "{{record.deal_id}}", quote_id: "{{record.id}}", amount: "{{record.subtotal}}" } }]);
   });
 
-  it("has one producer: a quote that reaches \"sent\" is mailed to the address kept on it", () => {
-    expect(m.outbox.producers).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" }, replyTo: { staff: "deal_id.owner_id" } }]);
+  it("has two producers: a quote that reaches \"sent\" is mailed to the address kept on it, and so is its acceptance", () => {
+    expect(m.outbox.producers).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" }, replyTo: { staff: "deal_id.owner_id" } },
+      // …and when it is accepted, by the customer or by the office, the same address is told so: an acceptance nobody there made does not pass unseen.
+      { kind: "quote-accepted", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "accepted" } },
+    ]);
     // A reply to the quote's e-mail goes to the rep who owns its deal (her sign-in address, read when the mail goes).
     const quotes = m.requiredSchema.tables.find((one) => one.ref === "quotes")!;
     const column = (ref: string) => quotes.columns.find((one) => one.ref === ref)!;

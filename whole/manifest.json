@@ -17041,6 +17041,7 @@
             "type": "enum",
             "enum": [
               "quote-sent",
+              "quote-accepted",
               "handover-intro",
               "approval-asked"
             ],
@@ -17076,6 +17077,16 @@
                     "ar-EG": "طلب موافقة",
                     "zh-CN": "申请审批",
                     "zh-TW": "申請審批"
+                  },
+                  "quote-accepted": {
+                    "en-US": "Quote accepted",
+                    "de-DE": "Angebot angenommen",
+                    "fr-FR": "Devis accepté",
+                    "da-DK": "Tilbud accepteret",
+                    "cs-CZ": "Nabídka přijata",
+                    "ar-EG": "قُبل عرض السعر",
+                    "zh-CN": "报价已接受",
+                    "zh-TW": "報價已接受"
                   }
                 }
               }
@@ -22809,6 +22820,7 @@
     },
     "kinds": {
       "quote-sent": "crm-quote-sent",
+      "quote-accepted": "crm-quote-accepted",
       "handover-intro": "crm-handover-intro",
       "approval-asked": "crm-approval-asked"
     },
@@ -22828,6 +22840,20 @@
         },
         "replyTo": {
           "staff": "deal_id.owner_id"
+        }
+      },
+      {
+        "kind": "quote-accepted",
+        "module": "quotes",
+        "link": "quote_id",
+        "recipient": {
+          "column": "sent_to_email",
+          "name": "sent_to_name"
+        },
+        "onChange": {
+          "table": "quotes",
+          "column": "status",
+          "to": "accepted"
         }
       }
     ]
@@ -23128,6 +23154,200 @@
               "block": "email.text",
               "data": {
                 "text": "有效期限至 {{quote.valid_until.day_month}}。如有疑問，請直接回覆此信。"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "crm-quote-accepted",
+      "name": "Quote accepted",
+      "vars": [
+        "quote.number",
+        "quote.sent_to_name"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Quote {{quote.number}} was accepted",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Quote {{quote.number}} accepted"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{quote.sent_to_name}}, quote {{quote.number}} has been marked as accepted."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "If you did not accept it, or did not ask us to, reply to this message and we will put it right."
+              }
+            }
+          ]
+        },
+        "de-DE": {
+          "subject": "Angebot {{quote.number}} wurde angenommen",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Angebot {{quote.number}} angenommen"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{quote.sent_to_name}}, das Angebot {{quote.number}} wurde als angenommen vermerkt."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Falls Sie es nicht angenommen oder uns nicht darum gebeten haben, antworten Sie auf diese Nachricht, und wir klären das."
+              }
+            }
+          ]
+        },
+        "fr-FR": {
+          "subject": "Le devis {{quote.number}} a été accepté",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Devis {{quote.number}} accepté"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{quote.sent_to_name}}, le devis {{quote.number}} a été enregistré comme accepté."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Si vous ne l’avez pas accepté, ou ne nous l’avez pas demandé, répondez à ce message et nous corrigerons cela."
+              }
+            }
+          ]
+        },
+        "da-DK": {
+          "subject": "Tilbud {{quote.number}} er accepteret",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Tilbud {{quote.number}} accepteret"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{quote.sent_to_name}}, tilbud {{quote.number}} er registreret som accepteret."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hvis du ikke har accepteret det eller bedt os om det, så svar på denne besked, så retter vi det."
+              }
+            }
+          ]
+        },
+        "cs-CZ": {
+          "subject": "Nabídka {{quote.number}} byla přijata",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Nabídka {{quote.number}} přijata"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{quote.sent_to_name}}, nabídka {{quote.number}} byla označena jako přijatá."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pokud jste ji nepřijali ani jste nás o to nepožádali, odpovězte na tuto zprávu a napravíme to."
+              }
+            }
+          ]
+        },
+        "ar-EG": {
+          "subject": "تم قبول عرض السعر {{quote.number}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "قُبل عرض السعر {{quote.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{quote.sent_to_name}}، سُجّل عرض السعر {{quote.number}} على أنه مقبول."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "إذا لم تقبله أو لم تطلب منا ذلك، ردّ على هذه الرسالة وسنصحّح الأمر."
+              }
+            }
+          ]
+        },
+        "zh-CN": {
+          "subject": "报价单 {{quote.number}} 已被接受",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "报价单 {{quote.number}} 已接受"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{quote.sent_to_name}}，您好，报价单 {{quote.number}} 已被登记为接受。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如果这不是您本人接受的，也不是您让我们办理的，请回复此邮件，我们会予以更正。"
+              }
+            }
+          ]
+        },
+        "zh-TW": {
+          "subject": "報價單 {{quote.number}} 已被接受",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "報價單 {{quote.number}} 已接受"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{quote.sent_to_name}} 您好，報價單 {{quote.number}} 已登記為接受。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如果這不是您本人接受的，也不是您請我們辦理的，請回覆此信，我們會加以更正。"
               }
             }
           ]

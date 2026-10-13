@@ -72,7 +72,8 @@ async function read(session: StaffSession, id: number, fixed: Promise<{ prices: 
     session.get<DealFacts>("deals", one.deal_id, { lookup: ["contact:contact_id.name"] }),
     fixed,
   ]);
-  const family = all.filter((quote) => (quote.family_no ?? quote.number) === (one.family_no ?? one.number)).sort((a, b) => a.version - b.version);
+  // The quote read by itself carries what its reader's role shows of it; the list asks for fewer columns. Where the link went comes from the first.
+  const family = all.filter((quote) => (quote.family_no ?? quote.number) === (one.family_no ?? one.number)).sort((a, b) => a.version - b.version).map((quote) => (quote.id === id ? { ...quote, sent_to_email: one.sent_to_email ?? null } : quote));
   if (!family.some((quote) => quote.id === id)) return null;
   const names = await readNames(session, family.flatMap((quote) => [quote.owner_id, quote.asked_by_id, quote.decided_by_id]));
   return { family, lines: lines.rows, deal, names, ...rest };
@@ -215,7 +216,7 @@ export function QuotePage({ id }: { id: string }) {
               case "approved":
                 return `${t("quote.banner.approved", { name: who(quote.decided_by_id), when: moment(quote.approval_decided_at), pct: f.number(Math.round(num(quote.approved_pct) * 10) / 10) })}${customer}`;
               case "accepted":
-                return quote.accepted_via === "staff" ? t("quote.banner.accepted.staff", { when: moment(quote.decided_at) }) : t("quote.banner.accepted", { name: quote.accepted_name ?? contact ?? "", when: moment(quote.decided_at) });
+                return quote.accepted_via === "customer" ? t("quote.banner.accepted", { name: quote.accepted_name ?? contact ?? "", when: moment(quote.decided_at) }) : t("quote.banner.accepted.staff", { when: moment(quote.decided_at) });
               case "declined":
                 return t("quote.banner.declined", { when: moment(quote.decided_at) });
               case "replaced":
@@ -467,11 +468,17 @@ export function QuotePage({ id }: { id: string }) {
                           : state === "ranOut"
                             ? t("quote.page.ranOut", { day: quote.valid_until === null ? "" : f.date(noonOf(quote.valid_until)) })
                             : state === "accepted"
-                              ? quote.accepted_via === "staff"
-                                ? t("quote.page.accepted.staff", { when: moment(quote.decided_at) })
-                                : t("quote.page.accepted", { name: quote.accepted_name ?? contact ?? t("quote.page.someone"), when: moment(quote.decided_at) })
+                              ? quote.accepted_via === "customer"
+                                ? t("quote.page.accepted", { name: quote.accepted_name ?? contact ?? t("quote.page.someone"), when: moment(quote.decided_at) })
+                                : t("quote.page.accepted.staff", { when: moment(quote.decided_at) })
                               : t("quote.page.declined", { when: moment(quote.decided_at) })}
                       </p>
+                      {/* Where the link went, as it was stamped at sending: an answer "by the customer" came through a link mailed there. */}
+                      {typeof quote.sent_to_email === "string" && quote.sent_to_email !== "" && (
+                        <p className="crm-side-note crm-mono" data-testid="quote-link-went-to">
+                          {t("quote.page.wentTo", { address: quote.sent_to_email })}
+                        </p>
+                      )}
                     </section>
                   )}
 
