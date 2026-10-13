@@ -67,7 +67,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["activities", "comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "-", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
   [["quotes", "quote_lines"], "RCUDX", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "RX"],
-  // The price list: a rep reads what a thing costs at list and writes none of it (ruling F).
+  // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   [["saved_views", "saved_searches"], "RCUD:own+free", "RCUD:own+free", SAVED, SAVED, "-", "-", "-", "-", "R:own+free"],
   [["nudge_snoozes"], "RCD:own", "RCD:own", "RCD:own", "-", "-", "-", "-", "-", "-"],
@@ -88,7 +88,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["messages"], ...talk("RC:own")],
   [["starters"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
   [["starter_steps"], "RCUD", "RCUD", "RU", "-", "-", "-", "-", "-", "R"],
-  // NARROWER THAN THE PLAN'S TABLE, which gives the sales manager every cover (RCUD). A cover opens
+  // NARROWER THAN "EVERY COVER": a sales manager does not hold every cover. A cover opens
   // its rep's deals to whoever it names, so a manager who could write one for any rep could read any
   // team's deals by covering for them. They read every cover, and write one for the people they lead.
   [["covers"], "RCUD", "RCUD;u=team;d=team", "R", "R", "-", "-", "-", "-", "R"],
@@ -347,7 +347,7 @@ const pageOfTable = new Map(pages.map((page) => [Object.values(page.bindings ?? 
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 describe("the app brings nine roles", () => {
-  it("names them as the plan does, in its order", () => {
+  it("names the nine, in the menu's order", () => {
     expect(roles.map((r) => r.key)).toEqual([...ROLES]);
     expect(Object.fromEntries(roles.map((r) => [r.key, r.name]))).toEqual(NAMES);
   });

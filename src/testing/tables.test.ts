@@ -1,5 +1,5 @@
 /**
- * The tables of `manifest.json`, held to what the plan says of them.
+ * The tables of `manifest.json`, held to the list written out below.
  *
  * The validator checks that the manifest is well formed. It does not know which
  * tables the app is meant to have, which columns may be empty, or that a list
@@ -40,6 +40,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "close_note",
       "typed_amount",
       "quoted_amount",
+      "last_activity_at",
+      "stage_by_id",
       "quote_id",
       "list_value",
       "closed_team",
@@ -258,7 +260,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
-/** How many tables the manifest holds: the 72 the plan lists, the price list ruling F asked for, and the weekdays a crew works. */
+/** How many tables the manifest holds: the 72 of the app's ten parts, the price list, and the weekdays a crew works. */
 const TABLE_COUNT = 74;
 
 /**
@@ -399,7 +401,7 @@ function missing(label: Labels | undefined): string[] {
 /*  THE CHECKS                                                                 */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-describe("the manifest holds the tables the plan lists, and no other", () => {
+describe("the manifest holds the tables listed here, and no other", () => {
   it("has exactly the expected tables", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
@@ -416,7 +418,7 @@ describe("the manifest holds the tables the plan lists, and no other", () => {
   });
 });
 
-describe("a column may be empty only where the plan says so", () => {
+describe("a column may be empty only where it is listed as such", () => {
   it("names, in the expectations, only columns that exist", () => {
     // A misspelt name in `TABLES` would otherwise pass as "not nullable, as expected".
     const unknown: string[] = [];
@@ -527,9 +529,10 @@ describe("a table takes no more indexes than the validator allows", () => {
     expect(over).toEqual([]);
   });
 
-  it("left the six sets of deals as they were", () => {
+  it("keeps six sets on deals, the owner's with the state a board is read by", () => {
     expect(byRef.get("deals")?.indexes).toEqual([
-      ["owner_id"],
+      // A rep's board and its count are read by owner and state: with both in one set MySQL counts them from the index.
+      ["owner_id", "state"],
       ["state", "stage_id"],
       ["expected_close"],
       ["company_id"],
@@ -540,7 +543,7 @@ describe("a table takes no more indexes than the validator allows", () => {
 });
 
 describe("a deal is reached by its owner, by the people on it, and by whoever covers its owner", () => {
-  it("writes the three ways as the plan does", () => {
+  it("writes the three ways a deal is somebody's", () => {
     expect(byRef.get("deals")?.belongs).toEqual([
       { column: "owner_id", set: "team" },
       { through: { table: "deal_members", link: "deal_id", user: "user_id" } },
@@ -733,7 +736,8 @@ describe("a crew reaches its own work, and a rep the work on their deals", () =>
     const withNote = structuredClone(manifest) as unknown as { requiredSchema: { tables: Table[] } };
     (withNote.requiredSchema.tables.find((t) => t.ref === "delivery_note_lines") as Table).belongs = [{ via: "note_id" }];
     const result = validateManifest(withNote);
-    expect(result.ok ? [] : result.issues.map((issue) => issue.message)).toEqual(["a row is reached through at most 2 links"]);
+    // Said once for the app as it is, and once more for the app as it is installed without Invoices & Receipts.
+    expect(result.ok ? [] : result.issues.map((issue) => issue.message).filter((message) => !message.startsWith("installed without"))).toEqual(["a row is reached through at most 2 links"]);
   });
 });
 
@@ -823,7 +827,7 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
     insurance_incidents: { initial: "open", moves: { open: ["settled"] } },
   };
 
-  it("writes exactly the moves the plan lists", () => {
+  it("writes exactly these moves", () => {
     for (const [ref, expected] of Object.entries(MOVES)) {
       const table = byRef.get(ref) as Table;
       expect(table.states, ref).toMatchObject({ column: "state", initial: expected.initial });

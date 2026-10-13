@@ -19,23 +19,48 @@ and what comes after them, vehicles and crew.
 | Key | `crm` (tables are named `crm_…`) |
 | Tables | 74 |
 | Pages | 74, one records page per table, under ten menu headings |
+| Parts | 10: three always there, five with a switch, two more on with their add-on |
 | Roles | 9 |
-| Shipped rules | 4, switched on at install |
-| E-mails | 3, in eight languages |
+| Shipped rules | 14: four the app works by, switched on at install, and ten that tell people, switched off |
+| E-mails | 5, in eight languages |
 | Starting rows | 1: the settings row, written by the install with its defaults. The sample fills in Meridian's depot on it, and takes it off again |
 | Sample data | "Meridian", an office-furniture wholesaler: 688 rows in 69 tables, 16 people, one team |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic, Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
-### It needs one add-on
+### It needs no add-on
 
-**Invoices & Receipts** (1.0.12 or newer) is required: a quote is one of its
-documents, so the add-on numbers it, works out its tax and prints it. The app
-does not install without it.
+Three are suggested. **Invoices & Receipts** (1.0.12 or newer) is ticked at
+install: a quote is one of its documents, so the add-on numbers it, works out
+its tax and prints it. Install the app without it and the **Quotes** part is
+left out (no quote tables, no quote pages, and a deal's quoted amount stays
+empty); connect the add-on later and the part is put in, with nothing else
+touched. **Inventory** (stock for a deal, suppliers, what the showroom holds)
+is ticked too; without it the **Supply** part is off. **Offers** (a reward for
+a customer who refers another) is not ticked.
 
-Two more are suggested and not needed: **Inventory** (stock for a deal,
-suppliers, what the showroom holds) and **Offers** (a reward for a customer who
-refers another).
+### The ten parts
+
+The app is made of parts. The install asks which to start with, and each can
+be switched on or off afterwards in the app's settings (**Parts**). A part that
+is off has no pages, runs none of its rules, and its roles give nothing; its
+records stay, and a role of another part that reads them still does.
+
+| Part | Starts | Its roles |
+| --- | --- | --- |
+| Selling | always on | CRM admin, Sales manager, Sales rep, Read-only |
+| Quotes | on, with Invoices & Receipts | the same four |
+| Accounts | always on | the same, with Account manager and Marketer |
+| The team | always on | CRM admin, Sales manager, Sales rep, Read-only |
+| Inbox | on | the sales roles, Marketer, Front desk |
+| Showroom and samples | off | Front desk, CRM admin, Read-only |
+| Jobs on site | off | Operations manager, Field crew, CRM admin, Read-only |
+| After the job | off | Account manager, CRM admin, Read-only |
+| Supply | on, with Inventory | Operations manager, CRM admin, Read-only |
+| Vehicles and crew | off | Operations manager, Field crew, CRM admin, Read-only |
+
+A role is offered while one of its parts is on: an install without "Jobs on
+site" and "Vehicles and crew" has no Field crew role to give.
 
 ### The menu
 
@@ -116,6 +141,39 @@ a minute later, after the time in which that change can still be undone.
 4. A discount is put to approval: everybody who holds the Sales manager role is
    told.
 
+### The ten rules that tell people
+
+They are switched off at install; switch on the ones you want on the rules
+page. Each tells one person, the one the record belongs to, never a whole role.
+
+| Rule | Who is told, and when |
+|---|---|
+| A deal has gone quiet | The deal's owner, each morning, when nothing has been logged on an open deal for 7 days. Once each time it goes quiet. |
+| A deal is stuck in its stage | The owner, when an open deal has sat in one stage for 21 days. Once each time. |
+| A deal closes soon and is not yet agreed | The owner, when an open deal is due to close within 7 days and is not at the last stage. Once each time. |
+| A follow-up falls due | Its owner, within 15 minutes of the time it was due. |
+| A quote runs out in 3 days | The owner of the quote's deal. |
+| A deal is handed over | Its new owner. |
+| A discount is approved; a discount is refused | The person who asked. |
+| Each week, for reps and account managers | An e-mail of their own deals closing this week and their follow-ups, due and slipped. |
+| Each week, for sales managers | An e-mail of the deals they own themselves: closing, gone quiet, and their slipped follow-ups. |
+
+The weekly e-mails go out on Mondays at 07:00, or on the day and at the time
+each person sets under their own notification settings. Nobody gets an empty
+one. Each person can also set quiet hours there: a notice that arrives in them
+is in the app at once, and its e-mail waits until the hours end.
+
+To change a number (7 days, 21 days), make a copy of the rule on the rules page
+and edit the copy. The three nudge numbers on the app's settings page do not
+move these rules.
+
+### Mentions
+
+In a comment on a deal, type `@` and a letter or two and pick a colleague. They
+are told who mentioned them and on which deal; the notice never carries what
+was written. A colleague who cannot open the deal is told the same, with no
+link to it.
+
 ### The sample data
 
 "Add sample data" brings Meridian's pipeline: 40 deals (14 open, 8 won, 18
@@ -147,16 +205,19 @@ visits on a day it works, and a crew with no days written down is held to none.
 - **No screens.** The staff side shows one "being rebuilt" page. `reference/`
   holds the screens the app had before the rebuild; nothing builds, tests or
   ships that folder.
-- **Every part is always on.** Showroom, jobs, aftercare, supply and vehicles
-  are meant to be parts an owner can leave out at install.
-- **The role names are English** in every language.
 - **A new quote is numbered `QUO-0001`** until the owner changes the series in
   Invoices & Receipts.
-- **Most reminders and digests are not shipped**: the three nudges on a quiet
-  deal, the weekly digests, a follow-up falling due, a quote about to run out,
-  a mention, the aftercare call after a sign-off, the survey after a job.
-- **A limited list is slower than an unlimited one on MySQL**: about a tenth of
-  a second for a page of 50 among 50,000 deals.
+- **Three reminders are not shipped**: the aftercare call 28 days after a
+  sign-off, a changed day sheet told to its crew, and the survey after a job.
+- **A quote with no "valid until" date is never said to run out**, and a sent
+  version that a newer one replaced is still said to.
+- **"After the job" records feedback and warranty claims against a job**, and a
+  job is made only while "Jobs on site" is on: with that part off, only
+  complaints can be kept.
+- **A snoozed nudge is still told.** The snooze table is there for the nudges
+  screen; the rules do not read it yet.
+- **A deal on which nothing was ever logged is not "quiet"**: it is caught by
+  "stuck in its stage" after 21 days.
 
 ### If you remove the app and keep its tables
 

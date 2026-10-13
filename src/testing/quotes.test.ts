@@ -1,6 +1,6 @@
 /**
  * The quote tables, held to the shape they are built on and to the sums the
- * plan says they keep.
+ * app is meant to keep.
  *
  * `quotes` and `quote_lines` are built on the quote shape of Invoices &
  * Receipts. The validator checks the manifest alone; whether a table really is
@@ -163,15 +163,19 @@ describe("the quote tables are what the quote shape of Invoices & Receipts says"
     ]);
   });
 
-  it("requires the add-on, because a table built on its shape cannot do without it", () => {
-    expect(manifest.addOns.requires.map((need) => need.key)).toEqual(["invoices"]);
-    // Only suggested, the manifest is refused: the shape and its four settings would not be there.
-    const suggested = changed((copy) => {
-      copy.addOns = { suggests: [...(copy.addOns["requires"] ?? []), ...(copy.addOns["suggests"] ?? [])] };
+  it("only suggests the add-on, because quotes are a part of their own that waits for it", () => {
+    expect((manifest.addOns as { requires?: unknown[] }).requires).toBeUndefined();
+    expect(manifest.addOns.suggests.find((need) => need.key === "invoices")).toMatchObject({ checked: true });
+    for (const ref of ["quotes", "quote_lines"]) {
+      expect((manifest.requiredSchema.tables.find((table) => table.ref === ref) as { module?: string }).module, ref).toBe("quotes");
+    }
+    // Outside that part, the table would make its add-on required: the shape and its four settings would not be there.
+    const moved = changed((copy) => {
+      (copy.requiredSchema.tables.find((t) => t.ref === "quotes") as { module?: string }).module = "selling";
     });
-    const result = validateManifest(suggested);
+    const result = validateManifest(moved);
     const messages = result.ok ? [] : result.issues.map((issue) => issue.message);
-    expect(messages).toContain('"invoices" defines the shape, so the app requires it (addOns.requires)');
+    expect(messages).toContain('"invoices" defines the shape, so the app requires it (addOns.requires), or the table sits in a module whose feature needs "invoices"');
     expect(messages).toContain('"invoices" is not required by the app (addOns.requires), so its setting may not be there');
   });
 
@@ -277,7 +281,7 @@ describe("a version says whether it needs approval, and whether it may be sent",
   });
 
   /*
-   * RULING F. The list price is not the writer's: it is copied, on every write of
+   * THE LIST PRICE IS NOT THE WRITER'S: it is copied, on every write of
    * the line, from the price-list row the line names, and no role may type it.
    * A line that names none has no list price, and the version then needs approval
    * whatever it costs.
@@ -312,7 +316,7 @@ describe("a version says whether it needs approval, and whether it may be sent",
   });
 
   /*
-   * AN APPROVAL REMEMBERS WHAT IT COVERED (ruling F, second half). Three
+   * AN APPROVAL REMEMBERS WHAT IT COVERED. Three
    * columns are stamped, as the version stands, the moment "approved" is
    * written; `may_send` then holds the version to them. Nobody types them.
    */

@@ -73,7 +73,7 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
   insurance_incidents: { column: "state", initial: "open", moves: ["open → settled"] },
 };
 
-describe("the tables that have states are the ones the plan lists", () => {
+describe("the tables that have states are these, and no other", () => {
   it("fourteen of them, each on its own column", () => {
     const found = tables.filter((one) => one.states !== undefined).map((one) => one.ref).sort();
     expect(found).toEqual(Object.keys(EXPECTED).sort());

@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "crm",
   "name": "Sales CRM",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": {
     "id": "adminium",
     "name": "Adminium"
@@ -29,6 +29,7 @@
     "tables": [
       {
         "ref": "stages",
+        "module": "selling",
         "label": {
           "en-US": "Stage",
           "de-DE": "Phase",
@@ -109,6 +110,7 @@
       },
       {
         "ref": "deals",
+        "module": "selling",
         "label": {
           "en-US": "Deal",
           "de-DE": "Deal",
@@ -155,7 +157,8 @@
         ],
         "indexes": [
           [
-            "owner_id"
+            "owner_id",
+            "state"
           ],
           [
             "state",
@@ -422,6 +425,33 @@
               "ar-EG": "دخلت المرحلة في",
               "zh-CN": "进入阶段时间",
               "zh-TW": "進入階段時間"
+            }
+          },
+          {
+            "ref": "stage_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "columns": [
+                    "stage_id"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Stage set by",
+              "de-DE": "Phase gesetzt von",
+              "fr-FR": "Étape définie par",
+              "da-DK": "Fase sat af",
+              "cs-CZ": "Fázi nastavil(a)",
+              "ar-EG": "حدّد المرحلة",
+              "zh-CN": "阶段设置人",
+              "zh-TW": "階段設定人"
             }
           },
           {
@@ -739,11 +769,37 @@
               "zh-CN": "关闭时所属团队",
               "zh-TW": "結案時所屬團隊"
             }
+          },
+          {
+            "ref": "last_activity_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Last activity",
+              "de-DE": "Letzte Aktivität",
+              "fr-FR": "Dernière activité",
+              "da-DK": "Seneste aktivitet",
+              "cs-CZ": "Poslední aktivita",
+              "ar-EG": "آخر نشاط",
+              "zh-CN": "最近活动",
+              "zh-TW": "最近活動"
+            },
+            "rules": {
+              "rollup": {
+                "from": "activities",
+                "via": "deal_id",
+                "latest": {
+                  "of": "at",
+                  "by": "at"
+                }
+              }
+            }
           }
         ]
       },
       {
         "ref": "deal_stage_changes",
+        "module": "selling",
         "label": {
           "en-US": "Stage change",
           "de-DE": "Phasenwechsel",
@@ -835,11 +891,7 @@
             "maxLength": 36,
             "nullable": true,
             "rules": {
-              "staff": true,
-              "stamp": {
-                "set": "user-id",
-                "on": "create"
-              }
+              "staff": true
             },
             "label": {
               "en-US": "Changed by",
@@ -876,6 +928,7 @@
       },
       {
         "ref": "follow_ups",
+        "module": "selling",
         "label": {
           "en-US": "Follow-up",
           "de-DE": "Wiedervorlage",
@@ -1210,6 +1263,7 @@
       },
       {
         "ref": "activities",
+        "module": "selling",
         "label": {
           "en-US": "Activity",
           "de-DE": "Aktivität",
@@ -1398,6 +1452,7 @@
       },
       {
         "ref": "lost_reasons",
+        "module": "selling",
         "label": {
           "en-US": "Lost reason",
           "de-DE": "Verlustgrund",
@@ -1458,6 +1513,7 @@
       },
       {
         "ref": "price_list",
+        "module": "quotes",
         "label": {
           "en-US": "List price",
           "de-DE": "Listenpreis",
@@ -1562,6 +1618,7 @@
         "keyField": "number",
         "builtOn": "invoices/quote@1",
         "part": "document",
+        "module": "quotes",
         "belongs": [
           {
             "via": "deal_id"
@@ -2891,6 +2948,7 @@
         },
         "builtOn": "invoices/quote@1",
         "part": "lines",
+        "module": "quotes",
         "belongs": [
           {
             "via": "document_id"
@@ -3273,6 +3331,7 @@
       },
       {
         "ref": "comments",
+        "module": "selling",
         "label": {
           "en-US": "Comment",
           "de-DE": "Kommentar",
@@ -3371,6 +3430,9 @@
             "rules": {
               "validation": {
                 "maxLength": 2000
+              },
+              "mentions": {
+                "about": "deal_id"
               }
             },
             "label": {
@@ -3422,6 +3484,7 @@
       },
       {
         "ref": "saved_views",
+        "module": "selling",
         "label": {
           "en-US": "Saved view",
           "de-DE": "Gespeicherte Ansicht",
@@ -3546,6 +3609,7 @@
       },
       {
         "ref": "saved_searches",
+        "module": "selling",
         "label": {
           "en-US": "Saved search",
           "de-DE": "Gespeicherte Suche",
@@ -3686,6 +3750,7 @@
       },
       {
         "ref": "nudge_snoozes",
+        "module": "selling",
         "label": {
           "en-US": "Snoozed nudge",
           "de-DE": "Zurückgestellter Hinweis",
@@ -3835,6 +3900,7 @@
       },
       {
         "ref": "deal_members",
+        "module": "selling",
         "label": {
           "en-US": "Person on a deal",
           "de-DE": "Deal-Beteiligter",
@@ -3972,6 +4038,7 @@
       },
       {
         "ref": "deal_marks",
+        "module": "selling",
         "label": {
           "en-US": "Deal mark",
           "de-DE": "Deal-Markierung",
@@ -4153,6 +4220,7 @@
       },
       {
         "ref": "site_visits",
+        "module": "selling",
         "label": {
           "en-US": "Site visit",
           "de-DE": "Vor-Ort-Termin",
@@ -4441,6 +4509,7 @@
       },
       {
         "ref": "visit_notes",
+        "module": "selling",
         "label": {
           "en-US": "Visit notes",
           "de-DE": "Besuchsnotiz",
@@ -4567,6 +4636,7 @@
       },
       {
         "ref": "visit_agreed",
+        "module": "selling",
         "label": {
           "en-US": "Agreed point",
           "de-DE": "Vereinbarung",
@@ -4677,6 +4747,7 @@
       },
       {
         "ref": "companies",
+        "module": "accounts",
         "label": {
           "en-US": "Company",
           "de-DE": "Firma",
@@ -4974,6 +5045,7 @@
       },
       {
         "ref": "contacts",
+        "module": "accounts",
         "label": {
           "en-US": "Contact",
           "de-DE": "Kontakt",
@@ -5126,6 +5198,7 @@
       },
       {
         "ref": "territories",
+        "module": "accounts",
         "label": {
           "en-US": "Territory",
           "de-DE": "Gebiet",
@@ -5211,6 +5284,7 @@
       },
       {
         "ref": "territory_places",
+        "module": "accounts",
         "label": {
           "en-US": "Territory place",
           "de-DE": "Ort im Gebiet",
@@ -5277,6 +5351,7 @@
       },
       {
         "ref": "renewals",
+        "module": "accounts",
         "label": {
           "en-US": "Renewal",
           "de-DE": "Folgegeschäft",
@@ -5557,6 +5632,7 @@
       },
       {
         "ref": "referrals",
+        "module": "accounts",
         "label": {
           "en-US": "Referral",
           "de-DE": "Empfehlung",
@@ -5706,6 +5782,7 @@
       },
       {
         "ref": "reps",
+        "module": "team",
         "label": {
           "en-US": "Rep profile",
           "de-DE": "Vertriebsprofil",
@@ -5824,6 +5901,7 @@
       },
       {
         "ref": "targets",
+        "module": "team",
         "label": {
           "en-US": "Target",
           "de-DE": "Ziel",
@@ -5962,6 +6040,7 @@
       },
       {
         "ref": "one_to_ones",
+        "module": "team",
         "label": {
           "en-US": "One-to-one",
           "de-DE": "Einzelgespräch",
@@ -6061,6 +6140,7 @@
       },
       {
         "ref": "one_to_one_sessions",
+        "module": "team",
         "label": {
           "en-US": "One-to-one session",
           "de-DE": "Einzelgespräch-Termin",
@@ -6197,6 +6277,7 @@
       },
       {
         "ref": "coaching_plans",
+        "module": "team",
         "label": {
           "en-US": "Coaching plan",
           "de-DE": "Coaching-Plan",
@@ -6311,6 +6392,7 @@
       },
       {
         "ref": "coaching_areas",
+        "module": "team",
         "label": {
           "en-US": "Coaching area",
           "de-DE": "Coaching-Schwerpunkt",
@@ -6443,6 +6525,7 @@
       },
       {
         "ref": "actions",
+        "module": "team",
         "label": {
           "en-US": "Action",
           "de-DE": "Aufgabe",
@@ -6715,6 +6798,7 @@
       },
       {
         "ref": "meetings",
+        "module": "team",
         "label": {
           "en-US": "Team meeting",
           "de-DE": "Teammeeting",
@@ -6773,6 +6857,7 @@
       },
       {
         "ref": "meeting_slots",
+        "module": "team",
         "label": {
           "en-US": "Agenda item",
           "de-DE": "Tagesordnungspunkt",
@@ -6886,6 +6971,7 @@
       },
       {
         "ref": "meeting_decisions",
+        "module": "team",
         "label": {
           "en-US": "Decision",
           "de-DE": "Beschluss",
@@ -7037,6 +7123,7 @@
       },
       {
         "ref": "threads",
+        "module": "team",
         "label": {
           "en-US": "Conversation",
           "de-DE": "Unterhaltung",
@@ -7136,6 +7223,7 @@
       },
       {
         "ref": "thread_members",
+        "module": "team",
         "label": {
           "en-US": "Conversation member",
           "de-DE": "Teilnehmer der Unterhaltung",
@@ -7234,6 +7322,7 @@
       },
       {
         "ref": "messages",
+        "module": "team",
         "label": {
           "en-US": "Message",
           "de-DE": "Nachricht",
@@ -7353,6 +7442,7 @@
       },
       {
         "ref": "starters",
+        "module": "team",
         "label": {
           "en-US": "New starter",
           "de-DE": "Neuzugang",
@@ -7476,6 +7566,7 @@
       },
       {
         "ref": "starter_steps",
+        "module": "team",
         "label": {
           "en-US": "Onboarding step",
           "de-DE": "Einarbeitungsschritt",
@@ -7649,6 +7740,7 @@
       },
       {
         "ref": "covers",
+        "module": "team",
         "label": {
           "en-US": "Cover",
           "de-DE": "Vertretung",
@@ -7775,6 +7867,7 @@
       },
       {
         "ref": "cover_notes",
+        "module": "team",
         "label": {
           "en-US": "Cover note",
           "de-DE": "Vertretungsnotiz",
@@ -7863,6 +7956,7 @@
       },
       {
         "ref": "enquiries",
+        "module": "inbox",
         "label": {
           "en-US": "Enquiry",
           "de-DE": "Anfrage",
@@ -8461,6 +8555,7 @@
       },
       {
         "ref": "shows",
+        "module": "inbox",
         "label": {
           "en-US": "Trade show",
           "de-DE": "Messe",
@@ -8536,6 +8631,7 @@
       },
       {
         "ref": "showroom_spaces",
+        "module": "showroom",
         "label": {
           "en-US": "Showroom space",
           "de-DE": "Showroom-Bereich",
@@ -8582,6 +8678,7 @@
       },
       {
         "ref": "showroom_bookings",
+        "module": "showroom",
         "label": {
           "en-US": "Showroom booking",
           "de-DE": "Showroom-Termin",
@@ -9015,6 +9112,7 @@
       },
       {
         "ref": "samples",
+        "module": "showroom",
         "label": {
           "en-US": "Sample",
           "de-DE": "Muster",
@@ -9112,6 +9210,7 @@
       },
       {
         "ref": "sample_loans",
+        "module": "showroom",
         "label": {
           "en-US": "Sample loan",
           "de-DE": "Musterausleihe",
@@ -9247,6 +9346,7 @@
       },
       {
         "ref": "sample_chases",
+        "module": "showroom",
         "label": {
           "en-US": "Sample chase",
           "de-DE": "Muster-Erinnerung",
@@ -9332,6 +9432,7 @@
       },
       {
         "ref": "display_pieces",
+        "module": "showroom",
         "label": {
           "en-US": "Display piece",
           "de-DE": "Ausstellungsstück",
@@ -9519,6 +9620,7 @@
       },
       {
         "ref": "jobs",
+        "module": "jobs",
         "label": {
           "en-US": "Job",
           "de-DE": "Auftrag",
@@ -9967,6 +10069,7 @@
       },
       {
         "ref": "crews",
+        "module": "jobs",
         "label": {
           "en-US": "Crew",
           "de-DE": "Montageteam",
@@ -10045,6 +10148,7 @@
       },
       {
         "ref": "crew_members",
+        "module": "jobs",
         "label": {
           "en-US": "Crew member",
           "de-DE": "Teammitglied",
@@ -10157,6 +10261,7 @@
       },
       {
         "ref": "crew_days",
+        "module": "jobs",
         "label": {
           "en-US": "Crew working day",
           "de-DE": "Arbeitstag des Teams",
@@ -10312,6 +10417,7 @@
       },
       {
         "ref": "job_visits",
+        "module": "jobs",
         "label": {
           "en-US": "Job visit",
           "de-DE": "Einsatz",
@@ -10966,6 +11072,7 @@
       },
       {
         "ref": "sign_offs",
+        "module": "jobs",
         "label": {
           "en-US": "Sign-off",
           "de-DE": "Abnahme",
@@ -11236,6 +11343,7 @@
       },
       {
         "ref": "snags",
+        "module": "jobs",
         "label": {
           "en-US": "Snag",
           "de-DE": "Mangel",
@@ -11754,6 +11862,7 @@
       },
       {
         "ref": "delivery_notes",
+        "module": "jobs",
         "label": {
           "en-US": "Delivery note",
           "de-DE": "Lieferschein",
@@ -11953,6 +12062,7 @@
       },
       {
         "ref": "delivery_note_lines",
+        "module": "jobs",
         "label": {
           "en-US": "Delivery note line",
           "de-DE": "Lieferscheinposition",
@@ -12138,6 +12248,7 @@
       },
       {
         "ref": "waste_removals",
+        "module": "jobs",
         "label": {
           "en-US": "Waste removal",
           "de-DE": "Entsorgung",
@@ -12370,6 +12481,7 @@
       },
       {
         "ref": "feedback",
+        "module": "aftercare",
         "label": {
           "en-US": "Feedback",
           "de-DE": "Rückmeldung",
@@ -12522,6 +12634,7 @@
       },
       {
         "ref": "complaints",
+        "module": "aftercare",
         "label": {
           "en-US": "Complaint",
           "de-DE": "Beschwerde",
@@ -12970,6 +13083,7 @@
       },
       {
         "ref": "warranty_claims",
+        "module": "aftercare",
         "label": {
           "en-US": "Warranty claim",
           "de-DE": "Garantiefall",
@@ -13387,6 +13501,7 @@
       },
       {
         "ref": "deal_stock_needs",
+        "module": "supply",
         "label": {
           "en-US": "Stock need",
           "de-DE": "Materialbedarf",
@@ -13482,6 +13597,7 @@
       },
       {
         "ref": "vehicles",
+        "module": "fleet",
         "label": {
           "en-US": "Vehicle",
           "de-DE": "Fahrzeug",
@@ -13635,6 +13751,7 @@
       },
       {
         "ref": "vehicle_checks",
+        "module": "fleet",
         "label": {
           "en-US": "Vehicle check",
           "de-DE": "Fahrzeugkontrolle",
@@ -13807,6 +13924,7 @@
       },
       {
         "ref": "vehicle_faults",
+        "module": "fleet",
         "label": {
           "en-US": "Vehicle fault",
           "de-DE": "Fahrzeugmangel",
@@ -13931,6 +14049,7 @@
       },
       {
         "ref": "fuel_fills",
+        "module": "fleet",
         "label": {
           "en-US": "Fuel fill",
           "de-DE": "Tankfüllung",
@@ -14069,6 +14188,7 @@
       },
       {
         "ref": "time_sheets",
+        "module": "fleet",
         "label": {
           "en-US": "Time sheet",
           "de-DE": "Stundenzettel",
@@ -14389,6 +14509,7 @@
       },
       {
         "ref": "time_sheet_lines",
+        "module": "fleet",
         "label": {
           "en-US": "Time sheet line",
           "de-DE": "Stundenzettelzeile",
@@ -14547,6 +14668,7 @@
       },
       {
         "ref": "certificates",
+        "module": "fleet",
         "label": {
           "en-US": "Certificate",
           "de-DE": "Zertifikat",
@@ -14651,6 +14773,7 @@
       },
       {
         "ref": "subcontractors",
+        "module": "fleet",
         "label": {
           "en-US": "Subcontractor",
           "de-DE": "Subunternehmer",
@@ -14788,6 +14911,7 @@
       },
       {
         "ref": "insurance_incidents",
+        "module": "fleet",
         "label": {
           "en-US": "Insurance incident",
           "de-DE": "Versicherungsfall",
@@ -15956,6 +16080,27 @@
     {
       "key": "admin",
       "name": "CRM admin",
+      "names": {
+        "de-DE": "CRM-Admin",
+        "fr-FR": "Administrateur CRM",
+        "da-DK": "CRM-administrator",
+        "cs-CZ": "Správce CRM",
+        "ar-EG": "مسؤول CRM",
+        "zh-CN": "CRM 管理员",
+        "zh-TW": "CRM 管理員"
+      },
+      "modules": [
+        "selling",
+        "quotes",
+        "accounts",
+        "team",
+        "inbox",
+        "showroom",
+        "jobs",
+        "aftercare",
+        "supply",
+        "fleet"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@stages:read",
@@ -16428,6 +16573,22 @@
     {
       "key": "sales-manager",
       "name": "Sales manager",
+      "names": {
+        "de-DE": "Vertriebsleitung",
+        "fr-FR": "Responsable commercial",
+        "da-DK": "Salgschef",
+        "cs-CZ": "Vedoucí prodeje",
+        "ar-EG": "مدير المبيعات",
+        "zh-CN": "销售经理",
+        "zh-TW": "業務經理"
+      },
+      "modules": [
+        "selling",
+        "quotes",
+        "accounts",
+        "team",
+        "inbox"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@stages:read",
@@ -17177,6 +17338,22 @@
     {
       "key": "rep",
       "name": "Sales rep",
+      "names": {
+        "de-DE": "Vertriebsmitarbeiter",
+        "fr-FR": "Commercial",
+        "da-DK": "Sælger",
+        "cs-CZ": "Obchodní zástupce",
+        "ar-EG": "مندوب مبيعات",
+        "zh-CN": "销售代表",
+        "zh-TW": "業務代表"
+      },
+      "modules": [
+        "selling",
+        "quotes",
+        "accounts",
+        "team",
+        "inbox"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@stages:read",
@@ -17888,6 +18065,19 @@
     {
       "key": "account-manager",
       "name": "Account manager",
+      "names": {
+        "de-DE": "Kundenbetreuer",
+        "fr-FR": "Chargé de comptes",
+        "da-DK": "Kundeansvarlig",
+        "cs-CZ": "Správce zákazníků",
+        "ar-EG": "مدير الحسابات",
+        "zh-CN": "客户经理",
+        "zh-TW": "客戶經理"
+      },
+      "modules": [
+        "accounts",
+        "aftercare"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@stages:read",
@@ -18127,6 +18317,19 @@
     {
       "key": "marketer",
       "name": "Marketer",
+      "names": {
+        "de-DE": "Marketing",
+        "fr-FR": "Marketing",
+        "da-DK": "Marketing",
+        "cs-CZ": "Marketing",
+        "ar-EG": "التسويق",
+        "zh-CN": "市场专员",
+        "zh-TW": "行銷人員"
+      },
+      "modules": [
+        "accounts",
+        "inbox"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@companies:read",
@@ -18171,6 +18374,19 @@
     {
       "key": "front-desk",
       "name": "Front desk",
+      "names": {
+        "de-DE": "Empfang",
+        "fr-FR": "Accueil",
+        "da-DK": "Reception",
+        "cs-CZ": "Recepce",
+        "ar-EG": "الاستقبال",
+        "zh-CN": "前台",
+        "zh-TW": "櫃台"
+      },
+      "modules": [
+        "inbox",
+        "showroom"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@companies:read",
@@ -18309,6 +18525,20 @@
     {
       "key": "ops-manager",
       "name": "Operations manager",
+      "names": {
+        "de-DE": "Betriebsleitung",
+        "fr-FR": "Responsable des opérations",
+        "da-DK": "Driftsleder",
+        "cs-CZ": "Vedoucí provozu",
+        "ar-EG": "مدير العمليات",
+        "zh-CN": "运营经理",
+        "zh-TW": "營運經理"
+      },
+      "modules": [
+        "jobs",
+        "supply",
+        "fleet"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@jobs:read",
@@ -18560,6 +18790,19 @@
     {
       "key": "crew",
       "name": "Field crew",
+      "names": {
+        "de-DE": "Montageteam",
+        "fr-FR": "Équipe de terrain",
+        "da-DK": "Montører",
+        "cs-CZ": "Terénní tým",
+        "ar-EG": "فريق الموقع",
+        "zh-CN": "现场人员",
+        "zh-TW": "現場人員"
+      },
+      "modules": [
+        "jobs",
+        "fleet"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@crews:read",
@@ -18821,6 +19064,27 @@
     {
       "key": "read-only",
       "name": "Read-only",
+      "names": {
+        "de-DE": "Nur lesen",
+        "fr-FR": "Lecture seule",
+        "da-DK": "Kun læsning",
+        "cs-CZ": "Pouze čtení",
+        "ar-EG": "قراءة فقط",
+        "zh-CN": "只读",
+        "zh-TW": "唯讀"
+      },
+      "modules": [
+        "selling",
+        "quotes",
+        "accounts",
+        "team",
+        "inbox",
+        "showroom",
+        "jobs",
+        "aftercare",
+        "supply",
+        "fleet"
+      ],
       "permissions": [
         "app:@:staff",
         "table:@stages:read",
@@ -19127,6 +19391,7 @@
         "zh-TW": "新增案件時，建立供其他畫面查找的紀錄，並把起始階段寫入歷程。"
       },
       "enabled": true,
+      "module": "selling",
       "trigger": {
         "kind": "record",
         "event": "created",
@@ -19161,7 +19426,8 @@
               "table": "deal_stage_changes",
               "values": {
                 "deal_id": "{{record.id}}",
-                "to_stage_id": "{{record.stage_id}}"
+                "to_stage_id": "{{record.stage_id}}",
+                "by_id": "{{record.stage_by_id}}"
               }
             }
           }
@@ -19191,6 +19457,7 @@
         "zh-TW": "把案件進入的階段連同時間寫入歷程。"
       },
       "enabled": true,
+      "module": "selling",
       "trigger": {
         "kind": "record",
         "event": "updated",
@@ -19214,7 +19481,8 @@
               "table": "deal_stage_changes",
               "values": {
                 "deal_id": "{{record.id}}",
-                "to_stage_id": "{{record.stage_id}}"
+                "to_stage_id": "{{record.stage_id}}",
+                "by_id": "{{record.stage_by_id}}"
               }
             }
           }
@@ -19244,6 +19512,7 @@
         "zh-TW": "案件標記為成交且尚無工單時，為其建立工單。現場名稱先取案件名稱，其餘由營運經理補上。"
       },
       "enabled": true,
+      "module": "jobs",
       "trigger": {
         "kind": "record",
         "event": "updated",
@@ -19322,6 +19591,7 @@
         "zh-TW": "有人為報價申請核准時，通知所有業務經理。"
       },
       "enabled": true,
+      "module": "quotes",
       "trigger": {
         "kind": "record",
         "event": "updated",
@@ -19380,6 +19650,984 @@
           }
         ]
       }
+    },
+    {
+      "key": "nudge-quiet",
+      "name": {
+        "en-US": "A deal has gone quiet: its owner is told",
+        "de-DE": "Ein Deal ist still geworden: die zuständige Person wird benachrichtigt",
+        "fr-FR": "Une affaire ne bouge plus : son responsable est prévenu",
+        "da-DK": "En handel er gået i stå: ejeren får besked",
+        "cs-CZ": "Obchod utichl: jeho vlastník dostane zprávu",
+        "ar-EG": "صفقة هدأت: يُبلَّغ مالكها",
+        "zh-CN": "商机沉寂：通知负责人",
+        "zh-TW": "商機沉寂：通知負責人"
+      },
+      "description": {
+        "en-US": "Each morning, tells the owner of an open deal on which nothing has been logged for 7 days. Once each time the deal goes quiet.",
+        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, zu dem seit 7 Tagen nichts erfasst wurde. Einmal je Stillstand.",
+        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte sur laquelle rien n’a été noté depuis 7 jours. Une fois par période de silence.",
+        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når intet er registreret i 7 dage. Én gang hver gang handlen går i stå.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, u kterého se 7 dní nic nezapsalo. Jednou pokaždé, když obchod utichne.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة لم يُسجَّل عليها شيء منذ 7 أيام. مرة واحدة في كل فترة هدوء.",
+        "zh-CN": "每天早上通知 7 天内没有任何记录的进行中商机的负责人。每次沉寂只通知一次。",
+        "zh-TW": "每天早上通知 7 天內沒有任何紀錄的進行中商機的負責人。每次沉寂只通知一次。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "daily",
+          "time": "08:00"
+        },
+        "forEach": {
+          "table": "deals",
+          "once": "per-spell",
+          "where": [
+            {
+              "left": {
+                "field": "state"
+              },
+              "op": "is",
+              "right": "open"
+            },
+            {
+              "left": {
+                "field": "last_activity_at"
+              },
+              "op": "more_than_ago",
+              "right": {
+                "amount": 7,
+                "unit": "days"
+              }
+            }
+          ]
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal has gone quiet: its owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "owner_id"
+              },
+              "title": {
+                "en-US": "Gone quiet: {{record.name}}",
+                "de-DE": "Still geworden: {{record.name}}",
+                "fr-FR": "Plus de nouvelles : {{record.name}}",
+                "da-DK": "Gået i stå: {{record.name}}",
+                "cs-CZ": "Utichlo: {{record.name}}",
+                "ar-EG": "هدأت: {{record.name}}",
+                "zh-CN": "已沉寂：{{record.name}}",
+                "zh-TW": "已沉寂：{{record.name}}"
+              },
+              "body": {
+                "en-US": "Nothing has been logged on this deal for 7 days.",
+                "de-DE": "Zu diesem Deal wurde seit 7 Tagen nichts erfasst.",
+                "fr-FR": "Rien n’a été noté sur cette affaire depuis 7 jours.",
+                "da-DK": "Der er ikke registreret noget på denne handel i 7 dage.",
+                "cs-CZ": "U tohoto obchodu se 7 dní nic nezapsalo.",
+                "ar-EG": "لم يُسجَّل شيء على هذه الصفقة منذ 7 أيام.",
+                "zh-CN": "该商机已 7 天没有任何记录。",
+                "zh-TW": "此商機已 7 天沒有任何紀錄。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "nudge-stuck",
+      "name": {
+        "en-US": "A deal is stuck in its stage: its owner is told",
+        "de-DE": "Ein Deal steckt in seiner Phase fest: die zuständige Person wird benachrichtigt",
+        "fr-FR": "Une affaire stagne à son étape : son responsable est prévenu",
+        "da-DK": "En handel sidder fast i sin fase: ejeren får besked",
+        "cs-CZ": "Obchod uvízl ve své fázi: jeho vlastník dostane zprávu",
+        "ar-EG": "صفقة عالقة في مرحلتها: يُبلَّغ مالكها",
+        "zh-CN": "商机停滞在当前阶段：通知负责人",
+        "zh-TW": "商機停滯在目前階段：通知負責人"
+      },
+      "description": {
+        "en-US": "Each morning, tells the owner of an open deal that has sat in the same stage for 21 days. Once each time.",
+        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, der seit 21 Tagen in derselben Phase liegt. Einmal je Fall.",
+        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte restée 21 jours à la même étape. Une fois à chaque fois.",
+        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når den har ligget i samme fase i 21 dage. Én gang hver gang.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, který je 21 dní ve stejné fázi. Pokaždé jednou.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة بقيت في المرحلة نفسها 21 يومًا. مرة واحدة في كل مرة.",
+        "zh-CN": "每天早上通知在同一阶段停留 21 天的进行中商机的负责人。每次只通知一次。",
+        "zh-TW": "每天早上通知在同一階段停留 21 天的進行中商機的負責人。每次只通知一次。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "daily",
+          "time": "08:00"
+        },
+        "forEach": {
+          "table": "deals",
+          "once": "per-spell",
+          "where": [
+            {
+              "left": {
+                "field": "state"
+              },
+              "op": "is",
+              "right": "open"
+            },
+            {
+              "left": {
+                "field": "entered_stage_at"
+              },
+              "op": "more_than_ago",
+              "right": {
+                "amount": 21,
+                "unit": "days"
+              }
+            }
+          ]
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal is stuck in its stage: its owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "owner_id"
+              },
+              "title": {
+                "en-US": "Stuck in its stage: {{record.name}}",
+                "de-DE": "Steckt in der Phase fest: {{record.name}}",
+                "fr-FR": "Stagne à son étape : {{record.name}}",
+                "da-DK": "Sidder fast i fasen: {{record.name}}",
+                "cs-CZ": "Uvízlo ve fázi: {{record.name}}",
+                "ar-EG": "عالقة في مرحلتها: {{record.name}}",
+                "zh-CN": "阶段停滞：{{record.name}}",
+                "zh-TW": "階段停滯：{{record.name}}"
+              },
+              "body": {
+                "en-US": "This deal has been in the same stage for 21 days.",
+                "de-DE": "Dieser Deal liegt seit 21 Tagen in derselben Phase.",
+                "fr-FR": "Cette affaire est à la même étape depuis 21 jours.",
+                "da-DK": "Denne handel har ligget i samme fase i 21 dage.",
+                "cs-CZ": "Tento obchod je 21 dní ve stejné fázi.",
+                "ar-EG": "هذه الصفقة في المرحلة نفسها منذ 21 يومًا.",
+                "zh-CN": "该商机已在同一阶段停留 21 天。",
+                "zh-TW": "此商機已在同一階段停留 21 天。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "nudge-soon",
+      "name": {
+        "en-US": "A deal closes soon and is not yet agreed: its owner is told",
+        "de-DE": "Ein Deal soll bald abschließen und ist noch nicht zugesagt: die zuständige Person wird benachrichtigt",
+        "fr-FR": "Une affaire doit se conclure bientôt sans accord verbal : son responsable est prévenu",
+        "da-DK": "En handel skal snart lukkes og er endnu ikke aftalt: ejeren får besked",
+        "cs-CZ": "Obchod se má brzy uzavřít a ještě není domluven: jeho vlastník dostane zprávu",
+        "ar-EG": "صفقة تقترب من الإغلاق ولم يُتفق عليها بعد: يُبلَّغ مالكها",
+        "zh-CN": "商机即将到期但尚未口头确认：通知负责人",
+        "zh-TW": "商機即將到期但尚未口頭確認：通知負責人"
+      },
+      "description": {
+        "en-US": "Each morning, tells the owner of an open deal that is expected to close within 7 days and has not reached the last stage. Once each time.",
+        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, der in 7 Tagen abschließen soll und die letzte Phase noch nicht erreicht hat. Einmal je Fall.",
+        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte attendue sous 7 jours et pas encore à la dernière étape. Une fois à chaque fois.",
+        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når den forventes lukket inden for 7 dage og ikke er nået til sidste fase. Én gang hver gang.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, který se má uzavřít do 7 dnů a není v poslední fázi. Pokaždé jednou.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة يُتوقع إغلاقها خلال 7 أيام ولم تبلغ المرحلة الأخيرة. مرة واحدة في كل مرة.",
+        "zh-CN": "每天早上通知预计 7 天内成交但尚未到最后阶段的进行中商机的负责人。每次只通知一次。",
+        "zh-TW": "每天早上通知預計 7 天內成交但尚未到最後階段的進行中商機的負責人。每次只通知一次。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "daily",
+          "time": "08:00"
+        },
+        "forEach": {
+          "table": "deals",
+          "once": "per-spell",
+          "where": [
+            {
+              "left": {
+                "field": "state"
+              },
+              "op": "is",
+              "right": "open"
+            },
+            {
+              "left": {
+                "field": "expected_close"
+              },
+              "op": "within_next",
+              "right": {
+                "amount": 7,
+                "unit": "days"
+              }
+            },
+            {
+              "left": {
+                "field": "stage_odds"
+              },
+              "op": "lt",
+              "right": 0.9
+            }
+          ]
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal closes soon and is not yet agreed: its owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "owner_id"
+              },
+              "title": {
+                "en-US": "Closing soon: {{record.name}}",
+                "de-DE": "Schließt bald ab: {{record.name}}",
+                "fr-FR": "Conclusion proche : {{record.name}}",
+                "da-DK": "Lukker snart: {{record.name}}",
+                "cs-CZ": "Brzy se uzavírá: {{record.name}}",
+                "ar-EG": "تُغلق قريبًا: {{record.name}}",
+                "zh-CN": "即将到期：{{record.name}}",
+                "zh-TW": "即將到期：{{record.name}}"
+              },
+              "body": {
+                "en-US": "Expected to close on {{record.expected_close}}, and not yet agreed.",
+                "de-DE": "Abschluss erwartet am {{record.expected_close}}, noch nicht zugesagt.",
+                "fr-FR": "Conclusion attendue le {{record.expected_close}}, sans accord pour l’instant.",
+                "da-DK": "Forventes lukket {{record.expected_close}} og er endnu ikke aftalt.",
+                "cs-CZ": "Očekávané uzavření {{record.expected_close}}, zatím nedomluveno.",
+                "ar-EG": "الإغلاق المتوقع في {{record.expected_close}}، ولم يُتفق عليها بعد.",
+                "zh-CN": "预计 {{record.expected_close}} 成交，尚未口头确认。",
+                "zh-TW": "預計 {{record.expected_close}} 成交，尚未口頭確認。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "follow-up-due",
+      "name": {
+        "en-US": "A follow-up falls due: its owner is told",
+        "de-DE": "Eine Wiedervorlage wird fällig: die zuständige Person wird benachrichtigt",
+        "fr-FR": "Une relance arrive à échéance : son responsable est prévenu",
+        "da-DK": "En opfølgning forfalder: ejeren får besked",
+        "cs-CZ": "Úkol k připomenutí je splatný: jeho vlastník dostane zprávu",
+        "ar-EG": "حان موعد متابعة: يُبلَّغ صاحبها",
+        "zh-CN": "跟进事项到期：通知负责人",
+        "zh-TW": "跟進事項到期：通知負責人"
+      },
+      "description": {
+        "en-US": "Every 15 minutes, tells the owner of a follow-up that has fallen due and is not done. Once each time it falls due.",
+        "de-DE": "Benachrichtigt alle 15 Minuten die zuständige Person einer fälligen, noch offenen Wiedervorlage. Einmal je Fälligkeit.",
+        "fr-FR": "Toutes les 15 minutes, prévient le responsable d’une relance arrivée à échéance et non faite. Une fois par échéance.",
+        "da-DK": "Giver hvert 15. minut ejeren af en forfalden, ikke udført opfølgning besked. Én gang hver gang den forfalder.",
+        "cs-CZ": "Každých 15 minut dá vědět vlastníkovi splatného, nedokončeného úkolu. Jednou při každé splatnosti.",
+        "ar-EG": "كل 15 دقيقة، يُبلِّغ صاحب متابعة حان موعدها ولم تُنجز. مرة واحدة عند كل استحقاق.",
+        "zh-CN": "每 15 分钟通知已到期且未完成的跟进事项的负责人。每次到期只通知一次。",
+        "zh-TW": "每 15 分鐘通知已到期且未完成的跟進事項的負責人。每次到期只通知一次。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "interval",
+          "everyMinutes": "15"
+        },
+        "forEach": {
+          "table": "follow_ups",
+          "once": "per-spell",
+          "where": [
+            {
+              "left": {
+                "field": "done"
+              },
+              "op": "is",
+              "right": "false"
+            },
+            {
+              "left": {
+                "field": "due_at"
+              },
+              "op": "more_than_ago",
+              "right": {
+                "amount": 1,
+                "unit": "minutes"
+              }
+            }
+          ]
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A follow-up falls due: its owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "owner_id"
+              },
+              "title": {
+                "en-US": "Due now: {{record.text}}",
+                "de-DE": "Jetzt fällig: {{record.text}}",
+                "fr-FR": "À faire maintenant : {{record.text}}",
+                "da-DK": "Forfalder nu: {{record.text}}",
+                "cs-CZ": "Právě splatné: {{record.text}}",
+                "ar-EG": "حان موعدها: {{record.text}}",
+                "zh-CN": "现在到期：{{record.text}}",
+                "zh-TW": "現在到期：{{record.text}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quote-runs-out",
+      "name": {
+        "en-US": "A quote runs out in 3 days: the deal’s owner is told",
+        "de-DE": "Ein Angebot läuft in 3 Tagen ab: die für den Deal zuständige Person wird benachrichtigt",
+        "fr-FR": "Un devis expire dans 3 jours : le responsable de l’affaire est prévenu",
+        "da-DK": "Et tilbud udløber om 3 dage: handlens ejer får besked",
+        "cs-CZ": "Nabídka vyprší za 3 dny: vlastník obchodu dostane zprávu",
+        "ar-EG": "عرض سعر ينتهي خلال 3 أيام: يُبلَّغ مالك الصفقة",
+        "zh-CN": "报价将在 3 天内失效：通知商机负责人",
+        "zh-TW": "報價將在 3 天內失效：通知商機負責人"
+      },
+      "description": {
+        "en-US": "Each morning, tells the owner of the deal a sent quote belongs to when the quote is valid for 3 more days or fewer. Once for each quote.",
+        "de-DE": "Benachrichtigt jeden Morgen die für den Deal zuständige Person, wenn ein gesendetes Angebot nur noch höchstens 3 Tage gilt. Einmal je Angebot.",
+        "fr-FR": "Chaque matin, prévient le responsable de l’affaire quand un devis envoyé n’est plus valable que 3 jours au plus. Une fois par devis.",
+        "da-DK": "Giver hver morgen handlens ejer besked, når et sendt tilbud højst gælder 3 dage mere. Én gang pr. tilbud.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi obchodu, když odeslaná nabídka platí už nejvýše 3 dny. Jednou pro každou nabídku.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك الصفقة عندما يبقى على صلاحية عرض مُرسل 3 أيام أو أقل. مرة واحدة لكل عرض.",
+        "zh-CN": "每天早上，当已发送报价的有效期只剩 3 天或更少时，通知其商机负责人。每份报价只通知一次。",
+        "zh-TW": "每天早上，當已送出報價的有效期只剩 3 天或更少時，通知其商機負責人。每份報價只通知一次。"
+      },
+      "enabled": false,
+      "module": "quotes",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "daily",
+          "time": "08:00"
+        },
+        "forEach": {
+          "table": "quotes",
+          "once": "per-spell",
+          "where": [
+            {
+              "left": {
+                "field": "status"
+              },
+              "op": "is",
+              "right": "sent"
+            },
+            {
+              "left": {
+                "field": "valid_until"
+              },
+              "op": "within_next",
+              "right": {
+                "amount": 3,
+                "unit": "days"
+              }
+            }
+          ]
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A quote runs out in 3 days: the deal’s owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "deal_id.owner_id"
+              },
+              "title": {
+                "en-US": "Quote {{record.number}} runs out on {{record.valid_until}}",
+                "de-DE": "Angebot {{record.number}} läuft am {{record.valid_until}} ab",
+                "fr-FR": "Le devis {{record.number}} expire le {{record.valid_until}}",
+                "da-DK": "Tilbud {{record.number}} udløber {{record.valid_until}}",
+                "cs-CZ": "Nabídka {{record.number}} vyprší {{record.valid_until}}",
+                "ar-EG": "عرض السعر {{record.number}} ينتهي في {{record.valid_until}}",
+                "zh-CN": "报价 {{record.number}} 将于 {{record.valid_until}} 失效",
+                "zh-TW": "報價 {{record.number}} 將於 {{record.valid_until}} 失效"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "deal-handed-over",
+      "name": {
+        "en-US": "A deal is handed over: its new owner is told",
+        "de-DE": "Ein Deal wird übergeben: die neue zuständige Person wird benachrichtigt",
+        "fr-FR": "Une affaire change de mains : son nouveau responsable est prévenu",
+        "da-DK": "En handel overdrages: den nye ejer får besked",
+        "cs-CZ": "Obchod je předán: nový vlastník dostane zprávu",
+        "ar-EG": "صفقة تُسلَّم: يُبلَّغ مالكها الجديد",
+        "zh-CN": "商机移交：通知新负责人",
+        "zh-TW": "商機移交：通知新負責人"
+      },
+      "description": {
+        "en-US": "When a deal’s owner changes, tells the person it now belongs to.",
+        "de-DE": "Benachrichtigt die Person, der ein Deal nach einem Wechsel der Zuständigkeit nun gehört.",
+        "fr-FR": "Quand le responsable d’une affaire change, prévient la personne à qui elle revient désormais.",
+        "da-DK": "Når en handels ejer skifter, får den person, den nu tilhører, besked.",
+        "cs-CZ": "Když se změní vlastník obchodu, dá vědět osobě, které teď patří.",
+        "ar-EG": "عند تغيير مالك صفقة، يُبلِّغ الشخص الذي أصبحت له.",
+        "zh-CN": "商机负责人变更时，通知新的负责人。",
+        "zh-TW": "商機負責人變更時，通知新的負責人。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "deals",
+        "changedColumn": "owner_id"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal is handed over: its new owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "owner_id"
+              },
+              "title": {
+                "en-US": "Handed to you: {{record.name}}",
+                "de-DE": "An Sie übergeben: {{record.name}}",
+                "fr-FR": "Vous est confiée : {{record.name}}",
+                "da-DK": "Overdraget til dig: {{record.name}}",
+                "cs-CZ": "Předáno vám: {{record.name}}",
+                "ar-EG": "سُلِّمت إليك: {{record.name}}",
+                "zh-CN": "已移交给您：{{record.name}}",
+                "zh-TW": "已移交給您：{{record.name}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "approval-given",
+      "name": {
+        "en-US": "A discount is approved: the person who asked is told",
+        "de-DE": "Ein Rabatt wird genehmigt: die anfragende Person wird benachrichtigt",
+        "fr-FR": "Une remise est approuvée : la personne qui l’a demandée est prévenue",
+        "da-DK": "En rabat godkendes: den, der bad om det, får besked",
+        "cs-CZ": "Sleva je schválena: žadatel dostane zprávu",
+        "ar-EG": "اعتُمد خصم: يُبلَّغ من طلبه",
+        "zh-CN": "折扣获批：通知申请人",
+        "zh-TW": "折扣獲准：通知申請人"
+      },
+      "description": {
+        "en-US": "When a quote’s approval is given, tells the person who asked for it.",
+        "de-DE": "Benachrichtigt die anfragende Person, sobald die Genehmigung eines Angebots erteilt ist.",
+        "fr-FR": "Quand l’approbation d’un devis est accordée, prévient la personne qui l’a demandée.",
+        "da-DK": "Når et tilbud godkendes, får den, der bad om det, besked.",
+        "cs-CZ": "Když je nabídka schválena, dá vědět tomu, kdo o schválení požádal.",
+        "ar-EG": "عند اعتماد عرض سعر، يُبلِّغ من طلب الاعتماد.",
+        "zh-CN": "报价获批时，通知申请审批的人。",
+        "zh-TW": "報價獲准時，通知申請核准的人。"
+      },
+      "enabled": false,
+      "module": "quotes",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "quotes",
+        "changedColumn": "approval",
+        "when": [
+          {
+            "left": {
+              "field": "approval"
+            },
+            "op": "is",
+            "right": "approved"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A discount is approved: the person who asked is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "asked_by_id"
+              },
+              "title": {
+                "en-US": "Quote {{record.number}} is approved",
+                "de-DE": "Angebot {{record.number}} ist genehmigt",
+                "fr-FR": "Le devis {{record.number}} est approuvé",
+                "da-DK": "Tilbud {{record.number}} er godkendt",
+                "cs-CZ": "Nabídka {{record.number}} je schválena",
+                "ar-EG": "اعتُمد عرض السعر {{record.number}}",
+                "zh-CN": "报价 {{record.number}} 已批准",
+                "zh-TW": "報價 {{record.number}} 已核准"
+              },
+              "body": {
+                "en-US": "{{record.decision_note}}",
+                "de-DE": "{{record.decision_note}}",
+                "fr-FR": "{{record.decision_note}}",
+                "da-DK": "{{record.decision_note}}",
+                "cs-CZ": "{{record.decision_note}}",
+                "ar-EG": "{{record.decision_note}}",
+                "zh-CN": "{{record.decision_note}}",
+                "zh-TW": "{{record.decision_note}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "approval-refused",
+      "name": {
+        "en-US": "A discount is refused: the person who asked is told",
+        "de-DE": "Ein Rabatt wird abgelehnt: die anfragende Person wird benachrichtigt",
+        "fr-FR": "Une remise est refusée : la personne qui l’a demandée est prévenue",
+        "da-DK": "En rabat afvises: den, der bad om det, får besked",
+        "cs-CZ": "Sleva je zamítnuta: žadatel dostane zprávu",
+        "ar-EG": "رُفض خصم: يُبلَّغ من طلبه",
+        "zh-CN": "折扣被驳回：通知申请人",
+        "zh-TW": "折扣遭駁回：通知申請人"
+      },
+      "description": {
+        "en-US": "When a quote’s approval is refused, tells the person who asked for it.",
+        "de-DE": "Benachrichtigt die anfragende Person, sobald die Genehmigung eines Angebots abgelehnt ist.",
+        "fr-FR": "Quand l’approbation d’un devis est refusée, prévient la personne qui l’a demandée.",
+        "da-DK": "Når godkendelsen af et tilbud afvises, får den, der bad om det, besked.",
+        "cs-CZ": "Když je schválení nabídky zamítnuto, dá vědět tomu, kdo o ně požádal.",
+        "ar-EG": "عند رفض اعتماد عرض سعر، يُبلِّغ من طلب الاعتماد.",
+        "zh-CN": "报价审批被驳回时，通知申请审批的人。",
+        "zh-TW": "報價核准遭駁回時，通知申請核准的人。"
+      },
+      "enabled": false,
+      "module": "quotes",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "quotes",
+        "changedColumn": "approval",
+        "when": [
+          {
+            "left": {
+              "field": "approval"
+            },
+            "op": "is",
+            "right": "refused"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A discount is refused: the person who asked is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell them",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "asked_by_id"
+              },
+              "title": {
+                "en-US": "Quote {{record.number}} was not approved",
+                "de-DE": "Angebot {{record.number}} wurde nicht genehmigt",
+                "fr-FR": "Le devis {{record.number}} n’a pas été approuvé",
+                "da-DK": "Tilbud {{record.number}} blev ikke godkendt",
+                "cs-CZ": "Nabídka {{record.number}} nebyla schválena",
+                "ar-EG": "لم يُعتمد عرض السعر {{record.number}}",
+                "zh-CN": "报价 {{record.number}} 未获批准",
+                "zh-TW": "報價 {{record.number}} 未獲核准"
+              },
+              "body": {
+                "en-US": "{{record.decision_note}}",
+                "de-DE": "{{record.decision_note}}",
+                "fr-FR": "{{record.decision_note}}",
+                "da-DK": "{{record.decision_note}}",
+                "cs-CZ": "{{record.decision_note}}",
+                "ar-EG": "{{record.decision_note}}",
+                "zh-CN": "{{record.decision_note}}",
+                "zh-TW": "{{record.decision_note}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "week-rep",
+      "name": {
+        "en-US": "Each week: every sales rep’s and account manager’s own week by email",
+        "de-DE": "Jede Woche: die eigene Woche per E-Mail an Vertriebsmitarbeiter und Kundenbetreuer",
+        "fr-FR": "Chaque semaine : à chaque commercial et chargé de comptes, sa semaine par e-mail",
+        "da-DK": "Hver uge: hver sælgers og kundeansvarligs egen uge på e-mail",
+        "cs-CZ": "Každý týden: každému obchodnímu zástupci a správci zákazníků jeho týden e-mailem",
+        "ar-EG": "كل أسبوع: أسبوع كل مندوب مبيعات ومدير حسابات عبر البريد الإلكتروني",
+        "zh-CN": "每周：把各自的一周通过邮件发给每位销售代表和客户经理",
+        "zh-TW": "每週：把各自的一週透過電子郵件寄給每位業務代表和客戶經理"
+      },
+      "description": {
+        "en-US": "On Mondays, or on the day and at the time each person chose, sends everyone who holds the Sales rep or Account manager role the open deals they own that close this week, and their follow-ups, due and slipped.",
+        "de-DE": "Sendet montags, oder am selbst gewählten Tag zur gewählten Zeit, allen mit der Rolle Vertriebsmitarbeiter oder Kundenbetreuer ihre eigenen offenen Deals mit Abschluss in dieser Woche sowie ihre fälligen und überfälligen Wiedervorlagen.",
+        "fr-FR": "Le lundi, ou au jour et à l’heure choisis par chacun, envoie à toute personne ayant le rôle Commercial ou Chargé de comptes ses affaires ouvertes à conclure cette semaine et ses relances, à venir et en retard.",
+        "da-DK": "Sender om mandagen, eller på den dag og det tidspunkt hver person har valgt, alle med rollen Sælger eller Kundeansvarlig deres egne åbne handler, der lukker i denne uge, og deres opfølgninger, kommende og overskredne.",
+        "cs-CZ": "V pondělí, nebo v den a čas, které si každý zvolil, pošle všem s rolí Obchodní zástupce nebo Správce zákazníků jejich otevřené obchody uzavírané tento týden a jejich úkoly, nadcházející i zpožděné.",
+        "ar-EG": "كل يوم اثنين، أو في اليوم والوقت اللذين اختارهما كل شخص، يُرسل إلى كل من يحمل دور مندوب مبيعات أو مدير الحسابات صفقاته المفتوحة التي تُغلق هذا الأسبوع ومتابعاته المستحقة والمتأخرة.",
+        "zh-CN": "每周一（或每个人自选的日期和时间），向所有销售代表和客户经理发送其本人负责、本周到期的进行中商机，以及到期和逾期的跟进事项。",
+        "zh-TW": "每週一（或每個人自選的日期和時間），向所有業務代表和客戶經理寄送其本人負責、本週到期的進行中商機，以及到期和逾期的跟進事項。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "weekly",
+          "dayOfWeek": 1,
+          "time": "07:00"
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "Each week: every rep’s own week by email"
+          },
+          {
+            "id": "sum",
+            "kind": "action",
+            "title": "Write each person their week",
+            "action": {
+              "kind": "digest",
+              "templateKey": "crm-week-rep",
+              "to": {
+                "roles": [
+                  "rep",
+                  "account-manager"
+                ]
+              },
+              "sections": [
+                {
+                  "key": "closing",
+                  "table": "deals",
+                  "owner": "owner_id",
+                  "where": [
+                    {
+                      "left": {
+                        "field": "state"
+                      },
+                      "op": "is",
+                      "right": "open"
+                    },
+                    {
+                      "left": {
+                        "field": "expected_close"
+                      },
+                      "op": "within_next",
+                      "right": {
+                        "amount": 7,
+                        "unit": "days"
+                      }
+                    }
+                  ],
+                  "orderBy": {
+                    "column": "expected_close"
+                  },
+                  "limit": 20
+                },
+                {
+                  "key": "due",
+                  "table": "follow_ups",
+                  "owner": "owner_id",
+                  "where": [
+                    {
+                      "left": {
+                        "field": "done"
+                      },
+                      "op": "is",
+                      "right": "false"
+                    },
+                    {
+                      "left": {
+                        "field": "due_at"
+                      },
+                      "op": "within_next",
+                      "right": {
+                        "amount": 7,
+                        "unit": "days"
+                      }
+                    }
+                  ],
+                  "orderBy": {
+                    "column": "due_at"
+                  },
+                  "limit": 20
+                },
+                {
+                  "key": "slipped",
+                  "table": "follow_ups",
+                  "owner": "owner_id",
+                  "where": [
+                    {
+                      "left": {
+                        "field": "done"
+                      },
+                      "op": "is",
+                      "right": "false"
+                    },
+                    {
+                      "left": {
+                        "field": "due_at"
+                      },
+                      "op": "more_than_ago",
+                      "right": {
+                        "amount": 1,
+                        "unit": "minutes"
+                      }
+                    }
+                  ],
+                  "orderBy": {
+                    "column": "due_at"
+                  },
+                  "limit": 20
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "week-manager",
+      "name": {
+        "en-US": "Each week: every sales manager’s own week by email",
+        "de-DE": "Jede Woche: die eigene Woche per E-Mail an die Vertriebsleitung",
+        "fr-FR": "Chaque semaine : à chaque responsable commercial, sa semaine par e-mail",
+        "da-DK": "Hver uge: hver salgschefs egen uge på e-mail",
+        "cs-CZ": "Každý týden: každému vedoucímu prodeje jeho týden e-mailem",
+        "ar-EG": "كل أسبوع: أسبوع كل مدير مبيعات عبر البريد الإلكتروني",
+        "zh-CN": "每周：把各自的一周通过邮件发给每位销售经理",
+        "zh-TW": "每週：把各自的一週透過電子郵件寄給每位業務經理"
+      },
+      "description": {
+        "en-US": "On Mondays, or on the day and at the time each person chose, sends everyone who holds the Sales manager role the deals they own themselves: closing this week, gone quiet, and their slipped follow-ups.",
+        "de-DE": "Sendet montags, oder am selbst gewählten Tag zur gewählten Zeit, allen mit der Rolle Vertriebsleitung die Deals, für die sie selbst zuständig sind: Abschluss in dieser Woche, still geworden, sowie ihre überfälligen Wiedervorlagen.",
+        "fr-FR": "Le lundi, ou au jour et à l’heure choisis par chacun, envoie à toute personne ayant le rôle Responsable commercial les affaires dont elle est elle-même responsable : à conclure cette semaine, sans nouvelles, et ses relances en retard.",
+        "da-DK": "Sender om mandagen, eller på den dag og det tidspunkt hver person har valgt, alle med rollen Salgschef de handler, de selv ejer: dem, der lukker i denne uge, dem, der er gået i stå, og deres overskredne opfølgninger.",
+        "cs-CZ": "V pondělí, nebo v den a čas, které si každý zvolil, pošle všem s rolí Vedoucí prodeje obchody, které sami vlastní: uzavírané tento týden, utichlé, a jejich zpožděné úkoly.",
+        "ar-EG": "كل يوم اثنين، أو في اليوم والوقت اللذين اختارهما كل شخص، يُرسل إلى كل من يحمل دور مدير المبيعات الصفقات التي يملكها بنفسه: التي تُغلق هذا الأسبوع والتي هدأت، ومتابعاته المتأخرة.",
+        "zh-CN": "每周一（或每个人自选的日期和时间），向所有销售经理发送其本人负责的商机：本周到期的、已沉寂的，以及逾期的跟进事项。",
+        "zh-TW": "每週一（或每個人自選的日期和時間），向所有業務經理寄送其本人負責的商機：本週到期的、已沉寂的，以及逾期的跟進事項。"
+      },
+      "enabled": false,
+      "module": "selling",
+      "trigger": {
+        "kind": "schedule",
+        "schedule": {
+          "kind": "weekly",
+          "dayOfWeek": 1,
+          "time": "07:00"
+        }
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "Each week: every sales manager’s own week by email"
+          },
+          {
+            "id": "sum",
+            "kind": "action",
+            "title": "Write each person their week",
+            "action": {
+              "kind": "digest",
+              "templateKey": "crm-week-manager",
+              "to": {
+                "roles": [
+                  "sales-manager"
+                ]
+              },
+              "sections": [
+                {
+                  "key": "closing",
+                  "table": "deals",
+                  "owner": "owner_id",
+                  "where": [
+                    {
+                      "left": {
+                        "field": "state"
+                      },
+                      "op": "is",
+                      "right": "open"
+                    },
+                    {
+                      "left": {
+                        "field": "expected_close"
+                      },
+                      "op": "within_next",
+                      "right": {
+                        "amount": 7,
+                        "unit": "days"
+                      }
+                    }
+                  ],
+                  "orderBy": {
+                    "column": "expected_close"
+                  },
+                  "limit": 20
+                },
+                {
+                  "key": "slipped",
+                  "table": "follow_ups",
+                  "owner": "owner_id",
+                  "where": [
+                    {
+                      "left": {
+                        "field": "done"
+                      },
+                      "op": "is",
+                      "right": "false"
+                    },
+                    {
+                      "left": {
+                        "field": "due_at"
+                      },
+                      "op": "more_than_ago",
+                      "right": {
+                        "amount": 1,
+                        "unit": "minutes"
+                      }
+                    }
+                  ],
+                  "orderBy": {
+                    "column": "due_at"
+                  },
+                  "limit": 20
+                },
+                {
+                  "key": "quiet",
+                  "table": "deals",
+                  "owner": "owner_id",
+                  "where": [
+                    {
+                      "left": {
+                        "field": "state"
+                      },
+                      "op": "is",
+                      "right": "open"
+                    },
+                    {
+                      "left": {
+                        "field": "last_activity_at"
+                      },
+                      "op": "more_than_ago",
+                      "right": {
+                        "amount": 7,
+                        "unit": "days"
+                      }
+                    }
+                  ],
+                  "orderBy": {
+                    "column": "last_activity_at"
+                  },
+                  "limit": 20
+                }
+              ]
+            }
+          }
+        ]
+      }
     }
   ],
   "outbox": {
@@ -19414,6 +20662,7 @@
     "producers": [
       {
         "kind": "quote-sent",
+        "module": "quotes",
         "link": "quote_id",
         "recipient": {
           "column": "sent_to_email",
@@ -20011,6 +21260,1034 @@
           ]
         }
       }
+    },
+    {
+      "key": "crm-week-rep",
+      "name": "Your week (rep)",
+      "locales": {
+        "en-US": {
+          "subject": "Your week, {{name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Closing this week: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "No deal of yours is due to close this week."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Follow-ups due in the next 7 days: {{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Nothing is due in the next 7 days."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Follow-ups that have slipped: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "No follow-up has slipped."
+              }
+            }
+          ]
+        },
+        "de-DE": {
+          "subject": "Ihre Woche, {{name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Abschluss in dieser Woche: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Keiner Ihrer Deals soll in dieser Woche abschließen."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Wiedervorlagen in den nächsten 7 Tagen: {{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "In den nächsten 7 Tagen ist nichts fällig."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Überfällige Wiedervorlagen: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Keine Wiedervorlage ist überfällig."
+              }
+            }
+          ]
+        },
+        "fr-FR": {
+          "subject": "Votre semaine, {{name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "À conclure cette semaine : {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Aucune de vos affaires ne doit se conclure cette semaine."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Relances à faire dans les 7 prochains jours : {{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Rien à faire dans les 7 prochains jours."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Relances en retard : {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Aucune relance en retard."
+              }
+            }
+          ]
+        },
+        "da-DK": {
+          "subject": "Din uge, {{name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Lukker i denne uge: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Ingen af dine handler skal lukkes i denne uge."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Opfølgninger inden for de næste 7 dage: {{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Intet forfalder inden for de næste 7 dage."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Overskredne opfølgninger: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Ingen opfølgning er overskredet."
+              }
+            }
+          ]
+        },
+        "cs-CZ": {
+          "subject": "Váš týden, {{name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Uzavírá se tento týden: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Žádný váš obchod se tento týden neuzavírá."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Úkoly na příštích 7 dní: {{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "V příštích 7 dnech není nic splatné."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Zpožděné úkoly: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Žádný úkol není zpožděný."
+              }
+            }
+          ]
+        },
+        "ar-EG": {
+          "subject": "أسبوعك يا {{name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "تُغلق هذا الأسبوع: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "لا توجد صفقة لك يُنتظر إغلاقها هذا الأسبوع."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "متابعات مستحقة خلال الأيام السبعة القادمة: {{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "لا شيء مستحق خلال الأيام السبعة القادمة."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "متابعات متأخرة: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "لا توجد متابعات متأخرة."
+              }
+            }
+          ]
+        },
+        "zh-CN": {
+          "subject": "{{name}}，您的一周",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "本周到期：{{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "本周没有到期的商机。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "未来 7 天到期的跟进事项：{{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "未来 7 天没有到期事项。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "已逾期的跟进事项：{{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "没有逾期的跟进事项。"
+              }
+            }
+          ]
+        },
+        "zh-TW": {
+          "subject": "{{name}}，您的一週",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "本週到期：{{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "本週沒有到期的商機。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "未來 7 天到期的跟進事項：{{count.due}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-due",
+              "data": {
+                "section": "due",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "未來 7 天沒有到期事項。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "已逾期的跟進事項：{{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "沒有逾期的跟進事項。"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "crm-week-manager",
+      "name": "Your week (sales manager)",
+      "locales": {
+        "en-US": {
+          "subject": "Your own deals this week, {{name}}",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "This lists the deals you own yourself. Your team’s are on the board."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Closing this week: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "No deal of yours is due to close this week."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Gone quiet: {{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "None of your deals has gone quiet."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Follow-ups that have slipped: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "No follow-up has slipped."
+              }
+            }
+          ]
+        },
+        "de-DE": {
+          "subject": "Ihre eigenen Deals in dieser Woche, {{name}}",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hier stehen die Deals, für die Sie selbst zuständig sind. Die Ihres Teams finden Sie auf dem Board."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Abschluss in dieser Woche: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Keiner Ihrer Deals soll in dieser Woche abschließen."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Still geworden: {{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Keiner Ihrer Deals ist still geworden."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Überfällige Wiedervorlagen: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Keine Wiedervorlage ist überfällig."
+              }
+            }
+          ]
+        },
+        "fr-FR": {
+          "subject": "Vos propres affaires cette semaine, {{name}}",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Cette liste reprend les affaires dont vous êtes vous-même responsable. Celles de votre équipe sont sur le tableau."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "À conclure cette semaine : {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Aucune de vos affaires ne doit se conclure cette semaine."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Sans nouvelles : {{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Aucune de vos affaires n’est sans nouvelles."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Relances en retard : {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Aucune relance en retard."
+              }
+            }
+          ]
+        },
+        "da-DK": {
+          "subject": "Dine egne handler i denne uge, {{name}}",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Her står de handler, du selv ejer. Dit teams står på tavlen."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Lukker i denne uge: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Ingen af dine handler skal lukkes i denne uge."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Gået i stå: {{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Ingen af dine handler er gået i stå."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Overskredne opfølgninger: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Ingen opfølgning er overskredet."
+              }
+            }
+          ]
+        },
+        "cs-CZ": {
+          "subject": "Vaše vlastní obchody tento týden, {{name}}",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Zde jsou obchody, které vlastníte sami. Obchody vašeho týmu najdete na nástěnce."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Uzavírá se tento týden: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Žádný váš obchod se tento týden neuzavírá."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Utichlé: {{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "Žádný váš obchod neutichl."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Zpožděné úkoly: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "Žádný úkol není zpožděný."
+              }
+            }
+          ]
+        },
+        "ar-EG": {
+          "subject": "صفقاتك أنت هذا الأسبوع يا {{name}}",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "هذه قائمة بالصفقات التي تملكها بنفسك. صفقات فريقك على اللوحة."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "تُغلق هذا الأسبوع: {{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "لا توجد صفقة لك يُنتظر إغلاقها هذا الأسبوع."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "هدأت: {{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "لم تهدأ أي صفقة من صفقاتك."
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "متابعات متأخرة: {{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "لا توجد متابعات متأخرة."
+              }
+            }
+          ]
+        },
+        "zh-CN": {
+          "subject": "{{name}}，您本人本周的商机",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "这里列出的是您本人负责的商机。团队的商机请在看板上查看。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "本周到期：{{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "本周没有到期的商机。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "已沉寂：{{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "没有沉寂的商机。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "已逾期的跟进事项：{{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "没有逾期的跟进事项。"
+              }
+            }
+          ]
+        },
+        "zh-TW": {
+          "subject": "{{name}}，您本人本週的商機",
+          "blocks": [
+            {
+              "block": "email.text",
+              "data": {
+                "text": "這裡列出的是您本人負責的商機。團隊的商機請在看板上查看。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "本週到期：{{count.closing}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-closing",
+              "data": {
+                "section": "closing",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.expected_close}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "本週沒有到期的商機。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "已沉寂：{{count.quiet}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-quiet",
+              "data": {
+                "section": "quiet",
+                "row": {
+                  "title": "{{row.name}}",
+                  "meta": "{{row.last_activity_at.date}}",
+                  "amount": "{{row.amount}}"
+                },
+                "empty": "沒有沉寂的商機。"
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "已逾期的跟進事項：{{count.slipped}}"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-slipped",
+              "data": {
+                "section": "slipped",
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_at.date}}"
+                },
+                "empty": "沒有逾期的跟進事項。"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "pages": [
@@ -20037,7 +22314,8 @@
       },
       "bindings": {
         "rows": "stages"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-deals",
@@ -20062,7 +22340,8 @@
       },
       "bindings": {
         "rows": "deals"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-deal-stage-changes",
@@ -20087,7 +22366,8 @@
       },
       "bindings": {
         "rows": "deal_stage_changes"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-follow-ups",
@@ -20112,7 +22392,8 @@
       },
       "bindings": {
         "rows": "follow_ups"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-activities",
@@ -20137,7 +22418,8 @@
       },
       "bindings": {
         "rows": "activities"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-lost-reasons",
@@ -20162,7 +22444,8 @@
       },
       "bindings": {
         "rows": "lost_reasons"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-quotes",
@@ -20187,7 +22470,8 @@
       },
       "bindings": {
         "rows": "quotes"
-      }
+      },
+      "module": "quotes"
     },
     {
       "ref": "crm-quote-lines",
@@ -20212,7 +22496,8 @@
       },
       "bindings": {
         "rows": "quote_lines"
-      }
+      },
+      "module": "quotes"
     },
     {
       "ref": "crm-comments",
@@ -20237,7 +22522,8 @@
       },
       "bindings": {
         "rows": "comments"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-saved-views",
@@ -20262,7 +22548,8 @@
       },
       "bindings": {
         "rows": "saved_views"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-saved-searches",
@@ -20287,7 +22574,8 @@
       },
       "bindings": {
         "rows": "saved_searches"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-nudge-snoozes",
@@ -20312,7 +22600,8 @@
       },
       "bindings": {
         "rows": "nudge_snoozes"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-deal-members",
@@ -20337,7 +22626,8 @@
       },
       "bindings": {
         "rows": "deal_members"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-deal-marks",
@@ -20362,7 +22652,8 @@
       },
       "bindings": {
         "rows": "deal_marks"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-site-visits",
@@ -20387,7 +22678,8 @@
       },
       "bindings": {
         "rows": "site_visits"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-visit-notes",
@@ -20412,7 +22704,8 @@
       },
       "bindings": {
         "rows": "visit_notes"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-visit-agreed",
@@ -20437,7 +22730,8 @@
       },
       "bindings": {
         "rows": "visit_agreed"
-      }
+      },
+      "module": "selling"
     },
     {
       "ref": "crm-price-list",
@@ -20462,7 +22756,8 @@
       },
       "bindings": {
         "rows": "price_list"
-      }
+      },
+      "module": "quotes"
     },
     {
       "ref": "crm-companies",
@@ -20487,7 +22782,8 @@
       },
       "bindings": {
         "rows": "companies"
-      }
+      },
+      "module": "accounts"
     },
     {
       "ref": "crm-contacts",
@@ -20512,7 +22808,8 @@
       },
       "bindings": {
         "rows": "contacts"
-      }
+      },
+      "module": "accounts"
     },
     {
       "ref": "crm-territories",
@@ -20537,7 +22834,8 @@
       },
       "bindings": {
         "rows": "territories"
-      }
+      },
+      "module": "accounts"
     },
     {
       "ref": "crm-territory-places",
@@ -20562,7 +22860,8 @@
       },
       "bindings": {
         "rows": "territory_places"
-      }
+      },
+      "module": "accounts"
     },
     {
       "ref": "crm-renewals",
@@ -20587,7 +22886,8 @@
       },
       "bindings": {
         "rows": "renewals"
-      }
+      },
+      "module": "accounts"
     },
     {
       "ref": "crm-referrals",
@@ -20612,7 +22912,8 @@
       },
       "bindings": {
         "rows": "referrals"
-      }
+      },
+      "module": "accounts"
     },
     {
       "ref": "crm-reps",
@@ -20637,7 +22938,8 @@
       },
       "bindings": {
         "rows": "reps"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-targets",
@@ -20662,7 +22964,8 @@
       },
       "bindings": {
         "rows": "targets"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-one-to-ones",
@@ -20687,7 +22990,8 @@
       },
       "bindings": {
         "rows": "one_to_ones"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-one-to-one-sessions",
@@ -20712,7 +23016,8 @@
       },
       "bindings": {
         "rows": "one_to_one_sessions"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-coaching-plans",
@@ -20737,7 +23042,8 @@
       },
       "bindings": {
         "rows": "coaching_plans"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-coaching-areas",
@@ -20762,7 +23068,8 @@
       },
       "bindings": {
         "rows": "coaching_areas"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-actions",
@@ -20787,7 +23094,8 @@
       },
       "bindings": {
         "rows": "actions"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-meetings",
@@ -20812,7 +23120,8 @@
       },
       "bindings": {
         "rows": "meetings"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-meeting-slots",
@@ -20837,7 +23146,8 @@
       },
       "bindings": {
         "rows": "meeting_slots"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-meeting-decisions",
@@ -20862,7 +23172,8 @@
       },
       "bindings": {
         "rows": "meeting_decisions"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-threads",
@@ -20887,7 +23198,8 @@
       },
       "bindings": {
         "rows": "threads"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-thread-members",
@@ -20912,7 +23224,8 @@
       },
       "bindings": {
         "rows": "thread_members"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-messages",
@@ -20937,7 +23250,8 @@
       },
       "bindings": {
         "rows": "messages"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-starters",
@@ -20962,7 +23276,8 @@
       },
       "bindings": {
         "rows": "starters"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-starter-steps",
@@ -20987,7 +23302,8 @@
       },
       "bindings": {
         "rows": "starter_steps"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-covers",
@@ -21012,7 +23328,8 @@
       },
       "bindings": {
         "rows": "covers"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-cover-notes",
@@ -21037,7 +23354,8 @@
       },
       "bindings": {
         "rows": "cover_notes"
-      }
+      },
+      "module": "team"
     },
     {
       "ref": "crm-enquiries",
@@ -21062,7 +23380,8 @@
       },
       "bindings": {
         "rows": "enquiries"
-      }
+      },
+      "module": "inbox"
     },
     {
       "ref": "crm-shows",
@@ -21087,7 +23406,8 @@
       },
       "bindings": {
         "rows": "shows"
-      }
+      },
+      "module": "inbox"
     },
     {
       "ref": "crm-showroom-spaces",
@@ -21112,7 +23432,8 @@
       },
       "bindings": {
         "rows": "showroom_spaces"
-      }
+      },
+      "module": "showroom"
     },
     {
       "ref": "crm-showroom-bookings",
@@ -21137,7 +23458,8 @@
       },
       "bindings": {
         "rows": "showroom_bookings"
-      }
+      },
+      "module": "showroom"
     },
     {
       "ref": "crm-samples",
@@ -21162,7 +23484,8 @@
       },
       "bindings": {
         "rows": "samples"
-      }
+      },
+      "module": "showroom"
     },
     {
       "ref": "crm-sample-loans",
@@ -21187,7 +23510,8 @@
       },
       "bindings": {
         "rows": "sample_loans"
-      }
+      },
+      "module": "showroom"
     },
     {
       "ref": "crm-sample-chases",
@@ -21212,7 +23536,8 @@
       },
       "bindings": {
         "rows": "sample_chases"
-      }
+      },
+      "module": "showroom"
     },
     {
       "ref": "crm-display-pieces",
@@ -21237,7 +23562,8 @@
       },
       "bindings": {
         "rows": "display_pieces"
-      }
+      },
+      "module": "showroom"
     },
     {
       "ref": "crm-jobs",
@@ -21262,7 +23588,8 @@
       },
       "bindings": {
         "rows": "jobs"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-crews",
@@ -21287,7 +23614,8 @@
       },
       "bindings": {
         "rows": "crews"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-crew-members",
@@ -21312,7 +23640,8 @@
       },
       "bindings": {
         "rows": "crew_members"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-crew-days",
@@ -21337,7 +23666,8 @@
       },
       "bindings": {
         "rows": "crew_days"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-job-visits",
@@ -21362,7 +23692,8 @@
       },
       "bindings": {
         "rows": "job_visits"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-sign-offs",
@@ -21387,7 +23718,8 @@
       },
       "bindings": {
         "rows": "sign_offs"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-snags",
@@ -21412,7 +23744,8 @@
       },
       "bindings": {
         "rows": "snags"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-delivery-notes",
@@ -21437,7 +23770,8 @@
       },
       "bindings": {
         "rows": "delivery_notes"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-delivery-note-lines",
@@ -21462,7 +23796,8 @@
       },
       "bindings": {
         "rows": "delivery_note_lines"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-waste-removals",
@@ -21487,7 +23822,8 @@
       },
       "bindings": {
         "rows": "waste_removals"
-      }
+      },
+      "module": "jobs"
     },
     {
       "ref": "crm-feedback",
@@ -21512,7 +23848,8 @@
       },
       "bindings": {
         "rows": "feedback"
-      }
+      },
+      "module": "aftercare"
     },
     {
       "ref": "crm-complaints",
@@ -21537,7 +23874,8 @@
       },
       "bindings": {
         "rows": "complaints"
-      }
+      },
+      "module": "aftercare"
     },
     {
       "ref": "crm-warranty-claims",
@@ -21562,7 +23900,8 @@
       },
       "bindings": {
         "rows": "warranty_claims"
-      }
+      },
+      "module": "aftercare"
     },
     {
       "ref": "crm-deal-stock-needs",
@@ -21587,7 +23926,8 @@
       },
       "bindings": {
         "rows": "deal_stock_needs"
-      }
+      },
+      "module": "supply"
     },
     {
       "ref": "crm-vehicles",
@@ -21612,7 +23952,8 @@
       },
       "bindings": {
         "rows": "vehicles"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-vehicle-checks",
@@ -21637,7 +23978,8 @@
       },
       "bindings": {
         "rows": "vehicle_checks"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-vehicle-faults",
@@ -21662,7 +24004,8 @@
       },
       "bindings": {
         "rows": "vehicle_faults"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-fuel-fills",
@@ -21687,7 +24030,8 @@
       },
       "bindings": {
         "rows": "fuel_fills"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-time-sheets",
@@ -21712,7 +24056,8 @@
       },
       "bindings": {
         "rows": "time_sheets"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-time-sheet-lines",
@@ -21737,7 +24082,8 @@
       },
       "bindings": {
         "rows": "time_sheet_lines"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-certificates",
@@ -21762,7 +24108,8 @@
       },
       "bindings": {
         "rows": "certificates"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-subcontractors",
@@ -21787,7 +24134,8 @@
       },
       "bindings": {
         "rows": "subcontractors"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-insurance-incidents",
@@ -21812,7 +24160,8 @@
       },
       "bindings": {
         "rows": "insurance_incidents"
-      }
+      },
+      "module": "fleet"
     },
     {
       "ref": "crm-outbox",
@@ -22007,11 +24356,156 @@
       "order": 10
     }
   ],
+  "modules": [
+    {
+      "id": "selling",
+      "label": {
+        "en-US": "Selling",
+        "de-DE": "Vertrieb",
+        "fr-FR": "Vente",
+        "da-DK": "Salg",
+        "cs-CZ": "Prodej",
+        "ar-EG": "المبيعات",
+        "zh-CN": "销售",
+        "zh-TW": "銷售"
+      },
+      "default": "always"
+    },
+    {
+      "id": "quotes",
+      "label": {
+        "en-US": "Quotes",
+        "de-DE": "Angebote",
+        "fr-FR": "Devis",
+        "da-DK": "Tilbud",
+        "cs-CZ": "Nabídky",
+        "ar-EG": "عروض الأسعار",
+        "zh-CN": "报价",
+        "zh-TW": "報價"
+      },
+      "default": "on",
+      "feature": "quotes"
+    },
+    {
+      "id": "accounts",
+      "label": {
+        "en-US": "Accounts",
+        "de-DE": "Kunden",
+        "fr-FR": "Comptes",
+        "da-DK": "Kunder",
+        "cs-CZ": "Zákazníci",
+        "ar-EG": "العملاء",
+        "zh-CN": "客户",
+        "zh-TW": "客戶"
+      },
+      "default": "always"
+    },
+    {
+      "id": "team",
+      "label": {
+        "en-US": "The team",
+        "de-DE": "Das Team",
+        "fr-FR": "L’équipe",
+        "da-DK": "Teamet",
+        "cs-CZ": "Tým",
+        "ar-EG": "الفريق",
+        "zh-CN": "团队",
+        "zh-TW": "團隊"
+      },
+      "default": "always"
+    },
+    {
+      "id": "inbox",
+      "label": {
+        "en-US": "Inbox",
+        "de-DE": "Eingang",
+        "fr-FR": "Boîte de réception",
+        "da-DK": "Indbakke",
+        "cs-CZ": "Doručené",
+        "ar-EG": "الوارد",
+        "zh-CN": "收件箱",
+        "zh-TW": "收件匣"
+      },
+      "default": "on"
+    },
+    {
+      "id": "showroom",
+      "label": {
+        "en-US": "Showroom and samples",
+        "de-DE": "Showroom und Muster",
+        "fr-FR": "Showroom et échantillons",
+        "da-DK": "Showroom og prøver",
+        "cs-CZ": "Showroom a vzorky",
+        "ar-EG": "صالة العرض والعينات",
+        "zh-CN": "展厅与样品",
+        "zh-TW": "展示間與樣品"
+      },
+      "default": "off"
+    },
+    {
+      "id": "jobs",
+      "label": {
+        "en-US": "Jobs on site",
+        "de-DE": "Aufträge vor Ort",
+        "fr-FR": "Chantiers sur site",
+        "da-DK": "Opgaver på stedet",
+        "cs-CZ": "Zakázky na místě",
+        "ar-EG": "أعمال الموقع",
+        "zh-CN": "现场工单",
+        "zh-TW": "現場工單"
+      },
+      "default": "off"
+    },
+    {
+      "id": "aftercare",
+      "label": {
+        "en-US": "After the job",
+        "de-DE": "Nach dem Auftrag",
+        "fr-FR": "Après le chantier",
+        "da-DK": "Efter opgaven",
+        "cs-CZ": "Po zakázce",
+        "ar-EG": "بعد التنفيذ",
+        "zh-CN": "售后",
+        "zh-TW": "售後"
+      },
+      "default": "off"
+    },
+    {
+      "id": "supply",
+      "label": {
+        "en-US": "Supply",
+        "de-DE": "Beschaffung",
+        "fr-FR": "Approvisionnement",
+        "da-DK": "Forsyning",
+        "cs-CZ": "Zásobování",
+        "ar-EG": "التوريد",
+        "zh-CN": "供应",
+        "zh-TW": "供應"
+      },
+      "default": "on",
+      "feature": "supply"
+    },
+    {
+      "id": "fleet",
+      "label": {
+        "en-US": "Vehicles and crew",
+        "de-DE": "Fahrzeuge und Teams",
+        "fr-FR": "Véhicules et équipes",
+        "da-DK": "Køretøjer og hold",
+        "cs-CZ": "Vozidla a týmy",
+        "ar-EG": "المركبات والطواقم",
+        "zh-CN": "车辆与施工队",
+        "zh-TW": "車輛與施工班"
+      },
+      "default": "off"
+    }
+  ],
   "addOns": {
-    "requires": [
+    "suggests": [
       {
         "key": "invoices",
         "range": ">=1.0.12",
+        "checked": true,
         "reason": {
           "en-US": "Quotes are made, numbered and sent by this add-on.",
           "de-DE": "Angebote werden von diesem Add-on erstellt, nummeriert und verschickt.",
@@ -22022,9 +24516,7 @@
           "zh-CN": "报价单由此插件生成、编号并发送。",
           "zh-TW": "報價單由此外掛產生、編號並寄出。"
         }
-      }
-    ],
-    "suggests": [
+      },
       {
         "key": "inventory",
         "range": ">=1.0.12",
@@ -22053,6 +24545,40 @@
           "zh-CN": "给推荐新客户的客户一份奖励。",
           "zh-TW": "給推薦新客戶的客戶一份獎勵。"
         }
+      }
+    ],
+    "features": [
+      {
+        "id": "quotes",
+        "label": {
+          "en-US": "Quotes",
+          "de-DE": "Angebote",
+          "fr-FR": "Devis",
+          "da-DK": "Tilbud",
+          "cs-CZ": "Nabídky",
+          "ar-EG": "عروض الأسعار",
+          "zh-CN": "报价",
+          "zh-TW": "報價"
+        },
+        "requires": [
+          "invoices"
+        ]
+      },
+      {
+        "id": "supply",
+        "label": {
+          "en-US": "Supply",
+          "de-DE": "Beschaffung",
+          "fr-FR": "Approvisionnement",
+          "da-DK": "Forsyning",
+          "cs-CZ": "Zásobování",
+          "ar-EG": "التوريد",
+          "zh-CN": "供应",
+          "zh-TW": "供應"
+        },
+        "requires": [
+          "inventory"
+        ]
       }
     ]
   },
