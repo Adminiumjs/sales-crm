@@ -2292,7 +2292,8 @@
               "copy": {
                 "via": "replaces_id",
                 "from": "deal_id",
-                "mode": "always"
+                "mode": "always",
+                "follow": true
               }
             },
             "label": {
@@ -3198,6 +3199,10 @@
                     {
                       "column": "replaces_ok",
                       "eq": 1
+                    },
+                    {
+                      "column": "to_email",
+                      "isNull": false
                     }
                   ]
                 }
@@ -3220,7 +3225,6 @@
               "valid_until",
               "decided_at",
               "withdraw_reason",
-              "sent_to_contact_id",
               "accepted_name"
             ]
           },
@@ -18332,7 +18336,6 @@
             "tax_name",
             "tax_rate",
             "withdraw_reason",
-            "deal_id",
             "version",
             "family_no",
             "replaces_id",
@@ -18723,7 +18726,6 @@
             "tax_name",
             "tax_rate",
             "withdraw_reason",
-            "deal_id",
             "version",
             "family_no",
             "replaces_id",
@@ -19482,7 +19484,6 @@
             "tax_name",
             "tax_rate",
             "withdraw_reason",
-            "deal_id",
             "version",
             "family_no",
             "replaces_id",
@@ -21525,14 +21526,14 @@
         "zh-TW": "報價送出：案件金額在歷程中記一行"
       },
       "description": {
-        "en-US": "When a quote is sent, writes what the deal now stands at and which quote it came from. The deal room shows the line.",
-        "de-DE": "Schreibt beim Senden eines Angebots, bei welchem Betrag der Deal jetzt steht und aus welchem Angebot er stammt. Der Deal-Raum zeigt die Zeile.",
-        "fr-FR": "Quand un devis est envoyé, note le montant auquel l’affaire se trouve désormais et le devis d’où il vient. La fiche de l’affaire affiche la ligne.",
-        "da-DK": "Når et tilbud sendes, skrives hvad dealen nu står til, og hvilket tilbud det kommer fra. Dealrummet viser linjen.",
-        "cs-CZ": "Při odeslání nabídky zapíše, na jaké částce obchod nyní je a ze které nabídky pochází. Řádek se zobrazí v detailu obchodu.",
-        "ar-EG": "عند إرسال عرض سعر، يُسجَّل ما صار عليه مبلغ الصفقة وأي عرض جاء منه. تعرض غرفة الصفقة هذا السطر.",
-        "zh-CN": "报价发出时，记下商机当前的金额及其来源报价。商机详情页会显示这一行。",
-        "zh-TW": "報價送出時，記下案件目前的金額及其來源報價。案件頁會顯示這一行。"
+        "en-US": "When a quote is sent, writes the amount it was sent at, before tax, and which quote it was. The deal room shows the line.",
+        "de-DE": "Schreibt beim Senden eines Angebots den Betrag vor Steuern, mit dem es gesendet wurde, und um welches Angebot es sich handelt. Der Deal-Raum zeigt die Zeile.",
+        "fr-FR": "Quand un devis est envoyé, note le montant hors taxes auquel il est parti et de quel devis il s’agit. La fiche de l’affaire affiche la ligne.",
+        "da-DK": "Når et tilbud sendes, skrives det beløb før moms, det blev sendt til, og hvilket tilbud det var. Dealrummet viser linjen.",
+        "cs-CZ": "Při odeslání nabídky zapíše částku bez daně, se kterou odešla, a o kterou nabídku šlo. Řádek se zobrazí v detailu obchodu.",
+        "ar-EG": "عند إرسال عرض سعر، يُسجَّل المبلغ قبل الضريبة الذي أُرسل به وأي عرض كان. تعرض غرفة الصفقة هذا السطر.",
+        "zh-CN": "报价发出时，记下其发出时的税前金额以及是哪一份报价。商机详情页会显示这一行。",
+        "zh-TW": "報價送出時，記下其送出時的未稅金額以及是哪一份報價。案件頁會顯示這一行。"
       },
       "enabled": true,
       "module": "quotes",

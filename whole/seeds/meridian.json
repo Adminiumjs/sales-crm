@@ -5603,6 +5603,9 @@
       "@day": -6,
       "@time": "15:40",
       "@week": true
+     },
+     "sent_to_contact_id": {
+      "@ref": "ct:bea"
      }
     },
     {
@@ -5627,6 +5630,9 @@
       "@day": -4,
       "@time": "10:20",
       "@week": true
+     },
+     "sent_to_contact_id": {
+      "@ref": "ct:ruth"
      }
     },
     {
@@ -5659,6 +5665,9 @@
       "@day": 0,
       "@time": "08:05",
       "@week": true
+     },
+     "sent_to_contact_id": {
+      "@ref": "ct:petra"
      },
      "approved_pct": 9.09,
      "approved_unlisted_lines": 0,

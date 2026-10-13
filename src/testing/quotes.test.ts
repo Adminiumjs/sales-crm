@@ -361,7 +361,8 @@ describe("a version says whether it needs approval, and whether it may be sent",
   it("holds the send to the approval, beside the shape's own condition", () => {
     const send = table("quotes").states?.moves["draft"]?.[0] as Move;
     expect(send.to).toBe("sent");
-    expect(send.requires?.where).toEqual([{ column: "total", gt: 0 }, { column: "may_send", eq: 1 }, { column: "replaces_ok", eq: 1 }]);
+    // …and to a version of the same deal it replaces, and to somebody with an address to send it to.
+    expect(send.requires?.where).toEqual([{ column: "total", gt: 0 }, { column: "may_send", eq: 1 }, { column: "replaces_ok", eq: 1 }, { column: "to_email", isNull: false }]);
     expect(shapeConformanceIssues(manifest as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([]);
 
     // Only on a column the app added: a condition on one of the shape's own is still refused.

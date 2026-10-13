@@ -50,7 +50,7 @@ const moves = (ref: string): string[] =>
 /** Every table with states, its column, and each move with what it needs. */
 const EXPECTED: Record<string, { column: string; initial: string; moves: string[] }> = {
   deals: { column: "state", initial: "open", moves: ["open → won", "open → lost: lost_reason_id filled", "won → open: back", "lost → open: back; empties lost_reason_id"] },
-  quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
+  quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; to_email filled; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
   site_visits: { column: "state", initial: "booked", moves: ["booked → done", "booked → cancelled: cancel_reason filled"] },
   renewals: { column: "state", initial: "open", moves: ["open → done", "open → dropped"] },
   meeting_decisions: { column: "state", initial: "open", moves: ["open → done", "open → carried"] },
@@ -129,7 +129,14 @@ describe("a deal", () => {
     const column = (ref: string) => table("quotes").columns.find((one) => one.ref === ref)! as unknown as { type: string; rules?: Record<string, unknown> };
     // Two numbers a formula can compare: the quote's own deal, and the deal of the quote it replaces.
     expect(column("deal_no").rules).toEqual({ copy: { via: "deal_id", from: "id", mode: "always" } });
-    expect(column("replaces_deal_id").rules).toEqual({ copy: { via: "replaces_id", from: "deal_id", mode: "always" } });
+    // It follows the replaced quote, so it cannot go stale between the day a version is drafted and the day it is sent.
+    expect(column("replaces_deal_id").rules).toEqual({ copy: { via: "replaces_id", from: "deal_id", mode: "always", follow: true } });
+    // And a quote does not change deals: no role writes `deal_id` after the quote is made.
+    for (const role of (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[]; creatable?: string[] }> }[] }).roles) {
+      expect(role.limits?.["quotes"]?.writable ?? [], role.key).not.toContain("deal_id");
+    }
+    // Once sent, who it went to is not changed: the lock keeps only what the customer's answer and a withdrawal write.
+    expect((states("quotes") as unknown as { lock: { except: string[] } }).lock.except).toEqual(["valid_until", "decided_at", "withdraw_reason", "accepted_name"]);
     expect(column("replaces_ok").rules).toEqual({ formula: { if: [{ or: [{ isNull: "replaces_id" }, { and: [{ gte: ["replaces_deal_id", "deal_no"] }, { lte: ["replaces_deal_id", "deal_no"] }] }] }, 1, 0] } });
     // Nobody types who accepted: the customer's page does, as plain text, and the server says through which door.
     expect(column("accepted_name").rules).toEqual({ plainText: { max: 120 } });

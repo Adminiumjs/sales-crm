@@ -36,6 +36,8 @@ for (const [dialect, reachable] of LEGS) {
       expect((h.reply as { seeds?: unknown }).seeds).toEqual({ written: { settings: 1 }, kept: [] });
       expect(Number((await h.rows(`SELECT COUNT(*) AS n FROM ${h.real('settings')}`))[0]!['n'])).toBe(1);
       const co = await w.create('companies', { name: 'Nordwind' });
+      // Who the quotes go to: a quote with nobody to send it to cannot be sent.
+      const to = await w.create('contacts', { company_id: co['id'], name: 'Petra Lindqvist', email: 'petra@nordwind.example', may_email: true });
       const stage = await w.create('stages', { label: 'Negotiation', odds: 0.75, position: 3 });
       const deal = await w.create('deals', { name: 'Desk rows', company_id: co['id'], owner_id: dana.id, stage_id: stage['id'], typed_amount: 48000 });
       const one = async (ref: string, cols: string, id: unknown) => (await h.rows(`SELECT ${cols} FROM ${h.real(ref)} WHERE id = ${String(id)}`))[0]!;
@@ -49,7 +51,7 @@ for (const [dialect, reachable] of LEGS) {
       const price: Record<string, unknown> = {};
       for (const [name, each] of [['desk', 880], ['station', 1340], ['tray', 145], ['install', 2970]] as const) price[name] = (await w.create('price_list', { name, list_rate: each }))['id'];
       // Version 1, at list: 46 desks at 880, install 2,970, and the rest.
-      const v1 = await w.create('quotes', { deal_id: deal['id'] });
+      const v1 = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'] });
       for (const [qty, rate, what] of [[46, 880, 'desk'], [2, 1340, 'station'], [46, 145, 'tray'], [1, 2970, 'install']] as const) await w.create('quote_lines', { document_id: v1['id'], qty, rate, price_id: price[what] });
       let q = await one('quotes', 'number, subtotal, total, list_value, under_list_pct, unlisted_lines, needs_approval, may_send, threshold_pct, share_code, version', v1['id']);
       expect([Number(q['subtotal']), Number(q['total']), Number(q['list_value']), Number(q['under_list_pct']), Number(q['unlisted_lines']), Number(q['needs_approval']), Number(q['may_send']), Number(q['threshold_pct']), Number(q['version'])]).toEqual([52800, 52800, 52800, 0, 0, 0, 1, 5, 1]);
@@ -61,7 +63,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(await dealNow()).toEqual([52800, Number(v1['id']), 52800, 39600]);
 
       // Version 2, 9.1 % under list: needs the manager, and counts for nothing until it is sent.
-      const v2 = await w.create('quotes', { deal_id: deal['id'], version: 2, replaces_id: v1['id'] });
+      const v2 = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'], version: 2, replaces_id: v1['id'] });
       const v2Lines: Record<string, unknown> = {};
       // A list price typed with the line is not the writer's to give: the price list's stands (880, not the 1 typed here).
       for (const [qty, rate, what] of [[46, 780, 'desk'], [2, 1340, 'station'], [46, 145, 'tray'], [1, 2770, 'install']] as const) v2Lines[what] = (await w.create('quote_lines', { document_id: v2['id'], qty, rate, price_id: price[what], ...(what === 'desk' ? { list_rate: 1 } : {}) }))['id'];
@@ -106,7 +108,7 @@ for (const [dialect, reachable] of LEGS) {
       // Sending version 2 withdrew the version it replaces, in the same write: the customer holds one quote, never two.
       expect([(await one('quotes', 'status', v1['id']))['status'], (await one('quotes', 'withdrawn_at', v1['id']))['withdrawn_at'] !== null]).toEqual(['withdrawn', true]);
       // A quote whose only line has no list price needs approval whatever it costs.
-      const v3 = await w.create('quotes', { deal_id: deal['id'], version: 3, replaces_id: v2['id'] });
+      const v3 = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'], version: 3, replaces_id: v2['id'] });
       await w.create('quote_lines', { document_id: v3['id'], qty: 1, rate: 99000, description: 'Bespoke reception desk' });
       q = await one('quotes', 'under_list_pct, unlisted_lines, unlisted_value, needs_approval, may_send', v3['id']);
       expect([Number(q['under_list_pct']), Number(q['unlisted_lines']), Number(q['unlisted_value']), Number(q['needs_approval']), Number(q['may_send'])]).toEqual([0, 1, 99000, 1, 0]);
@@ -128,30 +130,70 @@ for (const [dialect, reachable] of LEGS) {
       expect(await dealNow()).toEqual([null, null, 48000, 36000]);
 
       // A version the customer accepted in the meantime cannot be withdrawn: its replacement does not go, and nothing is written.
-      const a1 = await w.create('quotes', { deal_id: deal['id'] });
+      const a1 = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'] });
       await w.create('quote_lines', { document_id: a1['id'], qty: 1, rate: 2970, price_id: price['install'] });
       await w.update('quotes', a1['id'], { status: 'sent' });
-      const a2 = await w.create('quotes', { deal_id: deal['id'], version: 2, replaces_id: a1['id'] });
+      const a2 = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'], version: 2, replaces_id: a1['id'] });
       await w.create('quote_lines', { document_id: a2['id'], qty: 1, rate: 2970, price_id: price['install'] });
       await w.update('quotes', a1['id'], { status: 'accepted' });
       // Accepted at the desk, by staff: the server says through which door.
       expect((await one('quotes', 'accepted_via', a1['id']))['accepted_via']).toBe('staff');
       await expect(w.update('quotes', a2['id'], { status: 'sent' })).rejects.toThrow();
       expect([(await one('quotes', 'status', a1['id']))['status'], (await one('quotes', 'status', a2['id']))['status']]).toEqual(['accepted', 'draft']);
+      const refused = await one('quotes', 'sent_at, sent_to_email, valid_until', a2['id']);
+      expect([refused['sent_at'], refused['sent_to_email']]).toEqual([null, null]);
+      expect(Number((await one('deals', 'quote_id', deal['id']))['quote_id'])).toBe(Number(a1['id']));
 
       // A version may replace only a quote of its own deal: one that names another deal's quote is not sent, and that quote is left alone.
       const other = await w.create('deals', { name: 'Another deal', company_id: co['id'], owner_id: dana.id, stage_id: stage['id'], typed_amount: 1000 });
-      const theirs = await w.create('quotes', { deal_id: other['id'] });
+      const theirs = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: other['id'] });
       await w.create('quote_lines', { document_id: theirs['id'], qty: 1, rate: 2970, price_id: price['install'] });
       await w.update('quotes', theirs['id'], { status: 'sent' });
-      const aimed = await w.create('quotes', { deal_id: deal['id'], version: 3, replaces_id: theirs['id'] });
+      const aimed = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'], version: 3, replaces_id: theirs['id'] });
       await w.create('quote_lines', { document_id: aimed['id'], qty: 1, rate: 2970, price_id: price['install'] });
       expect(Number((await one('quotes', 'replaces_ok', aimed['id']))['replaces_ok'])).toBe(0);
       await expect(w.update('quotes', aimed['id'], { status: 'sent' })).rejects.toThrow();
       expect((await one('quotes', 'status', theirs['id']))['status']).toBe('sent');
 
+      // A version that replaced a quote of its own deal, and that quote then stands on another deal: the check follows it, and the version is not sent.
+      // (No role moves a quote between deals; this is the write service with nothing held back, to prove the figure itself.)
+      const moved = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'] });
+      await w.create('quote_lines', { document_id: moved['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      const after = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: deal['id'], version: 2, replaces_id: moved['id'] });
+      await w.create('quote_lines', { document_id: after['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      expect(Number((await one('quotes', 'replaces_ok', after['id']))['replaces_ok'])).toBe(1);
+      await w.update('quotes', moved['id'], { deal_id: other['id'] });
+      expect(Number((await one('quotes', 'replaces_ok', after['id']))['replaces_ok'])).toBe(0);
+      await w.update('quotes', moved['id'], { status: 'sent' });
+      await expect(w.update('quotes', after['id'], { status: 'sent' })).rejects.toThrow();
+      expect((await one('quotes', 'status', moved['id']))['status']).toBe('sent');
+
+      // The customer said no to a version: the next one is a quote of its own and does not name it. One that does name it is not sent
+      // (a declined quote cannot be withdrawn), which the screen never asks for.
+      const no1 = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: other['id'], family_no: 'F-NO' });
+      await w.create('quote_lines', { document_id: no1['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await w.update('quotes', moved['id'], { status: 'withdrawn' });
+      await w.update('quotes', no1['id'], { status: 'sent' });
+      await w.update('quotes', no1['id'], { status: 'declined' });
+      const naming = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: other['id'], version: 2, family_no: 'F-NO', replaces_id: no1['id'] });
+      await w.create('quote_lines', { document_id: naming['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await expect(w.update('quotes', naming['id'], { status: 'sent' })).rejects.toThrow();
+      await w.update('quotes', naming['id'], { replaces_id: null });
+      await w.update('quotes', naming['id'], { status: 'sent' });
+      expect([(await one('quotes', 'status', no1['id']))['status'], (await one('quotes', 'status', naming['id']))['status']]).toEqual(['declined', 'sent']);
+
+      // Nobody to send it to: not sent. With a contact who has an address: sent, and the address is stamped on it.
+      const nobody = await w.create('quotes', { deal_id: other['id'], family_no: 'F-NOBODY' });
+      await w.create('quote_lines', { document_id: nobody['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await expect(w.update('quotes', nobody['id'], { status: 'sent' })).rejects.toThrow();
+      await w.update('quotes', nobody['id'], { sent_to_contact_id: to['id'] });
+      await w.update('quotes', nobody['id'], { status: 'sent' });
+      expect((await one('quotes', 'sent_to_email', nobody['id']))['sent_to_email']).toBe('petra@nordwind.example');
+      // Once sent, who it went to is not changed.
+      await expect(w.update('quotes', nobody['id'], { sent_to_contact_id: null })).rejects.toThrow();
+
       // The deal's amount is the quote before tax: with tax on a quote, the deal does not grow by it.
-      const taxed = await w.create('quotes', { deal_id: other['id'], version: 2, replaces_id: theirs['id'], tax_rate: 20 });
+      const taxed = await w.create('quotes', { sent_to_contact_id: to['id'], deal_id: other['id'], version: 2, replaces_id: theirs['id'], tax_rate: 20 });
       await w.create('quote_lines', { document_id: taxed['id'], qty: 1, rate: 2970, price_id: price['install'] });
       await new Promise((r) => setTimeout(r, 1100));
       await w.update('quotes', taxed['id'], { status: 'sent' });

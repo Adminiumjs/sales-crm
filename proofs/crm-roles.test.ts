@@ -507,7 +507,7 @@ for (const [dialect, reachable] of LEGS) {
       // The list price is the price list's (ruling F): the manager writes it, a rep reads it and types none.
       const listed = await post('ivy', 'price_list', { name: 'Stacking chair', list_rate: 100 });
       t('20a the manager writes the price list; a rep reads it and writes none of it', [said(listed), (await get('dana', 'price_list', `/${String(made(listed))}`)).statusCode, refused(await post('dana', 'price_list', { name: 'My own price', list_rate: 1 })), refused(await patch('dana', 'price_list', made(listed), { list_rate: 1 }))], ['ok', 200, '403', '403']);
-      const quote = made(await post('dana', 'quotes', { deal_id: danaOpen }));
+      const quote = made(await post('dana', 'quotes', { deal_id: danaOpen, sent_to_contact_id: Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE email IS NOT NULL ORDER BY id`))['id']) }));
       t('20b a rep does not type a line\'s list price', refused(await post('dana', 'quote_lines', { document_id: quote, qty: 10, rate: 91, list_rate: 91 })), '403');
       const line = made(await post('dana', 'quote_lines', { document_id: quote, qty: 10, rate: 91, price_id: made(listed) }));
       t('20c the line takes the list price of the row it names', Number((await one(`SELECT list_rate FROM ${s.real('quote_lines')} WHERE id = ${String(line)}`))['list_rate']), 100);
@@ -821,7 +821,7 @@ for (const [dialect, reachable] of LEGS) {
       // The approval's buttons: a rep presses "Ask", and neither "Approve" nor "Refuse"; the Sales manager presses both.
       const priced = made(await post('ivy', 'price_list', { name: 'Coat stand', list_rate: 200 }));
       const mine = made(await post('priya', 'deals', { name: 'Priya: coat stands', company_id: company, stage_id: stage, owner_id: s.id['priya'], typed_amount: 1500 }));
-      const quote = made(await post('priya', 'quotes', { deal_id: mine }));
+      const quote = made(await post('priya', 'quotes', { deal_id: mine, sent_to_contact_id: Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE email IS NOT NULL ORDER BY id`))['id']) }));
       expect(said(await post('priya', 'quote_lines', { document_id: quote, qty: 10, rate: 150, price_id: priced }))).toBe('ok');
       expect((await press('priya', 'quotes', quote, 'approve', 'draft', { decision_note: 'Fine by me' })).statusCode).toBe(403);
       expect((await press('priya', 'quotes', quote, 'refuse', 'draft', { decision_note: 'No' })).statusCode).toBe(403);
@@ -923,7 +923,26 @@ for (const [dialect, reachable] of LEGS) {
       expect(await seenBy('dana')).toContain(quote);
       expect(await seenBy('sam')).not.toContain(quote);
       expect(await seenBy('ivy')).toContain(quote);
-      expect((await post('dana', 'deal_amount_changes', { deal_id: deal, quote_id: quote, amount: 1 })).statusCode).toBe(403);
+      // Nobody writes, changes or removes a line by hand: not the rep, not her manager, not the CRM admin.
+      const line = Number((await one(`SELECT id FROM ${s.real('deal_amount_changes')} WHERE quote_id = ${String(quote)}`))['id']);
+      for (const person of ['dana', 'ivy', 'tessa']) {
+        expect((await post(person, 'deal_amount_changes', { deal_id: deal, quote_id: quote, amount: 1 })).statusCode, `${person} makes one`).toBe(403);
+        expect((await patch(person, 'deal_amount_changes', line, { amount: 1 })).statusCode, `${person} changes one`).toBe(403);
+        expect((await s.app.inject({ method: 'DELETE', url: url('deal_amount_changes', `/${String(line)}?confirm=true`), headers: { cookie: who(person) } })).statusCode, `${person} removes one`).toBe(403);
+      }
+      expect(Number((await one(`SELECT amount FROM ${s.real('deal_amount_changes')} WHERE id = ${String(line)}`))['amount'])).toBe(600);
+      // Nobody on the staff types who accepted, on a draft, a new quote or a sent one: not the rep, not her manager, not the CRM admin.
+      for (const person of ['dana', 'ivy', 'tessa']) {
+        expect(said(await patch(person, 'quotes', quote, { accepted_name: 'A name' })), `${person}, on the sent quote`).not.toBe('ok');
+        expect(said(await post(person, 'quotes', { deal_id: deal, accepted_name: 'A name' })), `${person}, on a new quote`).not.toBe('ok');
+      }
+      expect((await one(`SELECT accepted_name FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))['accepted_name']).toBeNull();
+      // A quote does not change deals, and a version may not name a quote its writer cannot open.
+      const sams = await one(`SELECT q.id, q.deal_id FROM ${s.real('quotes')} q JOIN ${s.real('deals')} d ON d.id = q.deal_id WHERE d.owner_id = '${s.id['sam']!}' ORDER BY q.id`);
+      expect(sams, 'the sample has a quote of Sam\'s').toBeDefined();
+      expect(said(await patch('dana', 'quotes', quote, { deal_id: sams['deal_id'] })), 'Dana moves her quote to Sam\'s deal').not.toBe('ok');
+      expect(said(await post('dana', 'quotes', { deal_id: deal, version: 9, replaces_id: sams['id'] })), 'Dana names Sam\'s quote as the one hers replaces').not.toBe('ok');
+      expect((await one(`SELECT status FROM ${s.real('quotes')} WHERE id = ${String(sams['id'])}`))['status']).not.toBe('withdrawn');
       const mail = await s.rows(`SELECT kind, status, ${dialect === 'mysql' ? '`to`' : '"to"'} AS sent_to, error FROM ${s.real('outbox')} WHERE quote_id = ${String(quote)}`);
       expect(mail.map((row) => [row['kind'], row['sent_to']])).toEqual([['quote-sent', contact['email']]]);
       // Read-only reads the quote with the address masked, as on the contact.
