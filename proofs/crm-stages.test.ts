@@ -104,7 +104,7 @@ for (const [dialect, reachable] of LEGS) {
 
       const made = await crmTables();
       expect(made).toEqual(one.manifest.requiredSchema.tables.map((table) => `crm_${table.ref}`).sort());
-      expect(made.length).toBe(46);
+      expect(made.length).toBe(47);
       for (const later of ['crm_jobs', 'crm_job_visits', 'crm_showroom_bookings', 'crm_feedback', 'crm_vehicles', 'crm_time_sheets']) expect(made, later).not.toContain(later);
       // A follow-up has no link to a job: there is no job to link to.
       await expect(h.rows('select job_id from crm_follow_ups')).rejects.toThrow();

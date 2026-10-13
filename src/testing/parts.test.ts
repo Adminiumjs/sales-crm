@@ -79,7 +79,7 @@ describe("every table and page is in the part of its menu heading", () => {
 
   it("puts the two quote tables and the price list they read in the part of their own, and every other table in its heading's part", () => {
     // Only a quote's line reads a price: with no quotes the price list would be a page nothing uses.
-    const ofQuotes = ["quotes", "quote_lines", "price_list"];
+    const ofQuotes = ["quotes", "quote_lines", "price_list", "deal_amount_changes"];
     for (const table of tables) {
       const heading = headingOf.get(table.ref);
       const expected = ofQuotes.includes(table.ref) ? "quotes" : heading === "setup" ? undefined : heading;
@@ -124,6 +124,8 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["deal-stage-changed", "selling"],
       // A won deal makes a job only where jobs on site are done at all.
       ["deal-won-job", "jobs"],
+      // The amount line is written when a quote is sent: no quotes, no line.
+      ["quote-sent-amount", "quotes"],
       ["approval-asked", "quotes"],
       ["nudge-quiet", "selling"],
       ["nudge-stuck", "selling"],
@@ -149,7 +151,7 @@ describe("the app stands without Invoices & Receipts", () => {
     expect([...optionalShapeAddOns(manifest)]).toEqual([["invoices", ["quotes"]]]);
     expect(modulesLeftOut(manifest, (addOn) => addOn !== "invoices")).toEqual(["quotes"]);
     expect(modulesLeftOut(manifest, () => true)).toEqual([]);
-    expect([...tablesLeftOut(manifest, ["quotes"])].sort()).toEqual(["price_list", "quote_lines", "quotes"]);
+    expect([...tablesLeftOut(manifest, ["quotes"])].sort()).toEqual(["deal_amount_changes", "price_list", "quote_lines", "quotes"]);
   });
 
   it("is a whole manifest with the part left out", () => {
@@ -157,7 +159,7 @@ describe("the app stands without Invoices & Receipts", () => {
     const result = validateManifest(left);
     expect(result.ok ? [] : result.issues).toEqual([]);
     const kept = left.requiredSchema.tables as unknown as Table[];
-    expect(kept).toHaveLength(tables.length - 3);
+    expect(kept).toHaveLength(tables.length - 4);
     // A deal's quoted amount is a plain, empty column until quotes are there.
     const quoted = kept.find((table) => table.ref === "deals")!.columns.find((column) => column.ref === "quoted_amount")!;
     expect(quoted.rules?.["rollup"]).toBeUndefined();

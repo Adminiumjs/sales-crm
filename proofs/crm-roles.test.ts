@@ -298,7 +298,7 @@ for (const [dialect, reachable] of LEGS) {
         counts[role] = seen.size;
       }
       // A records page per table the role reads, and the Pipeline board for the five roles that open the deals list.
-      expect(counts).toEqual({ admin: 71, 'sales-manager': 59, rep: 59, 'account-manager': 30, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 65 });
+      expect(counts).toEqual({ admin: 72, 'sales-manager': 60, rep: 60, 'account-manager': 30, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 66 });
     });
 
     it('nobody reads a private table but the two people of a row: not the CRM admin, not Read-only, not the Super Admin', async () => {
@@ -331,7 +331,7 @@ for (const [dialect, reachable] of LEGS) {
         ['stages lost_reasons', 'all all all all - - - - all'],
         ['price_list', 'all all all - - - - - all'],
         ['deals', 'all team own won - - - - all'],
-        ['deal_stage_changes activities comments quotes quote_lines', 'all team own - - - - - all'],
+        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all team own - - - - - all'],
         ['follow_ups', 'all team own own - - - - all'],
         ['saved_views saved_searches', 'own+free own+free own+free own+free - - - - own+free'],
         ['nudge_snoozes', 'own own own - - - - - -'],
@@ -380,7 +380,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
       const opened = Object.fromEntries(ROLES.map((role) => [role, Object.values(reads).filter((row) => row[role] !== '-').length]));
-      expect(opened).toEqual({ admin: 69, 'sales-manager': 58, rep: 58, 'account-manager': 29, marketer: 8, 'front-desk': 11, 'ops-manager': 23, crew: 16, 'read-only': 63 });
+      expect(opened).toEqual({ admin: 70, 'sales-manager': 59, rep: 59, 'account-manager': 29, marketer: 8, 'front-desk': 11, 'ops-manager': 23, crew: 16, 'read-only': 64 });
 
       // Every row of every table, read as nobody (SQL).
       const raw: Record<string, Record<string, unknown>[]> = {};
@@ -907,15 +907,33 @@ for (const [dialect, reachable] of LEGS) {
       const priced = made(await post('ivy', 'price_list', { name: 'Rule check item', list_rate: 300 }));
       const quote = made(await post('dana', 'quotes', { deal_id: deal, sent_to_contact_id: contact['id'] }));
       expect(said(await post('dana', 'quote_lines', { document_id: quote, qty: 2, rate: 300, price_id: priced }))).toBe('ok');
-      expect((await one(`SELECT sent_to_email, sent_to_name FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ sent_to_email: contact['email'], sent_to_name: contact['name'] });
+      // Not sent yet: it shows where it will go, and says nothing of where it went.
+      expect((await one(`SELECT to_email, to_name, sent_to_email, sent_to_name FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ to_email: contact['email'], to_name: contact['name'], sent_to_email: null, sent_to_name: null });
       expect(await count('outbox', `quote_id = ${String(quote)}`)).toBe(0);
+      // A rep may not type who accepted (the customer's own page does), and so cannot accept under a name of her choosing.
+      expect(said(await patch('dana', 'quotes', quote, { accepted_name: 'A name she made up' }))).not.toBe('ok');
       expect(said(await patch('dana', 'quotes', quote, { status: 'sent' }))).toBe('ok');
       await s.jobs();
+      // Sent: the address it went to is stamped, and the deal's history has its amount line (600 before tax, from this quote).
+      expect((await one(`SELECT sent_to_email, sent_to_name FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ sent_to_email: contact['email'], sent_to_name: contact['name'] });
+      const lines = await s.rows(`SELECT quote_id, amount FROM ${s.real('deal_amount_changes')} WHERE deal_id = ${String(deal)}`);
+      expect(lines.map((row) => [Number(row['quote_id']), Number(row['amount'])])).toEqual([[quote, 600]]);
+      // Dana reads the line of her own deal; a rep whose deal it is not reads none, and nobody writes one by hand.
+      const seenBy = async (person: string) => ((await get(person, 'deal_amount_changes', '?limit=200')).json() as { data: { quote_id: number }[] }).data.map((row) => Number(row.quote_id));
+      expect(await seenBy('dana')).toContain(quote);
+      expect(await seenBy('sam')).not.toContain(quote);
+      expect(await seenBy('ivy')).toContain(quote);
+      expect((await post('dana', 'deal_amount_changes', { deal_id: deal, quote_id: quote, amount: 1 })).statusCode).toBe(403);
       const mail = await s.rows(`SELECT kind, status, ${dialect === 'mysql' ? '`to`' : '"to"'} AS sent_to, error FROM ${s.real('outbox')} WHERE quote_id = ${String(quote)}`);
       expect(mail.map((row) => [row['kind'], row['sent_to']])).toEqual([['quote-sent', contact['email']]]);
       // Read-only reads the quote with the address masked, as on the contact.
       const asGrace = ((await get('grace', 'quotes', `/${String(quote)}`)).json() as { data: Record<string, unknown> }).data;
       expect(asGrace['sent_to_email']).not.toBe(contact['email']);
+      expect(asGrace['to_email']).not.toBe(contact['email']);
+      // The contact's address changes afterwards: the record of where the quote went does not.
+      expect(said(await patch('dana', 'contacts', contact['id'], { email: 'moved@elsewhere.example' }))).toBe('ok');
+      expect((await one(`SELECT to_email, sent_to_email FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ to_email: 'moved@elsewhere.example', sent_to_email: contact['email'] });
+      expect(said(await patch('dana', 'contacts', contact['id'], { email: contact['email'] }))).toBe('ok');
 
       // A discount put to approval: every Sales manager is told.
       const second = made(await post('dana', 'quotes', { deal_id: deal, version: 2, replaces_id: quote }));

@@ -703,7 +703,7 @@
                 "from": "quotes",
                 "via": "deal_id",
                 "latest": {
-                  "of": "total",
+                  "of": "subtotal",
                   "by": "sent_at",
                   "row": "quote_id"
                 },
@@ -2244,6 +2244,95 @@
             }
           },
           {
+            "ref": "deal_no",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "deal_id",
+                "from": "id",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Deal (number)",
+              "de-DE": "Deal (Nummer)",
+              "fr-FR": "Affaire (numéro)",
+              "da-DK": "Deal (nummer)",
+              "cs-CZ": "Obchod (číslo)",
+              "ar-EG": "الصفقة (الرقم)",
+              "zh-CN": "商机（编号）",
+              "zh-TW": "案件（編號）"
+            }
+          },
+          {
+            "ref": "replaces_deal_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "replaces_id",
+                "from": "deal_id",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Deal of the replaced quote",
+              "de-DE": "Deal des ersetzten Angebots",
+              "fr-FR": "Affaire du devis remplacé",
+              "da-DK": "Deal for det erstattede tilbud",
+              "cs-CZ": "Obchod nahrazené nabídky",
+              "ar-EG": "صفقة العرض المستبدَل",
+              "zh-CN": "被替换报价所属商机",
+              "zh-TW": "被取代報價所屬案件"
+            }
+          },
+          {
+            "ref": "replaces_ok",
+            "type": "int",
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "or": [
+                      {
+                        "isNull": "replaces_id"
+                      },
+                      {
+                        "and": [
+                          {
+                            "gte": [
+                              "replaces_deal_id",
+                              "deal_no"
+                            ]
+                          },
+                          {
+                            "lte": [
+                              "replaces_deal_id",
+                              "deal_no"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Replaces a quote of the same deal",
+              "de-DE": "Ersetzt ein Angebot desselben Deals",
+              "fr-FR": "Remplace un devis de la même affaire",
+              "da-DK": "Erstatter et tilbud på samme deal",
+              "cs-CZ": "Nahrazuje nabídku téhož obchodu",
+              "ar-EG": "يستبدل عرضاً للصفقة نفسها",
+              "zh-CN": "替换同一商机的报价",
+              "zh-TW": "取代同一案件的報價"
+            }
+          },
+          {
             "ref": "list_value",
             "type": "decimal",
             "scale": "currency",
@@ -2818,7 +2907,7 @@
             }
           },
           {
-            "ref": "sent_to_email",
+            "ref": "to_email",
             "type": "text",
             "maxLength": 254,
             "nullable": true,
@@ -2829,6 +2918,60 @@
                 "from": "email",
                 "mode": "always",
                 "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Goes to (address)",
+              "de-DE": "Geht an (Adresse)",
+              "fr-FR": "Destinataire (adresse)",
+              "da-DK": "Sendes til (adresse)",
+              "cs-CZ": "Odejde na (adresa)",
+              "ar-EG": "يُرسل إلى (العنوان)",
+              "zh-CN": "收件邮箱",
+              "zh-TW": "收件信箱"
+            }
+          },
+          {
+            "ref": "to_name",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "sent_to_contact_id",
+                "from": "name",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Goes to (name)",
+              "de-DE": "Geht an (Name)",
+              "fr-FR": "Destinataire (nom)",
+              "da-DK": "Sendes til (navn)",
+              "cs-CZ": "Odejde komu (jméno)",
+              "ar-EG": "يُرسل إلى (الاسم)",
+              "zh-CN": "收件人姓名",
+              "zh-TW": "收件人姓名"
+            }
+          },
+          {
+            "ref": "sent_to_email",
+            "type": "text",
+            "maxLength": 254,
+            "nullable": true,
+            "rules": {
+              "personal": true,
+              "stamp": {
+                "set": {
+                  "copy": "to_email"
+                },
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "sent"
+                  ]
+                }
               }
             },
             "label": {
@@ -2848,11 +2991,16 @@
             "maxLength": 160,
             "nullable": true,
             "rules": {
-              "copy": {
-                "via": "sent_to_contact_id",
-                "from": "name",
-                "mode": "always",
-                "follow": true
+              "stamp": {
+                "set": {
+                  "copy": "to_name"
+                },
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "sent"
+                  ]
+                }
               }
             },
             "label": {
@@ -2922,6 +3070,43 @@
               "ar-EG": "قَبِله (الاسم)",
               "zh-CN": "接受人姓名",
               "zh-TW": "接受人姓名"
+            },
+            "rules": {
+              "plainText": {
+                "max": 120
+              }
+            }
+          },
+          {
+            "ref": "accepted_via",
+            "type": "text",
+            "maxLength": 20,
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": {
+                  "byOrigin": {
+                    "public": "customer",
+                    "staff": "staff"
+                  }
+                },
+                "on": {
+                  "column": "status",
+                  "values": [
+                    "accepted"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Accepted through",
+              "de-DE": "Angenommen über",
+              "fr-FR": "Accepté via",
+              "da-DK": "Accepteret via",
+              "cs-CZ": "Přijato přes",
+              "ar-EG": "قُبل عبر",
+              "zh-CN": "接受途径",
+              "zh-TW": "接受途徑"
             }
           },
           {
@@ -2989,6 +3174,10 @@
                     },
                     {
                       "column": "may_send",
+                      "eq": 1
+                    },
+                    {
+                      "column": "replaces_ok",
                       "eq": 1
                     }
                   ]
@@ -3093,6 +3282,17 @@
               "ask": [
                 "decision_note"
               ]
+            }
+          ],
+          "effects": [
+            {
+              "on": {
+                "to": "sent"
+              },
+              "via": "replaces_id",
+              "set": {
+                "status": "withdrawn"
+              }
             }
           ]
         }
@@ -3520,6 +3720,115 @@
           [
             "price_id"
           ]
+        ]
+      },
+      {
+        "ref": "deal_amount_changes",
+        "module": "quotes",
+        "label": {
+          "en-US": "Amount change",
+          "de-DE": "Betragsänderung",
+          "fr-FR": "Changement de montant",
+          "da-DK": "Beløbsændring",
+          "cs-CZ": "Změna částky",
+          "ar-EG": "تغيير المبلغ",
+          "zh-CN": "金额变更",
+          "zh-TW": "金額變更"
+        },
+        "labelPlural": {
+          "en-US": "Amount changes",
+          "de-DE": "Betragsänderungen",
+          "fr-FR": "Changements de montant",
+          "da-DK": "Beløbsændringer",
+          "cs-CZ": "Změny částky",
+          "ar-EG": "تغييرات المبلغ",
+          "zh-CN": "金额变更",
+          "zh-TW": "金額變更"
+        },
+        "belongs": [
+          {
+            "via": "deal_id"
+          }
+        ],
+        "indexes": [
+          [
+            "deal_id"
+          ],
+          [
+            "at"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "deal_id",
+            "type": "fk",
+            "references": "deals",
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "quote_id",
+            "type": "fk",
+            "references": "quotes",
+            "label": {
+              "en-US": "Quote",
+              "de-DE": "Angebot",
+              "fr-FR": "Devis",
+              "da-DK": "Tilbud",
+              "cs-CZ": "Nabídka",
+              "ar-EG": "عرض السعر",
+              "zh-CN": "报价",
+              "zh-TW": "報價"
+            }
+          },
+          {
+            "ref": "amount",
+            "type": "decimal",
+            "scale": "currency",
+            "label": {
+              "en-US": "Amount",
+              "de-DE": "Betrag",
+              "fr-FR": "Montant",
+              "da-DK": "Beløb",
+              "cs-CZ": "Částka",
+              "ar-EG": "المبلغ",
+              "zh-CN": "金额",
+              "zh-TW": "金額"
+            }
+          },
+          {
+            "ref": "at",
+            "type": "timestamptz",
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "When",
+              "de-DE": "Zeitpunkt",
+              "fr-FR": "Date et heure",
+              "da-DK": "Tidspunkt",
+              "cs-CZ": "Kdy",
+              "ar-EG": "الوقت",
+              "zh-CN": "时间",
+              "zh-TW": "時間"
+            }
+          }
         ]
       },
       {
@@ -10619,6 +10928,7 @@
         "table:@deals:delete",
         "table:@deals:export",
         "table:@deal_stage_changes:read",
+        "table:@deal_amount_changes:read",
         "table:@follow_ups:read",
         "table:@follow_ups:create",
         "table:@follow_ups:update",
@@ -10772,6 +11082,7 @@
         "page:@crm-deals:view",
         "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
+        "page:@crm-deal-amount-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
@@ -10900,8 +11211,7 @@
             "ask_reason",
             "decision_note",
             "sent_to_contact_id",
-            "notes",
-            "accepted_name"
+            "notes"
           ],
           "creatable": [
             "valid_until",
@@ -10918,8 +11228,7 @@
             "ask_reason",
             "decision_note",
             "sent_to_contact_id",
-            "notes",
-            "accepted_name"
+            "notes"
           ]
         },
         "quote_lines": {
@@ -10975,6 +11284,7 @@
         "table:@deals:update",
         "table:@deals:export",
         "table:@deal_stage_changes:read",
+        "table:@deal_amount_changes:read",
         "table:@follow_ups:read",
         "table:@follow_ups:create",
         "table:@follow_ups:update",
@@ -11115,6 +11425,7 @@
         "page:@crm-deals:view",
         "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
+        "page:@crm-deal-amount-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
@@ -11204,6 +11515,13 @@
             }
           }
         },
+        "deal_amount_changes": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
+        },
         "follow_ups": {
           "writable": [
             "deal_id",
@@ -11257,8 +11575,7 @@
             "ask_reason",
             "decision_note",
             "sent_to_contact_id",
-            "notes",
-            "accepted_name"
+            "notes"
           ],
           "creatable": [
             "valid_until",
@@ -11275,8 +11592,7 @@
             "ask_reason",
             "decision_note",
             "sent_to_contact_id",
-            "notes",
-            "accepted_name"
+            "notes"
           ],
           "rows": {
             "read": {
@@ -11677,6 +11993,7 @@
         "table:@deals:create",
         "table:@deals:update",
         "table:@deal_stage_changes:read",
+        "table:@deal_amount_changes:read",
         "table:@follow_ups:read",
         "table:@follow_ups:create",
         "table:@follow_ups:update",
@@ -11781,6 +12098,7 @@
         "page:@crm-deals:view",
         "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
+        "page:@crm-deal-amount-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
@@ -11870,6 +12188,13 @@
             }
           }
         },
+        "deal_amount_changes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
         "follow_ups": {
           "writable": [
             "deal_id",
@@ -11924,8 +12249,7 @@
             "approval",
             "ask_reason",
             "sent_to_contact_id",
-            "notes",
-            "accepted_name"
+            "notes"
           ],
           "writableValues": {
             "approval": [
@@ -11945,8 +12269,7 @@
             "approval",
             "ask_reason",
             "sent_to_contact_id",
-            "notes",
-            "accepted_name"
+            "notes"
           ],
           "creatableValues": {
             "approval": [
@@ -12702,6 +13025,7 @@
         "table:@deals:read",
         "table:@deals:export",
         "table:@deal_stage_changes:read",
+        "table:@deal_amount_changes:read",
         "table:@follow_ups:read",
         "table:@activities:read",
         "table:@lost_reasons:read",
@@ -12743,6 +13067,7 @@
         "page:@crm-deals:view",
         "page:@crm-pipeline:view",
         "page:@crm-deal-stage-changes:view",
+        "page:@crm-deal-amount-changes:view",
         "page:@crm-follow-ups:view",
         "page:@crm-activities:view",
         "page:@crm-lost-reasons:view",
@@ -12813,6 +13138,9 @@
             "version",
             "family_no",
             "replaces_id",
+            "deal_no",
+            "replaces_deal_id",
+            "replaces_ok",
             "list_value",
             "under_list_pct",
             "unlisted_lines",
@@ -12831,10 +13159,13 @@
             "approval_decided_at",
             "decision_note",
             "sent_to_contact_id",
+            "to_email",
+            "to_name",
             "sent_to_email",
             "sent_to_name",
             "notes",
             "accepted_name",
+            "accepted_via",
             "withdrawn_at"
           ]
         },
@@ -13061,6 +13392,70 @@
                 "deal_id": "{{record.id}}",
                 "to_stage_id": "{{record.stage_id}}",
                 "by_id": "{{record.stage_by_id}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quote-sent-amount",
+      "name": {
+        "en-US": "A quote is sent: the deal’s amount gets a line in its history",
+        "de-DE": "Ein Angebot wird gesendet: Der Betrag des Deals erhält eine Zeile im Verlauf",
+        "fr-FR": "Un devis est envoyé : le montant de l’affaire prend une ligne dans son historique",
+        "da-DK": "Et tilbud sendes: dealens beløb får en linje i historikken",
+        "cs-CZ": "Nabídka je odeslána: částka obchodu dostane řádek v historii",
+        "ar-EG": "يُرسَل عرض سعر: مبلغ الصفقة يُسجَّل بسطر في سجلها",
+        "zh-CN": "报价发出：商机金额在历史中记一行",
+        "zh-TW": "報價送出：案件金額在歷程中記一行"
+      },
+      "description": {
+        "en-US": "When a quote is sent, writes what the deal now stands at and which quote it came from. The deal room shows the line.",
+        "de-DE": "Schreibt beim Senden eines Angebots, bei welchem Betrag der Deal jetzt steht und aus welchem Angebot er stammt. Der Deal-Raum zeigt die Zeile.",
+        "fr-FR": "Quand un devis est envoyé, note le montant auquel l’affaire se trouve désormais et le devis d’où il vient. La fiche de l’affaire affiche la ligne.",
+        "da-DK": "Når et tilbud sendes, skrives hvad dealen nu står til, og hvilket tilbud det kommer fra. Dealrummet viser linjen.",
+        "cs-CZ": "Při odeslání nabídky zapíše, na jaké částce obchod nyní je a ze které nabídky pochází. Řádek se zobrazí v detailu obchodu.",
+        "ar-EG": "عند إرسال عرض سعر، يُسجَّل ما صار عليه مبلغ الصفقة وأي عرض جاء منه. تعرض غرفة الصفقة هذا السطر.",
+        "zh-CN": "报价发出时，记下商机当前的金额及其来源报价。商机详情页会显示这一行。",
+        "zh-TW": "報價送出時，記下案件目前的金額及其來源報價。案件頁會顯示這一行。"
+      },
+      "enabled": true,
+      "module": "quotes",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "quotes",
+        "changedColumn": "status",
+        "when": [
+          {
+            "left": {
+              "field": "status"
+            },
+            "op": "is",
+            "right": "sent"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A quote is sent: a line in its deal’s history"
+          },
+          {
+            "id": "line",
+            "kind": "action",
+            "title": "Write the amount the deal now stands at",
+            "action": {
+              "kind": "record.create",
+              "table": "deal_amount_changes",
+              "values": {
+                "deal_id": "{{record.deal_id}}",
+                "quote_id": "{{record.id}}",
+                "amount": "{{record.subtotal}}"
               }
             }
           }
@@ -15913,6 +16308,32 @@
         "rows": "deal_stage_changes"
       },
       "module": "selling"
+    },
+    {
+      "ref": "crm-deal-amount-changes",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.deal_amount_changes",
+        "fallback": "Amount changes"
+      },
+      "titles": {
+        "de-DE": "Betragsänderungen",
+        "fr-FR": "Changements de montant",
+        "da-DK": "Beløbsændringer",
+        "cs-CZ": "Změny částky",
+        "ar-EG": "تغييرات المبلغ",
+        "zh-CN": "金额变更",
+        "zh-TW": "金額變更"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "history",
+        "order": 20
+      },
+      "bindings": {
+        "rows": "deal_amount_changes"
+      },
+      "module": "quotes"
     },
     {
       "ref": "crm-follow-ups",

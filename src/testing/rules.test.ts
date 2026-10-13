@@ -46,10 +46,10 @@ const names = (text: string): string[] => [...text.matchAll(/\{\{([^}|]+)/g)].ma
 
 describe("the rules the app ships", () => {
   // What the app cannot work without is switched on as it is installed; what tells people is the owner's to switch on.
-  const WORKS = ["deal-made", "deal-stage-changed", "deal-won-job", "approval-asked"];
+  const WORKS = ["deal-made", "deal-stage-changed", "deal-won-job", "quote-sent-amount", "approval-asked"];
   const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "approval-refused", "week-rep", "week-manager"];
 
-  it("are fourteen: four the app works by, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
+  it("are fifteen: five the app works by, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
     expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...TELLS]);
     for (const one of m.automations) {
       expect(one.enabled, one.key).toBe(WORKS.includes(one.key));
@@ -207,12 +207,20 @@ describe("the outbox", () => {
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });
 
+  it("writes a line in the deal's history when a quote is sent: the amount before tax, and the quote it came from", () => {
+    expect(rule("quote-sent-amount").trigger).toEqual({ kind: "record", event: "updated", table: "quotes", changedColumn: "status", when: [{ left: { field: "status" }, op: "is", right: "sent" }] });
+    expect(steps("quote-sent-amount")).toEqual([{ kind: "record.create", table: "deal_amount_changes", values: { deal_id: "{{record.deal_id}}", quote_id: "{{record.id}}", amount: "{{record.subtotal}}" } }]);
+  });
+
   it("has one producer: a quote that reaches \"sent\" is mailed to the address kept on it", () => {
     expect(m.outbox.producers).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" } }]);
     const quotes = m.requiredSchema.tables.find((one) => one.ref === "quotes")!;
     const column = (ref: string) => quotes.columns.find((one) => one.ref === ref)!;
-    // The address follows the contact the quote was sent to, and is personal data like the contact's own.
-    expect(column("sent_to_email")).toMatchObject({ type: "text", nullable: true, rules: { personal: true, copy: { via: "sent_to_contact_id", from: "email", mode: "always", follow: true } } });
-    expect(column("sent_to_name")).toMatchObject({ type: "text", nullable: true, rules: { copy: { via: "sent_to_contact_id", from: "name", mode: "always", follow: true } } });
+    // Until it is sent, a quote shows where it will go: the contact's address as it is today, personal data like the contact's own.
+    expect(column("to_email")).toMatchObject({ type: "text", nullable: true, rules: { personal: true, copy: { via: "sent_to_contact_id", from: "email", mode: "always", follow: true } } });
+    expect(column("to_name")).toMatchObject({ type: "text", nullable: true, rules: { copy: { via: "sent_to_contact_id", from: "name", mode: "always", follow: true } } });
+    // Sending stamps where it went, and that no longer follows the contact: the record of who was mailed stays true.
+    expect(column("sent_to_email").rules).toEqual({ personal: true, stamp: { set: { copy: "to_email" }, on: { column: "status", values: ["sent"] } } });
+    expect(column("sent_to_name").rules).toEqual({ stamp: { set: { copy: "to_name" }, on: { column: "status", values: ["sent"] } } });
   });
 });

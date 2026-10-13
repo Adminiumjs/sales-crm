@@ -50,7 +50,7 @@ const moves = (ref: string): string[] =>
 /** Every table with states, its column, and each move with what it needs. */
 const EXPECTED: Record<string, { column: string; initial: string; moves: string[] }> = {
   deals: { column: "state", initial: "open", moves: ["open → won", "open → lost: lost_reason_id filled", "won → open: back", "lost → open: back; empties lost_reason_id"] },
-  quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
+  quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
   site_visits: { column: "state", initial: "booked", moves: ["booked → done", "booked → cancelled: cancel_reason filled"] },
   renewals: { column: "state", initial: "open", moves: ["open → done", "open → dropped"] },
   meeting_decisions: { column: "state", initial: "open", moves: ["open → done", "open → carried"] },
@@ -121,6 +121,23 @@ describe("a deal", () => {
     expect(closedOn.rules?.stamp).toEqual({ set: "today", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
     const cycle = table("deals").columns.find((one) => one.ref === "cycle_days")!;
     expect([cycle.type, cycle.nullable, (cycle.rules as { formula?: unknown } | undefined)?.formula]).toEqual(["int", true, { daysBetween: ["opened_on", "closed_on"] }]);
+  });
+
+  it("a quote that is sent withdraws the version it replaces, in the same write; that version must be of the same deal", () => {
+    const quote = states("quotes") as unknown as { effects?: unknown[] };
+    expect(quote.effects).toEqual([{ on: { to: "sent" }, via: "replaces_id", set: { status: "withdrawn" } }]);
+    const column = (ref: string) => table("quotes").columns.find((one) => one.ref === ref)! as unknown as { type: string; rules?: Record<string, unknown> };
+    // Two numbers a formula can compare: the quote's own deal, and the deal of the quote it replaces.
+    expect(column("deal_no").rules).toEqual({ copy: { via: "deal_id", from: "id", mode: "always" } });
+    expect(column("replaces_deal_id").rules).toEqual({ copy: { via: "replaces_id", from: "deal_id", mode: "always" } });
+    expect(column("replaces_ok").rules).toEqual({ formula: { if: [{ or: [{ isNull: "replaces_id" }, { and: [{ gte: ["replaces_deal_id", "deal_no"] }, { lte: ["replaces_deal_id", "deal_no"] }] }] }, 1, 0] } });
+    // Nobody types who accepted: the customer's page does, as plain text, and the server says through which door.
+    expect(column("accepted_name").rules).toEqual({ plainText: { max: 120 } });
+    expect(column("accepted_via").rules).toEqual({ stamp: { set: { byOrigin: { public: "customer", staff: "staff" } }, on: { column: "status", values: ["accepted"] } } });
+    for (const role of (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[]; creatable?: string[] }> }[] }).roles) {
+      expect(role.limits?.["quotes"]?.writable ?? [], role.key).not.toContain("accepted_name");
+      expect(role.limits?.["quotes"]?.creatable ?? [], role.key).not.toContain("accepted_name");
+    }
   });
 
   it("has four buttons: won, lost (asks why), reopen, and a hand-over that asks to whom", () => {

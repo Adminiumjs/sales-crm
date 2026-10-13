@@ -5388,6 +5388,8 @@
       "@time": "15:30",
       "@week": true
      },
+     "sent_to_email": "r.adeyemi@brightloom.example",
+     "sent_to_name": "Ruth Adeyemi",
      "deal_id": {
       "@ref": "deal:d5"
      },
@@ -5413,6 +5415,8 @@
       "@time": "11:20",
       "@week": true
      },
+     "sent_to_email": "p.lindqvist@nordwind.example",
+     "sent_to_name": "Petra Lindqvist",
      "deal_id": {
       "@ref": "deal:d1"
      },
@@ -5438,6 +5442,8 @@
       "@time": "16:05",
       "@week": true
      },
+     "sent_to_email": "marta@veldtstudios.example",
+     "sent_to_name": "Marta Kovac",
      "deal_id": {
       "@ref": "deal:d2"
      },
@@ -5452,7 +5458,7 @@
      "@label": "quote:Q-1004",
      "number_seq": null,
      "number": "Q-1004",
-     "status": "sent",
+     "status": "withdrawn",
      "valid_until": {
       "@day": 12,
       "@week": true
@@ -5463,6 +5469,18 @@
       "@time": "14:35",
       "@week": true
      },
+     "withdrawn_at": {
+      "@day": -8,
+      "@time": "14:35",
+      "@week": true
+     },
+     "decided_at": {
+      "@day": -8,
+      "@time": "14:35",
+      "@week": true
+     },
+     "sent_to_email": "c.finch@harborfinch.example",
+     "sent_to_name": "Callum Finch",
      "deal_id": {
       "@ref": "deal:d14"
      },
@@ -5488,6 +5506,8 @@
       "@time": "09:50",
       "@week": true
      },
+     "sent_to_email": "bea@loworbit.example",
+     "sent_to_name": "Bea Nolan",
      "deal_id": {
       "@ref": "deal:d9"
      },
@@ -5513,6 +5533,8 @@
       "@time": "14:35",
       "@week": true
      },
+     "sent_to_email": "c.finch@harborfinch.example",
+     "sent_to_name": "Callum Finch",
      "deal_id": {
       "@ref": "deal:d14"
      },

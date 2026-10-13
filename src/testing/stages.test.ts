@@ -104,9 +104,9 @@ describe("stage 1, the first release", () => {
   const tables = new Set(doc.requiredSchema.tables.map((table) => table.ref));
   const gone = whole.requiredSchema.tables.filter((table) => !tables.has(table.ref)).map((table) => table.ref);
 
-  it("holds six parts, 46 tables, and offers no Field crew", () => {
+  it("holds six parts, 47 tables, and offers no Field crew", () => {
     expect(doc.modules.map((part) => part.id)).toEqual(["selling", "quotes", "accounts", "team", "inbox", "supply"]);
-    expect(doc.requiredSchema.tables.length).toBe(46);
+    expect(doc.requiredSchema.tables.length).toBe(47);
     expect(gone.length).toBe(28);
     expect(doc.roles.map((role) => role.key)).toEqual(["admin", "sales-manager", "rep", "account-manager", "marketer", "front-desk", "ops-manager", "read-only"]);
     expect(one.cut.roles).toEqual(["crew"]);

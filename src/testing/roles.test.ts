@@ -64,6 +64,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["stages", "lost_reasons"], "RCUD", "RCU", "R", "R", "-", "-", "-", "-", "R"],
   [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won", "-", "-", "-", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
+  [["deal_amount_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
   [["activities", "comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "-", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
@@ -153,7 +154,7 @@ const HAND_OVERS: Record<string, readonly RoleKey[]> = {
 
 /** The nine parts, each a heading of the menu, and the last heading for the app's own two tables. */
 const PARTS: readonly (readonly [string, readonly string[]])[] = [
-  ["selling", ["stages", "deals", "deal_stage_changes", "follow_ups", "activities", "lost_reasons", "quotes", "quote_lines", "comments", "saved_views", "saved_searches", "nudge_snoozes", "deal_members", "deal_marks", "site_visits", "visit_notes", "visit_agreed", "price_list"]],
+  ["selling", ["stages", "deals", "deal_stage_changes", "follow_ups", "activities", "lost_reasons", "quotes", "quote_lines", "comments", "saved_views", "saved_searches", "nudge_snoozes", "deal_members", "deal_marks", "site_visits", "visit_notes", "visit_agreed", "price_list", "deal_amount_changes"]],
   ["accounts", ["companies", "contacts", "territories", "territory_places", "renewals", "referrals"]],
   ["team", ["reps", "targets", "one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas", "actions", "meetings", "meeting_slots", "meeting_decisions", "threads", "thread_members", "messages", "starters", "starter_steps", "covers", "cover_notes"]],
   ["inbox", ["enquiries", "shows"]],
@@ -405,13 +406,13 @@ describe("the matrix covers every table, and every table's every role", () => {
   it("lists each of the manifest's tables once", () => {
     expect(MATRIX_TABLES.length).toBe(new Set(MATRIX_TABLES).size);
     expect([...MATRIX_TABLES].sort()).toEqual(tables.map((table) => table.ref).sort());
-    expect(MATRIX_TABLES).toHaveLength(74);
+    expect(MATRIX_TABLES).toHaveLength(75);
   });
 
-  it("has nine roles by seventy-four tables: 666 cells", () => {
+  it("has nine roles by seventy-five tables: 675 cells", () => {
     let cells = 0;
     for (const key of ROLES) cells += EXPECTED.get(key)?.size ?? 0;
-    expect(cells).toBe(666);
+    expect(cells).toBe(675);
   });
 });
 
@@ -623,7 +624,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 71, "sales-manager": 59, rep: 59, "account-manager": 30, marketer: 8, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 65 });
+    expect(menu).toEqual({ admin: 72, "sales-manager": 60, rep: 60, "account-manager": 30, marketer: 8, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 66 });
   });
 });
 

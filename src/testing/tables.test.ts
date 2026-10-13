@@ -50,6 +50,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   deal_stage_changes: { nullable: ["from_stage_id", "by_id"] },
+  deal_amount_changes: { nullable: [] },
   follow_ups: { nullable: ["deal_id", "job_id", "call_no", "outcome", "done_by_id", "done_at"] },
   activities: { nullable: [] },
   lost_reasons: { nullable: [] },
@@ -71,6 +72,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "withdraw_reason",
       "family_no",
       "replaces_id",
+      "deal_no",
+      "replaces_deal_id",
       "threshold_pct",
       "approved_pct",
       "approved_unlisted_lines",
@@ -82,11 +85,14 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "approval_decided_at",
       "decision_note",
       "sent_to_contact_id",
+      "to_email",
+      "to_name",
       "sent_to_email",
       "sent_to_name",
       "notes",
       "share_code",
       "accepted_name",
+      "accepted_via",
       "withdrawn_at",
     ],
   },
@@ -264,7 +270,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
 };
 
 /** How many tables the manifest holds: the 72 of the app's ten parts, the price list, and the weekdays a crew works. */
-const TABLE_COUNT = 74;
+const TABLE_COUNT = 75;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each

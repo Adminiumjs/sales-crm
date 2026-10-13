@@ -103,18 +103,61 @@ for (const [dialect, reachable] of LEGS) {
       await new Promise((r) => setTimeout(r, 1100));
       await w.update('quotes', v2['id'], { status: 'sent' });
       expect(await dealNow()).toEqual([48000, Number(v2['id']), 48000, 36000]);
+      // Sending version 2 withdrew the version it replaces, in the same write: the customer holds one quote, never two.
+      expect([(await one('quotes', 'status', v1['id']))['status'], (await one('quotes', 'withdrawn_at', v1['id']))['withdrawn_at'] !== null]).toEqual(['withdrawn', true]);
       // A quote whose only line has no list price needs approval whatever it costs.
       const v3 = await w.create('quotes', { deal_id: deal['id'], version: 3, replaces_id: v2['id'] });
       await w.create('quote_lines', { document_id: v3['id'], qty: 1, rate: 99000, description: 'Bespoke reception desk' });
       q = await one('quotes', 'under_list_pct, unlisted_lines, unlisted_value, needs_approval, may_send', v3['id']);
       expect([Number(q['under_list_pct']), Number(q['unlisted_lines']), Number(q['unlisted_value']), Number(q['needs_approval']), Number(q['may_send'])]).toEqual([0, 1, 99000, 1, 0]);
       await expect(w.update('quotes', v3['id'], { status: 'sent' })).rejects.toThrow();
-      // Withdrawn: it stops counting, and the deal falls back to the version before.
+      // Asked and refused: the same version is changed and asked again (no new version is made), and once approved it may go.
+      await w.update('quotes', v3['id'], { approval: 'asked', ask_reason: 'A bespoke desk' });
+      await w.update('quotes', v3['id'], { approval: 'refused' });
+      q = await one('quotes', 'approval, may_send, status', v3['id']);
+      expect([q['approval'], Number(q['may_send']), q['status']]).toEqual(['refused', 0, 'draft']);
+      await expect(w.update('quotes', v3['id'], { status: 'sent' })).rejects.toThrow();
+      await w.create('quote_lines', { document_id: v3['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await w.update('quotes', v3['id'], { approval: 'asked', ask_reason: 'With fitting at list' });
+      expect((await one('quotes', 'approval', v3['id']))['approval']).toBe('asked');
+      await w.update('quotes', v3['id'], { approval: 'approved' });
+      expect(Number((await one('quotes', 'may_send', v3['id']))['may_send'])).toBe(1);
+      // Withdrawn: it stops counting. The version before it was withdrawn when this one went out, so the deal is back to what was typed.
       await w.update('quotes', v2['id'], { status: 'withdrawn' });
       expect((await one('quotes', 'withdrawn_at', v2['id']))['withdrawn_at']).not.toBeNull();
-      expect(await dealNow()).toEqual([52800, Number(v1['id']), 52800, 39600]);
-      await w.update('quotes', v1['id'], { status: 'withdrawn' });
       expect(await dealNow()).toEqual([null, null, 48000, 36000]);
+
+      // A version the customer accepted in the meantime cannot be withdrawn: its replacement does not go, and nothing is written.
+      const a1 = await w.create('quotes', { deal_id: deal['id'] });
+      await w.create('quote_lines', { document_id: a1['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await w.update('quotes', a1['id'], { status: 'sent' });
+      const a2 = await w.create('quotes', { deal_id: deal['id'], version: 2, replaces_id: a1['id'] });
+      await w.create('quote_lines', { document_id: a2['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await w.update('quotes', a1['id'], { status: 'accepted' });
+      // Accepted at the desk, by staff: the server says through which door.
+      expect((await one('quotes', 'accepted_via', a1['id']))['accepted_via']).toBe('staff');
+      await expect(w.update('quotes', a2['id'], { status: 'sent' })).rejects.toThrow();
+      expect([(await one('quotes', 'status', a1['id']))['status'], (await one('quotes', 'status', a2['id']))['status']]).toEqual(['accepted', 'draft']);
+
+      // A version may replace only a quote of its own deal: one that names another deal's quote is not sent, and that quote is left alone.
+      const other = await w.create('deals', { name: 'Another deal', company_id: co['id'], owner_id: dana.id, stage_id: stage['id'], typed_amount: 1000 });
+      const theirs = await w.create('quotes', { deal_id: other['id'] });
+      await w.create('quote_lines', { document_id: theirs['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await w.update('quotes', theirs['id'], { status: 'sent' });
+      const aimed = await w.create('quotes', { deal_id: deal['id'], version: 3, replaces_id: theirs['id'] });
+      await w.create('quote_lines', { document_id: aimed['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      expect(Number((await one('quotes', 'replaces_ok', aimed['id']))['replaces_ok'])).toBe(0);
+      await expect(w.update('quotes', aimed['id'], { status: 'sent' })).rejects.toThrow();
+      expect((await one('quotes', 'status', theirs['id']))['status']).toBe('sent');
+
+      // The deal's amount is the quote before tax: with tax on a quote, the deal does not grow by it.
+      const taxed = await w.create('quotes', { deal_id: other['id'], version: 2, replaces_id: theirs['id'], tax_rate: 20 });
+      await w.create('quote_lines', { document_id: taxed['id'], qty: 1, rate: 2970, price_id: price['install'] });
+      await new Promise((r) => setTimeout(r, 1100));
+      await w.update('quotes', taxed['id'], { status: 'sent' });
+      const t = await one('quotes', 'subtotal, tax, total', taxed['id']);
+      expect([Number(t['subtotal']), Number(t['tax']), Number(t['total'])]).toEqual([2970, 594, 3564]);
+      expect(Number((await one('deals', 'amount', other['id']))['amount'])).toBe(2970);
     });
 
     it('the team, the inbox and the showroom tables take their rows', async () => {
@@ -308,7 +351,7 @@ for (const [dialect, reachable] of LEGS) {
       const s = await read('settings', 'approval_threshold_pct, quote_valid_days, certificate_warn_days, week_starts, distance_unit', st['id']);
       expect([Number(s['approval_threshold_pct']), Number(s['quote_valid_days']), Number(s['certificate_warn_days']), s['week_starts'], s['distance_unit']]).toEqual([5, 30, 42, 'mon', 'km']);
       const tables = await h.rows(dialect === 'sqlite' ? `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name LIKE 'crm\\_%' ESCAPE '\\' AND name NOT LIKE '%sample_data'` : dialect === 'postgres' ? `SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = current_schema() AND table_name LIKE 'crm\\_%'` : `SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE 'crm\\_%'`);
-      expect(Number(tables[0]!['n'])).toBe(74);
+      expect(Number(tables[0]!['n'])).toBe(75);
     });
   });
 }

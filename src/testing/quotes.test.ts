@@ -361,7 +361,7 @@ describe("a version says whether it needs approval, and whether it may be sent",
   it("holds the send to the approval, beside the shape's own condition", () => {
     const send = table("quotes").states?.moves["draft"]?.[0] as Move;
     expect(send.to).toBe("sent");
-    expect(send.requires?.where).toEqual([{ column: "total", gt: 0 }, { column: "may_send", eq: 1 }]);
+    expect(send.requires?.where).toEqual([{ column: "total", gt: 0 }, { column: "may_send", eq: 1 }, { column: "replaces_ok", eq: 1 }]);
     expect(shapeConformanceIssues(manifest as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([]);
 
     // Only on a column the app added: a condition on one of the shape's own is still refused.
@@ -384,7 +384,7 @@ describe("a deal's amount is its newest sent quote's total, else what was typed"
     expect(column("deals", "quoted_amount")).toMatchObject({
       type: "decimal",
       nullable: true,
-      rules: { rollup: { from: "quotes", via: "deal_id", latest: { of: "total", by: "sent_at", row: "quote_id" }, unlessSet: "withdrawn_at" } },
+      rules: { rollup: { from: "quotes", via: "deal_id", latest: { of: "subtotal", by: "sent_at", row: "quote_id" }, unlessSet: "withdrawn_at" } },
     });
     expect(column("quotes", "deal_id")).toMatchObject({ type: "fk", references: "deals" });
   });
