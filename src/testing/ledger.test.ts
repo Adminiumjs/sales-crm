@@ -22,8 +22,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
-import bundle from "../../seeds/meridian.json";
+import manifest from "../../whole/manifest.json";
+import bundle from "../../whole/seeds/meridian.json";
 
 type Value = unknown;
 type Row = Record<string, Value>;
@@ -32,7 +32,7 @@ interface Moment {
   minutes: number | null;
 }
 
-const ROOT = join(__dirname, "..", "..");
+const ROOT = join(__dirname, "..", "..", "whole");
 /** The sample's own moment: day 0, 09:35. */
 const NOW: Moment = { day: 0, minutes: 9 * 60 + 35 };
 

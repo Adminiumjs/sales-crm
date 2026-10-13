@@ -20,7 +20,7 @@ import { LEGS, said, wholeServer, type WholeServer } from './whole-server.helper
 vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.28' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const manifest = () => JSON.parse(readFileSync(`${APP}/manifest.json`, 'utf8')) as Record<string, unknown>;
+const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 const TELLS = ['nudge-quiet', 'nudge-stuck', 'nudge-soon', 'follow-up-due', 'deal-handed-over', 'week-rep', 'week-manager'];
 const DAY = 86_400_000;
 

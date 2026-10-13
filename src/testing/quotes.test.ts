@@ -20,7 +20,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
+import manifest from "../../whole/manifest.json";
 import { evaluateFormula, rollupValue, type FormulaExpr } from "./manifest/formula.ts";
 import { shapeConformanceIssues, shapeKey, validateManifest, type ShapeDefinitionView } from "./manifest/index.ts";
 import SHAPES from "./shapes/invoices-quote.json";

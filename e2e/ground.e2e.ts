@@ -11,7 +11,8 @@ const where = (condition: unknown) => `?limit=200&where=${encodeURIComponent(JSO
 const sum = (rows: { amount: unknown }[]) => rows.reduce((total, row) => total + Number(row.amount), 0);
 
 test("the stand holds the sample as the ledger counts it, for each person as themselves", async ({ api, data, stand }) => {
-  expect(stand.sampleRows).toBeGreaterThan(600);
+  // The sample of the stage that is installed: the first release's six parts hold 462 of the whole app's 687 rows.
+  expect(stand.sampleRows).toBeGreaterThan(stand.stage === 1 ? 400 : 600);
   // The sales manager's board: 14 open deals, 286,300. Dana's own: 6 and 143,400.
   const ivys = (await (await (await api("ivy")).get(data("deals", where(open)))).json()) as { data: { amount: unknown }[] };
   expect([ivys.data.length, sum(ivys.data)]).toEqual([14, 286_300]);
@@ -42,8 +43,11 @@ test("the config says who they are, what they may do and which parts are on; not
   expect(dana.access.roles.map((role) => role.slug)).toEqual(["crm-rep"]);
   expect(dana.access.tables["deals"]).toEqual(["read", "create", "update"]);
   expect(dana.access.tables["stages"]).toEqual(["read"]);
-  // Every part was switched on at the install.
-  expect(Object.values(dana.modules)).toEqual(Array.from({ length: 10 }, () => true));
+  // Every part the installed stage holds was switched on at the install, and it holds no other: at the first release, six.
+  expect(dana.modules).toEqual(Object.fromEntries(stand.parts.map((part) => [part, true])));
+  if (stand.stage === 1) expect(Object.keys(dana.modules).sort()).toEqual(["accounts", "inbox", "quotes", "selling", "supply", "team"]);
+  // No table of a part that is not installed is named to anybody.
+  if (stand.stage === 1) for (const later of ["jobs", "job_visits", "showroom_bookings", "feedback", "vehicles"]) expect(dana.tables[later], later).toBeUndefined();
   // The marketer reads no deal, and her config says so.
   const lena = await read("lena");
   expect(lena.access.tables["deals"] ?? []).toEqual([]);

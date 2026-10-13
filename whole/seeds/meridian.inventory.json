@@ -1,0 +1,592 @@
+{
+ "format": "adminium.sample/1",
+ "app": "crm",
+ "addOn": "inventory",
+ "tables": [
+  {
+   "ref": "suppliers",
+   "rows": [
+    {
+     "@label": "inv:supplier:halvard-werke",
+     "name": "Halvard Werke",
+     "lead_days": 14
+    },
+    {
+     "@label": "inv:supplier:kirkwall-steel",
+     "name": "Kirkwall Steel",
+     "lead_days": 14
+    },
+    {
+     "@label": "inv:supplier:ostrom-seating",
+     "name": "Ostrom Seating",
+     "lead_days": 21
+    },
+    {
+     "@label": "inv:supplier:trellis-textiles",
+     "name": "Trellis Textiles",
+     "lead_days": 14
+    },
+    {
+     "@label": "inv:supplier:fenlow-acoustics",
+     "name": "Fenlow Acoustics",
+     "lead_days": 42
+    },
+    {
+     "@label": "inv:supplier:marchmont-joinery",
+     "name": "Marchmont Joinery",
+     "lead_days": 49
+    }
+   ]
+  },
+  {
+   "ref": "places",
+   "rows": [
+    {
+     "@label": "inv:place:depot",
+     "name": "Meridian depot",
+     "for_sale": false
+    }
+   ]
+  },
+  {
+   "ref": "items",
+   "rows": [
+    {
+     "@label": "inv:item:s1",
+     "name": "Bench desk runs",
+     "sku": "MER-001",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "desks"
+    },
+    {
+     "@label": "inv:item:s2",
+     "name": "Task seating, mesh back",
+     "sku": "MER-002",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "chairs"
+    },
+    {
+     "@label": "inv:item:s3",
+     "name": "Acoustic booths, single",
+     "sku": "MER-003",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "booths"
+    },
+    {
+     "@label": "inv:item:s4",
+     "name": "Acoustic rooms, four-person",
+     "sku": "MER-004",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "rooms"
+    },
+    {
+     "@label": "inv:item:s5",
+     "name": "Records-room lockers",
+     "sku": "MER-005",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "lockers"
+    },
+    {
+     "@label": "inv:item:s6",
+     "name": "Sit-stand frames",
+     "sku": "MER-006",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "frames"
+    },
+    {
+     "@label": "inv:item:s7",
+     "name": "Showroom fittings",
+     "sku": "MER-007",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "made to order"
+    },
+    {
+     "@label": "inv:item:s8",
+     "name": "Cable trays and floor power",
+     "sku": "MER-008",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "metres"
+    },
+    {
+     "@label": "inv:item:s9",
+     "name": "Lab bench stools",
+     "sku": "MER-009",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "stools"
+    },
+    {
+     "@label": "inv:item:s10",
+     "name": "Canteen benches",
+     "sku": "MER-010",
+     "unit_id": {
+      "@ref": "unit:each"
+     },
+     "note": "benches"
+    }
+   ]
+  },
+  {
+   "ref": "item_suppliers",
+   "rows": [
+    {
+     "item_id": {
+      "@ref": "inv:item:s1"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:halvard-werke"
+     },
+     "pack_size": 1,
+     "price": "310.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s2"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:ostrom-seating"
+     },
+     "pack_size": 1,
+     "price": "145.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s3"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:fenlow-acoustics"
+     },
+     "pack_size": 1,
+     "price": "2900.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s4"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:fenlow-acoustics"
+     },
+     "pack_size": 1,
+     "price": "7800.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s5"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:kirkwall-steel"
+     },
+     "pack_size": 1,
+     "price": "85.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s6"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:kirkwall-steel"
+     },
+     "pack_size": 1,
+     "price": "260.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s8"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:kirkwall-steel"
+     },
+     "pack_size": 1,
+     "price": "18.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s9"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:ostrom-seating"
+     },
+     "pack_size": 1,
+     "price": "60.00",
+     "rank": "preferred"
+    },
+    {
+     "item_id": {
+      "@ref": "inv:item:s10"
+     },
+     "supplier_id": {
+      "@ref": "inv:supplier:marchmont-joinery"
+     },
+     "pack_size": 1,
+     "price": "240.00",
+     "rank": "preferred"
+    }
+   ]
+  },
+  {
+   "ref": "receipts",
+   "rows": [
+    {
+     "@label": "inv:opening",
+     "place_id": {
+      "@ref": "inv:place:depot"
+     },
+     "kind": "opening"
+    }
+   ]
+  },
+  {
+   "ref": "receipt_lines",
+   "rows": [
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s1"
+     },
+     "qty_typed": 120,
+     "unit_cost": "310.00"
+    },
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s2"
+     },
+     "qty_typed": 60,
+     "unit_cost": "145.00"
+    },
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s3"
+     },
+     "qty_typed": 4,
+     "unit_cost": "2900.00"
+    },
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s5"
+     },
+     "qty_typed": 90,
+     "unit_cost": "85.00"
+    },
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s6"
+     },
+     "qty_typed": 35,
+     "unit_cost": "260.00"
+    },
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s8"
+     },
+     "qty_typed": 400,
+     "unit_cost": "18.00"
+    },
+    {
+     "receipt_id": {
+      "@ref": "inv:opening"
+     },
+     "item_id": {
+      "@ref": "inv:item:s10"
+     },
+     "qty_typed": 24,
+     "unit_cost": "240.00"
+    }
+   ]
+  },
+  {
+   "ref": "purchase_orders",
+   "rows": [
+    {
+     "@label": "inv:po:s2",
+     "supplier_id": {
+      "@ref": "inv:supplier:ostrom-seating"
+     },
+     "place_id": {
+      "@ref": "inv:place:depot"
+     },
+     "sent_how": "none"
+    },
+    {
+     "@label": "inv:po:s3",
+     "supplier_id": {
+      "@ref": "inv:supplier:fenlow-acoustics"
+     },
+     "place_id": {
+      "@ref": "inv:place:depot"
+     },
+     "sent_how": "none"
+    },
+    {
+     "@label": "inv:po:s4",
+     "supplier_id": {
+      "@ref": "inv:supplier:fenlow-acoustics"
+     },
+     "place_id": {
+      "@ref": "inv:place:depot"
+     },
+     "sent_how": "none"
+    },
+    {
+     "@label": "inv:po:s9",
+     "supplier_id": {
+      "@ref": "inv:supplier:ostrom-seating"
+     },
+     "place_id": {
+      "@ref": "inv:place:depot"
+     },
+     "sent_how": "none"
+    }
+   ]
+  },
+  {
+   "ref": "po_lines",
+   "rows": [
+    {
+     "po_id": {
+      "@ref": "inv:po:s2"
+     },
+     "item_id": {
+      "@ref": "inv:item:s2"
+     },
+     "packs": 240,
+     "pack_size": 1,
+     "price": "145.00"
+    },
+    {
+     "po_id": {
+      "@ref": "inv:po:s3"
+     },
+     "item_id": {
+      "@ref": "inv:item:s3"
+     },
+     "packs": 12,
+     "pack_size": 1,
+     "price": "2900.00"
+    },
+    {
+     "po_id": {
+      "@ref": "inv:po:s4"
+     },
+     "item_id": {
+      "@ref": "inv:item:s4"
+     },
+     "packs": 6,
+     "pack_size": 1,
+     "price": "7800.00"
+    },
+    {
+     "po_id": {
+      "@ref": "inv:po:s9"
+     },
+     "item_id": {
+      "@ref": "inv:item:s9"
+     },
+     "packs": 40,
+     "pack_size": 1,
+     "price": "60.00"
+    }
+   ]
+  },
+  {
+   "ref": "deal_stock_needs",
+   "own": true,
+   "rows": [
+    {
+     "deal_id": {
+      "@ref": "deal:d1"
+     },
+     "item": {
+      "@ref": "inv:item:s1"
+     },
+     "qty": 46
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d10"
+     },
+     "item": {
+      "@ref": "inv:item:s1"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d7"
+     },
+     "item": {
+      "@ref": "inv:item:s2"
+     },
+     "qty": 60
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d13"
+     },
+     "item": {
+      "@ref": "inv:item:s2"
+     },
+     "qty": 8
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d2"
+     },
+     "item": {
+      "@ref": "inv:item:s3"
+     },
+     "qty": 6
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d9"
+     },
+     "item": {
+      "@ref": "inv:item:s3"
+     },
+     "qty": 4
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d2"
+     },
+     "item": {
+      "@ref": "inv:item:s4"
+     },
+     "qty": 2
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d3"
+     },
+     "item": {
+      "@ref": "inv:item:s5"
+     },
+     "qty": 90
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d6"
+     },
+     "item": {
+      "@ref": "inv:item:s6"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d12"
+     },
+     "item": {
+      "@ref": "inv:item:s6"
+     },
+     "qty": 8
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d5"
+     },
+     "item": {
+      "@ref": "inv:item:s7"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d1"
+     },
+     "item": {
+      "@ref": "inv:item:s8"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d10"
+     },
+     "item": {
+      "@ref": "inv:item:s8"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d12"
+     },
+     "item": {
+      "@ref": "inv:item:s8"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d8"
+     },
+     "item": {
+      "@ref": "inv:item:s9"
+     }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:d11"
+     },
+     "item": {
+      "@ref": "inv:item:s10"
+     }
+    }
+   ]
+  }
+ ],
+ "moves": [
+  {
+   "ref": "inv:opening",
+   "to": "posting"
+  },
+  {
+   "table": "receipt_lines",
+   "to": "posted"
+  },
+  {
+   "ref": "inv:opening",
+   "to": "posted"
+  },
+  {
+   "table": "purchase_orders",
+   "to": "sent"
+  }
+ ]
+}

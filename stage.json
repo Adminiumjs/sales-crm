@@ -1,0 +1,11 @@
+{
+  "released": 1,
+  "stages": {
+    "1": ["selling", "quotes", "accounts", "team", "inbox", "supply"],
+    "2": ["showroom", "jobs", "aftercare"],
+    "3": ["fleet"]
+  },
+  "rows": [
+    { "part": "aftercare", "table": "follow_ups", "where": { "kind": ["aftercare"] } }
+  ]
+}

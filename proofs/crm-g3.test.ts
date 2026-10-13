@@ -61,8 +61,8 @@ const LEGS: [Dialect, boolean][] = [
 ];
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const SEEDS = process.env.CRM_SEEDS ?? `${APP}/seeds`;
-const manifest = () => JSON.parse(readFileSync(`${APP}/manifest.json`, 'utf8')) as Record<string, unknown>;
+const SEEDS = process.env.CRM_SEEDS ?? `${APP}/whole/seeds`;
+const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 const PEOPLE = manifest()['sampleData'] as { people: { key: string; name: string; email: string; role: string }[] };
 
 /** The map server an install draws its maps from when nobody set another. */

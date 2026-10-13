@@ -22,7 +22,7 @@ import { LEGS } from './invoicing-install.helpers.js';
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const read = (path: string) => readFileSync(`${APP}/${path}`, 'utf8');
-const manifest = () => JSON.parse(read('manifest.json')) as Record<string, unknown> & { version: string };
+const manifest = () => JSON.parse(read("whole/manifest.json")) as Record<string, unknown> & { version: string };
 const inventory = builtAddOn('inventory');
 const invoices = builtAddOn('invoices');
 const n = (value: unknown): number => Number(value);
@@ -50,9 +50,9 @@ for (const [dialect, reachable] of LEGS) {
       await h.stageAddOn(invoices!.manifest, { bundled: true, files: invoices!.files });
       await h.stageAddOn(inventory!.manifest, { bundled: true, files: inventory!.files });
       // The harness packs text only: the picture's bytes do not matter here, its place in the package does.
-      const packed = JSON.parse(read('seeds/meridian.json')) as { assets?: Record<string, { file: string; sha256: string }> };
+      const packed = JSON.parse(read('whole/seeds/meridian.json')) as { assets?: Record<string, { file: string; sha256: string }> };
       for (const asset of Object.values(packed.assets ?? {})) asset.sha256 = createHash('sha256').update('png').digest('hex');
-      await h.stageApp(manifest(), { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/assets/signature.png': 'png', 'seeds/meridian.inventory.json': read('seeds/meridian.inventory.json') });
+      await h.stageApp(manifest(), { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/assets/signature.png': 'png', 'seeds/meridian.inventory.json': read('whole/seeds/meridian.inventory.json') });
       const installed = await h.install('crm', manifest().version, { addOns: [{ key: 'invoices', version: invoices!.version }, { key: 'inventory', version: inventory!.version }] });
       expect(installed.statusCode, installed.body).toBe(200);
       const as: Installed = { h, addOn: inventory!, reply: installed.json() as Record<string, unknown>, real: inv, rowsOf: (ref, where) => h.rows(`select * from ${inv(ref)}${where === undefined ? '' : ` where ${where}`}`), hosts: [] };

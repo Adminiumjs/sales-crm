@@ -23,6 +23,9 @@ export interface StandState {
   sampleRows: number;
   skippedRules: unknown[];
   version: { server: string; standIn: string | null; manifestAsks: string };
+  /** The stage of the app the stand installed, and the parts that stage holds. */
+  stage: number;
+  parts: string[];
   ready?: boolean;
 }
 export const STAND_DIR: string;

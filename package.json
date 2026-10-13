@@ -17,7 +17,9 @@
     "e2e": "npm run build:surface && playwright test",
     "stand:up": "npm run build:surface && node e2e/stand.mjs up",
     "stand:down": "node e2e/stand.mjs down",
-    "proofs": "node scripts/run-proofs.mjs"
+    "proofs": "node scripts/run-proofs.mjs",
+    "stage": "node scripts/stage-manifest.mjs",
+    "stage:check": "node scripts/stage-manifest.mjs --check"
   },
   "dependencies": {
     "@adminiumjs/public-client": "^0.2.2",

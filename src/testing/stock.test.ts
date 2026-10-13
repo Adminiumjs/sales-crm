@@ -17,9 +17,9 @@
 
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
-import main from "../../seeds/meridian.json";
-import section from "../../seeds/meridian.inventory.json";
+import manifest from "../../whole/manifest.json";
+import main from "../../whole/seeds/meridian.json";
+import section from "../../whole/seeds/meridian.inventory.json";
 
 type Row = Record<string, unknown>;
 const file = section as unknown as { format: string; app: string; addOn: string; tables: { ref: string; own?: true; rows: Row[] }[]; moves: { ref?: string; table?: string; to: string }[] };

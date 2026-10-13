@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { manifestsRepo, rolesRepo, usersRepo, type MetaDb } from '@adminium/meta';
 import { LEGS, installInvoicing, writerFor, type InvoicingHarness } from './invoicing-install.helpers.js';
 
-const manifest = () => JSON.parse(readFileSync(`${process.env.HOME}/Work/lanes/p67-app/manifest.json`, 'utf8')) as Record<string, unknown>;
+const manifest = () => JSON.parse(readFileSync(`${process.env.HOME}/Work/lanes/p67-app/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 
 /** The Invoices add-on the app's quotes are built on, there before the app: the engine's own fixture, at a version the app accepts. */
 /** The install as an owner who ticks Invoices & Receipts and every part: quotes are a part that waits for the add-on. */

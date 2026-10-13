@@ -265,11 +265,32 @@ unreleased server say it. The stand listens on `CRM_STAND_PORT` (4774 unless
 set). It gives each of the sample's people a password, which the product itself
 never does: a sample person cannot sign in on a real install.
 
+## The app by stage
+
+The app is released in stages. A release holds the parts that have screens and
+no others: a part whose screens are not built yet is not in the released file at
+all, so nobody can switch it on. It arrives later as an update.
+
+`whole/` is the app as it will be when every stage is out, and the only place to
+edit a table, a role, a page or the sample. `stage.json` says which parts each
+stage brings and which stage is released. After any change under `whole/`:
+
+```bash
+npm run stage          # writes manifest.json and seeds/ for the released stage
+npm run stage:check    # fails if they are not what whole/ derives
+```
+
+The unit tests fail on a root file that was not derived, and prove that the last
+stage is the whole app. `CRM_STAND_STAGE=3 npm run e2e` runs the browser specs on
+another stage than the released one.
+
 ## Project structure
 
 ```
-manifest.json     the app: tables, roles, pages, rules, e-mails, the sample's people
-seeds/            the sample data (generated; do not edit by hand)
+whole/            the app when every stage is out: manifest.json and seeds/ (edit HERE)
+stage.json        which parts each stage brings, and which stage is released
+manifest.json     the released stage, cut from whole/ by `npm run stage` (do not edit by hand)
+seeds/            the released stage's sample, cut the same way (do not edit by hand)
 src/
   app/            the staff side, from boot to the first page
   session/        who is signed in

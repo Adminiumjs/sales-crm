@@ -20,6 +20,7 @@
  * Environment: ADMINIUM_REPO (built: `apps/server/dist`, `apps/dashboard/dist`),
  * ADD_ONS_REPO (built: `packages/invoices`, `packages/inventory`),
  * CRM_STAND_PORT (default 4774), CRM_STAND_ENGINE (sqlite | postgres | mysql),
+ * CRM_STAND_STAGE (which stage of the app to install: the released one unless set),
  * CRM_STAND_VERSION (the version the server says, while the engine is unreleased),
  * CRM_STAND_NOW (the moment the sample is added at; the ledger's, unless set;
  * `real` for the real clock) and CRM_STAND_TZ (the server's time zone),
@@ -185,7 +186,11 @@ export async function standUp() {
   mkdirSync(STAND_DIR, { recursive: true });
   const url = `http://127.0.0.1:${String(port)}`;
   const engineRequire = createRequire(join(adminiumRepo, "apps", "server", "package.json"));
-  const manifest = JSON.parse(readFileSync(join(APP, "manifest.json"), "utf8"));
+  // The stage the stand installs: the released one (what an owner gets today) unless another is named. Cut from `whole/` here, so a stage that is not released yet can be stood up too.
+  const { readStages, stageFiles } = await import("../scripts/stage-manifest.mjs");
+  const stage = Number(process.env.CRM_STAND_STAGE ?? readStages().released);
+  const staged_ = stageFiles(stage);
+  const manifest = staged_.manifest;
 
   // The version the server says: its own, unless it is behind what the manifest asks and a stand-in is named.
   const says = JSON.parse(readFileSync(join(adminiumRepo, "apps", "server", "package.json"), "utf8")).version;
@@ -293,8 +298,7 @@ export async function standUp() {
     state.addOns = staged;
 
     // This app, as built here: the manifest, the sample, and the staff side the browser will open.
-    const files = { "manifest.json": JSON.stringify(manifest) };
-    walk(join(APP, "seeds"), "seeds/", files);
+    const files = { ...staged_.files };
     walk(surface, "staff/", files);
     const bytes = tarball(files);
     await call("the app", "POST", `/api/v1/apps/upload?expectedSha512=${encodeURIComponent(integrityOf(bytes))}`, bytes, [200, 201], { "content-type": "application/octet-stream" });
@@ -335,6 +339,8 @@ export async function standUp() {
 
     const schema = await call("the schema", "GET", `/api/v1/connections/${state.connectionId}/schema`);
     state.tables = Object.fromEntries((schema.model ?? data(schema).model).tables.map((table) => [table.name, table.id]));
+    state.stage = stage;
+    state.parts = manifest.modules.map((part) => part.id);
     state.ready = true;
     save();
     log(`ready: ${String(Object.keys(people).length)} people, ${String(state.sampleRows)} sample rows, add-ons ${staged.map((one) => `${one.key} ${one.version}`).join(", ")}`);

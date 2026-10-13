@@ -36,7 +36,7 @@ try {
   const run = spawnSync("npx", ["vitest", "run", ...copied.map((path) => path.slice(server.length + 1))], {
     cwd: server,
     stdio: "inherit",
-    env: { ...process.env, CRM_APP: app, CRM_SEEDS: join(app, "seeds"), ...(addOns === "" ? {} : { ADMINIUM_ADD_ONS_REPO: addOns }) },
+    env: { ...process.env, CRM_APP: app, CRM_SEEDS: join(app, "whole", "seeds"), ...(addOns === "" ? {} : { ADMINIUM_ADD_ONS_REPO: addOns }) },
   });
   status = run.status ?? 1;
 } finally {

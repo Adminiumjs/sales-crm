@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
+import manifest from "../../whole/manifest.json";
 import { canOpen, homeFor, HOMES, menuFor, MENUS, rolesOf, ROLE_ORDER, routeForPath, ROUTES, type MenuFacts, type PartId, type RoleKey, type RouteKey } from "./routes.ts";
 
 type Role = { key: string; permissions: string[] };

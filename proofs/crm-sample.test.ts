@@ -9,11 +9,11 @@ import { LEGS, installInvoicing, writerFor, type InvoicingHarness } from './invo
 
 const APP = `${process.env.HOME}/Work/lanes/p67-app`;
 // The sample the app ships, from the app's own repo.
-const SEEDS = process.env.CRM_SEEDS ?? `${APP}/seeds`;
+const SEEDS = process.env.CRM_SEEDS ?? `${APP}/whole/seeds`;
 const bundle = () => JSON.parse(readFileSync(`${SEEDS}/meridian.json`, 'utf8')) as { tables: { ref: string; rows: unknown[] }[] };
 
 const manifest = () => {
-  const m = JSON.parse(readFileSync(`${APP}/manifest.json`, 'utf8')) as Record<string, unknown>;
+  const m = JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
   return m;
 };
 

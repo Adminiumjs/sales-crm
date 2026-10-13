@@ -40,7 +40,7 @@ test("Dana opens Closed from her menu: her own eight, the newest first", async (
   await picture(page, "1-dana-closed");
 });
 
-test("the sales manager sees the team's 26 with the ledger's figures, and narrows them", async ({ as }) => {
+test("the sales manager sees the team's 26 with the ledger's figures, and narrows them", async ({ as, stand }) => {
   const context = await as("ivy");
   const page = await context.newPage();
   await page.goto(`${STAFF}closed`);
@@ -53,8 +53,9 @@ test("the sales manager sees the team's 26 with the ledger's figures, and narrow
   await expect(stat(page, "Average cycle").locator(".crm-stat-value")).toHaveText("54 days");
   await expect(stat(page, "Average cycle")).toContainText("54 days in 2026");
   await expect(page.locator(".crm-closed-row")).toHaveCount(26);
-  // A won deal names the job it became.
-  await expect(page.locator(".crm-closed-row").filter({ hasText: "Studio meeting tables" })).toContainText("Won Jun 12, 2026 · job J-08");
+  // A won deal names the job it became, where Jobs on site is installed (stage 2); at the first release it says when it was won.
+  await expect(page.locator(".crm-closed-row").filter({ hasText: "Studio meeting tables" })).toContainText(stand.parts.includes("jobs") ? "Won Jun 12, 2026 · job J-08" : "Won Jun 12, 2026");
+  if (!stand.parts.includes("jobs")) await expect(page.locator(".crm-closed-row").filter({ hasText: "Studio meeting tables" })).not.toContainText("job");
   // The longest cycle is w3's 77 days.
   await expect(page.locator(".crm-closed-row").filter({ hasText: "Meeting pods, first floor" })).toContainText("77 days");
   await picture(page, "2-ivy-closed");

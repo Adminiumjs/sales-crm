@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
+import manifest from "../../whole/manifest.json";
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  THE MATRIX                                                                 */

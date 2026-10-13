@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
+import manifest from "../../whole/manifest.json";
 
 const LOCALES = ["en-US", "de-DE", "fr-FR", "da-DK", "cs-CZ", "ar-EG", "zh-CN", "zh-TW"];
 type Text = string | Record<string, string>;

@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import manifest from "../../manifest.json";
+import manifest from "../../whole/manifest.json";
 
 type Move = string | { to: string; requires?: { where?: { column: string; isNull?: boolean; eq?: unknown; gt?: unknown }[]; children?: Record<string, number> }; roles?: string[]; undo?: true; clears?: string[] };
 interface States {
