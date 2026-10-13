@@ -13,6 +13,9 @@ import "./styles/base.css";
 import "./styles/rebuilding.css";
 import "./styles/shell.css";
 
+import "./styles/screens.css";
+
+import "./screens/index.ts";
 import App from "./app/App.tsx";
 
 const container = document.getElementById("root");

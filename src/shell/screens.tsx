@@ -15,4 +15,9 @@ export interface ScreenProps {
 
 export const SCREENS: Partial<Record<RouteKey, ComponentType<ScreenProps>>> = {};
 
+/** Add a built screen. Called once per screen from `screens/index.ts`, so this file imports no screen (a screen reads `isBuilt`). */
+export function register(route: RouteKey, screen: ComponentType<ScreenProps>): void {
+  SCREENS[route] = screen;
+}
+
 export const isBuilt = (route: RouteKey): boolean => SCREENS[route] !== undefined;

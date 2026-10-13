@@ -5,13 +5,14 @@
  * up by an arbitrary string would pull in the whole set.
  */
 import {
-  Activity, ArrowRightLeft, Bell, BellRing, Bookmark, Building2, CalendarClock, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, CircleSlash, ClipboardList, Columns3, Contact, Factory,
-  FileQuestion, FileText, FolderClock, GraduationCap, HeartHandshake, History, House, Inbox, Layers, Lock, LogOut, Mail, Map, MapPin, Menu, Moon, NotebookPen, Package, Plane, Repeat,
-  RotateCw, Search, Send, Settings, Stamp, Sun, Target, Tent, UserRoundPlus, Users, X, type LucideIcon,
+  Activity, AlarmClock, ArrowRightLeft, Bell, BellRing, Bookmark, Building2, CalendarArrowUp, CalendarClock, CalendarDays, CalendarRange, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleDot, CircleSlash, ClipboardList, ClockArrowUp, Columns3, Contact, Factory,
+  FileQuestion, FileText, FolderClock, GraduationCap, HeartHandshake, History, House, Inbox, Layers, Loader, Lock, LogOut, Mail, Map, MapPin, Menu, Moon, NotebookPen, Package, Plane, Repeat,
+  RotateCw, Search, Send, Settings, Stamp, Sun, Target, Tent, TrendingUp, UserRoundPlus, Users, X, type LucideIcon,
 } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
-  activity: Activity, "arrow-right-left": ArrowRightLeft, bell: Bell, "bell-ring": BellRing, bookmark: Bookmark, "building-2": Building2, "calendar-clock": CalendarClock,
+  activity: Activity, "alarm-clock": AlarmClock, "calendar-arrow-up": CalendarArrowUp, "calendar-days": CalendarDays, check: Check, "check-check": CheckCheck,
+  "circle-alert": CircleAlert, "circle-dot": CircleDot, "clock-arrow-up": ClockArrowUp, loader: Loader, "trending-up": TrendingUp, "arrow-right-left": ArrowRightLeft, bell: Bell, "bell-ring": BellRing, bookmark: Bookmark, "building-2": Building2, "calendar-clock": CalendarClock,
   "calendar-range": CalendarRange, "chevron-down": ChevronDown, "chevron-left": ChevronLeft, "chevron-right": ChevronRight, "circle-slash": CircleSlash, "clipboard-list": ClipboardList,
   "columns-3": Columns3, contact: Contact, factory: Factory, "file-question": FileQuestion, "file-text": FileText, "folder-clock": FolderClock, "graduation-cap": GraduationCap,
   "heart-handshake": HeartHandshake, history: History, house: House, inbox: Inbox, layers: Layers, lock: Lock, "log-out": LogOut, mail: Mail, map: Map, "map-pin": MapPin, menu: Menu, moon: Moon,

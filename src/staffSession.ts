@@ -122,16 +122,36 @@ export interface HistoryEntry {
   changes: Record<string, { before?: unknown; after?: unknown }> | null;
 }
 
-/** A figure over a table: counted, summed or averaged, in groups, by month. Read as the person, kept 30 seconds. */
+/**
+ * A figure over a table: counted, summed or averaged, in groups, by month.
+ * Read as the person (their rows only) and kept 30 seconds by the server.
+ *
+ * `shape` says how it is answered. The two a screen mostly asks:
+ *  - `single-metric`: one number, the first aggregation (`{ value }`);
+ *  - `categorical`: one item per group, each with every aggregation under
+ *    `values` (`{ items: [{ key, label, value, values }], total }`). Several
+ *    sums of one set of rows are asked as one group (group by a column the
+ *    filter holds to one value).
+ */
 export interface Figure {
   table: string;
-  shape?: string;
-  select?: string[];
-  where?: Condition;
+  shape: "single-metric" | "metric+delta" | "categorical" | "timeseries" | "multi-timeseries" | "matrix" | "distribution";
+  filters?: Condition[];
   aggregations?: { fn: "count" | "sum" | "avg" | "min" | "max"; column?: string; alias: string }[];
   groupBy?: string[];
-  bucket?: { column: string; unit: "day" | "week" | "month" | "quarter" | "year" };
-  [more: string]: unknown;
+  /** `link.column`: what a group keyed by a link is called. */
+  groupLabel?: string;
+  bucket?: { column: string; unit: "hour" | "day" | "week" | "month" | "quarter" | "year" };
+  window?: Record<string, unknown>;
+  orderBy?: { column: string; dir: "asc" | "desc" }[];
+  limit?: number;
+}
+
+/** A `categorical` figure's answer. */
+export interface Grouped {
+  shape: "categorical";
+  items: { key: string | number | null; label: string | null; value: number; values: Record<string, number | null> }[];
+  total: number;
 }
 
 export interface Person {
@@ -388,8 +408,8 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     },
 
     async figure<T>(figure: Figure) {
-      const { table, where, ...rest } = figure;
-      const descriptor = { connectionId, source: { name: tableId(table) }, shape: "table", ...rest, ...(where === undefined ? {} : { where }) };
+      const { table, ...rest } = figure;
+      const descriptor = { connectionId, source: { name: tableId(table) }, ...rest };
       return ((await send("POST", "/widget-data/query", { descriptor })) as { result: T }).result;
     },
 

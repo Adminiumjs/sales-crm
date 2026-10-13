@@ -190,8 +190,10 @@ describe("the write token and the rate limit", () => {
 describe("a figure, and the live stream", () => {
   it("asks the server for a figure over the stored table, as the person", async () => {
     const { calls, session } = open([json(200, { result: { rows: [{ stage_id: 1, n: 3 }] }, cached: false })]);
-    await (await session).figure({ table: "deals", groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }] });
-    expect(calls[0]!.body).toEqual({ descriptor: { connectionId: "con_1", source: { name: "public.crm_deals" }, shape: "table", groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }] } });
+    await (await session).figure({ table: "deals", shape: "categorical", filters: [{ column: "state", op: "eq", value: "open" }], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }] });
+    expect(calls[0]!.body).toEqual({
+      descriptor: { connectionId: "con_1", source: { name: "public.crm_deals" }, shape: "categorical", filters: [{ column: "state", op: "eq", value: "open" }], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }] },
+    });
   });
 
   it("hears every kind of frame on its tables, and reads again after a break", async () => {

@@ -275,6 +275,8 @@ export async function standUp() {
     csrf = data(await call("the owner", "POST", "/api/v1/setup/super-admin", OWNER, [201])).csrfToken ?? "";
     const connection = data(await call("the connection", "POST", "/api/v1/connections", { name: "Meridian", engine, dsn: source.dsn }, [201]));
     state.connectionId = connection.id ?? connection.connection?.id;
+    // Money is the install's currency: the stand's business keeps its books in pounds.
+    await call("the currency", "PATCH", `/api/v1/connections/${state.connectionId}`, { currency: process.env.CRM_STAND_CURRENCY ?? "GBP" });
 
     // The add-ons as they are built in their checkout. Inventory is optional: Supply waits for it.
     const staged = [];

@@ -1,0 +1,502 @@
+/*
+ * What every screen is made of: the page's head, figures, lists, pills,
+ * popovers, the toast. Measures are the design's. A screen adds only what is
+ * its own.
+ */
+.crm-screen {
+  max-inline-size: 1400px;
+  margin-inline: auto;
+  padding: 26px;
+}
+.crm-screen-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.crm-screen-head h1 {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.crm-now {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-block-start: 7px;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.crm-screen-actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-btn-40 {
+  block-size: 40px;
+  padding-inline: 15px;
+  border-radius: 11px;
+}
+.crm-btn-32 {
+  block-size: 32px;
+  padding-inline: 11px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  gap: 7px;
+  white-space: nowrap;
+  color: var(--fg-muted);
+}
+.crm-mono {
+  font-family: var(--font-mono);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* ── figures ──────────────────────────────────────────────────────────────── */
+.crm-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 14px;
+  margin-block-start: 24px;
+}
+.crm-kpis > .crm-skeleton {
+  display: contents;
+}
+.crm-kpi {
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-kpi-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.crm-kpi-icon {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-kpi-icon[data-tone="pos"] {
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.crm-kpi-icon[data-tone="danger"] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.crm-kpi-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-kpi-value {
+  margin-block: 13px 5px;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+}
+[dir="rtl"] .crm-kpi-value {
+  text-align: end;
+}
+.crm-kpi-value[data-alarm="1"] {
+  color: var(--danger);
+}
+.crm-kpi-sub {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+/* ── small pieces ─────────────────────────────────────────────────────────── */
+.crm-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.crm-pill-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.crm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-dot {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--fg-subtle);
+}
+.crm-dot[data-tone="danger"] {
+  background: var(--danger);
+}
+.crm-dot[data-tone="accent"] {
+  background: var(--accent);
+}
+.crm-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crm-load-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-block-start: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--fg-muted);
+}
+.crm-load-failed strong {
+  color: var(--fg);
+  font-size: 15px;
+}
+.crm-empty {
+  padding: 44px 24px;
+  text-align: center;
+}
+.crm-empty-icon {
+  display: inline-flex;
+  inline-size: 46px;
+  block-size: 46px;
+  border-radius: 14px;
+  background: var(--pos-soft);
+  color: var(--pos);
+  align-items: center;
+  justify-content: center;
+}
+.crm-empty-title {
+  margin-block-start: 13px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-empty p {
+  margin: 7px auto 0;
+  max-inline-size: 340px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+/* ── the follow-up queue ──────────────────────────────────────────────────── */
+.crm-queue,
+.crm-queue-skeleton {
+  margin-block-start: 30px;
+}
+.crm-queue {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-queue-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-queue-head h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-queue-hint {
+  margin-inline-start: auto;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-queue-group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  background: var(--surface-2);
+  border-block-end: 1px solid var(--border);
+}
+.crm-queue-group-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.crm-queue-group-count {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.crm-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 18px;
+  border-block-end: 1px solid var(--border);
+  border-inline-start: 3px solid transparent;
+}
+.crm-queue > div:last-of-type .crm-step:last-child {
+  border-block-end: none;
+}
+.crm-step[data-late="1"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-step[data-open="1"] {
+  background: var(--surface-2);
+}
+.crm-step[aria-busy="true"] {
+  opacity: 0.55;
+}
+.crm-step-tick {
+  inline-size: 30px;
+  block-size: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.crm-step-tick:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.crm-step[data-open="1"] .crm-step-tick {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-step-tick:focus-visible,
+.crm-pop-item:focus-visible,
+.crm-toast-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent);
+}
+.crm-step-main {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-step-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-step-deal {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-step-text {
+  margin-block-start: 5px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-step-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.crm-step-due {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-step-amount {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.crm-pop {
+  position: absolute;
+  inset-block-start: calc(100% - 12px);
+  inset-inline-start: 44px;
+  z-index: 180;
+  inline-size: min(268px, calc(100% - 56px));
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 15px;
+  box-shadow: 0 26px 54px -22px rgba(10, 10, 25, 0.45);
+  padding: 8px;
+  animation: mr-drop 0.14s ease;
+}
+.crm-pop-title {
+  padding: 8px 10px 9px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  inline-size: 100%;
+  min-block-size: 38px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-pop-item:hover {
+  background: var(--surface-2);
+}
+.crm-pop-item > span {
+  flex: 1;
+}
+
+/* ── the line that says what a save came to ───────────────────────────────── */
+.crm-toast-region {
+  position: fixed;
+  inset-block-end: 22px;
+  inset-inline: 0;
+  z-index: 700;
+  display: flex;
+  justify-content: center;
+  padding-inline: 16px;
+  pointer-events: none;
+}
+.crm-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-inline-size: 560px;
+  padding: 11px 14px;
+  border-radius: 13px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  box-shadow: var(--shadow-toast);
+  animation: mr-pop 0.16s ease;
+}
+.crm-toast[data-tone="pos"] > svg:first-child {
+  color: var(--pos);
+}
+.crm-toast[data-tone="danger"] > svg:first-child {
+  color: var(--danger);
+}
+.crm-toast > svg {
+  flex-shrink: 0;
+}
+.crm-toast-close {
+  flex-shrink: 0;
+  inline-size: 26px;
+  block-size: 26px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+@media (max-width: 899px) {
+  .crm-screen {
+    padding: 20px 16px;
+  }
+  .crm-queue-hint {
+    margin-inline-start: 0;
+    flex-basis: 100%;
+    order: 5;
+  }
+  .crm-step {
+    flex-wrap: wrap;
+    padding-inline: 14px;
+  }
+  .crm-step-main {
+    flex-basis: calc(100% - 60px);
+  }
+  .crm-step-end {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-inline-start: 43px;
+  }
+  .crm-step-tick,
+  .crm-pop-item {
+    min-block-size: 44px;
+  }
+  .crm-step-tick {
+    inline-size: 44px;
+  }
+  .crm-step-end {
+    margin-inline-start: 57px;
+  }
+  .crm-pop {
+    inset-inline-start: 14px;
+    inline-size: calc(100% - 28px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crm-pop,
+  .crm-toast {
+    animation: none;
+  }
+}

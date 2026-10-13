@@ -20,17 +20,19 @@ test("the stand holds the sample as the ledger counts it, for each person as the
   expect(new Set(danas.data.map((deal) => deal.owner_id))).toEqual(new Set([stand.people["dana"]!.id]));
 });
 
-test("the staff side opens for a rep, and says who is signed in", async ({ as }) => {
-  const page = await (await as("dana")).newPage();
+test("the staff side opens for whoever is signed in; somebody none of whose screens is built yet is told so", async ({ as }) => {
+  // The sales manager's screens come later in the plan: until the first lands she gets the frame and one plain page.
+  const page = await (await as("ivy")).newPage();
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto(STAFF);
-  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Dana Whitlock · Sales rep");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The screens are being rebuilt");
+  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Ivy Sandoval · Sales manager");
   expect(errors).toEqual([]);
-  await picture(page, "1-dana-signed-in");
+  await picture(page, "1-ivy-no-screen-yet");
 });
 
 test("the config says who they are, what they may do and which parts are on; nothing of anybody else", async ({ api, stand }) => {
@@ -96,7 +98,7 @@ test("below 900 wide the menu is a drawer, and the page has no sideways scroll a
   const context = await as("dana", { viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   await page.goto(STAFF);
-  await expect(page.getByTestId("signed-in-as")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.getByRole("button", { name: "Open the menu" }).click();
   await expect(page.getByRole("dialog", { name: "Menu" })).toBeVisible();
@@ -117,8 +119,11 @@ test("the app speaks the language the person chose in Adminium, right to left fo
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("lang", "ar-EG");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByTestId("signed-in-as")).toContainText("Priya Raman");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("يُعاد بناء الشاشات");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("صباح الخير، Priya.");
+    await expect(page.getByRole("button", { name: "قائمتك" })).toContainText("Priya Raman");
+    // The frame mirrors: the menu is on the right.
+    const side = await page.locator(".crm-side").boundingBox();
+    expect(side!.x).toBeGreaterThan(600);
     await picture(page, "2-priya-arabic-right-to-left");
   } finally {
     await context.request.patch("/api/v1/me/prefs", { data: { locale: "en_US" }, headers: { "x-adminium-csrf": config.csrfToken } });

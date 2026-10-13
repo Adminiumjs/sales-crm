@@ -12,6 +12,7 @@ import { I18nProvider, useT } from "../i18n/index.tsx";
 import { SessionProvider, useBoot, type Boot } from "../session/session.tsx";
 import { NavProvider } from "../shell/nav.tsx";
 import { Shell } from "../shell/Shell.tsx";
+import { ToastProvider } from "../ui/toast.tsx";
 import type { StaffSession } from "../staffSession.ts";
 
 function Notice({ heading, body, children }: { heading: string; body: string; children?: React.ReactNode }) {
@@ -48,7 +49,9 @@ export function Booted({ boot, again }: { boot: Boot; again: () => void }) {
       <I18nProvider person={boot.session.config.locale ?? null}>
         <SessionProvider session={boot.session}>
           <NavProvider>
-            <Shell />
+            <ToastProvider>
+              <Shell />
+            </ToastProvider>
           </NavProvider>
         </SessionProvider>
       </I18nProvider>
