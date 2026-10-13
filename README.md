@@ -9,7 +9,7 @@ and what comes after them, vehicles and crew.
 > after an install is a records page for each table, with the right rows for the
 > person signed in. The screens come next.
 >
-> It asks for **Adminium 0.3.27, which is not released yet**, so no released
+> It asks for **Adminium 0.3.28, which is not released yet**, so no released
 > Adminium installs it today.
 
 ## What installs
