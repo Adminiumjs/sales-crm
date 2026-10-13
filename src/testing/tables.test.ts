@@ -94,7 +94,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   saved_views: { nullable: ["owner_id"] },
   saved_searches: { nullable: ["owner_id", "last_run_at"] },
   nudge_snoozes: { nullable: [] },
-  deal_members: { nullable: ["role_note"] },
+  deal_members: { nullable: ["role_note", "deal_owner_id"] },
   deal_marks: { nullable: ["owner_id"] },
   site_visits: { nullable: ["contact_id", "cancel_reason", "note"] },
   visit_notes: { nullable: ["saw", "said", "next", "photos"] },
@@ -434,10 +434,22 @@ describe("a column may be empty only where it is listed as such", () => {
     const actual: Record<string, string[]> = {};
     const expected: Record<string, string[]> = {};
     for (const table of tables) {
-      actual[table.ref] = table.columns.filter((column) => column.nullable === true).map((column) => column.ref).sort();
+      // The retry key is every made table's, and has its own check below.
+      actual[table.ref] = table.columns.filter((column) => column.nullable === true && column.ref !== "retry_key").map((column) => column.ref).sort();
       expected[table.ref] = [...(TABLES[table.ref]?.nullable ?? [])].sort();
     }
     expect(actual).toEqual(expected);
+  });
+
+  it("keeps a retry key on every table a role makes rows of, and on no other", () => {
+    // A save sent again after a lost reply answers the row the first one made, so a screen never makes two.
+    const made = new Set((manifest.roles as { permissions: string[] }[]).flatMap((role) => role.permissions.filter((grant) => /^table:@[a-z_]+:create$/.test(grant)).map((grant) => grant.split(":")[1]?.slice(1) ?? "")));
+    for (const table of tables) {
+      const key = (table.columns as { ref: string; type: string; maxLength?: number; nullable?: boolean; unique?: boolean; rules?: Record<string, unknown> }[]).find((column) => column.ref === "retry_key");
+      if (!made.has(table.ref)) expect(key, table.ref).toBeUndefined();
+      else expect({ ...key, label: undefined }, table.ref).toEqual({ ref: "retry_key", type: "text", maxLength: 64, nullable: true, unique: true, rules: { retryKey: true }, label: undefined });
+    }
+    expect(made.size).toBeGreaterThan(50);
   });
 
   it("never leaves the key empty", () => {

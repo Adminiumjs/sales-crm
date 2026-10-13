@@ -39,7 +39,7 @@ const NAMES: Record<RoleKey, string> = {
  * HOW A CELL READS.
  *
  * Letters are the table rights: R read, C create, U update, D delete,
- * X export. `-` is no grant at all.
+ * X export (a file out), I import (a file or a pasted list in). `-` is no grant at all.
  *
  * After a colon, the rows every one of the cell's read, update and delete
  * reaches: `own`, `team`, `own+free` and `team+free` (also the rows nobody
@@ -60,7 +60,8 @@ const talk = (cell: string) => [cell, cell, cell, cell, "-", "-", "-", "-", "-"]
 
 //   tables                                      Ad       SM       Rep      AM       Mk   FD   Ops  Cr   RO
 const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
-  [["stages", "lost_reasons"], "RCUD", "R", "R", "R", "-", "-", "-", "-", "R"],
+  // The sales manager keeps the stages and the reasons a deal is lost for; taking one away is the CRM admin's.
+  [["stages", "lost_reasons"], "RCUD", "RCU", "R", "R", "-", "-", "-", "-", "R"],
   [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won", "-", "-", "-", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
@@ -71,11 +72,13 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   [["saved_views", "saved_searches"], "RCUD:own+free", "RCUD:own+free", SAVED, SAVED, "-", "-", "-", "-", "R:own+free"],
   [["nudge_snoozes"], "RCD:own", "RCD:own", "RCD:own", "-", "-", "-", "-", "-", "-"],
-  [["deal_members"], "RCUD", "RCUD;u=team;d=team", "RCUD;u=own;d=own", "R", "-", "-", "-", "-", "R"],
-  [["deal_marks"], "R", "R", "R", "R", "-", "-", "-", "-", "R"],
+  // Who is on a deal is read by whoever is on it, and written by its owner (or who leads her): `owner's` below.
+  [["deal_members"], "RCUD", "RCUD;r=team;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R", "-", "-", "-", "-", "R"],
+  // The marketer counts a company's open deals from the mark, and reads nothing else of a deal.
+  [["deal_marks"], "R", "R", "R", "R", "R", "-", "-", "-", "R"],
   [["site_visits", "visit_notes", "visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
-  [["companies"], "RCUDX", "RCUX", "RCU", "RCU", "R", "R", "-", "-", "RX"],
-  [["contacts"], "RCUDX", "RCUX", "RCU", "RCU", "R", "RC", "-", "-", "RX"],
+  [["companies"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "R", "-", "-", "RX"],
+  [["contacts"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "RC", "-", "-", "RX"],
   [["territories", "territory_places"], "RCUD", "RCUD", "R", "R", "R", "-", "-", "-", "R"],
   [["renewals", "referrals"], "RCUD", "R", "RCU", "RCUD", "-", "-", "-", "-", "R"],
   [["reps"], "RCUD", "RU;u=own", "RU;u=own", "RU;u=own", "-", "-", "-", "-", "R"],
@@ -93,7 +96,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // team's deals by covering for them. They read every cover, and write one for the people they lead.
   [["covers"], "RCUD", "RCUD;u=team;d=team", "R", "R", "-", "-", "-", "-", "R"],
   [["cover_notes"], "RCUD", "RCUD:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
-  [["enquiries"], "RCUD", "RCU:team+free", "RCU:own+free", "-", "RC", "RCU:own+free", "-", "-", "R"],
+  [["enquiries"], "RCUDI", "RCU:team+free", "RCU:own+free", "-", "RCI", "RCU:own+free", "-", "-", "R"],
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
   [["showroom_spaces", "samples", "display_pieces"], "RCUD", "R", "R", "-", "-", "RCUD", "-", "-", "R"],
   [["showroom_bookings", "sample_loans", "sample_chases"], "RCUD", "R", "RCU", "-", "-", "RCUD", "-", "-", "R"],
@@ -168,7 +171,7 @@ const LOCALES = ["en-US", "de-DE", "fr-FR", "cs-CZ", "da-DK", "zh-CN", "zh-TW", 
 /*  READING THE MATRIX AND THE MANIFEST                                        */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-type Action = "read" | "create" | "update" | "delete" | "export";
+type Action = "read" | "create" | "update" | "delete" | "export" | "import";
 type RowAction = "read" | "update" | "delete";
 interface Reach {
   reach: "own" | "team" | "all";
@@ -182,7 +185,7 @@ interface Cell {
   rows: Rows;
 }
 
-const LETTERS: Record<string, Action> = { R: "read", C: "create", U: "update", D: "delete", X: "export" };
+const LETTERS: Record<string, Action> = { R: "read", C: "create", U: "update", D: "delete", X: "export", I: "import" };
 const REACHES: Record<string, Reach> = {
   own: { reach: "own" },
   team: { reach: "team" },
@@ -192,6 +195,9 @@ const REACHES: Record<string, Reach> = {
   // Of the rows they reach, only the ones the row's own author column names them in.
   "own-written": { reach: "own", by: "author_id" },
   "team-written": { reach: "team", by: "author_id" },
+  // Of the people on the deals they reach, only those of a deal that names them as its owner.
+  "own-owner's": { reach: "own", by: "deal_owner_id" },
+  "team-owner's": { reach: "team", by: "deal_owner_id" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
@@ -319,7 +325,7 @@ function role(key: RoleKey): Role {
 /** The rights a role holds on a table, in the matrix's order (the personal-data right is read apart). */
 function held(key: RoleKey, ref: string): Action[] {
   const grants = new Set(role(key).permissions);
-  return (["read", "create", "update", "delete", "export"] as const).filter((action) => grants.has(`table:@${ref}:${action}`));
+  return (["read", "create", "update", "delete", "export", "import"] as const).filter((action) => grants.has(`table:@${ref}:${action}`));
 }
 const holds = (key: RoleKey, ref: string, action: Action): boolean => role(key).permissions.includes(`table:@${ref}:${action}`);
 const limitOf = (key: RoleKey, ref: string): Limit | undefined => role(key).limits?.[ref];
@@ -374,7 +380,7 @@ describe("the app brings nine roles", () => {
   });
 
   it("grants only a table right, a page to view, and the app's staff screens", () => {
-    const known = /^(table:@[a-z_]+:(read|create|update|delete|export|read_pii)|page:@[a-z][a-z0-9-]*:view|app:@:staff)$/;
+    const known = /^(table:@[a-z_]+:(read|create|update|delete|export|import|read_pii)|page:@[a-z][a-z0-9-]*:view|app:@:staff)$/;
     for (const r of roles) {
       expect(r.permissions.filter((grant) => !known.test(grant)), r.key).toEqual([]);
       expect(r.permissions.length, `${r.key} repeats a grant`).toBe(new Set(r.permissions).size);
@@ -522,8 +528,20 @@ describe("a file out of a table is three roles' to take", () => {
     expect(of("read-only")).toEqual(["deals", "quotes", "quote_lines", "companies", "contacts"]);
   });
 
-  it("brings no file in through any role", () => {
-    for (const r of roles) expect(r.permissions.filter((grant) => grant.endsWith(":import")), r.key).toEqual([]);
+  it("brings a list in only where a role already types the rows one by one", () => {
+    // Companies and contacts by the three who keep the book; enquiries (a trade show's leads) by the marketer and the CRM admin.
+    const of = (key: RoleKey) => role(key).permissions.filter((grant) => grant.endsWith(":import")).map((grant) => grant.split(":")[1]?.slice(1));
+    expect(of("admin")).toEqual(["companies", "contacts", "enquiries"]);
+    expect(of("sales-manager")).toEqual(["companies", "contacts"]);
+    expect(of("rep")).toEqual(["companies", "contacts"]);
+    expect(of("marketer")).toEqual(["enquiries"]);
+    for (const r of roles) {
+      const brings = r.permissions.filter((grant) => grant.endsWith(":import"));
+      if (!["admin", "sales-manager", "rep", "marketer"].includes(r.key)) expect(brings, r.key).toEqual([]);
+      for (const grant of brings) expect(r.permissions, `${r.key}: ${grant}`).toContain(grant.replace(/:import$/, ":create"));
+    }
+    // The marketer reads no contact's address or phone, so a list of hers is never matched on one: she brings no contacts in.
+    expect(holds("marketer", "contacts", "import")).toBe(false);
   });
 });
 
@@ -605,7 +623,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 71, "sales-manager": 59, rep: 59, "account-manager": 30, marketer: 7, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 65 });
+    expect(menu).toEqual({ admin: 71, "sales-manager": 59, rep: 59, "account-manager": 30, marketer: 8, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 65 });
   });
 });
 
@@ -635,7 +653,7 @@ describe("the pipeline is a board whose columns are the stages people keep", () 
   });
 
   it("lets a column be added by whoever keeps the stages, and a card be moved by whoever may change the deal's stage", () => {
-    expect(ROLES.filter((key) => holds(key, "stages", "create"))).toEqual(["admin"]);
+    expect(ROLES.filter((key) => holds(key, "stages", "create"))).toEqual(["admin", "sales-manager"]);
     for (const key of ["sales-manager", "rep"] as const) {
       expect(holds(key, "deals", "update"), key).toBe(true);
       expect(limitOf(key, "deals")?.writable, key).toContain("stage_id");
@@ -853,6 +871,26 @@ describe("a listing a table is read through is not a way in", () => {
     expect(limitOf("admin", "threads")?.rows?.read).toEqual({ reach: "own" });
   });
 
+  it("leaves who is on a deal to the deal's owner and to who leads her", () => {
+    // A member's row is the deal's owner's: the column is a copy of the deal's, kept as the deal changes hands.
+    // Adminium then lets a writer held to some rows hang one only under a deal that names them (or somebody they
+    // lead): a helper, or whoever covers for the owner, adds nobody, and the owner removes whoever was added.
+    expect(tableOf.get("deal_members")?.belongs).toEqual([{ column: "deal_owner_id", set: "team" }, { via: "deal_id" }]);
+    expect(columnsOf("deal_members").find((c) => c.ref === "deal_owner_id")?.rules).toEqual({ staff: true, copy: { via: "deal_id", from: "owner_id", mode: "always", follow: true } });
+    // Everybody on a deal reads who else is on it; only its owner's side changes that. A new row is given the deal, the person and a note.
+    const own = { reach: "own", by: "deal_owner_id" };
+    const team = { reach: "team", by: "deal_owner_id" };
+    expect(limitOf("rep", "deal_members")).toEqual({ writable: ["user_id", "role_note"], creatable: ["deal_id", "user_id", "role_note"], rows: { read: { reach: "own" }, update: own, delete: own } });
+    expect(limitOf("sales-manager", "deal_members")).toEqual({ writable: ["user_id", "role_note"], creatable: ["deal_id", "user_id", "role_note"], rows: { read: { reach: "team" }, update: team, delete: team } });
+    // Nobody but the CRM admin moves a member's row to another deal.
+    for (const key of ROLES) if (key !== "admin" && holds(key, "deal_members", "update")) expect(limitOf(key, "deal_members")?.writable, key).not.toContain("deal_id");
+    expect(ROLES.filter((key) => holds(key, "deal_members", "create"))).toEqual(["admin", "sales-manager", "rep"]);
+  });
+
+  it("opens the app's own screens outside the dashboard's frame", () => {
+    expect((manifest as unknown as { frontends: { side: string; placement?: string }[] }).frontends).toMatchObject([{ side: "staff", placement: "external" }]);
+  });
+
   it("lets a member of a conversation add a colleague, and change no row there but their own", () => {
     expect(tableOf.get("thread_members")?.belongs).toEqual([{ column: "user_id", set: "anyone" }]);
     for (const key of ROLES) {
@@ -899,7 +937,7 @@ describe("what a role is kept from, column by column", () => {
     const creatable = limitOf("marketer", "enquiries")?.creatable ?? [];
     expect(creatable.length).toBeGreaterThan(0);
     for (const column of ["state", "claimed_by_id", "passed_to_id", "deal_id", "rung_at", "received_at"]) expect(creatable, column).not.toContain(column);
-    expect(held("marketer", "enquiries")).toEqual(["read", "create"]);
+    expect(held("marketer", "enquiries")).toEqual(["read", "create", "import"]);
   });
 
   it("lets a rep tick an onboarding step done, and rewrite none", () => {
@@ -918,6 +956,34 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    expect(apart).toEqual(["rep: starters"]);
+    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "marketer: deal_marks", "read-only: quotes", "read-only: covers"]);
+  });
+
+  it("shows the marketer that a company has an open deal, and nothing of the deal", () => {
+    expect(held("marketer", "deal_marks")).toEqual(["read"]);
+    expect(limitOf("marketer", "deal_marks")).toEqual({ readable: ["company_id", "state"] });
+    expect(held("marketer", "deals")).toEqual([]);
+  });
+
+  it("keeps a quote's link code to the three who hand it to the customer", () => {
+    // Whoever reads the code can open the customer's page, and accept there in the customer's name.
+    for (const key of ROLES) {
+      if (!holds(key, "quotes", "read")) continue;
+      const readable = limitOf(key, "quotes")?.readable;
+      if (["admin", "sales-manager", "rep"].includes(key)) expect(readable, key).toBeUndefined();
+      else {
+        expect(readable, key).not.toContain("share_code");
+        expect([...(readable ?? []), "id", "share_code", "retry_key"].sort(), key).toEqual(columnsOf("quotes").map((c) => c.ref).sort());
+      }
+    }
+  });
+
+  it("shows why somebody is away only to who writes the cover", () => {
+    for (const key of ROLES) {
+      if (!holds(key, "covers", "read")) continue;
+      const readable = limitOf(key, "covers")?.readable;
+      if (holds(key, "covers", "create")) expect(readable, key).toBeUndefined();
+      else expect(readable, key).toEqual(["owner_id", "cover_id", "starts_on", "ends_on"]);
+    }
   });
 });

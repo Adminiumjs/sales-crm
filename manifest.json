@@ -106,6 +106,26 @@
               "zh-CN": "排序",
               "zh-TW": "排序"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -795,6 +815,26 @@
                 }
               }
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -1259,6 +1299,26 @@
               "zh-CN": "完成时间",
               "zh-TW": "完成時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -1448,6 +1508,26 @@
               "zh-CN": "时间",
               "zh-TW": "時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -1508,6 +1588,26 @@
               "ar-EG": "الترتيب",
               "zh-CN": "排序",
               "zh-TW": "排序"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -1590,6 +1690,26 @@
               "ar-EG": "معروض",
               "zh-CN": "在售",
               "zh-TW": "供應中"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -2797,6 +2917,26 @@
               "zh-CN": "撤回时间",
               "zh-TW": "撤回時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ],
         "states": {
@@ -3322,6 +3462,26 @@
               "zh-CN": "无目录价金额",
               "zh-TW": "無牌價金額"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ],
         "indexes": [
@@ -3480,6 +3640,26 @@
               "zh-CN": "解决时间",
               "zh-TW": "解決時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -3604,6 +3784,26 @@
               "ar-EG": "مثبّت",
               "zh-CN": "已置顶",
               "zh-TW": "已釘選"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -3745,6 +3945,26 @@
               "ar-EG": "مثبّت",
               "zh-CN": "已置顶",
               "zh-TW": "已釘選"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -3896,6 +4116,26 @@
               "zh-CN": "暂缓至",
               "zh-TW": "延後至"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -3924,7 +4164,11 @@
         },
         "belongs": [
           {
-            "column": "added_by_id"
+            "column": "deal_owner_id",
+            "set": "team"
+          },
+          {
+            "via": "deal_id"
           }
         ],
         "indexes": [
@@ -3932,7 +4176,7 @@
             "user_id"
           ],
           [
-            "added_by_id"
+            "deal_owner_id"
           ],
           [
             "deal_id"
@@ -3957,6 +4201,31 @@
               "ar-EG": "الصفقة",
               "zh-CN": "商机",
               "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "deal_owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "copy": {
+                "via": "deal_id",
+                "from": "owner_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Deal's owner",
+              "de-DE": "Inhaber des Deals",
+              "fr-FR": "Responsable de l’affaire",
+              "da-DK": "Sagens ejer",
+              "cs-CZ": "Vlastník obchodu",
+              "ar-EG": "صاحب الصفقة",
+              "zh-CN": "商机负责人",
+              "zh-TW": "商機負責人"
             }
           },
           {
@@ -4033,6 +4302,26 @@
               "ar-EG": "أضافه",
               "zh-CN": "添加人",
               "zh-TW": "新增者"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -4505,6 +4794,26 @@
               "zh-CN": "备注",
               "zh-TW": "備註"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -4632,6 +4941,26 @@
               "zh-CN": "照片",
               "zh-TW": "照片"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -4742,6 +5071,26 @@
               "ar-EG": "الترتيب",
               "zh-CN": "排序",
               "zh-TW": "排序"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -5059,6 +5408,26 @@
               "zh-CN": "现场联系人",
               "zh-TW": "現場聯絡人"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -5212,6 +5581,26 @@
               "zh-CN": "退订时间",
               "zh-TW": "取消訂閱時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -5301,6 +5690,26 @@
               "zh-CN": "区域范围",
               "zh-TW": "區域範圍"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -5367,6 +5776,26 @@
               "ar-EG": "المكان",
               "zh-CN": "地点",
               "zh-TW": "地點"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -5649,6 +6078,26 @@
               "zh-CN": "状态",
               "zh-TW": "狀態"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -5799,6 +6248,26 @@
               "zh-CN": "奖励",
               "zh-TW": "獎勵"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -5917,6 +6386,26 @@
               "ar-EG": "شاشة البداية",
               "zh-CN": "起始页面",
               "zh-TW": "起始頁面"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -6057,6 +6546,26 @@
               "zh-CN": "设定时间",
               "zh-TW": "設定時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -6156,6 +6665,26 @@
               "ar-EG": "اللقاء القادم",
               "zh-CN": "下次面谈时间",
               "zh-TW": "下次面談時間"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -6294,6 +6823,26 @@
               "zh-CN": "备注",
               "zh-TW": "備註"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -6408,6 +6957,26 @@
               "ar-EG": "يستمر حتى",
               "zh-CN": "截止日期",
               "zh-TW": "截止日期"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -6541,6 +7110,26 @@
               "ar-EG": "الترتيب",
               "zh-CN": "排序",
               "zh-TW": "排序"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -6815,6 +7404,26 @@
               "zh-CN": "辅导重点",
               "zh-TW": "輔導重點"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -6873,6 +7482,26 @@
               "ar-EG": "الدقائق",
               "zh-CN": "时长（分钟）",
               "zh-TW": "時長（分鐘）"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -6987,6 +7616,26 @@
               "ar-EG": "الترتيب",
               "zh-CN": "排序",
               "zh-TW": "排序"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -7140,6 +7789,26 @@
               "zh-CN": "状态",
               "zh-TW": "狀態"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -7240,6 +7909,26 @@
               "zh-CN": "类型",
               "zh-TW": "類型"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -7338,6 +8027,26 @@
               "ar-EG": "مقروء حتى",
               "zh-CN": "已读至",
               "zh-TW": "已讀至"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -7458,6 +8167,26 @@
               "ar-EG": "الوقت",
               "zh-CN": "时间",
               "zh-TW": "時間"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -7582,6 +8311,26 @@
               "ar-EG": "الحساب",
               "zh-CN": "账号",
               "zh-TW": "帳號"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -7757,6 +8506,26 @@
               "zh-CN": "已完成",
               "zh-TW": "已完成"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -7884,6 +8653,26 @@
               "zh-CN": "备注",
               "zh-TW": "備註"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -7972,6 +8761,26 @@
               "ar-EG": "النص",
               "zh-CN": "内容",
               "zh-TW": "內容"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -8572,6 +9381,26 @@
               "zh-CN": "商机",
               "zh-TW": "案件"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -8648,6 +9477,26 @@
               "zh-CN": "结束日期",
               "zh-TW": "結束日期"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -8694,6 +9543,26 @@
               "ar-EG": "الاسم",
               "zh-CN": "名称",
               "zh-TW": "名稱"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -9129,6 +9998,26 @@
               "zh-CN": "商机",
               "zh-TW": "案件"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -9226,6 +10115,26 @@
               "ar-EG": "صنف المخزون",
               "zh-CN": "库存物料",
               "zh-TW": "庫存品項"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -9363,6 +10272,26 @@
               "zh-CN": "归还日期",
               "zh-TW": "歸還日期"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -9448,6 +10377,26 @@
               "ar-EG": "استعجله",
               "zh-CN": "催还人",
               "zh-TW": "催還人"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -9636,6 +10585,26 @@
               "ar-EG": "صنف المخزون",
               "zh-CN": "库存物料",
               "zh-TW": "庫存品項"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -10086,6 +11055,26 @@
               "zh-CN": "阻碍验收的未整改项",
               "zh-TW": "阻礙驗收的未改善缺失"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -10164,6 +11153,26 @@
               "ar-EG": "ساعات اليوم",
               "zh-CN": "每日工时",
               "zh-TW": "每日工時"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -10277,6 +11286,26 @@
               "ar-EG": "منذ",
               "zh-CN": "加入日期",
               "zh-TW": "加入日期"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -10433,6 +11462,26 @@
               "ar-EG": "يوم الأسبوع",
               "zh-CN": "星期",
               "zh-TW": "星期"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -11089,6 +12138,26 @@
               "zh-CN": "进场说明",
               "zh-TW": "進場說明"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -11359,6 +12428,26 @@
               "ar-EG": "أُرسلت نسخة إلى",
               "zh-CN": "副本发送至",
               "zh-TW": "副本寄送至"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -11879,6 +12968,26 @@
               "zh-CN": "整改后照片",
               "zh-TW": "改善後照片"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -12079,6 +13188,26 @@
               "zh-CN": "备注",
               "zh-TW": "備註"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -12264,6 +13393,26 @@
               "ar-EG": "الكمية المسلَّمة",
               "zh-CN": "送达数量",
               "zh-TW": "送達數量"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -12498,6 +13647,26 @@
               "zh-CN": "有转移联单",
               "zh-TW": "有遞送聯單"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -12650,6 +13819,26 @@
               "ar-EG": "ما سنصلحه",
               "zh-CN": "改进措施",
               "zh-TW": "改善措施"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -13100,6 +14289,26 @@
               "zh-CN": "解决时间",
               "zh-TW": "解決時間"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -13518,6 +14727,26 @@
               "zh-CN": "状态",
               "zh-TW": "狀態"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -13613,6 +14842,26 @@
               "ar-EG": "الكمية",
               "zh-CN": "数量",
               "zh-TW": "數量"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -13767,6 +15016,26 @@
               "ar-EG": "مستأجرة",
               "zh-CN": "租赁车辆",
               "zh-TW": "租賃車輛"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -13941,6 +15210,26 @@
               "zh-CN": "尾板",
               "zh-TW": "尾門升降機"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -14065,6 +15354,26 @@
               "ar-EG": "تاريخ الإصلاح",
               "zh-CN": "修复日期",
               "zh-TW": "修復日期"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -14204,6 +15513,26 @@
               "ar-EG": "عدّاد المسافات",
               "zh-CN": "里程表读数",
               "zh-TW": "里程數"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -14526,6 +15855,26 @@
               "zh-CN": "退回原因",
               "zh-TW": "退回原因"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -14685,6 +16034,26 @@
               "zh-CN": "工单",
               "zh-TW": "工單"
             }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
           }
         ]
       },
@@ -14789,6 +16158,26 @@
               "ar-EG": "تاريخ الدورة",
               "zh-CN": "培训日期",
               "zh-TW": "課程日期"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -14927,6 +16316,26 @@
               "ar-EG": "وقت الاستعجال",
               "zh-CN": "催办时间",
               "zh-TW": "催辦時間"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -15156,6 +16565,26 @@
               "ar-EG": "الحالة",
               "zh-CN": "状态",
               "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
             }
           }
         ]
@@ -16199,12 +17628,14 @@
         "table:@companies:update",
         "table:@companies:delete",
         "table:@companies:export",
+        "table:@companies:import",
         "table:@contacts:read",
         "table:@contacts:read_pii",
         "table:@contacts:create",
         "table:@contacts:update",
         "table:@contacts:delete",
         "table:@contacts:export",
+        "table:@contacts:import",
         "table:@territories:read",
         "table:@territories:create",
         "table:@territories:update",
@@ -16270,6 +17701,7 @@
         "table:@enquiries:create",
         "table:@enquiries:update",
         "table:@enquiries:delete",
+        "table:@enquiries:import",
         "table:@shows:read",
         "table:@shows:create",
         "table:@shows:update",
@@ -16615,6 +18047,8 @@
       "permissions": [
         "app:@:staff",
         "table:@stages:read",
+        "table:@stages:create",
+        "table:@stages:update",
         "table:@deals:read",
         "table:@deals:create",
         "table:@deals:update",
@@ -16627,6 +18061,8 @@
         "table:@activities:create",
         "table:@activities:update",
         "table:@lost_reasons:read",
+        "table:@lost_reasons:create",
+        "table:@lost_reasons:update",
         "table:@price_list:read",
         "table:@price_list:create",
         "table:@price_list:update",
@@ -16669,11 +18105,13 @@
         "table:@companies:create",
         "table:@companies:update",
         "table:@companies:export",
+        "table:@companies:import",
         "table:@contacts:read",
         "table:@contacts:read_pii",
         "table:@contacts:create",
         "table:@contacts:update",
         "table:@contacts:export",
+        "table:@contacts:import",
         "table:@territories:read",
         "table:@territories:create",
         "table:@territories:update",
@@ -17060,16 +18498,25 @@
         },
         "deal_members": {
           "writable": [
+            "user_id",
+            "role_note"
+          ],
+          "creatable": [
             "deal_id",
             "user_id",
             "role_note"
           ],
           "rows": {
-            "update": {
+            "read": {
               "reach": "team"
             },
+            "update": {
+              "reach": "team",
+              "by": "deal_owner_id"
+            },
             "delete": {
-              "reach": "team"
+              "reach": "team",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -17435,10 +18882,12 @@
         "table:@companies:read",
         "table:@companies:create",
         "table:@companies:update",
+        "table:@companies:import",
         "table:@contacts:read",
         "table:@contacts:read_pii",
         "table:@contacts:create",
         "table:@contacts:update",
+        "table:@contacts:import",
         "table:@territories:read",
         "table:@territory_places:read",
         "table:@renewals:read",
@@ -17804,16 +19253,25 @@
         },
         "deal_members": {
           "writable": [
+            "user_id",
+            "role_note"
+          ],
+          "creatable": [
             "deal_id",
             "user_id",
             "role_note"
           ],
           "rows": {
-            "update": {
+            "read": {
               "reach": "own"
             },
+            "update": {
+              "reach": "own",
+              "by": "deal_owner_id"
+            },
             "delete": {
-              "reach": "own"
+              "reach": "own",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -18084,6 +19542,14 @@
               "reach": "own"
             }
           }
+        },
+        "covers": {
+          "readable": [
+            "owner_id",
+            "cover_id",
+            "starts_on",
+            "ends_on"
+          ]
         }
       }
     },
@@ -18337,6 +19803,14 @@
             "paid_by",
             "state"
           ]
+        },
+        "covers": {
+          "readable": [
+            "owner_id",
+            "cover_id",
+            "starts_on",
+            "ends_on"
+          ]
         }
       }
     },
@@ -18360,11 +19834,13 @@
         "app:@:staff",
         "table:@companies:read",
         "table:@contacts:read",
+        "table:@deal_marks:read",
         "table:@territories:read",
         "table:@territory_places:read",
         "table:@enquiries:read",
         "table:@enquiries:read_pii",
         "table:@enquiries:create",
+        "table:@enquiries:import",
         "table:@shows:read",
         "table:@shows:create",
         "table:@shows:update",
@@ -18376,7 +19852,8 @@
         "page:@crm-territory-places:view",
         "page:@crm-enquiries:view",
         "page:@crm-shows:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "page:@crm-deal-marks:view"
       ],
       "limits": {
         "enquiries": {
@@ -18393,6 +19870,12 @@
             "warmth",
             "show_id",
             "company_id"
+          ]
+        },
+        "deal_marks": {
+          "readable": [
+            "company_id",
+            "state"
           ]
         }
       }
@@ -19264,6 +20747,58 @@
               "unowned": true
             }
           }
+        },
+        "quotes": {
+          "readable": [
+            "number_seq",
+            "number",
+            "status",
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "subtotal",
+            "tax",
+            "total",
+            "sent_at",
+            "decided_at",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "list_value",
+            "under_list_pct",
+            "unlisted_lines",
+            "unlisted_value",
+            "threshold_pct",
+            "needs_approval",
+            "approval",
+            "approved_pct",
+            "approved_unlisted_lines",
+            "approved_unlisted_value",
+            "may_send",
+            "asked_by_id",
+            "asked_at",
+            "ask_reason",
+            "decided_by_id",
+            "approval_decided_at",
+            "decision_note",
+            "sent_to_contact_id",
+            "sent_to_email",
+            "sent_to_name",
+            "notes",
+            "accepted_name",
+            "withdrawn_at"
+          ]
+        },
+        "covers": {
+          "readable": [
+            "owner_id",
+            "cover_id",
+            "starts_on",
+            "ends_on"
+          ]
         }
       }
     }
@@ -24659,7 +26194,8 @@
     {
       "side": "staff",
       "kind": "spa",
-      "entry": "index.html"
+      "entry": "index.html",
+      "placement": "external"
     }
   ]
 }
