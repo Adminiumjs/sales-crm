@@ -77,8 +77,14 @@ function initialLocale(): LocaleTag {
   return resolveLocale(navigator.languages ?? [navigator.language]);
 }
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<LocaleTag>(initialLocale);
+/**
+ * `person` is the language the signed-in person chose in Adminium, when the
+ * server says it: their own setting wins over what this browser remembers and
+ * over the browser's own list, so the app speaks as the rest of Adminium does
+ * to them, on any device.
+ */
+export function I18nProvider({ children, person }: { children: ReactNode; person?: string | null }) {
+  const [locale, setLocaleState] = useState<LocaleTag>(() => (isLocaleTag(person) ? person : initialLocale()));
   const dir = dirFor(locale);
 
   // Stamp <html> so CSS logical properties resolve and screen readers announce

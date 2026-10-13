@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Sales CRM — an open-source sales-workspace example app for Adminium.",
+  "description": "Sales CRM \u2014 an open-source sales-workspace example app for Adminium.",
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,11 @@
     "test": "vitest run --dir src",
     "build:surface:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff tsc -b && VITE_ADMINIUM_SURFACE_SIDE=staff vite build --base=/apps/crm/staff/ --outDir dist-surface/crm/staff",
     "build:surface": "npm run build:surface:staff",
-    "dev:hosted": "VITE_ADMINIUM_SURFACE_SIDE=staff vite"
+    "dev:hosted": "VITE_ADMINIUM_SURFACE_SIDE=staff vite",
+    "e2e": "npm run build:surface && playwright test",
+    "stand:up": "npm run build:surface && node e2e/stand.mjs up",
+    "stand:down": "node e2e/stand.mjs down",
+    "proofs": "node scripts/run-proofs.mjs"
   },
   "dependencies": {
     "@adminiumjs/public-client": "^0.2.2",
@@ -23,6 +27,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@types/node": "^26.1.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

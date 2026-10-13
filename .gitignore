@@ -10,3 +10,7 @@ dist-surface
 # by a stray `git add`.
 .env
 .env.*
+
+# The stand a browser run leaves behind: its state, its cookies, its results.
+e2e/.stand
+e2e/.results

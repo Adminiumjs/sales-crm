@@ -47,6 +47,21 @@ const fallbackMoney: MoneyFn = (value, currency = "USD") =>
 const fallbackNumber: NumberFn = (value, opts) =>
   new Intl.NumberFormat(DEFAULT_LOCALE, opts).format(value);
 
+/**
+ * What the install's owner called this app (Installed Apps → rename), read
+ * from the config Adminium serves beside the bundle. Null until it answers,
+ * and on an install that kept the name the app ships with.
+ */
+let activeAppName: string | null = null;
+
+/** Set once at boot, from the served surface config. */
+export function setAppName(name: string | null | undefined): void {
+  activeAppName = typeof name === "string" && name.trim() !== "" ? name.trim() : null;
+}
+
+/** The owner's name for this app, or null to fall back to the baked one. */
+export const appName = (): string | null => activeAppName;
+
 let activeLocale: LocaleTag = DEFAULT_LOCALE;
 let activeT: TFunction = fallbackT;
 let activeMoney: MoneyFn = fallbackMoney;

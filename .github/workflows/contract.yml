@@ -1,0 +1,130 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# Sales CRM's own contract check, beside `ci.yml` (the fleet's synced workflow:
+# build, the unit suite, the manifest; never hand-edited).
+#
+# Two things run here against a BUILT Adminium, with the add-ons the manifest
+# names beside it:
+#
+#   proofs   `proofs/*.test.ts`: the app installed with its sample on SQLite,
+#            Postgres and MySQL, and tried signed in as each of the sample's
+#            sixteen people (`npm run proofs`; see `proofs/README.md`).
+#   e2e      `e2e/*.e2e.ts`: the staff side in a real browser on a real server
+#            (`e2e/stand.mjs`), on SQLite. The other two engines are walked at
+#            a release's gate, not on every push.
+#
+# UNTIL ADMINIUM 0.3.28 IS RELEASED the manifest asks for a version no tag
+# has, so the engine is taken from its branch and told to say 0.3.28
+# (`CRM_STAND_VERSION`; the proofs do the same for themselves). At the release
+# `ADMINIUM_REF` becomes the tag and that variable goes.
+
+name: contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  ADMINIUM_REF: plan-67-core
+  ADD_ONS_REF: v1.0.12
+  CRM_STAND_VERSION: 0.3.28
+
+jobs:
+  contract:
+    name: proofs on three engines, the staff side in a browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check out Adminium
+        uses: actions/checkout@v4
+        with:
+          repository: MoSofi/Adminium
+          ref: ${{ env.ADMINIUM_REF }}
+          path: .adminium-product
+
+      - name: Check out the add-ons, at the release the manifest names
+        uses: actions/checkout@v4
+        with:
+          repository: Adminiumjs/add-ons
+          ref: ${{ env.ADD_ONS_REF }}
+          path: .add-ons
+
+      - name: Build Adminium (the server and the dashboard)
+        run: |
+          cd .adminium-product
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm turbo run build --filter="@adminium/e2e..."
+
+      - name: Build the add-ons
+        run: |
+          cd .add-ons
+          npm ci
+          npm run build -w packages/invoices -w packages/inventory
+
+      # vitest and tsc here collect under `src` only, but the products' own
+      # trees are not this repo's to walk: out of the workspace they go.
+      - name: Move both checkouts out of the workspace
+        run: |
+          mv "$GITHUB_WORKSPACE/.adminium-product" "$RUNNER_TEMP/adminium-product"
+          mv "$GITHUB_WORKSPACE/.add-ons" "$RUNNER_TEMP/add-ons"
+
+      - name: The proofs, on three engines
+        env:
+          ADMINIUM_REPO: ${{ runner.temp }}/adminium-product
+          ADD_ONS_REPO: ${{ runner.temp }}/add-ons
+          TEST_POSTGRES_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
+          TEST_MYSQL_URL: mysql://root@127.0.0.1:3306
+        run: npm run proofs
+
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      - name: The staff side in a browser, on a real server
+        env:
+          ADMINIUM_REPO: ${{ runner.temp }}/adminium-product
+          ADD_ONS_REPO: ${{ runner.temp }}/add-ons
+        run: npm run e2e
+
+      - name: Keep what a failed browser run saw
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            e2e/.results
+            e2e/.stand/server.log
+          if-no-files-found: ignore

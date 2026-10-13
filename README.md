@@ -202,9 +202,12 @@ visits on a day it works, and a crew with no days written down is held to none.
 
 ## What does not work yet
 
-- **No screens.** The staff side shows one "being rebuilt" page. `reference/`
+- **No screens.** The staff side opens for whoever is signed in, in the language
+  they chose in Adminium, and says the screens are being rebuilt. `reference/`
   holds the screens the app had before the rebuild; nothing builds, tests or
   ships that folder.
+- **The app runs only inside Adminium.** It has no data of its own and no
+  browser-only demo: opened anywhere else, it says so.
 - **A new quote is numbered `QUO-0001`** until the owner changes the series in
   Invoices & Receipts.
 - **Three reminders are not shipped**: the aftercare call 28 days after a
@@ -245,11 +248,22 @@ npm run build
 | `npm run build:surface` | Build the staff side as Adminium serves it, to `dist-surface/crm/staff/`. |
 | `npm test` | The manifest's own tests: tables, roles, states, rules, quotes, the sample's figures. |
 | `npm run typecheck` | Type-check only. |
+| `npm run proofs` | The app installed on a real Adminium with its sample, on three database engines, tried as each of the sample's people. See `proofs/README.md`. |
+| `npm run e2e` | The staff side in a real browser, on a real Adminium (`e2e/stand.mjs` starts one and stops it). |
+| `npm run stand:up` / `stand:down` | Start that Adminium and leave it running for a look by hand; stop it. |
 
 The tests check the manifest against Adminium's own validator, a copy of which
 is in `src/testing/manifest/`. `node scripts/sync-manifest-validator.mjs --check`
 says whether that copy is current; it needs `ADMINIUM_REPO` to point at an
 Adminium checkout.
+
+`npm run proofs` and `npm run e2e` need a **built** Adminium checkout
+(`ADMINIUM_REPO`) and the add-ons' checkout with Invoices & Receipts built
+(`ADD_ONS_REPO`). Until the Adminium this app asks for is released, also set
+`CRM_STAND_VERSION` to that version for the browser run: the stand then has the
+unreleased server say it. The stand listens on `CRM_STAND_PORT` (4774 unless
+set). It gives each of the sample's people a password, which the product itself
+never does: a sample person cannot sign in on a real install.
 
 ## Project structure
 
@@ -257,11 +271,15 @@ Adminium checkout.
 manifest.json     the app: tables, roles, pages, rules, e-mails, the sample's people
 seeds/            the sample data (generated; do not edit by hand)
 src/
-  app/            the staff side's one page
+  app/            the staff side, from boot to the first page
+  session/        who is signed in
+  staffSession.ts the one client every screen reads and writes through (shared with the other apps)
   i18n/           the eight languages
   testing/        the manifest's tests, and the vendored validator
+proofs/           the app on a real server, on three engines (run inside an Adminium checkout)
+e2e/              the stand, and the browser specs
 reference/        the screens from before the rebuild (not built)
-scripts/          release, validator sync, the translation ledger
+scripts/          release, validator sync, the translation ledger, the proofs' runner
 ```
 
 ## License
