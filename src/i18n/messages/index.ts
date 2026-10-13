@@ -12,6 +12,7 @@
 import type { Translated } from "../untranslated.ts";
 import { LOCALE_TAGS, type LocaleTag } from "../locales.ts";
 import { base } from "../strings/base.ts";
+import { quotes } from "../strings/quotes.ts";
 import { selling } from "../strings/selling.ts";
 import { shell } from "../strings/shell.ts";
 import { today } from "../strings/today.ts";
@@ -27,11 +28,11 @@ type Area<EN extends Record<string, string>> = { "en-US": EN } & Record<
   Translated<EN>
 >;
 
-const AREAS: [Area<(typeof base)["en-US"]>, Area<(typeof shell)["en-US"]>, Area<(typeof today)["en-US"]>, Area<(typeof selling)["en-US"]>] = [base, shell, today, selling];
+const AREAS: [Area<(typeof base)["en-US"]>, Area<(typeof shell)["en-US"]>, Area<(typeof today)["en-US"]>, Area<(typeof selling)["en-US"]>, Area<(typeof quotes)["en-US"]>] = [base, shell, today, selling, quotes];
 
 export const MESSAGES = Object.fromEntries(
   LOCALE_TAGS.map((t) => [t, Object.assign({}, ...AREAS.map((a) => a[t] ?? {}))]),
 ) as Record<LocaleTag, Record<string, string>>;
 
 /** Keys are typed off English — the source of truth — so a typo is a compile error. */
-export type MessageKey = keyof (typeof base)["en-US"] | keyof (typeof shell)["en-US"] | keyof (typeof today)["en-US"] | keyof (typeof selling)["en-US"];
+export type MessageKey = keyof (typeof base)["en-US"] | keyof (typeof shell)["en-US"] | keyof (typeof today)["en-US"] | keyof (typeof selling)["en-US"] | keyof (typeof quotes)["en-US"];

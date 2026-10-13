@@ -31,6 +31,8 @@ import { ScreenLink, useNav } from "./nav.tsx";
 import { NothingOn, NotFound, Rebuilding, Refused, type RefusedWhy, type WayHome } from "./pages.tsx";
 import { canOpen, homeFor, menuFor, MENUS, rolesOf, routeForPath, ROUTES, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
+import { PageBoundary } from "../ui/boundary.tsx";
+import { LoadFailed } from "../ui/load.tsx";
 
 const NARROW = 900;
 /** The design opens every group for a short menu, and only Selling for a long one. */
@@ -270,7 +272,9 @@ export function Shell() {
           </div>
         </header>
         <main id="crm-page" className="crm-page" tabIndex={-1}>
-          {page}
+          <PageBoundary at={nav.path} fallback={(again) => <LoadFailed reload={again} />}>
+            {page}
+          </PageBoundary>
         </main>
       </div>
       {narrow && drawer && (

@@ -15,6 +15,7 @@ import "./styles/shell.css";
 
 import "./styles/screens.css";
 import "./styles/selling.css";
+import "./styles/quotes.css";
 
 import "./screens/index.ts";
 import App from "./app/App.tsx";

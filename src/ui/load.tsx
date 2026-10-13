@@ -98,3 +98,28 @@ export function Loaded<T>({ load, reload, skeleton, children }: { load: Load<T>;
   if (load.state === "failed" || load.state === "refused") return <LoadFailed reload={reload} />;
   return <>{children(load.data)}</>;
 }
+
+/**
+ * One call a moment after the last of several: a save's own "read again" and
+ * the live frame that same save sets off become one read, not two. A person's
+ * requests are counted per minute by the server; a screen that reads twice
+ * for every save spends them twice as fast.
+ */
+export function useCoalesced(run: () => void, ms = 180): () => void {
+  const latest = useRef(run);
+  latest.current = run;
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current !== null) clearTimeout(timer.current);
+    },
+    [],
+  );
+  return useCallback(() => {
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      latest.current();
+    }, ms);
+  }, [ms]);
+}
