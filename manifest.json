@@ -4784,6 +4784,10 @@
           [
             "company_id",
             "state"
+          ],
+          [
+            "contact_id",
+            "state"
           ]
         ],
         "columns": [
@@ -4828,6 +4832,29 @@
               "ar-EG": "الشركة",
               "zh-CN": "公司",
               "zh-TW": "公司"
+            }
+          },
+          {
+            "ref": "contact_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "deal_id",
+                "from": "contact_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Main contact",
+              "de-DE": "Hauptkontakt",
+              "fr-FR": "Contact principal",
+              "da-DK": "Hovedkontakt",
+              "cs-CZ": "Hlavní kontakt",
+              "ar-EG": "جهة الاتصال الرئيسية",
+              "zh-CN": "主要联系人",
+              "zh-TW": "主要聯絡人"
             }
           },
           {
@@ -12767,12 +12794,6 @@
             "starts_on",
             "ends_on"
           ]
-        },
-        "deal_marks": {
-          "readable": [
-            "company_id",
-            "state"
-          ]
         }
       }
     },
@@ -12978,12 +12999,6 @@
             "cover_id",
             "starts_on",
             "ends_on"
-          ]
-        },
-        "deal_marks": {
-          "readable": [
-            "company_id",
-            "state"
           ]
         }
       }

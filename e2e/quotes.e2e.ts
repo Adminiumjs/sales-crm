@@ -15,7 +15,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
 const row = (page: Page, family: string) => page.locator(".crm-quote-row").filter({ has: page.locator(".crm-quote-no", { hasText: new RegExp(`^${family}$`) }) });
 const quoteNumbered = async (person: APIRequestContext, data: Data, number: string) => (await rows<Record<string, unknown> & { id: number }>(person, data, "quotes", { column: "number", op: "eq", value: number }))[0]!;
@@ -24,6 +24,7 @@ test("Dana opens Quotes from her menu: her three families, with what the custome
   const page = await (await as("dana")).newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Quotes" }).click();
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/quotes$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Quotes");
@@ -295,6 +296,7 @@ test("Approvals: the four requests, a decline with its line, a question that lan
   const ivy = context.request;
   const page = await context.newPage();
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Approvals" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Approvals");
   const filters = page.getByRole("group", { name: "Which requests" }).getByRole("button");

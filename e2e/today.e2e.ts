@@ -25,7 +25,8 @@ test("Dana lands on Today from the app's address, with the ledger's figures", as
   // The stand's clock starts at 09:35 and runs on while the specs before this one do: the time shown is the server's, to the ten minutes.
   const now = new Date(((await (await page.request.get(`${STAFF}surface-config.json`)).json()) as { now: string }).now);
   const clock = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Europe/London" }).format(now);
-  expect(clock.startsWith("09:")).toBe(true);
+  // (Which hour depends on how long the specs before this one took: the stand's clock starts at 09:35 and runs on.)
+  expect(clock).toMatch(/^\d\d:\d\d$/);
   await expect(page.locator(".crm-now")).toContainText(`Tuesday, July 28, 2026 · ${clock.slice(0, 4)}`);
 
   // The menu holds Today, and it is where she is.

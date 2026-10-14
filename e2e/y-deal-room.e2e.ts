@@ -18,7 +18,7 @@
 import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
 interface Made {
   id: number;
@@ -429,6 +429,7 @@ test("a closed deal is the same page, read-only; whoever may reopens it; the acc
   const hugo = hugoContext.request;
   const his = await hugoContext.newPage();
   await his.goto(STAFF);
+  await unfoldMenu(his);
   await his.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Won deals" }).click();
   await his.getByRole("link", { name: "Studio meeting tables" }).click();
   await expect(his.getByRole("heading", { level: 1 })).toHaveText("Studio meeting tables");
@@ -671,6 +672,7 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Hand a deal over" }).click();
   await expect(page).toHaveURL(/\/hand-over$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hand a deal over");

@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 
 import manifest from "../../whole/manifest.json";
-import { canOpen, homeFor, HOMES, inMenu, menuFor, MENUS, rolesOf, ROLE_ORDER, routeForPath, ROUTES, type MenuFacts, type PartId, type RoleKey, type RouteKey } from "./routes.ts";
+import { canOpen, homeFor, HOMES, inMenu, menuFor, MENUS, OWN, rolesOf, ROLE_ORDER, routeForPath, ROUTES, USER_MENU, type MenuFacts, type PartId, type RoleKey, type RouteKey } from "./routes.ts";
 
 type Role = { key: string; permissions: string[] };
 const roles = (manifest as unknown as { roles: Role[] }).roles;
@@ -165,8 +165,46 @@ describe("an address", () => {
     expect(routeForPath("", facts(["rep"]))).toBeNull();
   });
 
+  it("a company's page and its timeline are the Companies screen's, and Accounts is in the menus it is drawn in and no other", () => {
+    expect(routeForPath("companies/4/timeline", facts(["rep"]))).toEqual({ route: "companies", rest: ["4", "timeline"] });
+    expect(routeForPath("contacts/6", facts(["marketer"]))).toEqual({ route: "contacts", rest: ["6"] });
+    for (const role of ["rep", "sales-manager", "admin", "account-manager", "marketer", "read-only"]) expect([role, inMenu("companies", [`crm-${role}`]), inMenu("contacts", [`crm-${role}`])]).toEqual([role, true, true]);
+    for (const role of ["front-desk", "ops-manager", "crew"]) expect([role, inMenu("companies", [`crm-${role}`])]).toEqual([role, false]);
+    // Paste a list: a rep, the sales manager and the CRM admin; nobody else's menu holds it.
+    for (const role of ["rep", "sales-manager", "admin"]) expect([role, inMenu("import", [`crm-${role}`])]).toEqual([role, true]);
+    for (const role of ["account-manager", "marketer", "read-only", "front-desk"]) expect([role, inMenu("import", [`crm-${role}`])]).toEqual([role, false]);
+  });
+
   it("gives the shared home address to the home that is the person's", () => {
     expect(routeForPath("home", facts(["marketer"]))?.route).toBe("mkhome");
     expect(routeForPath("home", facts(["account-manager"]))?.route).toBe("amhome");
+  });
+});
+
+describe("a person's own screens", () => {
+  it("are everybody's, whatever their role, and need no part and no table", () => {
+    for (const route of OWN) {
+      expect([ROUTES[route].part, ROUTES[route].reads], route).toEqual([null, []]);
+      for (const role of ROLE_ORDER) {
+        expect(inMenu(route, [`crm-${role}`]), `${route} for ${role}`).toBe(true);
+        expect(canOpen(route, facts([role], { part: () => false })), `${route} for ${role} with every part off`).toBe(true);
+      }
+      // The install's owner too.
+      expect(inMenu(route, [])).toBe(true);
+    }
+  });
+
+  it("puts her profile, her details and how she is told under her name, and keeps the digest out of the menu of a role with no summary", () => {
+    expect(USER_MENU).toEqual(["me", "mydetails", "notifs"]);
+    expect(routesOf(facts(["marketer"]))).not.toContain("digest");
+    expect(routesOf(facts(["rep"]))).toContain("digest");
+  });
+
+  it("leaves the front desk on the Inbox at the first release, and the marketer on her home", () => {
+    expect(homeFor(facts(["front-desk"]))).toBe("inbox");
+    expect(homeFor(facts(["marketer"]))).toBe("mkhome");
+    // With the Inbox off the marketer is left with Accounts, and the front desk with nothing.
+    expect(homeFor(facts(["marketer"], { part: (id) => id !== "inbox" }))).toBe("companies");
+    expect(homeFor(facts(["front-desk"], { part: (id) => id !== "inbox" }))).toBeNull();
   });
 });

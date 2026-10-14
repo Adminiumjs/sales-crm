@@ -76,7 +76,7 @@ export function NavProvider({ children, bakedBase = import.meta.env.BASE_URL }: 
  * A link to a screen: a real address (it opens in a new tab, it can be
  * copied), followed in place on a plain click.
  */
-export function ScreenLink({ to, rest = [], className, children, onGo, current }: { to: RouteKey; rest?: (string | number)[]; className?: string; children: ReactNode; onGo?: () => void; current?: boolean }) {
+export function ScreenLink({ to, rest = [], className, children, onGo, current, role }: { to: RouteKey; rest?: (string | number)[]; className?: string; children: ReactNode; onGo?: () => void; current?: boolean; role?: "menuitem" }) {
   const nav = useNav();
   const follow = (event: MouseEvent<HTMLAnchorElement>): void => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -85,7 +85,7 @@ export function ScreenLink({ to, rest = [], className, children, onGo, current }
     onGo?.();
   };
   return (
-    <a href={nav.href(to, ...rest)} onClick={follow} className={className} aria-current={current === true ? "page" : undefined}>
+    <a href={nav.href(to, ...rest)} onClick={follow} className={className} role={role} aria-current={current === true ? "page" : undefined}>
       {children}
     </a>
   );

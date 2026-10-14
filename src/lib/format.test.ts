@@ -29,6 +29,11 @@ describe("a moment, where the business is", () => {
     expect([f.dayLong(at("2026-07-28T08:35:00Z")), f.dayShort(at("2026-07-24T15:00:00Z")), f.time(at("2026-07-24T15:00:00Z"))]).toEqual(["Tuesday, 28 July 2026", "Fri 24 Jul", "16:00"]);
   });
 
+  it("writes a month with its year as the reader's language does", () => {
+    const march = at("2026-03-26T12:00:00Z");
+    expect([f.monthYear(march), formatters({ ...LONDON, locale: "de-DE" }).monthYear(march), formatters({ ...LONDON, locale: "en-US" }).monthYear(march)]).toEqual(["March 2026", "März 2026", "March 2026"]);
+  });
+
   it("puts a moment late at night on the business's day, not the reader's", () => {
     // 23:30 UTC on the 27th is already the 28th in London.
     expect(f.dayKey(at("2026-07-27T23:30:00Z"))).toBe("2026-07-28");

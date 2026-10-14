@@ -31,6 +31,8 @@ export interface Formatters {
   weekdayLong: (at: Date) => string;
   /** `July`. */
   monthLong: (at: Date) => string;
+  /** `March 2026`: a month with its year, as the reader's language writes the two together. */
+  monthYear: (at: Date) => string;
   /** `16:00`, always on the 24-hour clock. */
   time: (at: Date) => string;
   /** The calendar day a moment falls on where the business is: `2026-07-28`. */
@@ -73,6 +75,7 @@ export function formatters(facts: FormatFacts): Formatters {
   const weekdayShort = make({ weekday: "short" });
   const weekdayLong = make({ weekday: "long" });
   const monthLong = make({ month: "long" });
+  const monthYear = make({ month: "long", year: "numeric" });
   const time = make({ hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   // Latin digits, year first: a key to compare days by, never shown.
   const key = (() => {
@@ -151,6 +154,7 @@ export function formatters(facts: FormatFacts): Formatters {
     weekdayShort: (at) => weekdayShort.format(at),
     weekdayLong: (at) => weekdayLong.format(at),
     monthLong: (at) => monthLong.format(at),
+    monthYear: (at) => monthYear.format(at),
     time: (at) => time.format(at),
     dayKey,
     dayDiff: (from, to) => Math.round((Date.parse(`${dayKey(to)}T00:00:00Z`) - Date.parse(`${dayKey(from)}T00:00:00Z`)) / 86_400_000),

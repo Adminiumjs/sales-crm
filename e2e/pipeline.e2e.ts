@@ -9,7 +9,7 @@
 import type { Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { card, cardsIn, column, csrf, dealNamed, inArabic, rows, STAFF, watch } from "./helpers.ts";
+import { card, cardsIn, column, csrf, dealNamed, inArabic, rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
 
 interface Stage {
   id: number;
@@ -23,6 +23,7 @@ test("Dana opens her board from the menu, with the ledger's figures", async ({ a
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Pipeline board" }).click();
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/pipeline$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("My pipeline");
@@ -62,6 +63,7 @@ test("the sales manager's board is the team's, and narrows to one rep", async ({
   const context = await as("ivy");
   const page = await context.newPage();
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Team board" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Team pipeline");
   await expect(page.getByTestId("board-weighted")).toHaveText("£156,562.50");

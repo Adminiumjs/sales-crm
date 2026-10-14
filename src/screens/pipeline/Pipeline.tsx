@@ -31,6 +31,8 @@ import { canOpen, type MenuFacts, type PartId } from "../../shell/routes.ts";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { Dialog } from "../../ui/dialog.tsx";
+import { dealConditions } from "../own/data.ts";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { KitPart } from "../../ui/kit.tsx";
 import { LoadFailed, Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
@@ -95,12 +97,16 @@ async function cards(session: StaffSession, where: Condition): Promise<{ rows: D
   return { rows };
 }
 
-async function read(session: StaffSession, mine: boolean, who: string | null, today: string): Promise<BoardData> {
+/** No saved view: the whole board. One value, so a board opened plainly is read once. */
+const NO_CUT: readonly Condition[] = [];
+
+async function read(session: StaffSession, mine: boolean, who: string | null, today: string, cut: readonly Condition[] = []): Promise<BoardData> {
   const me = session.config.user;
   const open: Condition = { column: "state", op: "eq", value: "open" };
   const owner = mine ? (me?.id ?? null) : who;
-  const shown: Condition[] = mine || who === null ? [open] : [open, { column: "owner_id", op: "eq", value: who }];
-  const counted: Condition[] = owner === null ? [open] : [open, { column: "owner_id", op: "eq", value: owner }];
+  // A saved view cuts the cards and every figure alike (`cut`): the board then shows that view, and its header counts it.
+  const shown: Condition[] = mine || who === null ? [open, ...cut] : [open, { column: "owner_id", op: "eq", value: who }, ...cut];
+  const counted: Condition[] = owner === null ? [open, ...cut] : [open, { column: "owner_id", op: "eq", value: owner }, ...cut];
   const sums = [
     { fn: "count" as const, alias: "n" },
     { fn: "sum" as const, column: "amount", alias: "full" },
@@ -174,7 +180,20 @@ export function Pipeline(props: ScreenProps) {
   const today = f.dayKey(now);
   // `pipeline/of/<person>` opens the board on one person's deals (the Team view's "Board").
   const [who, setWho] = useState<string | null>(() => (props.rest[0] === "of" && props.rest[1] !== undefined ? props.rest[1] : null));
-  const { load, reload } = useLoad(() => read(session, mine, who, today), [session, mine, who, today, actions.changed]);
+  // `pipeline/view/<id>` opens the board on a saved view: its person (for who reads the team) and its other rules.
+  const view = useSavedView("pipeline", props.rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state === "ready" && !mine) setWho(view.view.filters.rep ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
+  const cut = useMemo(() => {
+    if (view.state !== "ready") return NO_CUT;
+    const { rep: _whose, ...rules } = view.view.filters;
+    return dealConditions(rules, view.stages, now, f);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- a day's cut: read again when the day turns, not with every tick
+  }, [view, today, f]);
+  const { load, reload } = useLoad(() => (view.state === "loading" ? new Promise<never>(() => undefined) : read(session, mine, who, today, cut)), [session, mine, who, today, cut, view.state, actions.changed]);
   const again = useCallback(() => {
     setNow(session.now());
     reload();
@@ -362,6 +381,7 @@ export function Pipeline(props: ScreenProps) {
           </div>
         )}
         {canWork && <div className="crm-week-hint">{t("board.hint")}</div>}
+        <ViewBar screen="pipeline" view={view} current={{ ...(view.state === "ready" ? view.view.filters : {}), ...(!mine && who !== null ? { rep: who } : !mine ? { rep: undefined } : {}) }} names={data?.names ?? {}} />
       </div>
 
       <Loaded

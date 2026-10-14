@@ -51,6 +51,10 @@ export interface NewDealStart {
   name?: string;
   amount?: string;
   firstStep?: string;
+  /** A company that is not on the books yet (an enquiry's, a trade-show lead's): made with the deal, with the person who asked as its first contact. */
+  newCompany?: { name: string; person?: string | null; email?: string | null; phone?: string | null; town?: string | null };
+  /** The enquiry the deal comes from. It is claimed first (from the state the screen saw), and told its deal and its company last. */
+  enquiry?: { id: number; state: string };
 }
 
 async function readChoices(session: StaffSession): Promise<{ stages: Stage[]; owners: Owner[] }> {
@@ -79,6 +83,9 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
 
   const [name, setName] = useState(start.name ?? "");
   const [companyId, setCompanyId] = useState<number | null>(start.companyId ?? null);
+  // "A new company from here": offered when the sheet was opened with one and the person may make companies; chosen to begin with when nothing on the books matched.
+  const offersNew = start.newCompany !== undefined && session.can("companies", "create");
+  const [makeNew, setMakeNew] = useState(offersNew && start.companyId === undefined);
   const [search, setSearch] = useState("");
   const [amount, setAmount] = useState(start.amount ?? "");
   const [close, setClose] = useState(() => addDays(today, CLOSE_IN_DAYS));
@@ -92,6 +99,8 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
   const keys = useRef({ deal: newClientKey(), step: newClientKey() });
   // The deal, once it is in: a press after "the step was not saved" saves the step only.
   const saved = useRef<number | null>(null);
+  // What is already in of the saves around the deal, so a second press goes on from where the first stopped.
+  const around = useRef<{ claimed: boolean; companyId: number | null; contactId: number | null; told: boolean; keys: { company: string; contact: string } }>({ claimed: false, companyId: null, contactId: null, told: false, keys: { company: newClientKey(), contact: newClientKey() } });
 
   const { load: choices } = useLoad(() => readChoices(session), [session]);
   const stages = choices.state === "ready" ? choices.data.stages : [];
@@ -126,15 +135,44 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
   const save = async (): Promise<void> => {
     const title = name.trim();
     if (title === "") return setError(t("deal.new.error.name"));
-    if (companyId === null) return setError(t("deal.new.error.company"));
+    if (companyId === null && !makeNew) return setError(t("deal.new.error.company"));
     if (read === null) return setError(t("deal.new.error.amount"));
     if (stage === null) return setError(t("deal.new.error.stage"));
     setError(null);
     setBusy(true);
     const step = next ? nextText.trim() : "";
     let dealId = saved.current;
+    const owner = picksOwner ? ownerId : (me?.id ?? ownerId);
+    const stop = (text: string): void => {
+      setBusy(false);
+      setError(text);
+    };
+    // The enquiry first: if a colleague claimed it a moment ago the server says so here, before anything is made.
+    if (start.enquiry !== undefined && start.enquiry.state !== "claimed" && !around.current.claimed) {
+      const claimed = await session.act("enquiries", start.enquiry.id, "claim", start.enquiry.state);
+      if (claimed.state !== "saved") return stop(claimed.state === "refused" ? t("deal.new.error.claim", { reason: reasonOf(claimed.error, t) }) : t("ui.unknown"));
+      around.current.claimed = true;
+    }
+    let company = companyId;
+    let contact: number | null = null;
+    if (makeNew && start.newCompany !== undefined) {
+      if (around.current.companyId === null) {
+        const made = await session.create<{ id: number }>("companies", { name: start.newCompany.name.trim(), town: start.newCompany.town ?? null, account_owner_id: owner }, around.current.keys.company);
+        if (made.state !== "saved") return stop(made.state === "refused" ? t("deal.new.error.newCompany", { reason: reasonOf(made.error, t) }) : t("ui.unknown"));
+        around.current.companyId = made.row.id;
+      }
+      company = around.current.companyId;
+      const person = (start.newCompany.person ?? "").trim();
+      if (person !== "" && around.current.contactId === null && session.can("contacts", "create")) {
+        // Whether she may be sent marketing mail was never asked: it stays "no" until somebody asks her.
+        const made = await session.create<{ id: number }>("contacts", { company_id: company, name: person, email: start.newCompany.email ?? null, phone: start.newCompany.phone ?? null, may_email: false }, around.current.keys.contact);
+        if (made.state !== "saved") return stop(made.state === "refused" ? t("deal.new.error.newContact", { reason: reasonOf(made.error, t) }) : t("ui.unknown"));
+        around.current.contactId = made.row.id;
+      }
+      contact = around.current.contactId;
+    }
     if (dealId === null) {
-      const made = await session.create<{ id: number }>("deals", { name: title, company_id: companyId, owner_id: picksOwner ? ownerId : (me?.id ?? ownerId), stage_id: stage.id, expected_close: close === "" ? null : close, typed_amount: read }, keys.current.deal);
+      const made = await session.create<{ id: number }>("deals", { name: title, company_id: company, ...(contact === null ? {} : { contact_id: contact }), owner_id: picksOwner ? ownerId : (me?.id ?? ownerId), stage_id: stage.id, expected_close: close === "" ? null : close, typed_amount: read }, keys.current.deal);
       if (made.state !== "saved") {
         setBusy(false);
         setError(made.state === "refused" ? t("ui.refused", { reason: reasonOf(made.error, t) }) : t("ui.unknown"));
@@ -152,6 +190,15 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
         onSaved(dealId);
         return;
       }
+    }
+    if (start.enquiry !== undefined && !around.current.told) {
+      // The enquiry is told its deal and its company. If this one save fails the deal is still there, and the enquiry is hers: say so.
+      const told = await session.update("enquiries", start.enquiry.id, { deal_id: dealId, company_id: company });
+      if (told.state !== "saved") {
+        onSaved(dealId);
+        return stop(t("deal.new.error.tell", { reason: told.state === "refused" ? reasonOf(told.error, t) : t("deal.new.error.step.unknown") }));
+      }
+      around.current.told = true;
     }
     setBusy(false);
     toasts.show(t("deal.new.toast", { deal: title, stage: stage.label, amount: f.money(read) }), "pos");
@@ -193,14 +240,25 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
         </div>
         {(more || search !== "") && <input className="crm-input crm-input-sm mr-fld" type="search" value={search} aria-label={t("deal.new.company.search")} placeholder={t("deal.new.company.search")} onChange={(event) => setSearch(event.target.value)} />}
         <div className="crm-choice-grid" role="radiogroup" aria-labelledby="crm-nd-co">
+          {offersNew && (
+            <button type="button" role="radio" aria-checked={makeNew} className="crm-choice mr-chip" data-new-company onClick={() => (setMakeNew(true), setCompanyId(null), setError(null))}>
+              <Icon name="plus" size={14} />
+              <span className="crm-choice-text">{t("deal.new.company.new", { company: start.newCompany!.name })}</span>
+            </button>
+          )}
           {companies.map((company) => (
-            <button key={company.id} type="button" role="radio" aria-checked={companyId === company.id} className="crm-choice mr-chip" onClick={() => (setCompanyId(company.id), setError(null))}>
+            <button key={company.id} type="button" role="radio" aria-checked={!makeNew && companyId === company.id} className="crm-choice mr-chip" onClick={() => (setCompanyId(company.id), setMakeNew(false), setError(null))}>
               <span className="crm-dot" data-tone="accent" />
               <span className="crm-choice-text">{company.name}</span>
             </button>
           ))}
         </div>
-        {found.state === "ready" && companies.length === 0 && <p className="crm-field-note">{t("deal.new.company.none")}</p>}
+        {found.state === "ready" && companies.length === 0 && !offersNew && <p className="crm-field-note">{t("deal.new.company.none")}</p>}
+        {makeNew && start.newCompany !== undefined && (
+          <p className="crm-field-note" data-testid="new-company-note">
+            {(start.newCompany.person ?? "").trim() !== "" && session.can("contacts", "create") ? t("deal.new.company.new.note", { company: start.newCompany.name, person: (start.newCompany.person ?? "").trim() }) : t("deal.new.company.new.noteAlone", { company: start.newCompany.name })}
+          </p>
+        )}
         {more && <p className="crm-field-note">{t("deal.new.company.more")}</p>}
 
         <div className="crm-field-pair">

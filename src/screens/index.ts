@@ -3,9 +3,21 @@
  * app's entry, before anything is drawn.
  */
 import { register } from "../shell/screens.tsx";
+import { CompaniesScreen } from "./accounts/Companies.tsx";
+import { ContactsScreen } from "./accounts/Contacts.tsx";
+import { PasteList } from "./accounts/PasteList.tsx";
 import { Closed } from "./closed/Closed.tsx";
 import { DealScreen } from "./deal/Deal.tsx";
 import { Handover } from "./deal/Handover.tsx";
+import { Inbox } from "./inbox/Inbox.tsx";
+import { Leads } from "./inbox/Leads.tsx";
+import { MarketerHome } from "./inbox/MarketerHome.tsx";
+import { Digest } from "./own/Digest.tsx";
+import { Me } from "./own/Me.tsx";
+import { MyDetails } from "./own/MyDetails.tsx";
+import { Notifs } from "./own/Notifs.tsx";
+import { Searches } from "./own/Searches.tsx";
+import { Views } from "./own/Views.tsx";
 import { Pipeline } from "./pipeline/Pipeline.tsx";
 import { Approvals } from "./quotes/Approvals.tsx";
 import { Quotes } from "./quotes/Quotes.tsx";
@@ -46,3 +58,15 @@ register("meeting", Meeting);
 register("coaching", Coaching);
 register("messages", Messages);
 register("onboarding", Starter);
+register("companies", CompaniesScreen);
+register("contacts", ContactsScreen);
+register("import", PasteList);
+register("inbox", Inbox);
+register("leads", Leads);
+register("mkhome", MarketerHome);
+register("digest", Digest);
+register("notifs", Notifs);
+register("mydetails", MyDetails);
+register("me", Me);
+register("views", Views);
+register("searches", Searches);

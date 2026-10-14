@@ -1,0 +1,855 @@
+/*
+ * Accounts: Companies, a company's profile and timeline, Contacts, the record
+ * sheet, Paste a list. Logical properties throughout, so Arabic mirrors.
+ */
+
+/* ── the head of a list: title, filter box, the one button ─────────────────── */
+.crm-acc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.crm-acc-head h1,
+.crm-acc-import > h1 {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.crm-acc-head-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 1;
+  min-inline-size: 240px;
+}
+.crm-acc-search {
+  position: relative;
+  flex: 1;
+  min-inline-size: 0;
+  max-inline-size: 340px;
+}
+.crm-acc-search svg {
+  position: absolute;
+  inset-inline-start: 12px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--fg-subtle);
+  pointer-events: none;
+}
+.crm-acc-search .crm-input {
+  block-size: 40px;
+  padding-inline: 36px 12px;
+  border-radius: 11px;
+  background: var(--surface);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.crm-acc .crm-screen-sub {
+  margin: 10px 0 0;
+  max-inline-size: 580px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-acc-more,
+.crm-acc-kept {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-acc-empty {
+  margin-block-start: 20px;
+  border-radius: 18px;
+  border: 1px dashed var(--border-strong);
+}
+.crm-empty-icon[data-tone="plain"] {
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+}
+.crm-acc-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* ── the cards ────────────────────────────────────────────────────────────── */
+.crm-acc-grid {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(288px, 100%), 1fr));
+  gap: 14px;
+}
+.crm-acc-grid-people {
+  grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr));
+}
+.crm-acc-card {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-acc-card:hover {
+  border-color: var(--border-strong);
+}
+.crm-acc-tile {
+  --tile: var(--accent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 16%, var(--surface)), color-mix(in srgb, var(--tile) 6%, var(--surface)));
+  color: var(--tile);
+}
+.crm-acc-tile[data-size="card"] {
+  block-size: 108px;
+}
+.crm-acc-tile[data-size="profile"] {
+  block-size: 158px;
+}
+.crm-acc-tile[data-size="small"] {
+  inline-size: 52px;
+  block-size: 52px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--tile) 22%, transparent);
+}
+.crm-acc-tile-icon {
+  display: flex;
+  opacity: 0.92;
+}
+.crm-acc-tile[data-tone="1"],
+.crm-acc-avatar[data-tone="1"] {
+  --tile: var(--info);
+}
+.crm-acc-tile[data-tone="2"],
+.crm-acc-avatar[data-tone="2"] {
+  --tile: var(--pos);
+}
+.crm-acc-tile[data-tone="3"],
+.crm-acc-avatar[data-tone="3"] {
+  --tile: var(--warn);
+}
+.crm-acc-tile[data-tone="4"],
+.crm-acc-avatar[data-tone="4"] {
+  --tile: var(--danger);
+}
+.crm-acc-tile[data-tone="5"],
+.crm-acc-avatar[data-tone="5"] {
+  --tile: color-mix(in srgb, var(--info) 55%, var(--pos));
+}
+.crm-acc-tile[data-tone="6"],
+.crm-acc-avatar[data-tone="6"] {
+  --tile: color-mix(in srgb, var(--accent) 55%, var(--danger));
+}
+.crm-acc-tile[data-tone="7"],
+.crm-acc-avatar[data-tone="7"] {
+  --tile: var(--fg-muted);
+}
+.crm-acc-badge {
+  position: absolute;
+  inset-block-start: 9px;
+  inset-inline-end: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+.crm-acc-card-edit {
+  position: absolute;
+  inset-block-start: 9px;
+  inset-inline-start: 11px;
+  z-index: 2;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  border: 1px solid var(--border);
+}
+.crm-acc-card-body {
+  padding: 15px 16px 16px;
+}
+.crm-acc-card-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  text-decoration: none;
+}
+/* The whole card opens the company; the pencil sits above it. */
+.crm-acc-card-name::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.crm-acc-card-name:focus-visible {
+  outline: none;
+}
+.crm-acc-card:has(.crm-acc-card-name:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.crm-acc-card-meta {
+  margin-block-start: 4px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-acc-card-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 14px;
+  padding-block-start: 13px;
+  border-block-start: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-acc-card-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-acc-card-value[data-none="true"] {
+  color: var(--fg-subtle);
+}
+
+/* ── a company's profile ──────────────────────────────────────────────────── */
+.crm-acc-back {
+  display: inline-flex;
+  text-decoration: none;
+}
+.crm-acc-hero {
+  margin-block-start: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-acc-since {
+  position: absolute;
+  inset-block-start: 11px;
+  inset-inline-end: 14px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  border: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-acc-hero-body {
+  padding: 20px 22px 22px;
+}
+.crm-acc-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.crm-acc-hero-top h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.crm-acc-hero-meta {
+  margin-block-start: 6px;
+  font-size: 13.5px;
+  color: var(--fg-muted);
+}
+.crm-acc-hero-no {
+  margin-block-start: 6px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+.crm-acc-hero-note {
+  margin: 14px 0 0;
+  max-inline-size: 640px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-acc-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 12px;
+  margin: 20px 0 0;
+  padding-block-start: 18px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-acc-facts dt {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-acc-facts dd {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-acc-facts dd[data-tone="accent"] {
+  color: var(--accent);
+}
+.crm-acc-facts dd[data-tone="pos"] {
+  color: var(--pos);
+}
+.crm-acc-own {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-acc-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  margin-block-start: 16px;
+  align-items: start;
+}
+.crm-acc-col {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.crm-acc-panel {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-acc-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-acc-panel-head h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-acc-panel-head h2.crm-acc-label {
+  font-size: 12px;
+  letter-spacing: 0.07em;
+}
+.crm-acc-side .crm-acc-panel-head {
+  padding: 18px 18px 0;
+  border-block-end: none;
+}
+.crm-acc-panel-sum {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-acc-panel-act {
+  margin-inline-start: auto;
+  text-decoration: none;
+}
+.crm-acc-panel-sum + .crm-acc-panel-act {
+  margin-inline-start: 0;
+}
+.crm-btn-28 {
+  block-size: 28px;
+  padding-inline: 9px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.crm-acc-deals {
+  list-style: none;
+  margin: 0;
+  display: flex;
+  gap: 12px;
+  padding: 14px 18px 18px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+.crm-acc-deal {
+  flex: 0 0 226px;
+  scroll-snap-align: start;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-acc-deal-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.crm-acc-deal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-start: 12px;
+}
+.crm-acc-deal-amount {
+  font-size: 15px;
+  font-weight: 700;
+}
+.crm-acc-deal-close {
+  margin-block-start: 10px;
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-acc-quiet {
+  list-style: none;
+  margin: 0;
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-acc-deals + .crm-acc-quiet {
+  padding-block-start: 0;
+}
+.crm-acc-quiet li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+.crm-acc-quiet svg {
+  flex-shrink: 0;
+}
+.crm-acc-quiet-none {
+  margin: 0;
+  padding: 18px;
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+.crm-acc-acts {
+  list-style: none;
+  margin: 0;
+  padding: 6px 18px 12px;
+}
+.crm-acc-act {
+  display: flex;
+  gap: 14px;
+  padding-block: 14px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-acc-act:last-child {
+  border-block-end: none;
+}
+.crm-acc-act-main {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-acc-act-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-acc-act-deal {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.crm-acc-act-when {
+  margin-inline-start: auto;
+  font-size: 11px;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+.crm-acc-act p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-acc-people {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.crm-acc-people:empty {
+  display: none;
+}
+.crm-acc-person {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  inline-size: 100%;
+  padding: 11px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-acc-person:hover {
+  border-color: var(--border-strong);
+}
+.crm-acc-person-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-acc-person-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-acc-person-sub {
+  display: block;
+  margin-block-start: 2px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-acc-person > svg {
+  color: var(--fg-subtle);
+}
+.crm-acc-history {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0 18px 8px;
+}
+.crm-acc-history:empty {
+  display: none;
+}
+.crm-acc-history li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-block: 11px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-acc-history li:last-child {
+  border-block-end: none;
+}
+.crm-acc-history-icon {
+  display: flex;
+  inline-size: 26px;
+  block-size: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+}
+.crm-acc-history li[data-state="won"] .crm-acc-history-icon {
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.crm-acc-history-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-acc-history-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.crm-acc-history-sub {
+  display: block;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-acc-history-amount {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+.crm-acc-history li[data-state="won"] .crm-acc-history-amount {
+  color: var(--pos);
+}
+
+/* ── contacts ─────────────────────────────────────────────────────────────── */
+.crm-acc-contact {
+  padding: 17px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-acc-contact-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.crm-acc-avatar {
+  --tile: var(--accent);
+  inline-size: 42px;
+  block-size: 42px;
+  border-radius: 13px;
+  font-size: 13.5px;
+  background: color-mix(in srgb, var(--tile) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--tile) 22%, transparent);
+  color: var(--tile);
+}
+.crm-acc-contact-who {
+  flex: 1;
+  min-inline-size: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-acc-contact-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--fg);
+}
+.crm-acc-contact-role {
+  display: block;
+  margin-block-start: 2px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-acc-contact-co {
+  display: inline-flex;
+  margin-block-start: 13px;
+  padding: 5px 11px;
+  background: var(--surface-2);
+  font-size: 12px;
+  text-decoration: none;
+}
+.crm-acc-contact-ways {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-block-start: 14px;
+  padding-block-start: 13px;
+  border-block-start: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.crm-acc-contact-ways span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crm-acc-contact-ways svg {
+  flex-shrink: 0;
+}
+.crm-acc-contact-deals {
+  margin-block-start: 13px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+/* ── the record sheet ─────────────────────────────────────────────────────── */
+.crm-acc-rec-field + .crm-acc-rec-field {
+  margin-block-start: 16px;
+}
+.crm-acc-rec-field .crm-label {
+  margin-block-start: 0;
+}
+.crm-acc-rec-gone {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--fg-muted);
+}
+.crm-acc-rec-facts {
+  margin: 0;
+}
+.crm-acc-rec-facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding-block: 10px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-acc-rec-facts dt {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-acc-rec-facts dd {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg);
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+.crm-acc-rec-facts dd.crm-mono {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+.crm-acc-rec-links {
+  margin-block-start: 22px;
+}
+.crm-acc-rec-links ul {
+  list-style: none;
+  margin: 11px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-acc-rec-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.crm-acc-rec-link-icon {
+  display: flex;
+  inline-size: 28px;
+  block-size: 28px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-acc-rec-link-icon[data-tone="accent"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-acc-rec-link-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-acc-rec-link-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+.crm-acc-rec-link-sub {
+  display: block;
+  margin-block-start: 3px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-acc-rec-link-value {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* ── the timeline ─────────────────────────────────────────────────────────── */
+.crm-acc-timeline {
+  max-inline-size: 1000px;
+}
+.crm-acc-tl-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-block: 16px 20px;
+}
+.crm-acc-tl-head h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.crm-acc-tl-head .crm-screen-sub {
+  margin-block-start: 5px;
+}
+.crm-acc-tl-count {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+
+/* ── paste a list ─────────────────────────────────────────────────────────── */
+.crm-acc-import {
+  max-inline-size: 1080px;
+}
+.crm-acc-im-notes {
+  margin: 16px 0 0;
+  padding-inline-start: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-subtle);
+  max-inline-size: 720px;
+}
+.crm-acc-im-kit {
+  margin-block-start: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+  overflow-x: auto;
+}
+
+@media (max-width: 1099px) {
+  .crm-acc-cols {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 899px) {
+  .crm-acc-head-tools {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+  .crm-acc-search {
+    max-inline-size: none;
+  }
+  .crm-acc-hero-body {
+    padding: 16px;
+  }
+  .crm-acc-act-when {
+    margin-inline-start: 0;
+  }
+  .crm-acc-im-kit {
+    padding: 12px;
+  }
+}

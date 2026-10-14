@@ -29,7 +29,7 @@ import { useSession } from "../session/session.tsx";
 import { Icon } from "./icons.tsx";
 import { ScreenLink, useNav } from "./nav.tsx";
 import { NothingOn, NotFound, Rebuilding, Refused, type RefusedWhy, type WayHome } from "./pages.tsx";
-import { canOpen, homeFor, inMenu, LIT_BY, menuFor, MENUS, rolesOf, routeForPath, ROUTES, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
+import { canOpen, homeFor, inMenu, LIT_BY, menuFor, MENUS, rolesOf, routeForPath, ROUTES, USER_MENU, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
 import { PageBoundary } from "../ui/boundary.tsx";
 import { LoadFailed } from "../ui/load.tsx";
@@ -261,6 +261,12 @@ export function Shell() {
                       </span>
                     </div>
                     <div className="crm-user-items">
+                      {USER_MENU.filter((route) => canOpen(route, facts)).map((route) => (
+                        <ScreenLink key={route} to={route} role="menuitem" className="crm-user-item mr-row" current={here?.route === route} onGo={() => setUserMenu(false)}>
+                          <Icon name={ROUTES[route].icon} size={15} />
+                          <span>{t(`nav.own.${route}` as MessageKey)}</span>
+                        </ScreenLink>
+                      ))}
                       <button type="button" role="menuitem" className="crm-user-item crm-user-out mr-row" onClick={() => void signOut()}>
                         <Icon name="log-out" size={15} />
                         <span>{t("shell.signOut")}</span>
@@ -291,6 +297,12 @@ export function Shell() {
               <Menu groups={groups} current={current} onGo={() => setDrawer(false)} />
             </div>
             <div className="crm-drawer-foot">
+              {USER_MENU.filter((route) => canOpen(route, facts)).map((route) => (
+                <ScreenLink key={route} to={route} className="crm-user-item mr-row" current={here?.route === route} onGo={() => setDrawer(false)}>
+                  <Icon name={ROUTES[route].icon} />
+                  <span>{t(`nav.own.${route}` as MessageKey)}</span>
+                </ScreenLink>
+              ))}
               <div className="crm-drawer-who">
                 <span className="crm-avatar" aria-hidden="true">
                   {initials(who.name)}

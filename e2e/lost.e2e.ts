@@ -8,7 +8,7 @@
 import type { Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { rows, STAFF, watch } from "./helpers.ts";
+import { rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
 
 const stat = (page: Page, label: string) => page.locator(`.crm-stat[data-stat="${label}"]`);
 const reason = (page: Page, label: string) => page.locator(".crm-lr-reason").filter({ hasText: label });
@@ -18,6 +18,7 @@ test("Why we lose: the ledger's twelve, six and three months", async ({ as }) =>
   const page = await (await as("ivy")).newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Why we lose" }).click();
   await expect(page).toHaveURL(/\/why-we-lose$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Why we lose");

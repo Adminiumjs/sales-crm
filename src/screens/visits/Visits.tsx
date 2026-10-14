@@ -21,6 +21,7 @@ import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 import { BookingDialog, type Booking } from "./BookingDialog.tsx";
 import { readNames, readVisits, toneOf, type Filter, type Tone, type Visit } from "./data.ts";
@@ -31,10 +32,10 @@ const PILL: Record<Tone, "accent" | "info" | "pos" | "danger"> = { today: "accen
 
 export function Visits({ rest }: ScreenProps) {
   if (rest[0] === "notes") return <VisitNotes id={rest[1] === undefined || !/^\d+$/.test(rest[1]) ? null : Number(rest[1])} />;
-  return <VisitList book={rest[0] === "book" && rest[1] !== undefined && /^\d+$/.test(rest[1]) ? Number(rest[1]) : null} />;
+  return <VisitList rest={rest} book={rest[0] === "book" && rest[1] !== undefined && /^\d+$/.test(rest[1]) ? Number(rest[1]) : null} />;
 }
 
-function VisitList({ book }: { book: number | null }) {
+function VisitList({ book, rest }: { book: number | null; rest: string[] }) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();
@@ -62,6 +63,13 @@ function VisitList({ book }: { book: number | null }) {
   const canMove = session.can("site_visits", "update");
   const canCancel = session.can("site_visits", "delete");
   const [filter, setFilter] = useState<Filter>("all");
+  // `visits/view/<id>` opens the list on a saved view: which visits.
+  const view = useSavedView("visits", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state === "ready") setFilter(view.view.filters.show ?? "all");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const [booking, setBooking] = useState<Booking | null>(null);
   // A deal's page sends the person here to book on that deal: the dialog opens once, and the address goes back to the list.
   useEffect(() => {
@@ -102,6 +110,7 @@ function VisitList({ book }: { book: number | null }) {
         </Loaded>
       </div>
 
+      <ViewBar screen="visits" view={view} current={filter === "all" ? {} : { show: filter }} names={names} />
       <Loaded load={load} reload={reload} skeleton={<Skeleton rows={4} height={104} />}>
         {(data) => {
           const shown = data.visits.filter((visit) => {

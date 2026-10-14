@@ -39,7 +39,9 @@ export type RouteKey =
   | "amhome" | "mkhome"
   | "stock" | "suppliers"
   /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
-  | "deal";
+  | "deal"
+  /** A person's own: reached from their name at the top, whatever their role. */
+  | "me" | "mydetails";
 
 export interface RouteDef {
   /** The address under the app's base: `today`, `pipeline`. A record page adds to it: `pipeline/12`. */
@@ -92,7 +94,20 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   stock: { path: "stock", part: "supply", reads: ["deal_stock_needs"], icon: "package" },
   suppliers: { path: "suppliers", part: "supply", reads: ["deal_stock_needs"], icon: "factory" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
+  me: { path: "me", part: null, reads: [], icon: "user-round" },
+  mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
 };
+
+/**
+ * A PERSON'S OWN SCREENS: their profile, their details, how they are told,
+ * their weekly summary. Everybody's, whatever their role, so none of them is
+ * "not part of your role"; the first three are in the menu under the person's
+ * name at the top. What each one shows is cut to the person's roles and parts
+ * by the screen itself, from what the server answers them.
+ */
+export const OWN: readonly RouteKey[] = ["me", "mydetails", "notifs", "digest"];
+/** The lines under the person's name, in the design's order. */
+export const USER_MENU: readonly RouteKey[] = ["me", "mydetails", "notifs"];
 
 /** A record page lights the menu line it was reached from: the first of these the person's menu holds. */
 export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"] };
@@ -230,6 +245,7 @@ const BY_LINK: ReadonlySet<RouteKey> = new Set<RouteKey>(["onboarding", "patch"]
 export function inMenu(route: RouteKey, slugs: readonly string[]): boolean {
   if (BY_LINK.has(route)) return true;
   // A screen reached from another and not from the menu (a deal's room, from the board or from Closed) is a role's when the screen it is reached from is.
+  if (OWN.includes(route)) return true;
   const held = [route, ...(LIT_BY[route] ?? [])];
   return rolesOf(slugs).some((role) => MENUS[role].some(([, items]) => items.some((item) => held.includes(item.route))));
 }

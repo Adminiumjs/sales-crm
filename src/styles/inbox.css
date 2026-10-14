@@ -1,0 +1,437 @@
+/* The Inbox: the Team inbox, Trade-show leads and their pasted list, the marketer's home. Logical properties throughout, so right-to-left is the same sheet. */
+.crm-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.crm-pill[data-tone="plain"] {
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+}
+.crm-btn-quiet {
+  color: var(--fg-subtle);
+}
+.crm-inbox,
+.crm-leads,
+.crm-mkhome,
+.crm-paste {
+  max-inline-size: 1160px;
+}
+.crm-leads,
+.crm-mkhome,
+.crm-paste {
+  max-inline-size: 1000px;
+}
+.crm-inbox-cut {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-enq-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-enq {
+  padding: 14px 16px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-enq[data-waiting="0"] .crm-enq-subject {
+  color: var(--fg-muted);
+}
+.crm-enq[data-waiting="0"] .crm-enq-icon {
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+}
+.crm-enq-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crm-enq-icon {
+  inline-size: 30px;
+  block-size: 30px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crm-enq-main {
+  flex: 1 1 210px;
+  min-inline-size: 0;
+}
+.crm-enq-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crm-enq-new {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+.crm-enq-subject {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-enq-from {
+  margin-block-start: 5px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  overflow-wrap: anywhere;
+}
+.crm-enq-hidden {
+  font-style: italic;
+}
+.crm-enq-body {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.crm-enq-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+.crm-enq-size {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-enq-when {
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+}
+.crm-enq-foot {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-enq-foot .crm-pill {
+  gap: 6px;
+}
+.crm-enq-acts {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+.crm-enq-settled {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-enq-deal {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12.5px;
+}
+.crm-enq-pass {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-start: 12px;
+  padding: 12px;
+  border-radius: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.crm-enq-pass-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-enq-pass-none {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-enq-pass-no {
+  margin-inline-start: auto;
+}
+.crm-enq-matches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+}
+.crm-enq-matches .crm-field-note {
+  margin: 0;
+}
+
+/* Trade-show leads */
+.crm-leads-show {
+  display: block;
+  margin-block-start: 6px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-leads-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(152px, 1fr));
+  gap: 8px;
+  margin-block-start: 14px;
+}
+.crm-leads-stat {
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-leads-value {
+  margin-block-start: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.crm-leads-stat[data-tone="warn"] .crm-leads-value {
+  color: var(--warn);
+}
+.crm-leads-stat[data-tone="pos"] .crm-leads-value {
+  color: var(--pos);
+}
+.crm-leads-note {
+  margin-block-start: 3px;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+.crm-leads .crm-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--danger);
+}
+.crm-leads .crm-banner svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}
+.crm-lead {
+  border-inline-start: 3px solid var(--warn);
+}
+.crm-lead[data-lead-state="new"][data-warmth="hot"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-lead[data-lead-state="called"] {
+  border-inline-start-color: var(--info);
+}
+.crm-lead[data-lead-state="deal"] {
+  border-inline-start-color: var(--pos);
+}
+.crm-lead[data-lead-state="no"] {
+  border-inline-start-color: var(--border-strong);
+}
+.crm-lead-tile {
+  inline-size: 32px;
+  block-size: 32px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.crm-lead-warm {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+.crm-lead-warm[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-lead-warm[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-lead-want {
+  margin-block-start: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-wrap: pretty;
+}
+.crm-lead-age {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-lead-age[data-late="1"] {
+  color: var(--danger);
+  font-weight: 700;
+}
+.crm-lead-rep {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-block-start: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-lead-drop {
+  margin-inline-start: auto;
+}
+
+/* The marketer's home */
+.crm-mk-queue {
+  margin-block-start: 14px;
+  padding: 14px 16px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-mk-queue h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-mk-none {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-mk-rows {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.crm-mk-rows li + li {
+  border-block-start: 1px solid var(--border);
+}
+.crm-mk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 4px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 9px;
+}
+.crm-mk-main {
+  flex: 1 1 200px;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.crm-mk-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-mk-sub {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  overflow-wrap: anywhere;
+}
+.crm-mk-figure {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+.crm-mk-figure[data-late="1"] {
+  color: var(--danger);
+}
+
+/* A show's pasted list */
+.crm-paste-show {
+  margin-block-start: 16px;
+  padding: 14px 16px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-paste-show h2 {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+.crm-paste-pick {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.crm-paste-pick select {
+  flex: 1 1 220px;
+  min-inline-size: 0;
+}
+.crm-paste-new-foot {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-block-start: 12px;
+}
+.crm-paste-new {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+}
+.crm-paste-wizard {
+  margin-block-start: 16px;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+.crm-paste-missing {
+  margin-block-start: 16px;
+  padding: 16px;
+  border-radius: 13px;
+  border: 1px dashed var(--border-strong);
+  font-size: 13.5px;
+  color: var(--fg-muted);
+}

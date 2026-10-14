@@ -250,7 +250,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(await row('priya', 'deals', deal['danas']!)).toBeNull();
     });
 
-    it('the review\'s other findings: a write-up is not a rep\'s to remove, a comment stays on its deal, a closed deal takes nobody, two settings have bounds, and a colleague\'s deal is told to a rep as a company and a state', async () => {
+    it('the review\'s other findings: a write-up is not a rep\'s to remove, a comment stays on its deal, a closed deal takes nobody, two settings have bounds, and the marketer is not told whose a deal is', async () => {
       // A rep, the owner of the visit included, removes no write-up (a helper on the deal could remove the owner's).
       const note = Number((await s.rows('select id from crm_visit_notes order by id'))[0]?.['id']);
       if (Number.isFinite(note)) for (const person of ['dana', 'sam', 'priya']) expect((await remove(person, 'visit_notes', note)).statusCode, person).toBeGreaterThanOrEqual(403);
@@ -275,16 +275,13 @@ for (const [dialect, reachable] of LEGS) {
       }
       expect(said(await s.change('ivy', 'settings', settings, { approval_threshold_pct: 7.5 }))).toBe('ok');
       expect(said(await s.change('ivy', 'settings', settings, { approval_threshold_pct: 5 }))).toBe('ok');
-      // A rep reads of a colleague's deal that a company has one, its state, and the numbers of the deal and its stage (a link is
-      // always shown): never whose it is, so no colleague's count of deals won, lost or open can be made from it.
+      // The marketer reads of a deal that a company has one and its state, never whose it is. (A rep and the account manager do
+      // read whose: a company's profile tells them a colleague has an open deal there, as the plan asks.)
       await s.jobs();
       const marks = await s.rows(`select m.id from crm_deal_marks m join crm_deals d on d.id = m.deal_id where d.owner_id = '${s.ids['sam']!}' order by m.id`);
       expect(marks.length, 'a mark of a deal of Sam\'s').toBeGreaterThan(0);
-      for (const person of ['dana', 'priya', 'lena']) {
-        const seen = await row(person, 'deal_marks', Number(marks[0]!['id']));
-        expect(Object.keys(seen ?? {}), person).not.toContain('owner_id');
-        expect(seen?.['company_id'], person).toBeDefined();
-      }
+      expect(Object.keys((await row('lena', 'deal_marks', Number(marks[0]!['id']))) ?? {})).not.toContain('owner_id');
+      expect(String((await row('dana', 'deal_marks', Number(marks[0]!['id'])))?.['owner_id'])).toBe(s.ids['sam']);
     });
 
     it('holds one person\'s book to one cover at a time, open ends included', async () => {

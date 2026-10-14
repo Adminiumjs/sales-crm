@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
+import { AccountLink } from "../../selling/AccountLink.tsx";
 import { useDealActions } from "../../selling/actions.tsx";
 import { scopeOf } from "../../selling/figures.ts";
 import { useSession } from "../../session/session.tsx";
@@ -356,7 +357,9 @@ export function Room({ id }: { id: string }) {
                     <span className="crm-avatar crm-avatar-sm" aria-hidden="true">
                       {initials(deal.company)}
                     </span>
-                    {deal.company}
+                    <AccountLink to="companies" id={deal.company_id}>
+                      {deal.company}
+                    </AccountLink>
                   </span>
                 )}
                 {deal.owner_id !== null && (
@@ -790,7 +793,9 @@ export function Room({ id }: { id: string }) {
                           {initials(contact.name)}
                         </span>
                         <span className="crm-room-person-words">
-                          <span className="crm-room-person-name">{contact.name}</span>
+                          <AccountLink to="contacts" id={contact.id} className="crm-room-person-name">
+                            {contact.name}
+                          </AccountLink>
                           {contact.job_title !== null && <span className="crm-room-person-sub">{contact.job_title}</span>}
                         </span>
                         {contact.id === deal.contact_id && (
@@ -824,7 +829,11 @@ export function Room({ id }: { id: string }) {
             {its !== null && its.company !== null && (
               <section className="crm-side-card crm-room-company" aria-label={t("room.company")}>
                 <h2>{t("room.company")}</h2>
-                <div className="crm-room-company-name">{its.company.name}</div>
+                <div className="crm-room-company-name">
+                  <AccountLink to="companies" id={its.company.id}>
+                    {its.company.name}
+                  </AccountLink>
+                </div>
                 <div className="crm-room-person-sub">{[its.company.sector, its.company.headcount === null ? null : t("room.company.people", undefined, num(its.company.headcount)), its.company.town].filter((part) => part !== null && part !== "").join(" · ")}</div>
               </section>
             )}

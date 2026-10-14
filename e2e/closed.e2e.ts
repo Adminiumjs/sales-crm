@@ -7,7 +7,7 @@
  * "Won deals". Refused to the marketer, by the server.
  */
 import { expect, picture, test } from "./fixtures.ts";
-import { inArabic, rows, STAFF, watch } from "./helpers.ts";
+import { inArabic, rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
 
 const stat = (page: import("@playwright/test").Page, label: string) => page.locator(".crm-stat").filter({ has: page.locator(".crm-stat-label", { hasText: new RegExp(`^${label}$`) }) });
 
@@ -15,6 +15,7 @@ test("Dana opens Closed from her menu: her own eight, the newest first", async (
   const page = await (await as("dana")).newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Closed" }).click();
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/closed$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Closed");
@@ -92,6 +93,7 @@ test("every figure on Closed is what the server answers that person, asked direc
 test("for the account manager it is Won deals: the eight that were won, and the server gives him no lost one", async ({ as, api, data }) => {
   const page = await (await as("hugo")).newPage();
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Won deals" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Won deals");
   await expect(page.locator(".crm-stat")).toHaveCount(2);

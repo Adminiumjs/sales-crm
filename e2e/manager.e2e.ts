@@ -301,6 +301,7 @@ test("Stage health: the ledger's five stages, their ages and the deal sitting lo
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Stage health" }).click();
   await expect(page).toHaveURL(/\/stage-health$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Stage health");
@@ -385,7 +386,7 @@ test("a person with two roles gets both menus, and the home of the role that lea
     const menu = page.getByRole("navigation", { name: "Menu" });
     const lines = await menu.getByRole("link").allTextContents();
     // The manager's lines lead; the rep's own (Today) follow; nothing is listed twice.
-    expect(lines.slice(0, 4)).toEqual(["Team view", "Stage health", "Nudges", "Activity feed"]);
+    expect(lines.slice(0, 6)).toEqual(["Team view", "Stage health", "Nudges", "Notifications", "Activity feed", "Weekly digest"]);
     expect(lines).toContain("Today");
     expect(lines).toContain("Why we lose");
     expect(new Set(lines).size).toBe(lines.length);

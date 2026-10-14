@@ -8,7 +8,7 @@
 import type { Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, rows, STAFF, watch } from "./helpers.ts";
+import { csrf, rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
 
 const kind = (page: Page, type: string) => page.locator(`.crm-chip-btn[data-type="${type}"]`);
 const entries = (page: Page) => page.locator(".crm-feed-entry");
@@ -18,6 +18,7 @@ test("the Activity feed: the ledger's counts, twenty to a page, narrowed by kind
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Activity feed" }).click();
   await expect(page).toHaveURL(/\/activity$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Activity");

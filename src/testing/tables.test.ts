@@ -103,7 +103,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   saved_searches: { nullable: ["owner_id", "last_run_at"] },
   nudge_snoozes: { nullable: [] },
   deal_members: { nullable: ["role_note", "deal_owner_id"] },
-  deal_marks: { nullable: ["owner_id"] },
+  deal_marks: { nullable: ["contact_id", "owner_id"] },
   site_visits: { nullable: ["contact_id", "cancel_reason", "note"] },
   visit_notes: { nullable: ["saw", "said", "next", "photos"] },
   visit_agreed: { nullable: [] },

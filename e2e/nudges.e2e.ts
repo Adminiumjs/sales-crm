@@ -35,6 +35,7 @@ test("Nudges: the ledger's four deals caught, and who decides whether owners are
   const page = await (await as("ivy")).newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Nudges" }).click();
   await expect(page).toHaveURL(/\/nudges$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Nudges");
@@ -112,7 +113,7 @@ test("a threshold moved moves the list, for the CRM admin by keyboard and live f
     // The admin reaches it from her Settings group, as "Nudge rules".
     await tessa.goto(STAFF);
     await unfoldMenu(tessa);
-    await tessa.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Nudge rules" }).click();
+        await tessa.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Nudge rules" }).click();
     await expect(caught(tessa)).toHaveText("4 deals caught of 14 open");
     // Quiet from 7 days down to 3, by keyboard: eight deals (the ledger's line).
     const fewer = tessa.getByRole("button", { name: "Fewer days for “Nothing logged for a while”" });

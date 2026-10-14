@@ -10,7 +10,7 @@
 import type { APIRequestContext } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, dealNamed, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, dealNamed, inArabic, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
 interface VisitRow {
   id: number;
@@ -75,6 +75,7 @@ test("Dana's site visits: the ledger's eight, five, two and one, each what the s
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(`${STAFF}today`);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Site visits" }).click();
   await expect(page).toHaveURL(/\/staff\/visits$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("My site visits");
@@ -230,7 +231,7 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(cardOf.locator(".crm-visit-time .crm-mono")).toHaveText("15:15");
   // The day it had, who moved it and when: read from the record's history, on the next look.
   await cardOf.getByRole("button", { name: /^Move the visit to Cobalt Legal/ }).click();
-  await expect(moving.getByTestId("bk-history")).toHaveText(/^Moved before: it was Wed, Jul 29, 08:30\. Changed by Dana Whitlock on Tue, Jul 28, 09:\d\d\.$/);
+  await expect(moving.getByTestId("bk-history")).toHaveText(/^Moved before: it was Wed, Jul 29, 08:30\. Changed by Dana Whitlock on Tue, Jul 28, \d\d:\d\d\.$/);
   await page.keyboard.press("Escape");
 
   // CANCEL.

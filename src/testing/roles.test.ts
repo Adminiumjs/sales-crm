@@ -975,8 +975,7 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    // A rep and the account manager read of a colleague's deal what the marketer does: that a company has one, and its state.
-    expect(apart).toEqual(["rep: starters", "rep: covers", "rep: deal_marks", "account-manager: covers", "account-manager: deal_marks", "marketer: deal_marks", "read-only: quotes", "read-only: covers"]);
+    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "marketer: deal_marks", "read-only: quotes", "read-only: covers"]);
   });
 
   it("shows the marketer that a company has an open deal, and nothing of the deal", () => {

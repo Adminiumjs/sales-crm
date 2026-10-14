@@ -9,7 +9,7 @@
  * average of each deal's stored days-open, for all time and for this year.
  * This screen divides two of them (the win rate) and rounds the average.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { formatters, noonOf } from "../../lib/format.ts";
@@ -21,6 +21,7 @@ import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 
 const PAGE = 50;
@@ -100,7 +101,7 @@ function Stat({ label, value, sub, tone }: { label: string; value: string; sub: 
   );
 }
 
-export function Closed(_props: ScreenProps) {
+export function Closed(props: ScreenProps) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();
@@ -114,6 +115,15 @@ export function Closed(_props: ScreenProps) {
   const [who, setWho] = useState<string | null>(null);
   const [only, setOnly] = useState<"all" | "won" | "lost">("all");
   const [upTo, setUpTo] = useState(PAGE);
+  // `closed/view/<id>` opens the list on a saved view: whose, and won or lost only.
+  const view = useSavedView("archive", props.rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state !== "ready") return;
+    if (scope === "team") setWho(view.view.filters.rep ?? null);
+    setOnly(scope === "won" ? "all" : (view.view.filters.only ?? "all"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const owner = scope === "mine" ? (config.user?.id ?? null) : scope === "team" ? who : null;
 
   const summary = useLoad(() => readSummary(session, scope, owner, today), [session, scope, owner, today, changed]);
@@ -134,6 +144,7 @@ export function Closed(_props: ScreenProps) {
     <div className="crm-screen crm-closed mr-screen" data-screen="closed">
       <h1>{t(wonOnly ? "closed.title.won" : "closed.title")}</h1>
       <p className="crm-screen-sub">{t(wonOnly ? "closed.sub.won" : "closed.sub")}</p>
+      <ViewBar screen="archive" view={view} current={{ ...(scope === "team" && who !== null ? { rep: who } : {}), ...(only === "all" ? {} : { only }) }} names={summary.load.state === "ready" ? summary.load.data.names : {}} />
 
       <Loaded load={summary.load} reload={again} skeleton={<Skeleton rows={1} height={112} />}>
         {(data) => {

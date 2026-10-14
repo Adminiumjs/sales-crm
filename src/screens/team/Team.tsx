@@ -11,7 +11,7 @@
  * asked of the server; the months are not added to each other here. "Sitting"
  * is the server's clock less the moment a deal entered its stage.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { monthOf, noonOf, type Formatters } from "../../lib/format.ts";
@@ -21,6 +21,7 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 import { before, byKey, cellsOf, daysOf, daysSince, monthsBack, num, OPEN, peopleOf, stagesOf, toneOf, useScreen, type Days, type Matrix, type People, type Stage } from "./data.ts";
 import { OneToOne } from "./OneToOne.tsx";
@@ -149,16 +150,23 @@ function Curve({ months, label }: { months: Month[]; label: string }) {
 
 export function Team(props: ScreenProps) {
   const person = props.rest[0];
-  return person === undefined ? <TeamView /> : <OneToOne person={person} />;
+  return person === undefined || person === "view" ? <TeamView rest={props.rest} /> : <OneToOne person={person} />;
 }
 
-function TeamView() {
+function TeamView({ rest }: { rest: string[] }) {
   const t = useT();
   const { session, f, opens, writes } = useScreen();
   const [now, setNow] = useState(() => session.now());
   const today = f.dayKey(now);
   const year = today.slice(0, 4);
   const [who, setWho] = useState<string | null>(null);
+  // `team/view/<id>` opens the Team view narrowed to the person a saved view names.
+  const view = useSavedView("team", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state === "ready") setWho(view.view.filters.rep ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const { load, reload } = useLoad(() => read(session, f, today, who), [session, f, today, who]);
   const again = useCallback(() => {
     setNow(session.now());
@@ -170,6 +178,7 @@ function TeamView() {
 
   return (
     <div className="crm-screen crm-team mr-screen" data-screen="team">
+      <ViewBar screen="team" view={view} current={who === null ? {} : { rep: who }} names={load.state === "ready" ? load.data.people.names : {}} />
       <Loaded load={load} reload={again} skeleton={<Skeleton rows={4} height={120} />}>
         {(data) => {
           const rate = winRate(data.twelve);

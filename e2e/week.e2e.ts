@@ -1,3 +1,4 @@
+import { unfoldMenu } from "./helpers.ts";
 /**
  * P02, This week: the follow-ups due up to Sunday, a lane a day, with the
  * ledger's figures (§7 of `figures.md`): Mon 27 Jul to Sun 2 Aug, 7 follow-ups,
@@ -105,6 +106,7 @@ test("the sales manager sees her team's week, says whose each card is, and narro
   await page.goto(STAFF);
   // She lands on her home, the Team view, and opens This week from the menu.
   await expect(page).toHaveURL(/\/team$/);
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "This week" }).click();
   await expect(page).toHaveURL(/\/week$/);
   await expect(page.getByTestId("week-count")).toHaveText("7");

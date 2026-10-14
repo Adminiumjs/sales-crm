@@ -6,7 +6,7 @@
  *
  * `quotes/<id>` is one quote open on that version (`Quote.tsx`).
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
@@ -18,6 +18,7 @@ import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import type { StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { firstName } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
 import { createQuote, families, familyNo, held, newest, readNames, readQuotes, stateOf, TONE, type Quote } from "./data.ts";
@@ -64,11 +65,11 @@ async function read(session: StaffSession): Promise<ListData> {
 }
 
 export function Quotes({ rest }: ScreenProps) {
-  if (rest[0] !== undefined) return <QuotePage id={rest[0]} />;
-  return <QuoteList />;
+  if (rest[0] !== undefined && rest[0] !== "view") return <QuotePage id={rest[0]} />;
+  return <QuoteList rest={rest} />;
 }
 
-function QuoteList() {
+function QuoteList({ rest }: { rest: string[] }) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();
@@ -82,6 +83,13 @@ function QuoteList() {
   const again = useCallback(() => reload(), [reload]);
   useLive(["quotes", "deals"], again);
   const [who, setWho] = useState<string | null>(null);
+  // `quotes/view/<id>` opens the list on a saved view: whose quotes.
+  const view = useSavedView("quotes", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state === "ready" && team) setWho(view.view.filters.rep ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const [busy, setBusy] = useState<number | null>(null);
   const canStart = session.can("quotes", "create") && session.can("quote_lines", "create");
 
@@ -98,6 +106,7 @@ function QuoteList() {
     <div className="crm-screen crm-quotes mr-screen" data-screen="quotes">
       <h1>{t("quotes.title")}</h1>
       <p className="crm-screen-sub">{t("quotes.sub")}</p>
+      <ViewBar screen="quotes" view={view} current={team && who !== null ? { rep: who } : {}} names={load.state === "ready" ? load.data.names : {}} />
       <Loaded load={load} reload={again} skeleton={<Skeleton rows={5} height={72} />}>
         {(data) => {
           const owners = [...new Set(data.families.map((family) => family[0]!.owner_id).filter((id): id is string => id !== null))];
