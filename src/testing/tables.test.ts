@@ -42,6 +42,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "stage_from_id",
       "stage_kept_id",
       "move_key",
+      // The move before the one a rule runs for, as the rule read it from the deal as it was (`{{was.*}}`), so a step can ask whether it is written.
+      "was_move_key",
+      "was_from_stage",
       // What it keeps of its making, for its opening line.
       "first_stage_id",
       "opened_by_id",

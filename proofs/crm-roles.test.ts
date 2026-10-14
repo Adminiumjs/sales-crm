@@ -297,8 +297,10 @@ for (const [dialect, reachable] of LEGS) {
         walk(res.json());
         counts[role] = seen.size;
       }
-      // A records page per table the role reads, and the Pipeline board for the five roles that open the deals list.
-      expect(counts).toEqual({ admin: 72, 'sales-manager': 60, rep: 60, 'account-manager': 30, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 66 });
+      // A records page per table the role reads, the Pipeline board for the five roles that open the deals list, and the
+      // console's Overview and Approvals for the CRM admin, the sales manager and Read-only (P17). A page kept off the
+      // rail is still one of the role's pages: it is listed with the section, and only not drawn.
+      expect(counts).toEqual({ admin: 74, 'sales-manager': 62, rep: 60, 'account-manager': 30, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 68 });
     });
 
     it('nobody reads a private table but the two people of a row: not the CRM admin, not Read-only, not the Super Admin', async () => {
@@ -981,27 +983,57 @@ for (const [dialect, reachable] of LEGS) {
       expect((await one(`SELECT to_email, sent_to_email FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ to_email: 'moved@elsewhere.example', sent_to_email: contact['email'] });
       expect(said(await patch('ivy', 'contacts', contact['id'], { email: contact['email'] }))).toBe('ok');
 
-      // A discount put to approval: every Sales manager is told.
+      // A discount put to approval: the asker's team lead is told; never the asker, never another team's manager; the CRM
+      // admin when nobody leads the asker (the ruling of §0, decision 136; the engine's `lead` and `else` on a notice).
       const second = made(await post('dana', 'quotes', { deal_id: deal, version: 2, replaces_id: quote }));
       expect(said(await post('dana', 'quote_lines', { document_id: second, qty: 2, rate: 200, price_id: priced }))).toBe('ok');
-      const asked = async (person: string) => Number((await s.meta.db.selectFrom('adminium_notifications').select(({ fn }) => fn.countAll<number>().as('n')).where('userId', '=', s.id[person]!).where('title', 'like', '%needs your approval').executeTakeFirst())?.n ?? 0);
-      const told = async () => Number((await s.meta.db.selectFrom('adminium_notifications').select(({ fn }) => fn.countAll<number>().as('n')).where('userId', '=', s.id['ivy']!).executeTakeFirst())?.n ?? 0);
-      const before = await told();
-      const was = { dana: await asked('dana'), ivy: await asked('ivy'), tessa: await asked('tessa') };
+      type Told = { title: string; body: string | null };
+      const toldOf = async (person: string): Promise<Told[]> => (await s.meta.db.selectFrom('adminium_notifications').select(['title', 'body']).where('userId', '=', s.id[person]!).where('title', 'like', '%needs your approval').execute()) as Told[];
+      // A second sales manager, Omar, leads West (Noor's team): made here, for this rule, and taken off his team and role at the end.
+      const users = usersRepo(s.meta);
+      const omar = await users.create({ email: 'omar@crm.test', name: 'Omar Said', passwordHash: await adminPasswordHash() });
+      const managerRole = (await rolesRepo(s.meta).findBySlug('crm-sales-manager'))!;
+      await rolesRepo(s.meta).assignToUser(omar.id, managerRole.id);
+      const west = (await teamsRepo(s.meta).findByName('West'))!;
+      await teamsRepo(s.meta).setMember(west.id, omar.id, true);
+      s.id['omar'] = omar.id;
+      const before = Object.fromEntries(await Promise.all(['dana', 'ivy', 'tessa', 'omar', 'noor', 'grace'].map(async (person) => [person, (await toldOf(person)).length] as const)));
+      const grown = async (): Promise<Record<string, number>> => Object.fromEntries(await Promise.all(Object.entries(before).map(async ([person, was]) => [person, (await toldOf(person)).length - was] as const)));
+
+      // Dana asks: Ivy leads her, and is told who asked; Dana is not; Omar, who leads another team, is not, nor the CRM admin.
       expect(said(await press('dana', 'quotes', second, 'ask-approval', 'draft', { ask_reason: 'They buy every year' }))).toBe('ok');
       await s.jobs();
-      expect(await told()).toBe(before + 1);
-      // Ivy leads Dana: told. Dana, who asked: not.
-      expect([(await asked('ivy')) - was.ivy, (await asked('dana')) - was.dana]).toEqual([1, 0]);
-      // KNOWN GAP (F21, engine): ruling "to the CRM admin when she leads her own team" is not met. A rule tells a role
-      // or the person a staff column names, never "the asker's team lead", so Ivy asking about her own deal is told
-      // herself, and Tessa, the CRM admin, is not. This fails the day the engine can say it.
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 0, omar: 0, noor: 0, grace: 0 });
+      const [ivys] = (await toldOf('ivy')).slice(-1);
+      expect(ivys!.body).toContain('Dana Whitlock');
+      expect(ivys!.body).toContain('They buy every year');
+
+      // Noor asks: Omar leads her, and is told; Ivy is not (she cannot open Noor's quote, and is not her lead).
+      const noorsDeal = made(await post('noor', 'deals', { name: 'Noor: her discount', company_id: contact['company_id'], stage_id: stages[0], owner_id: s.id['noor'], typed_amount: 800 }));
+      const noors = made(await post('noor', 'quotes', { deal_id: noorsDeal }));
+      expect(said(await post('noor', 'quote_lines', { document_id: noors, qty: 2, rate: 150, price_id: priced }))).toBe('ok');
+      expect(said(await press('noor', 'quotes', noors, 'ask-approval', 'draft', { ask_reason: 'A first order' }))).toBe('ok');
+      await s.jobs();
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 0, omar: 1, noor: 0, grace: 0 });
+
+      // Ivy asks about her own deal: she leads her team and nobody leads her, so the CRM admin is told; Ivy never is.
       const hers = made(await post('ivy', 'deals', { name: 'Ivy: her own discount', company_id: contact['company_id'], stage_id: stages[0], owner_id: s.id['ivy'], typed_amount: 900 }));
       const own = made(await post('ivy', 'quotes', { deal_id: hers }));
       expect(said(await post('ivy', 'quote_lines', { document_id: own, qty: 2, rate: 150, price_id: priced }))).toBe('ok');
       expect(said(await press('ivy', 'quotes', own, 'ask-approval', 'draft', { ask_reason: 'A long-standing customer' }))).toBe('ok');
       await s.jobs();
-      expect([(await asked('ivy')) - was.ivy, (await asked('tessa')) - was.tessa]).toEqual([2, 0]);
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 1, omar: 1, noor: 0, grace: 0 });
+      expect((await toldOf('tessa')).slice(-1)[0]!.body).toContain('Ivy Sandoval');
+
+      // Omar leaves West: Noor is led by nobody, and her next request goes to the CRM admin, not to Ivy, not to Omar.
+      await teamsRepo(s.meta).removeMember(west.id, omar.id);
+      await rolesRepo(s.meta).removeFromUser(omar.id, managerRole.id);
+      const laterDeal = made(await post('noor', 'deals', { name: 'Noor: a later discount', company_id: contact['company_id'], stage_id: stages[0], owner_id: s.id['noor'], typed_amount: 700 }));
+      const again = made(await post('noor', 'quotes', { deal_id: laterDeal }));
+      expect(said(await post('noor', 'quote_lines', { document_id: again, qty: 2, rate: 140, price_id: priced }))).toBe('ok');
+      expect(said(await press('noor', 'quotes', again, 'ask-approval', 'draft', { ask_reason: 'Still a first order' }))).toBe('ok');
+      await s.jobs();
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 2, omar: 1, noor: 0, grace: 0 });
 
       // The deal is won: its job is made, once, named after the deal; won again after a reopen, no second job.
       expect(said(await press('dana', 'deals', deal, 'mark-won', 'open', { close_note: 'Signed' }))).toBe('ok');

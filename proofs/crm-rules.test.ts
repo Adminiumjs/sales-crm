@@ -5,8 +5,8 @@
  * it is about: the three nudges, once each time a deal starts to match; a
  * rep's week by e-mail, of her own deals only, and a sales manager's, of her team's; a
  * notice's e-mail held to the end of the reader's quiet hours; a mention in a
- * comment, to somebody who can open the deal and to two who cannot; and a
- * part switched off and on.
+ * comment, to somebody who can open the deal and to two who cannot; the
+ * nudges' days read from the settings row; and a part switched off and on.
  *
  * To run: copy into `~/Work/lanes/p67/apps/server/test/` as `zz-crm-rules.test.ts`, run, remove.
  */
@@ -188,13 +188,12 @@ for (const [dialect, reachable] of LEGS) {
       // the staff side says where a deal opens), and the console's page is still there for her.
       expect(await mention('ivy')).toMatchObject([{ title: 'Dana mentioned you', actionUrl: `/apps/crm/staff/deals/${String(deal['atrium'])}`, opens: { appKey: 'crm', path: `/deals/${String(deal['atrium'])}` } }]);
       expect(page.slug).toBe('crm-deals');
-      // A rep whose deal it is not, and a fitter with no right on deals: told who and where, with no way in.
+      // A rep whose deal it is not, and a fitter with no right on deals: told who, with no way in and no name of the deal
+      // (the kind of record only): a mention names the record only to somebody who can open it (F21, engine d50a6e3b8).
       for (const who of ['noor', 'sam']) expect(await mention(who), who).toMatchObject([{ title: 'Dana mentioned you', actionUrl: null, entity: null }]);
-      for (const who of ['ivy', 'noor', 'sam']) {
-        const [notice] = await mention(who);
-        expect(notice!.body, who).toContain('Atrium');
-        expect(JSON.stringify(notice), who).not.toContain('38 percent');
-      }
+      expect((await mention('ivy'))[0]!.body).toContain('Atrium');
+      for (const who of ['noor', 'sam']) expect((await mention(who))[0]!.body ?? '', who).not.toContain('Atrium');
+      for (const who of ['ivy', 'noor', 'sam']) expect(JSON.stringify((await mention(who))[0]), who).not.toContain('38 percent');
       for (const mail of (await s.emails()).filter((one) => one.subject === 'Dana mentioned you')) expect(`${mail.html} ${mail.text}`).not.toContain('38 percent');
       // Somebody who does not sign in here cannot be named: the comment is not saved.
       expect(said(await s.make('dana', 'comments', { deal_id: deal['atrium'], text: 'Ask @[Somebody](usr_01NOBODYATALL00000000)' }))).toBe('422 VALIDATION_FAILED');
@@ -209,6 +208,38 @@ for (const [dialect, reachable] of LEGS) {
       const lines = await s.rows(`select by_id, to_stage_id from crm_deal_stage_changes where deal_id = ${String(deal['atrium'])} order by id`);
       // The line of the deal's making names who made it (the owner of this install), the move names Dana.
       expect(lines.map((line) => [Number(line['to_stage_id']), line['by_id']])).toEqual([[stage, s.ids['owner']], [to, s.ids['dana']]]);
+    });
+
+    it('reads the nudges\' days from the settings row at each morning\'s run: the business moves them, not the rule', async () => {
+      const settings = Number((await s.rows('select id from crm_settings'))[0]!['id']);
+      const set = async (values: Record<string, number>): Promise<void> => expect(said(await s.change('owner', 'settings', settings, values))).toBe('ok');
+      // Annex: nothing logged for ten days, ten days in its stage, closing in ten days at even odds.
+      deal['annex'] = await makeDeal('Annex', 'dana', { expected_close: day(10) });
+      await s.rows(`update crm_deals set last_activity_at = '${at(-10)}', entered_stage_at = '${at(-10)}' where id = ${String(deal['annex'])}`);
+      const annex = async (): Promise<string[]> => (await titles('dana')).filter((title) => title.endsWith(': Annex'));
+      // The install's own numbers (7, 21, 7): quiet, yes; stuck, no; closing soon, no.
+      await round();
+      expect(await annex()).toEqual(['Gone quiet: Annex']);
+      // The business waits longer for "stuck" to say nothing, then shorter: told from the next run.
+      await set({ nudge_stuck_days: 12 });
+      await round();
+      expect(await annex()).toEqual(['Gone quiet: Annex']);
+      await set({ nudge_stuck_days: 9 });
+      await round();
+      expect(await annex()).toEqual(['Gone quiet: Annex', 'Stuck in its stage: Annex']);
+      // Closing within twelve days is now "soon".
+      await set({ nudge_soon_days: 12 });
+      await round();
+      expect(await annex()).toEqual(['Closing soon: Annex', 'Gone quiet: Annex', 'Stuck in its stage: Annex']);
+      // A quiet time longer than Annex has been quiet: Annex is no longer quiet, so a new spell can start; at 9 days it does.
+      await set({ nudge_quiet_days: 14 });
+      await round();
+      await set({ nudge_quiet_days: 9 });
+      await round();
+      expect((await annex()).filter((title) => title.startsWith('Gone quiet'))).toHaveLength(2);
+      // The body names no number of days the business may have changed.
+      for (const notice of (await noticesOf('dana')).filter((one) => one.title.endsWith(': Annex') && !one.title.startsWith('Closing'))) expect(notice.body ?? '', notice.title).not.toMatch(/\d/);
+      await set({ nudge_quiet_days: 7, nudge_stuck_days: 21, nudge_soon_days: 7 });
     });
 
     it('closes a part that is switched off and opens it again: its page, its rows to its own roles, and its place in the menu', async () => {

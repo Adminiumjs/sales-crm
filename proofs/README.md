@@ -1,6 +1,6 @@
 # The proofs
 
-Seven test files that install this app on a real Adminium server, with its sample, on SQLite,
+The test files below install this app on a real Adminium server, with its sample, on SQLite,
 Postgres and MySQL, and try it signed in as each of the sample's sixteen people.
 
 They are not this repository's unit tests. They run **inside an Adminium checkout**, because
@@ -14,10 +14,11 @@ product does not: give a sample person a password. `npm run proofs` copies them 
 | `crm-sample` | the sample loads with the figures of the ledger |
 | `crm-roles` | every table read as each person; who may write what; each refusal is the server's |
 | `crm-rules` | the shipped rules run by themselves |
-| `crm-f21` | the rules and e-mails of stage 1: a deal's stage history line by line, also when it moves twice within the minute; where a notice opens; a visit booked, moved and cancelled mailed to its contact; a referral thanked; a rep's week and a manager's team's, with sums and target cover; and the two things the engine does not do yet, written as they are |
+| `crm-f21` | the rules and e-mails of stage 1: a deal's stage history line by line, also when it moves three and five times before the rules run (the deal as it was, decision 131); where a notice opens; a visit booked, moved and cancelled mailed to its contact on all three engines; a referral thanked; a rep's week and a manager's team's, with sums and target cover; a mention that names the deal only to somebody who can open it |
 | `crm-inventory` | Supply on the real Inventory add-on (needs `ADD_ONS_REPO`, built) |
 | `crm-g3` | the pipeline board, a pasted list, places and areas |
 | `crm-visits` | site visits and cover: who books for whom, a move read from the history, a cancel that removes the row, one cover of a person at a time |
+| `crm-console` | the console's Sales CRM section (P17): the twelve entries on the rail and each person's own; the Overview's cards as the installed page asks them, the ledger's whole-team figures to the owner, the CRM admin and Read-only, each other reader's own, the two whole-team cards whole or refused; Approvals; the two pages refused to the roles they are not for |
 | `crm-manager` | the figures the manager's screens ask, at the ledger's moment; whose rows each reader's are; who is refused |
 | `crm-supply` | Supply on the real Inventory add-on (needs `ADD_ONS_REPO`, built): the three roles it is for read six of Inventory's tables, read only and a few columns each, nobody else any; a need carries its deal's state; the grants go and Supply waits while Inventory is switched off for the app, and come back with it; installed without Inventory, Supply is off and waits for it, with no grant |
 | `crm-settings` | who writes which setting and the server's refusal for the rest; each number's bounds; the working week; the depot as a place; the column no two companies or contacts share, and a pasted list matched on it; who writes the price list and a rep's own row |

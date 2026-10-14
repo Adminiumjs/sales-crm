@@ -93,7 +93,16 @@ describe("the stages", () => {
         const later = next.roles.find((one) => one.key === role.key)!;
         for (const permission of role.permissions) expect(later.permissions, `${role.key}: ${permission}`).toContain(permission);
       }
-      for (const page of now.pages) expect(next.pages.find((one) => one.ref === page.ref), page.ref).toEqual(page);
+      // A page is the same page; an overview may gain the cards of a later part's tables (a job visit's), each card kept as it was.
+      type Card = { i: string };
+      const cardsOf = (page: unknown): Card[] => ((page as { config?: { layout?: { items?: Card[] } } }).config?.layout?.items ?? []);
+      const withoutCards = (page: unknown) => JSON.parse(JSON.stringify(page, (key, value) => (key === "items" ? undefined : value))) as unknown;
+      for (const page of now.pages) {
+        const later = next.pages.find((one) => one.ref === page.ref);
+        expect(later, page.ref).toBeDefined();
+        expect(withoutCards(later), page.ref).toEqual(withoutCards(page));
+        for (const card of cardsOf(page)) expect(cardsOf(later).find((one) => one.i === card.i), `${page.ref}: ${card.i}`).toEqual(card);
+      }
     }
   });
 });

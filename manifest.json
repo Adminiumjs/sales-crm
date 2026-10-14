@@ -692,6 +692,38 @@
             }
           },
           {
+            "ref": "was_move_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "label": {
+              "en-US": "Mark of the move before, as a rule last read it",
+              "de-DE": "Kennung des vorigen Wechsels, wie eine Regel sie zuletzt las",
+              "fr-FR": "Repère du déplacement précédent, tel qu’une règle l’a lu en dernier",
+              "da-DK": "Mærke for det forrige skift, som en regel sidst læste det",
+              "cs-CZ": "Značka předchozího přesunu, jak ji naposledy přečetlo pravidlo",
+              "ar-EG": "علامة النقلة السابقة كما قرأتها قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的上一次移动的标记",
+              "zh-TW": "規則最近讀到的上一次移動的標記"
+            }
+          },
+          {
+            "ref": "was_from_stage",
+            "type": "text",
+            "maxLength": 20,
+            "nullable": true,
+            "label": {
+              "en-US": "Stage the move before left, as a rule last read it",
+              "de-DE": "Phase, die der vorige Wechsel verließ, wie eine Regel sie zuletzt las",
+              "fr-FR": "Étape quittée par le déplacement précédent, telle qu’une règle l’a lue en dernier",
+              "da-DK": "Fase, som det forrige skift forlod, som en regel sidst læste den",
+              "cs-CZ": "Fáze, kterou opustil předchozí přesun, jak ji naposledy přečetlo pravidlo",
+              "ar-EG": "المرحلة التي غادرتها النقلة السابقة كما قرأتها قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的上一次移动离开的阶段",
+              "zh-TW": "規則最近讀到的上一次移動離開的階段"
+            }
+          },
+          {
             "ref": "first_stage_id",
             "type": "fk",
             "references": "stages",
@@ -12062,7 +12094,9 @@
         "page:@crm-shows:view",
         "page:@crm-deal-stock-needs:view",
         "page:@crm-outbox:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "page:@crm-overview:view",
+        "page:@crm-approvals:view"
       ],
       "limits": {
         "saved_views": {
@@ -12518,7 +12552,9 @@
         "page:@crm-enquiries:view",
         "page:@crm-shows:view",
         "page:@crm-deal-stock-needs:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "page:@crm-overview:view",
+        "page:@crm-approvals:view"
       ],
       "limits": {
         "deals": {
@@ -14402,7 +14438,9 @@
         "page:@crm-enquiries:view",
         "page:@crm-shows:view",
         "page:@crm-deal-stock-needs:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "page:@crm-overview:view",
+        "page:@crm-approvals:view"
       ],
       "limits": {
         "saved_views": {
@@ -14953,6 +14991,159 @@
       }
     },
     {
+      "key": "deal-stage-was",
+      "name": {
+        "en-US": "A deal changes stage: the move before it, from the deal as it was",
+        "de-DE": "Ein Deal wechselt die Phase: der Wechsel davor, aus dem Deal, wie er war",
+        "fr-FR": "Une affaire change d’étape : le déplacement précédent, d’après l’affaire telle qu’elle était",
+        "da-DK": "En handel skifter fase: skiftet før, ud fra handlen som den var",
+        "cs-CZ": "Obchod změní fázi: předchozí přesun podle obchodu, jak byl",
+        "ar-EG": "تتغيّر مرحلة صفقة: النقلة السابقة من الصفقة كما كانت",
+        "zh-CN": "商机变更阶段：根据原状态写入前一次移动",
+        "zh-TW": "案件變更階段：依原狀態寫入前一次移動"
+      },
+      "description": {
+        "en-US": "Reads each move’s deal as it was just before the move, and writes the move before it to the history unless it is there, so however often a deal moves before the rules run, no move is lost.",
+        "de-DE": "Liest bei jedem Wechsel den Deal, wie er unmittelbar davor war, und schreibt den Wechsel davor in den Verlauf, sofern er dort fehlt. So geht kein Wechsel verloren, wie oft ein Deal auch wechselt, bevor die Regeln laufen.",
+        "fr-FR": "Lit, à chaque déplacement, l’affaire telle qu’elle était juste avant, et écrit le déplacement précédent dans l’historique s’il n’y est pas : quel que soit le nombre de déplacements avant que les règles ne s’exécutent, aucun n’est perdu.",
+        "da-DK": "Læser ved hvert skift handlen, som den var lige før, og skriver skiftet før det i historikken, hvis det ikke står der. Så går intet skift tabt, uanset hvor tit en handel flyttes, før reglerne kører.",
+        "cs-CZ": "Při každém přesunu přečte obchod, jak byl těsně předtím, a zapíše předchozí přesun do historie, pokud tam není. Ať se obchod přesune kolikrát chce, než pravidla proběhnou, žádný přesun se neztratí.",
+        "ar-EG": "تقرأ عند كل نقلة الصفقة كما كانت قبلها مباشرة، وتكتب النقلة السابقة في السجل إن لم تكن فيه، فلا تضيع أي نقلة مهما تكرّر نقل الصفقة قبل أن تعمل القواعد.",
+        "zh-CN": "每次移动时读取商机在移动前的状态，若历史中没有前一次移动就写入，因此无论规则运行前商机移动了多少次，都不会遗漏。",
+        "zh-TW": "每次移動時讀取案件在移動前的狀態，若歷程中沒有前一次移動就寫入，因此無論規則執行前案件移動了多少次，都不會遺漏。"
+      },
+      "enabled": true,
+      "module": "selling",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "deals",
+        "changedColumn": "stage_id"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A deal changes stage: the move before it, from the deal as it was"
+          },
+          {
+            "id": "keep-was",
+            "kind": "action",
+            "title": {
+              "en-US": "Keep what the deal was before this move",
+              "de-DE": "Festhalten, wie der Deal vor diesem Wechsel war",
+              "fr-FR": "Garder ce qu’était l’affaire avant ce déplacement",
+              "da-DK": "Gem, hvordan handlen var før dette skift",
+              "cs-CZ": "Uložit, jaký byl obchod před tímto přesunem",
+              "ar-EG": "احفظ ما كانت عليه الصفقة قبل هذه النقلة",
+              "zh-CN": "记下此次移动前商机的状态",
+              "zh-TW": "記下此次移動前案件的狀態"
+            },
+            "action": {
+              "kind": "record.update",
+              "values": {
+                "was_move_key": "{{was.move_key}}",
+                "was_from_stage": "{{was.stage_from_id}}"
+              }
+            }
+          },
+          {
+            "id": "was-a-move",
+            "kind": "condition",
+            "title": {
+              "en-US": "The deal had been moved before this move",
+              "de-DE": "Der Deal war vor diesem Wechsel schon gewechselt worden",
+              "fr-FR": "L’affaire avait déjà été déplacée avant ce déplacement",
+              "da-DK": "Handlen var flyttet før dette skift",
+              "cs-CZ": "Obchod byl před tímto přesunem už přesunut",
+              "ar-EG": "كانت الصفقة قد نُقلت قبل هذه النقلة",
+              "zh-CN": "此次移动之前商机已被移动过",
+              "zh-TW": "此次移動之前案件已被移動過"
+            },
+            "condition": {
+              "left": {
+                "field": "was_from_stage"
+              },
+              "op": "not_empty"
+            }
+          },
+          {
+            "id": "was-keyed",
+            "kind": "condition",
+            "title": {
+              "en-US": "…and that move has its mark",
+              "de-DE": "…und dieser Wechsel hat seine Kennung",
+              "fr-FR": "…et ce déplacement a son repère",
+              "da-DK": "…og det skift har sit mærke",
+              "cs-CZ": "…a ten přesun má svou značku",
+              "ar-EG": "…ولتلك النقلة علامتها",
+              "zh-CN": "……并且那次移动有标记",
+              "zh-TW": "……並且那次移動有標記"
+            },
+            "condition": {
+              "left": {
+                "field": "was_move_key"
+              },
+              "op": "not_empty"
+            }
+          },
+          {
+            "id": "was-missing",
+            "kind": "condition",
+            "title": {
+              "en-US": "…and it is not in the history",
+              "de-DE": "…und er steht nicht im Verlauf",
+              "fr-FR": "…et il n’est pas dans l’historique",
+              "da-DK": "…og det står ikke i historikken",
+              "cs-CZ": "…a v historii není",
+              "ar-EG": "…وليست في السجل",
+              "zh-CN": "……而且不在历史中",
+              "zh-TW": "……而且不在歷程中"
+            },
+            "condition": {
+              "left": {
+                "count": {
+                  "table": "deal_stage_changes",
+                  "matchColumn": "move_key",
+                  "equalsField": "was_move_key"
+                }
+              },
+              "op": "is",
+              "right": 0
+            }
+          },
+          {
+            "id": "was-line",
+            "kind": "action",
+            "title": {
+              "en-US": "Write the move before it, from the deal as it was",
+              "de-DE": "Den Wechsel davor schreiben, aus dem Deal, wie er war",
+              "fr-FR": "Écrire le déplacement précédent, d’après l’affaire telle qu’elle était",
+              "da-DK": "Skriv skiftet før det, ud fra handlen som den var",
+              "cs-CZ": "Zapsat předchozí přesun podle obchodu, jak byl",
+              "ar-EG": "اكتب النقلة السابقة من الصفقة كما كانت",
+              "zh-CN": "根据商机原来的状态写入前一次移动",
+              "zh-TW": "依案件原來的狀態寫入前一次移動"
+            },
+            "action": {
+              "kind": "record.create",
+              "table": "deal_stage_changes",
+              "values": {
+                "deal_id": "{{record.id}}",
+                "from_stage_id": "{{was.stage_from_id}}",
+                "to_stage_id": "{{was.stage_id}}",
+                "by_id": "{{was.stage_by_id}}",
+                "at": "{{was.entered_stage_at}}",
+                "move_key": "{{was.move_key}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "key": "quote-sent-amount",
       "name": {
         "en-US": "A quote is sent: the deal’s amount gets a line in its history",
@@ -15019,24 +15210,24 @@
     {
       "key": "approval-asked",
       "name": {
-        "en-US": "A discount is put to approval: the sales managers are told",
-        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Vertriebsleitung wird benachrichtigt",
-        "fr-FR": "Une remise est soumise à approbation : les responsables commerciaux sont prévenus",
-        "da-DK": "En rabat sendes til godkendelse: salgscheferne får besked",
-        "cs-CZ": "Sleva jde ke schválení: vedoucí prodeje dostanou zprávu",
-        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ مديرو المبيعات",
-        "zh-CN": "折扣提交审批：通知销售经理",
-        "zh-TW": "折扣送交核准：通知業務經理"
+        "en-US": "A discount is put to approval: the asker’s team lead is told",
+        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung der anfragenden Person wird benachrichtigt",
+        "fr-FR": "Une remise est soumise à approbation : le responsable d’équipe du demandeur est prévenu",
+        "da-DK": "En rabat sendes til godkendelse: lederen af spørgerens team får besked",
+        "cs-CZ": "Sleva jde ke schválení: vedoucí týmu žadatele dostane zprávu",
+        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق مقدّم الطلب",
+        "zh-CN": "折扣提交审批：通知申请人的团队负责人",
+        "zh-TW": "折扣送交核准：通知申請人的團隊負責人"
       },
       "description": {
-        "en-US": "When somebody asks for approval of a quote, tells everyone who holds the Sales manager role.",
-        "de-DE": "Benachrichtigt alle mit der Rolle Vertriebsleitung, sobald jemand die Genehmigung eines Angebots anfragt.",
-        "fr-FR": "Prévient toutes les personnes ayant le rôle Responsable commercial dès qu’une approbation de devis est demandée.",
-        "da-DK": "Giver alle med rollen Salgschef besked, når nogen beder om godkendelse af et tilbud.",
-        "cs-CZ": "Jakmile někdo požádá o schválení nabídky, dá vědět všem s rolí Vedoucí prodeje.",
-        "ar-EG": "عند طلب اعتماد عرض سعر، يُبلِّغ كل من يحمل دور مدير المبيعات.",
-        "zh-CN": "有人为报价申请审批时，通知所有销售经理。",
-        "zh-TW": "有人為報價申請核准時，通知所有業務經理。"
+        "en-US": "When somebody asks for approval of a quote, tells whoever leads a team they are in and can open the quote; when nobody does, the CRM admin. Never the person who asked.",
+        "de-DE": "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt, die Leitung eines Teams, in dem diese Person ist, sofern sie das Angebot öffnen kann; gibt es niemanden, den CRM-Admin. Nie die anfragende Person selbst.",
+        "fr-FR": "Dès qu’une approbation de devis est demandée, prévient la personne qui dirige une équipe dont le demandeur fait partie et qui peut ouvrir le devis ; à défaut, l’administrateur CRM. Jamais le demandeur lui-même.",
+        "da-DK": "Når nogen beder om godkendelse af et tilbud, får lederen af et team, personen er med i, besked, hvis lederen kan åbne tilbuddet; er der ingen, får CRM-administratoren besked. Aldrig den, der spurgte.",
+        "cs-CZ": "Když někdo požádá o schválení nabídky, dá vědět vedoucímu týmu, jehož je členem, pokud nabídku otevře; když takový není, správci CRM. Nikdy tomu, kdo žádal.",
+        "ar-EG": "عند طلب اعتماد عرض سعر، يُبلِّغ من يقود فريقًا ينتمي إليه مقدّم الطلب ويستطيع فتح العرض؛ وإن لم يوجد، يُبلِّغ مسؤول CRM. ولا يُبلِّغ مقدّم الطلب أبدًا.",
+        "zh-CN": "有人为报价申请审批时，通知其所在团队中能打开该报价的负责人；没有这样的人时，通知 CRM 管理员。从不通知申请人本人。",
+        "zh-TW": "有人為報價申請核准時，通知其所在團隊中能開啟該報價的負責人；沒有這樣的人時，通知 CRM 管理員。從不通知申請人本人。"
       },
       "enabled": true,
       "module": "quotes",
@@ -15061,18 +15252,22 @@
           {
             "id": "t",
             "kind": "trigger",
-            "title": "A discount is put to approval: the sales managers are told"
+            "title": "A discount is put to approval: the asker’s team lead is told"
           },
           {
             "id": "tell",
             "kind": "action",
-            "title": "Tell the sales managers",
+            "title": "Tell the asker’s team lead",
             "action": {
               "kind": "notification",
               "to": {
-                "roles": [
-                  "sales-manager"
-                ]
+                "column": "asked_by_id",
+                "lead": true,
+                "else": {
+                  "roles": [
+                    "admin"
+                  ]
+                }
               },
               "title": {
                 "en-US": "Quote {{record.number}} needs your approval",
@@ -15085,14 +15280,14 @@
                 "zh-TW": "報價 {{record.number}} 需要您核准"
               },
               "body": {
-                "en-US": "{{record.under_list_pct}} % under list. Why: {{record.ask_reason}}",
-                "de-DE": "{{record.under_list_pct}} % unter Liste. Begründung: {{record.ask_reason}}",
-                "fr-FR": "{{record.under_list_pct}} % sous le catalogue. Motif : {{record.ask_reason}}",
-                "da-DK": "{{record.under_list_pct}} % under liste. Begrundelse: {{record.ask_reason}}",
-                "cs-CZ": "{{record.under_list_pct}} % pod ceníkem. Důvod: {{record.ask_reason}}",
-                "ar-EG": "{{record.under_list_pct}} ٪ تحت القائمة. السبب: {{record.ask_reason}}",
-                "zh-CN": "低于目录价 {{record.under_list_pct}} %。原因：{{record.ask_reason}}",
-                "zh-TW": "低於牌價 {{record.under_list_pct}} %。原因：{{record.ask_reason}}"
+                "en-US": "Asked by {{asked_by_id.name}}: {{record.under_list_pct}} % under list. Why: {{record.ask_reason}}",
+                "de-DE": "Angefragt von {{asked_by_id.name}}: {{record.under_list_pct}} % unter Liste. Begründung: {{record.ask_reason}}",
+                "fr-FR": "Demandé par {{asked_by_id.name}} : {{record.under_list_pct}} % sous le catalogue. Motif : {{record.ask_reason}}",
+                "da-DK": "Spurgt af {{asked_by_id.name}}: {{record.under_list_pct}} % under liste. Begrundelse: {{record.ask_reason}}",
+                "cs-CZ": "Žádá {{asked_by_id.name}}: {{record.under_list_pct}} % pod ceníkem. Důvod: {{record.ask_reason}}",
+                "ar-EG": "طلبه {{asked_by_id.name}}: {{record.under_list_pct}} ٪ تحت القائمة. السبب: {{record.ask_reason}}",
+                "zh-CN": "申请人：{{asked_by_id.name}}。低于目录价 {{record.under_list_pct}} %。原因：{{record.ask_reason}}",
+                "zh-TW": "申請人：{{asked_by_id.name}}。低於牌價 {{record.under_list_pct}} %。原因：{{record.ask_reason}}"
               }
             }
           }
@@ -15112,14 +15307,14 @@
         "zh-TW": "商機沉寂：通知負責人"
       },
       "description": {
-        "en-US": "Each morning, tells the owner of an open deal on which nothing has been logged for 7 days. Once each time the deal goes quiet.",
-        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, zu dem seit 7 Tagen nichts erfasst wurde. Einmal je Stillstand.",
-        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte sur laquelle rien n’a été noté depuis 7 jours. Une fois par période de silence.",
-        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når intet er registreret i 7 dage. Én gang hver gang handlen går i stå.",
-        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, u kterého se 7 dní nic nezapsalo. Jednou pokaždé, když obchod utichne.",
-        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة لم يُسجَّل عليها شيء منذ 7 أيام. مرة واحدة في كل فترة هدوء.",
-        "zh-CN": "每天早上通知 7 天内没有任何记录的进行中商机的负责人。每次沉寂只通知一次。",
-        "zh-TW": "每天早上通知 7 天內沒有任何紀錄的進行中商機的負責人。每次沉寂只通知一次。"
+        "en-US": "Each morning, tells the owner of an open deal on which nothing has been logged for the days set in Settings (7 until somebody changes it). Once each time the deal goes quiet.",
+        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, zu dem so viele Tage nichts erfasst wurde, wie in den Einstellungen festgelegt ist (7, solange niemand es ändert). Einmal je Stillstand.",
+        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte sur laquelle rien n’a été noté depuis le nombre de jours fixé dans les Paramètres (7 tant que personne ne le change). Une fois par période de silence.",
+        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når intet er registreret i det antal dage, der er sat under Indstillinger (7, indtil nogen ændrer det). Én gang hver gang handlen går i stå.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, u kterého se nic nezapsalo po počet dní nastavený v Nastavení (7, dokud ho nikdo nezmění). Jednou pokaždé, když obchod utichne.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة لم يُسجَّل عليها شيء طوال عدد الأيام المحدد في الإعدادات (7 ما لم يغيّره أحد). مرة واحدة في كل فترة هدوء.",
+        "zh-CN": "每天早上通知在设置中规定的天数内（未修改时为 7 天）没有任何记录的进行中商机的负责人。每次沉寂只通知一次。",
+        "zh-TW": "每天早上通知在設定中規定的天數內（未修改時為 7 天）沒有任何紀錄的進行中商機的負責人。每次沉寂只通知一次。"
       },
       "enabled": false,
       "module": "selling",
@@ -15147,7 +15342,11 @@
               "op": "more_than_ago",
               "right": {
                 "amount": 7,
-                "unit": "days"
+                "unit": "days",
+                "setting": {
+                  "table": "settings",
+                  "column": "nudge_quiet_days"
+                }
               }
             }
           ]
@@ -15181,14 +15380,14 @@
                 "zh-TW": "已沉寂：{{record.name}}"
               },
               "body": {
-                "en-US": "Nothing has been logged on this deal for 7 days.",
-                "de-DE": "Zu diesem Deal wurde seit 7 Tagen nichts erfasst.",
-                "fr-FR": "Rien n’a été noté sur cette affaire depuis 7 jours.",
-                "da-DK": "Der er ikke registreret noget på denne handel i 7 dage.",
-                "cs-CZ": "U tohoto obchodu se 7 dní nic nezapsalo.",
-                "ar-EG": "لم يُسجَّل شيء على هذه الصفقة منذ 7 أيام.",
-                "zh-CN": "该商机已 7 天没有任何记录。",
-                "zh-TW": "此商機已 7 天沒有任何紀錄。"
+                "en-US": "Nothing has been logged on this deal for longer than the days set in Settings.",
+                "de-DE": "Zu diesem Deal wurde länger nichts erfasst, als in den Einstellungen festgelegt ist.",
+                "fr-FR": "Rien n’a été noté sur cette affaire depuis plus longtemps que le nombre de jours fixé dans les Paramètres.",
+                "da-DK": "Der er ikke registreret noget på denne handel i længere tid end det antal dage, der er sat under Indstillinger.",
+                "cs-CZ": "U tohoto obchodu se nic nezapsalo déle, než je počet dní nastavený v Nastavení.",
+                "ar-EG": "لم يُسجَّل شيء على هذه الصفقة لمدة أطول من عدد الأيام المحدد في الإعدادات.",
+                "zh-CN": "该商机没有任何记录的时间已超过设置中规定的天数。",
+                "zh-TW": "此商機沒有任何紀錄的時間已超過設定中規定的天數。"
               }
             }
           }
@@ -15208,14 +15407,14 @@
         "zh-TW": "商機停滯在目前階段：通知負責人"
       },
       "description": {
-        "en-US": "Each morning, tells the owner of an open deal that has sat in the same stage for 21 days. Once each time.",
-        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, der seit 21 Tagen in derselben Phase liegt. Einmal je Fall.",
-        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte restée 21 jours à la même étape. Une fois à chaque fois.",
-        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når den har ligget i samme fase i 21 dage. Én gang hver gang.",
-        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, který je 21 dní ve stejné fázi. Pokaždé jednou.",
-        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة بقيت في المرحلة نفسها 21 يومًا. مرة واحدة في كل مرة.",
-        "zh-CN": "每天早上通知在同一阶段停留 21 天的进行中商机的负责人。每次只通知一次。",
-        "zh-TW": "每天早上通知在同一階段停留 21 天的進行中商機的負責人。每次只通知一次。"
+        "en-US": "Each morning, tells the owner of an open deal that has sat in the same stage for the days set in Settings (21 until somebody changes it). Once each time.",
+        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, der so viele Tage in derselben Phase liegt, wie in den Einstellungen festgelegt ist (21, solange niemand es ändert). Einmal je Fall.",
+        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte restée à la même étape pendant le nombre de jours fixé dans les Paramètres (21 tant que personne ne le change). Une fois à chaque fois.",
+        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når den har ligget i samme fase i det antal dage, der er sat under Indstillinger (21, indtil nogen ændrer det). Én gang hver gang.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, který je ve stejné fázi po počet dní nastavený v Nastavení (21, dokud ho nikdo nezmění). Pokaždé jednou.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة بقيت في المرحلة نفسها طوال عدد الأيام المحدد في الإعدادات (21 ما لم يغيّره أحد). مرة واحدة في كل مرة.",
+        "zh-CN": "每天早上通知在同一阶段停留达到设置中规定天数（未修改时为 21 天）的进行中商机的负责人。每次只通知一次。",
+        "zh-TW": "每天早上通知在同一階段停留達到設定中規定天數（未修改時為 21 天）的進行中商機的負責人。每次只通知一次。"
       },
       "enabled": false,
       "module": "selling",
@@ -15243,7 +15442,11 @@
               "op": "more_than_ago",
               "right": {
                 "amount": 21,
-                "unit": "days"
+                "unit": "days",
+                "setting": {
+                  "table": "settings",
+                  "column": "nudge_stuck_days"
+                }
               }
             }
           ]
@@ -15277,14 +15480,14 @@
                 "zh-TW": "階段停滯：{{record.name}}"
               },
               "body": {
-                "en-US": "This deal has been in the same stage for 21 days.",
-                "de-DE": "Dieser Deal liegt seit 21 Tagen in derselben Phase.",
-                "fr-FR": "Cette affaire est à la même étape depuis 21 jours.",
-                "da-DK": "Denne handel har ligget i samme fase i 21 dage.",
-                "cs-CZ": "Tento obchod je 21 dní ve stejné fázi.",
-                "ar-EG": "هذه الصفقة في المرحلة نفسها منذ 21 يومًا.",
-                "zh-CN": "该商机已在同一阶段停留 21 天。",
-                "zh-TW": "此商機已在同一階段停留 21 天。"
+                "en-US": "This deal has sat in the same stage for longer than the days set in Settings.",
+                "de-DE": "Dieser Deal liegt länger in derselben Phase, als in den Einstellungen festgelegt ist.",
+                "fr-FR": "Cette affaire est à la même étape depuis plus longtemps que le nombre de jours fixé dans les Paramètres.",
+                "da-DK": "Denne handel har ligget i samme fase i længere tid end det antal dage, der er sat under Indstillinger.",
+                "cs-CZ": "Tento obchod je ve stejné fázi déle, než je počet dní nastavený v Nastavení.",
+                "ar-EG": "بقيت هذه الصفقة في المرحلة نفسها مدة أطول من عدد الأيام المحدد في الإعدادات.",
+                "zh-CN": "该商机在同一阶段停留的时间已超过设置中规定的天数。",
+                "zh-TW": "此商機在同一階段停留的時間已超過設定中規定的天數。"
               }
             }
           }
@@ -15304,14 +15507,14 @@
         "zh-TW": "商機即將到期但尚未口頭確認：通知負責人"
       },
       "description": {
-        "en-US": "Each morning, tells the owner of an open deal that is expected to close within 7 days and has not reached the last stage. Once each time.",
-        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, der in 7 Tagen abschließen soll und die letzte Phase noch nicht erreicht hat. Einmal je Fall.",
-        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte attendue sous 7 jours et pas encore à la dernière étape. Une fois à chaque fois.",
-        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når den forventes lukket inden for 7 dage og ikke er nået til sidste fase. Én gang hver gang.",
-        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, který se má uzavřít do 7 dnů a není v poslední fázi. Pokaždé jednou.",
-        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة يُتوقع إغلاقها خلال 7 أيام ولم تبلغ المرحلة الأخيرة. مرة واحدة في كل مرة.",
-        "zh-CN": "每天早上通知预计 7 天内成交但尚未到最后阶段的进行中商机的负责人。每次只通知一次。",
-        "zh-TW": "每天早上通知預計 7 天內成交但尚未到最後階段的進行中商機的負責人。每次只通知一次。"
+        "en-US": "Each morning, tells the owner of an open deal that is expected to close within the days set in Settings (7 until somebody changes it) and has not reached the last stage. Once each time.",
+        "de-DE": "Benachrichtigt jeden Morgen die zuständige Person eines offenen Deals, der innerhalb so vieler Tage abschließen soll, wie in den Einstellungen festgelegt ist (7, solange niemand es ändert), und die letzte Phase noch nicht erreicht hat. Einmal je Fall.",
+        "fr-FR": "Chaque matin, prévient le responsable d’une affaire ouverte attendue dans le nombre de jours fixé dans les Paramètres (7 tant que personne ne le change) et pas encore à la dernière étape. Une fois à chaque fois.",
+        "da-DK": "Giver hver morgen ejeren af en åben handel besked, når den forventes lukket inden for det antal dage, der er sat under Indstillinger (7, indtil nogen ændrer det), og ikke er nået til sidste fase. Én gang hver gang.",
+        "cs-CZ": "Každé ráno dá vědět vlastníkovi otevřeného obchodu, který se má uzavřít během počtu dní nastaveného v Nastavení (7, dokud ho nikdo nezmění) a není v poslední fázi. Pokaždé jednou.",
+        "ar-EG": "كل صباح، يُبلِّغ مالك صفقة مفتوحة يُتوقع إغلاقها خلال عدد الأيام المحدد في الإعدادات (7 ما لم يغيّره أحد) ولم تبلغ المرحلة الأخيرة. مرة واحدة في كل مرة.",
+        "zh-CN": "每天早上通知预计在设置中规定的天数内（未修改时为 7 天）成交但尚未到最后阶段的进行中商机的负责人。每次只通知一次。",
+        "zh-TW": "每天早上通知預計在設定中規定的天數內（未修改時為 7 天）成交但尚未到最後階段的進行中商機的負責人。每次只通知一次。"
       },
       "enabled": false,
       "module": "selling",
@@ -15339,7 +15542,11 @@
               "op": "within_next",
               "right": {
                 "amount": 7,
-                "unit": "days"
+                "unit": "days",
+                "setting": {
+                  "table": "settings",
+                  "column": "nudge_soon_days"
+                }
               }
             },
             {
@@ -21509,6 +21716,907 @@
   ],
   "pages": [
     {
+      "ref": "crm-overview",
+      "template": "page-dashboard",
+      "title": {
+        "key": "mft.crm.page.overview",
+        "fallback": "Overview"
+      },
+      "titles": {
+        "de-DE": "Übersicht",
+        "fr-FR": "Vue d’ensemble",
+        "da-DK": "Overblik",
+        "cs-CZ": "Přehled",
+        "ar-EG": "نظرة عامة",
+        "zh-CN": "概览",
+        "zh-TW": "總覽"
+      },
+      "nav": {
+        "group": "console",
+        "icon": "layout-dashboard",
+        "order": 0
+      },
+      "module": "selling",
+      "config": {
+        "layout": {
+          "version": 1,
+          "toolbar": {
+            "links": [
+              {
+                "label": "Open Sales CRM",
+                "labels": {
+                  "de-DE": "Sales CRM öffnen",
+                  "fr-FR": "Ouvrir Sales CRM",
+                  "da-DK": "Åbn Sales CRM",
+                  "cs-CZ": "Otevřít Sales CRM",
+                  "ar-EG": "افتح Sales CRM",
+                  "zh-CN": "打开 Sales CRM",
+                  "zh-TW": "開啟 Sales CRM"
+                },
+                "href": "@staff",
+                "icon": "external-link",
+                "tone": "primary"
+              }
+            ]
+          },
+          "items": [
+            {
+              "i": "open-pipeline",
+              "widget": "kpi-stat-card",
+              "x": 0,
+              "y": 0,
+              "w": 3,
+              "h": 3,
+              "config": {
+                "deltaMode": "none",
+                "showSparkline": false,
+                "title": "Open pipeline",
+                "titles": {
+                  "en-US": "Open pipeline",
+                  "de-DE": "Offene Pipeline",
+                  "fr-FR": "Pipeline ouvert",
+                  "da-DK": "Åben pipeline",
+                  "cs-CZ": "Otevřená pipeline",
+                  "ar-EG": "المسار المفتوح",
+                  "zh-CN": "进行中的商机",
+                  "zh-TW": "進行中的商機"
+                },
+                "metricLabel": "open deals at full value",
+                "metricLabels": {
+                  "en-US": "open deals at full value",
+                  "de-DE": "offene Deals zum vollen Wert",
+                  "fr-FR": "affaires ouvertes à pleine valeur",
+                  "da-DK": "åbne handler til fuld værdi",
+                  "cs-CZ": "otevřené obchody v plné hodnotě",
+                  "ar-EG": "الصفقات المفتوحة بكامل قيمتها",
+                  "zh-CN": "进行中商机的全额",
+                  "zh-TW": "進行中商機的全額"
+                },
+                "metricFormat": "currency",
+                "iconName": "dollar",
+                "href": "/p/crm-pipeline",
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "metric+delta",
+                  "aggregations": [
+                    {
+                      "fn": "sum",
+                      "column": "amount",
+                      "alias": "open"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "i": "weighted",
+              "widget": "kpi-stat-card",
+              "x": 3,
+              "y": 0,
+              "w": 3,
+              "h": 3,
+              "config": {
+                "deltaMode": "none",
+                "showSparkline": false,
+                "title": "Weighted",
+                "titles": {
+                  "en-US": "Weighted",
+                  "de-DE": "Gewichtet",
+                  "fr-FR": "Pondéré",
+                  "da-DK": "Vægtet",
+                  "cs-CZ": "Vážená hodnota",
+                  "ar-EG": "القيمة المرجّحة",
+                  "zh-CN": "加权金额",
+                  "zh-TW": "加權金額"
+                },
+                "metricLabel": "each deal at its stage’s odds",
+                "metricLabels": {
+                  "en-US": "each deal at its stage’s odds",
+                  "de-DE": "jeder Deal mit der Wahrscheinlichkeit seiner Phase",
+                  "fr-FR": "chaque affaire aux chances de son étape",
+                  "da-DK": "hver handel med sin fases sandsynlighed",
+                  "cs-CZ": "každý obchod podle pravděpodobnosti své fáze",
+                  "ar-EG": "كل صفقة باحتمال مرحلتها",
+                  "zh-CN": "每个商机按其阶段概率计",
+                  "zh-TW": "每個商機按其階段機率計"
+                },
+                "metricFormat": "currency",
+                "iconName": "trending",
+                "href": "/p/crm-pipeline",
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "metric+delta",
+                  "aggregations": [
+                    {
+                      "fn": "sum",
+                      "column": "weighted_value",
+                      "alias": "weighted"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "i": "won-this-year",
+              "widget": "kpi-stat-card",
+              "x": 6,
+              "y": 0,
+              "w": 3,
+              "h": 3,
+              "config": {
+                "deltaMode": "none",
+                "showSparkline": false,
+                "title": "Won this year",
+                "titles": {
+                  "en-US": "Won this year",
+                  "de-DE": "In diesem Jahr gewonnen",
+                  "fr-FR": "Gagné cette année",
+                  "da-DK": "Vundet i år",
+                  "cs-CZ": "Vyhráno letos",
+                  "ar-EG": "المكسوب هذا العام",
+                  "zh-CN": "今年赢单",
+                  "zh-TW": "今年成交"
+                },
+                "metricLabel": "closed as won since 1 January",
+                "metricLabels": {
+                  "en-US": "closed as won since 1 January",
+                  "de-DE": "seit dem 1. Januar als gewonnen abgeschlossen",
+                  "fr-FR": "conclues gagnées depuis le 1er janvier",
+                  "da-DK": "lukket som vundet siden 1. januar",
+                  "cs-CZ": "uzavřeno jako vyhrané od 1. ledna",
+                  "ar-EG": "أُغلقت كمكسوبة منذ 1 يناير",
+                  "zh-CN": "1 月 1 日以来赢单",
+                  "zh-TW": "1 月 1 日以來成交"
+                },
+                "metricFormat": "currency",
+                "iconName": "banknote",
+                "href": "/p/crm-deals?f.state=eq:won",
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "metric+delta",
+                  "aggregations": [
+                    {
+                      "fn": "sum",
+                      "column": "amount",
+                      "alias": "won"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "won"
+                    }
+                  ],
+                  "window": {
+                    "column": "closed_on",
+                    "last": 1,
+                    "unit": "year",
+                    "calendar": true
+                  }
+                }
+              }
+            },
+            {
+              "i": "team-cover",
+              "widget": "kpi-stat-card",
+              "x": 9,
+              "y": 0,
+              "w": 3,
+              "h": 3,
+              "config": {
+                "deltaMode": "none",
+                "showSparkline": false,
+                "title": "Target cover, team",
+                "titles": {
+                  "en-US": "Target cover, team",
+                  "de-DE": "Zielabdeckung, Team",
+                  "fr-FR": "Couverture de l’objectif, équipe",
+                  "da-DK": "Måldækning, team",
+                  "cs-CZ": "Pokrytí cíle, tým",
+                  "ar-EG": "تغطية الهدف، الفريق",
+                  "zh-CN": "团队目标覆盖率",
+                  "zh-TW": "團隊目標覆蓋率"
+                },
+                "metricLabel": "booked this year plus weighted open, of the year’s targets",
+                "metricLabels": {
+                  "en-US": "booked this year plus weighted open, of the year’s targets",
+                  "de-DE": "dieses Jahr gebucht plus gewichtet offen, von den Jahreszielen",
+                  "fr-FR": "réservé cette année plus l’ouvert pondéré, sur les objectifs de l’année",
+                  "da-DK": "booket i år plus vægtet åbent, af årets mål",
+                  "cs-CZ": "letos zaúčtováno plus vážené otevřené, z ročních cílů",
+                  "ar-EG": "المحجوز هذا العام مع المفتوح المرجّح، من أهداف العام",
+                  "zh-CN": "今年已成交加进行中加权金额，占年度目标",
+                  "zh-TW": "今年已成交加進行中加權金額，占年度目標"
+                },
+                "metricFormat": "percent",
+                "iconName": "gauge",
+                "binding": {
+                  "kind": "team-figures",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "single-metric",
+                  "team": {
+                    "owner": "owner_id",
+                    "figures": [
+                      {
+                        "key": "open",
+                        "fn": "count",
+                        "where": [
+                          {
+                            "column": "state",
+                            "in": [
+                              "open"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "key": "weighted",
+                        "fn": "sum",
+                        "column": "weighted_value",
+                        "where": [
+                          {
+                            "column": "state",
+                            "in": [
+                              "open"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "key": "booked",
+                        "fn": "sum",
+                        "column": "amount",
+                        "where": [
+                          {
+                            "column": "state",
+                            "in": [
+                              "won"
+                            ]
+                          }
+                        ],
+                        "thisYear": "closed_on"
+                      }
+                    ],
+                    "target": {
+                      "table": "targets",
+                      "owner": "rep_id",
+                      "column": "amount",
+                      "year": "year"
+                    },
+                    "cover": [
+                      "weighted",
+                      "booked"
+                    ],
+                    "metric": "cover"
+                  }
+                }
+              }
+            },
+            {
+              "i": "open-deals",
+              "widget": "kpi-stat-card",
+              "x": 0,
+              "y": 3,
+              "w": 3,
+              "h": 3,
+              "config": {
+                "deltaMode": "none",
+                "showSparkline": false,
+                "title": "Open deals",
+                "titles": {
+                  "en-US": "Open deals",
+                  "de-DE": "Offene Deals",
+                  "fr-FR": "Affaires ouvertes",
+                  "da-DK": "Åbne handler",
+                  "cs-CZ": "Otevřené obchody",
+                  "ar-EG": "الصفقات المفتوحة",
+                  "zh-CN": "进行中的商机数",
+                  "zh-TW": "進行中的商機數"
+                },
+                "metricFormat": "plain",
+                "iconName": "folder-kanban",
+                "href": "/p/crm-deals?f.state=eq:open",
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "metric+delta",
+                  "aggregations": [
+                    {
+                      "fn": "count",
+                      "alias": "deals"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "i": "unclaimed-enquiries",
+              "widget": "kpi-stat-card",
+              "x": 3,
+              "y": 3,
+              "w": 3,
+              "h": 3,
+              "config": {
+                "deltaMode": "none",
+                "showSparkline": false,
+                "title": "Unclaimed enquiries",
+                "titles": {
+                  "en-US": "Unclaimed enquiries",
+                  "de-DE": "Nicht übernommene Anfragen",
+                  "fr-FR": "Demandes non prises en charge",
+                  "da-DK": "Uovertagne henvendelser",
+                  "cs-CZ": "Nepřevzaté poptávky",
+                  "ar-EG": "استفسارات لم يتسلّمها أحد",
+                  "zh-CN": "未认领的咨询",
+                  "zh-TW": "未認領的詢問"
+                },
+                "metricLabel": "in the team inbox, nobody’s yet",
+                "metricLabels": {
+                  "en-US": "in the team inbox, nobody’s yet",
+                  "de-DE": "im Team-Posteingang, noch niemandes",
+                  "fr-FR": "dans la boîte de l’équipe, à personne pour l’instant",
+                  "da-DK": "i teamets indbakke, endnu ingens",
+                  "cs-CZ": "v týmové schránce, zatím ničí",
+                  "ar-EG": "في صندوق الفريق، لم تُسند لأحد بعد",
+                  "zh-CN": "在团队收件箱中，尚无人负责",
+                  "zh-TW": "在團隊收件匣中，尚無人負責"
+                },
+                "metricFormat": "plain",
+                "iconName": "inbox",
+                "href": "/p/crm-enquiries?f.state=eq:open",
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "enquiries",
+                    "type": "table"
+                  },
+                  "shape": "metric+delta",
+                  "aggregations": [
+                    {
+                      "fn": "count",
+                      "alias": "unclaimed"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "i": "by-stage",
+              "widget": "chart-bar",
+              "x": 0,
+              "y": 6,
+              "w": 6,
+              "h": 8,
+              "config": {
+                "title": "Pipeline by stage",
+                "titles": {
+                  "en-US": "Pipeline by stage",
+                  "de-DE": "Pipeline nach Phase",
+                  "fr-FR": "Pipeline par étape",
+                  "da-DK": "Pipeline efter fase",
+                  "cs-CZ": "Pipeline podle fáze",
+                  "ar-EG": "المسار حسب المرحلة",
+                  "zh-CN": "按阶段的商机",
+                  "zh-TW": "依階段的商機"
+                },
+                "subtitle": "Open deals: value and weighted value",
+                "subtitles": {
+                  "en-US": "Open deals: value and weighted value",
+                  "de-DE": "Offene Deals: Wert und gewichteter Wert",
+                  "fr-FR": "Affaires ouvertes : valeur et valeur pondérée",
+                  "da-DK": "Åbne handler: værdi og vægtet værdi",
+                  "cs-CZ": "Otevřené obchody: hodnota a vážená hodnota",
+                  "ar-EG": "الصفقات المفتوحة: القيمة والقيمة المرجّحة",
+                  "zh-CN": "进行中的商机：金额与加权金额",
+                  "zh-TW": "進行中的商機：金額與加權金額"
+                },
+                "emptyState": {
+                  "titleKey": "No open deals yet",
+                  "titles": {
+                    "de-DE": "Noch keine offenen Deals",
+                    "fr-FR": "Aucune affaire ouverte pour l’instant",
+                    "da-DK": "Ingen åbne handler endnu",
+                    "cs-CZ": "Zatím žádné otevřené obchody",
+                    "ar-EG": "لا صفقات مفتوحة بعد",
+                    "zh-CN": "暂无进行中的商机",
+                    "zh-TW": "尚無進行中的商機"
+                  }
+                },
+                "metricFormat": "currency",
+                "href": "/p/crm-pipeline",
+                "series": [
+                  {
+                    "label": "Value",
+                    "labels": {
+                      "de-DE": "Wert",
+                      "fr-FR": "Valeur",
+                      "da-DK": "Værdi",
+                      "cs-CZ": "Hodnota",
+                      "ar-EG": "القيمة",
+                      "zh-CN": "金额",
+                      "zh-TW": "金額"
+                    }
+                  },
+                  {
+                    "label": "Weighted",
+                    "labels": {
+                      "de-DE": "Gewichtet",
+                      "fr-FR": "Pondéré",
+                      "da-DK": "Vægtet",
+                      "cs-CZ": "Vážená",
+                      "ar-EG": "المرجّحة",
+                      "zh-CN": "加权",
+                      "zh-TW": "加權"
+                    }
+                  }
+                ],
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "categorical",
+                  "groupBy": [
+                    "stage_id"
+                  ],
+                  "groupLabel": "stage_id.label",
+                  "aggregations": [
+                    {
+                      "fn": "sum",
+                      "column": "amount",
+                      "alias": "value"
+                    },
+                    {
+                      "fn": "sum",
+                      "column": "weighted_value",
+                      "alias": "weighted"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ],
+                  "orderBy": [
+                    {
+                      "column": "stage_id.position",
+                      "dir": "asc"
+                    }
+                  ],
+                  "limit": 20
+                }
+              }
+            },
+            {
+              "i": "forecast",
+              "widget": "chart-bar",
+              "x": 6,
+              "y": 6,
+              "w": 6,
+              "h": 8,
+              "config": {
+                "title": "Forecast",
+                "titles": {
+                  "en-US": "Forecast",
+                  "de-DE": "Prognose",
+                  "fr-FR": "Prévision",
+                  "da-DK": "Prognose",
+                  "cs-CZ": "Předpověď",
+                  "ar-EG": "التوقّع",
+                  "zh-CN": "预测",
+                  "zh-TW": "預測"
+                },
+                "subtitle": "Weighted value by month of expected close",
+                "subtitles": {
+                  "en-US": "Weighted value by month of expected close",
+                  "de-DE": "Gewichteter Wert nach Monat des erwarteten Abschlusses",
+                  "fr-FR": "Valeur pondérée par mois de conclusion prévue",
+                  "da-DK": "Vægtet værdi efter måned for forventet lukning",
+                  "cs-CZ": "Vážená hodnota podle měsíce očekávaného uzavření",
+                  "ar-EG": "القيمة المرجّحة حسب شهر الإغلاق المتوقع",
+                  "zh-CN": "按预计成交月份的加权金额",
+                  "zh-TW": "依預計成交月份的加權金額"
+                },
+                "emptyState": {
+                  "titleKey": "Nothing expected to close yet",
+                  "titles": {
+                    "de-DE": "Noch kein erwarteter Abschluss",
+                    "fr-FR": "Aucune conclusion prévue pour l’instant",
+                    "da-DK": "Intet forventes lukket endnu",
+                    "cs-CZ": "Zatím se nic neočekává k uzavření",
+                    "ar-EG": "لا شيء متوقع إغلاقه بعد",
+                    "zh-CN": "暂无预计成交的商机",
+                    "zh-TW": "尚無預計成交的商機"
+                  }
+                },
+                "metricFormat": "currency",
+                "series": [
+                  {
+                    "label": "Weighted",
+                    "labels": {
+                      "de-DE": "Gewichtet",
+                      "fr-FR": "Pondéré",
+                      "da-DK": "Vægtet",
+                      "cs-CZ": "Vážená",
+                      "ar-EG": "المرجّحة",
+                      "zh-CN": "加权",
+                      "zh-TW": "加權"
+                    }
+                  }
+                ],
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "timeseries",
+                  "aggregations": [
+                    {
+                      "fn": "sum",
+                      "column": "weighted_value",
+                      "alias": "weighted"
+                    }
+                  ],
+                  "bucket": {
+                    "column": "expected_close",
+                    "unit": "month"
+                  },
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "i": "reps",
+              "widget": "data-grid",
+              "x": 0,
+              "y": 14,
+              "w": 12,
+              "h": 7,
+              "config": {
+                "title": "Reps",
+                "titles": {
+                  "en-US": "Reps",
+                  "de-DE": "Vertrieb",
+                  "fr-FR": "Commerciaux",
+                  "da-DK": "Sælgere",
+                  "cs-CZ": "Obchodníci",
+                  "ar-EG": "المندوبون",
+                  "zh-CN": "销售代表",
+                  "zh-TW": "業務代表"
+                },
+                "subtitle": "Cover is booked this year plus weighted open, against the year’s target",
+                "subtitles": {
+                  "en-US": "Cover is booked this year plus weighted open, against the year’s target",
+                  "de-DE": "Abdeckung ist dieses Jahr Gebuchtes plus gewichtet Offenes, gemessen am Jahresziel",
+                  "fr-FR": "La couverture est le réservé de l’année plus l’ouvert pondéré, face à l’objectif de l’année",
+                  "da-DK": "Dækning er booket i år plus vægtet åbent, målt mod årets mål",
+                  "cs-CZ": "Pokrytí je letos zaúčtované plus vážené otevřené, vůči ročnímu cíli",
+                  "ar-EG": "التغطية هي المحجوز هذا العام مع المفتوح المرجّح، مقابل هدف العام",
+                  "zh-CN": "覆盖率 = 今年已成交 + 进行中加权金额，对比年度目标",
+                  "zh-TW": "覆蓋率 = 今年已成交 + 進行中加權金額，對比年度目標"
+                },
+                "emptyState": {
+                  "titleKey": "No reps yet",
+                  "titles": {
+                    "de-DE": "Noch kein Vertrieb",
+                    "fr-FR": "Aucun commercial pour l’instant",
+                    "da-DK": "Ingen sælgere endnu",
+                    "cs-CZ": "Zatím žádní obchodníci",
+                    "ar-EG": "لا مندوبين بعد",
+                    "zh-CN": "暂无销售代表",
+                    "zh-TW": "尚無業務代表"
+                  }
+                },
+                "limit": 6,
+                "columns": [
+                  {
+                    "name": "name",
+                    "label": "Rep"
+                  },
+                  {
+                    "name": "open",
+                    "label": "Open deals",
+                    "logicalType": "integer",
+                    "align": "end"
+                  },
+                  {
+                    "name": "weighted",
+                    "label": "Weighted",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "currency"
+                    },
+                    "align": "end"
+                  },
+                  {
+                    "name": "booked",
+                    "label": "Booked this year",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "currency"
+                    },
+                    "align": "end"
+                  },
+                  {
+                    "name": "target",
+                    "label": "Target",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "currency"
+                    },
+                    "align": "end"
+                  },
+                  {
+                    "name": "cover",
+                    "label": "Cover",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "percent",
+                      "percentScale": "fraction",
+                      "decimals": 0
+                    },
+                    "align": "end"
+                  }
+                ],
+                "binding": {
+                  "kind": "team-figures",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "record-list",
+                  "team": {
+                    "owner": "owner_id",
+                    "figures": [
+                      {
+                        "key": "open",
+                        "fn": "count",
+                        "where": [
+                          {
+                            "column": "state",
+                            "in": [
+                              "open"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "key": "weighted",
+                        "fn": "sum",
+                        "column": "weighted_value",
+                        "where": [
+                          {
+                            "column": "state",
+                            "in": [
+                              "open"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "key": "booked",
+                        "fn": "sum",
+                        "column": "amount",
+                        "where": [
+                          {
+                            "column": "state",
+                            "in": [
+                              "won"
+                            ]
+                          }
+                        ],
+                        "thisYear": "closed_on"
+                      }
+                    ],
+                    "target": {
+                      "table": "targets",
+                      "owner": "rep_id",
+                      "column": "amount",
+                      "year": "year"
+                    },
+                    "cover": [
+                      "weighted",
+                      "booked"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "i": "sitting",
+              "widget": "mini-table",
+              "x": 0,
+              "y": 21,
+              "w": 12,
+              "h": 6,
+              "config": {
+                "title": "Sitting longest in one stage",
+                "titles": {
+                  "en-US": "Sitting longest in one stage",
+                  "de-DE": "Am längsten in einer Phase",
+                  "fr-FR": "Immobiles depuis le plus longtemps",
+                  "da-DK": "Længst i samme fase",
+                  "cs-CZ": "Nejdéle v jedné fázi",
+                  "ar-EG": "الأطول بقاءً في مرحلة واحدة",
+                  "zh-CN": "在同一阶段停留最久",
+                  "zh-TW": "在同一階段停留最久"
+                },
+                "subtitle": "Open deals, days in their stage",
+                "subtitles": {
+                  "en-US": "Open deals, days in their stage",
+                  "de-DE": "Offene Deals, Tage in ihrer Phase",
+                  "fr-FR": "Affaires ouvertes, jours dans leur étape",
+                  "da-DK": "Åbne handler, dage i deres fase",
+                  "cs-CZ": "Otevřené obchody, dny v jejich fázi",
+                  "ar-EG": "الصفقات المفتوحة، الأيام في مرحلتها",
+                  "zh-CN": "进行中的商机，在当前阶段的天数",
+                  "zh-TW": "進行中的商機，在目前階段的天數"
+                },
+                "emptyState": {
+                  "titleKey": "No open deals yet",
+                  "titles": {
+                    "de-DE": "Noch keine offenen Deals",
+                    "fr-FR": "Aucune affaire ouverte pour l’instant",
+                    "da-DK": "Ingen åbne handler endnu",
+                    "cs-CZ": "Zatím žádné otevřené obchody",
+                    "ar-EG": "لا صفقات مفتوحة بعد",
+                    "zh-CN": "暂无进行中的商机",
+                    "zh-TW": "尚無進行中的商機"
+                  }
+                },
+                "limit": 5,
+                "viewAllHref": "/p/crm-pipeline",
+                "columns": [
+                  {
+                    "name": "id",
+                    "label": "Id",
+                    "logicalType": "integer",
+                    "primaryKey": true,
+                    "hidden": true
+                  },
+                  {
+                    "name": "name",
+                    "label": "Deal"
+                  },
+                  {
+                    "name": "days",
+                    "label": "Days in stage",
+                    "logicalType": "integer",
+                    "align": "end"
+                  },
+                  {
+                    "name": "amount",
+                    "label": "Amount",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "currency"
+                    },
+                    "align": "end"
+                  }
+                ],
+                "secondary": [
+                  "stage",
+                  "company"
+                ],
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "deals",
+                    "type": "table"
+                  },
+                  "shape": "record-list",
+                  "select": [
+                    "id",
+                    "name",
+                    "amount",
+                    "entered_stage_at"
+                  ],
+                  "lookups": [
+                    "stage:stage_id.label",
+                    "company:company_id.name"
+                  ],
+                  "daysSince": [
+                    "days:entered_stage_at"
+                  ],
+                  "filters": [
+                    {
+                      "column": "state",
+                      "op": "eq",
+                      "value": "open"
+                    }
+                  ],
+                  "orderBy": [
+                    {
+                      "column": "entered_stage_at",
+                      "dir": "asc"
+                    }
+                  ],
+                  "limit": 5
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
       "ref": "crm-stages",
       "template": "page-crud",
       "title": {
@@ -21527,7 +22635,8 @@
       "nav": {
         "group": "selling",
         "icon": "milestone",
-        "order": 1
+        "order": 1,
+        "offRail": true
       },
       "bindings": {
         "rows": "stages"
@@ -21551,7 +22660,7 @@
         "zh-TW": "案件"
       },
       "nav": {
-        "group": "selling",
+        "group": "console",
         "icon": "handshake",
         "order": 2
       },
@@ -21577,9 +22686,9 @@
         "zh-TW": "案件看板"
       },
       "nav": {
-        "group": "selling",
+        "group": "console",
         "icon": "square-kanban",
-        "order": 3
+        "order": 1
       },
       "bindings": {
         "rows": "deals"
@@ -21590,17 +22699,49 @@
           "columnsFrom": {
             "table": "stages",
             "label": "label",
-            "order": "position"
+            "order": "position",
+            "badge": {
+              "column": "odds",
+              "as": "percent"
+            }
           },
           "title": "name",
           "totals": [
             {
               "column": "amount",
               "fn": "sum"
+            },
+            {
+              "column": "weighted_value",
+              "fn": "sum"
             }
           ],
           "only": {
             "state": "open"
+          },
+          "card": {
+            "link": "company_id.name",
+            "person": "owner_id",
+            "amount": "amount",
+            "daysSince": {
+              "column": "entered_stage_at",
+              "warnFrom": 14,
+              "alertFrom": 30
+            },
+            "date": "expected_close"
+          },
+          "note": {
+            "text": "Columns come from Stages",
+            "texts": {
+              "de-DE": "Die Spalten kommen aus den Phasen",
+              "fr-FR": "Les colonnes viennent des étapes",
+              "da-DK": "Kolonnerne kommer fra faserne",
+              "cs-CZ": "Sloupce pocházejí z fází",
+              "ar-EG": "تأتي الأعمدة من المراحل",
+              "zh-CN": "列来自阶段表",
+              "zh-TW": "欄位來自階段表"
+            },
+            "href": "/p/crm-stages"
           }
         }
       },
@@ -21625,7 +22766,8 @@
       "nav": {
         "group": "selling",
         "icon": "history",
-        "order": 4
+        "order": 4,
+        "offRail": true
       },
       "bindings": {
         "rows": "deal_stage_changes"
@@ -21651,7 +22793,8 @@
       "nav": {
         "group": "selling",
         "icon": "history",
-        "order": 20
+        "order": 20,
+        "offRail": true
       },
       "bindings": {
         "rows": "deal_amount_changes"
@@ -21677,7 +22820,8 @@
       "nav": {
         "group": "selling",
         "icon": "bell",
-        "order": 5
+        "order": 5,
+        "offRail": true
       },
       "bindings": {
         "rows": "follow_ups"
@@ -21703,7 +22847,8 @@
       "nav": {
         "group": "selling",
         "icon": "activity",
-        "order": 6
+        "order": 6,
+        "offRail": true
       },
       "bindings": {
         "rows": "activities"
@@ -21729,7 +22874,8 @@
       "nav": {
         "group": "selling",
         "icon": "circle-slash",
-        "order": 7
+        "order": 7,
+        "offRail": true
       },
       "bindings": {
         "rows": "lost_reasons"
@@ -21753,14 +22899,290 @@
         "zh-TW": "報價單"
       },
       "nav": {
-        "group": "selling",
+        "group": "console",
         "icon": "file-text",
-        "order": 8
+        "order": 5
       },
       "bindings": {
         "rows": "quotes"
       },
       "module": "quotes"
+    },
+    {
+      "ref": "crm-approvals",
+      "template": "page-dashboard",
+      "title": {
+        "key": "mft.crm.page.approvals",
+        "fallback": "Approvals"
+      },
+      "titles": {
+        "de-DE": "Genehmigungen",
+        "fr-FR": "Approbations",
+        "da-DK": "Godkendelser",
+        "cs-CZ": "Schvalování",
+        "ar-EG": "الموافقات",
+        "zh-CN": "审批",
+        "zh-TW": "審批"
+      },
+      "nav": {
+        "group": "console",
+        "icon": "badge-check",
+        "order": 6
+      },
+      "module": "quotes",
+      "config": {
+        "layout": {
+          "version": 1,
+          "toolbar": {
+            "links": [
+              {
+                "label": "Answer in Sales CRM",
+                "labels": {
+                  "de-DE": "In Sales CRM beantworten",
+                  "fr-FR": "Répondre dans Sales CRM",
+                  "da-DK": "Svar i Sales CRM",
+                  "cs-CZ": "Odpovědět v Sales CRM",
+                  "ar-EG": "أجب في Sales CRM",
+                  "zh-CN": "在 Sales CRM 中答复",
+                  "zh-TW": "在 Sales CRM 中答覆"
+                },
+                "href": "@staff",
+                "icon": "external-link",
+                "tone": "primary"
+              }
+            ]
+          },
+          "items": [
+            {
+              "i": "waiting",
+              "widget": "mini-table",
+              "x": 0,
+              "y": 0,
+              "w": 12,
+              "h": 6,
+              "config": {
+                "title": "Discounts waiting",
+                "titles": {
+                  "en-US": "Discounts waiting",
+                  "de-DE": "Wartende Rabatte",
+                  "fr-FR": "Remises en attente",
+                  "da-DK": "Ventende rabatter",
+                  "cs-CZ": "Čekající slevy",
+                  "ar-EG": "خصومات بانتظار الرد",
+                  "zh-CN": "待审批的折扣",
+                  "zh-TW": "待核准的折扣"
+                },
+                "subtitle": "Put to approval, no answer yet",
+                "subtitles": {
+                  "en-US": "Put to approval, no answer yet",
+                  "de-DE": "Zur Genehmigung vorgelegt, noch keine Antwort",
+                  "fr-FR": "Soumises à approbation, sans réponse pour l’instant",
+                  "da-DK": "Sendt til godkendelse, intet svar endnu",
+                  "cs-CZ": "Předloženo ke schválení, zatím bez odpovědi",
+                  "ar-EG": "عُرضت للاعتماد ولم يُرد عليها بعد",
+                  "zh-CN": "已提交审批，尚未答复",
+                  "zh-TW": "已送交核准，尚未答覆"
+                },
+                "emptyState": {
+                  "titleKey": "Nothing is waiting for an answer",
+                  "titles": {
+                    "de-DE": "Nichts wartet auf eine Antwort",
+                    "fr-FR": "Rien n’attend de réponse",
+                    "da-DK": "Intet venter på svar",
+                    "cs-CZ": "Nic nečeká na odpověď",
+                    "ar-EG": "لا شيء بانتظار رد",
+                    "zh-CN": "没有等待答复的事项",
+                    "zh-TW": "沒有等待答覆的事項"
+                  }
+                },
+                "limit": 6,
+                "viewAllHref": "/p/crm-quotes?f.approval=eq:asked",
+                "columns": [
+                  {
+                    "name": "id",
+                    "label": "Id",
+                    "logicalType": "integer",
+                    "primaryKey": true,
+                    "hidden": true
+                  },
+                  {
+                    "name": "family_no",
+                    "label": "Quote"
+                  },
+                  {
+                    "name": "deal",
+                    "label": "Deal"
+                  },
+                  {
+                    "name": "under_list_pct",
+                    "label": "Off list",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "percent",
+                      "percentScale": "unit",
+                      "decimals": 1
+                    },
+                    "align": "end"
+                  },
+                  {
+                    "name": "asked_at",
+                    "label": "Asked",
+                    "logicalType": "timestamptz",
+                    "hidden": true
+                  }
+                ],
+                "secondary": [
+                  "asked_at",
+                  "ask_reason"
+                ],
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "quotes",
+                    "type": "table"
+                  },
+                  "shape": "record-list",
+                  "select": [
+                    "id",
+                    "family_no",
+                    "version",
+                    "number",
+                    "under_list_pct",
+                    "asked_at",
+                    "ask_reason"
+                  ],
+                  "lookups": [
+                    "deal:deal_id.name"
+                  ],
+                  "filters": [
+                    {
+                      "column": "approval",
+                      "op": "eq",
+                      "value": "asked"
+                    }
+                  ],
+                  "orderBy": [
+                    {
+                      "column": "asked_at",
+                      "dir": "asc"
+                    }
+                  ],
+                  "limit": 6
+                }
+              }
+            },
+            {
+              "i": "running-out",
+              "widget": "mini-table",
+              "x": 0,
+              "y": 6,
+              "w": 12,
+              "h": 6,
+              "config": {
+                "title": "Sent quotes, running out first",
+                "titles": {
+                  "en-US": "Sent quotes, running out first",
+                  "de-DE": "Versendete Angebote, die zuerst ablaufen",
+                  "fr-FR": "Devis envoyés, ceux qui expirent d’abord",
+                  "da-DK": "Sendte tilbud, dem der udløber først",
+                  "cs-CZ": "Odeslané nabídky, nejdřív ty, které vyprší",
+                  "ar-EG": "عروض مُرسلة، الأقرب انتهاءً أولًا",
+                  "zh-CN": "已发送的报价，最先到期的在前",
+                  "zh-TW": "已寄出的報價，最先到期的在前"
+                },
+                "subtitle": "A day already past means it ran out",
+                "subtitles": {
+                  "en-US": "A day already past means it ran out",
+                  "de-DE": "Ein vergangener Tag heißt: abgelaufen",
+                  "fr-FR": "Une date passée signifie qu’il a expiré",
+                  "da-DK": "En dato, der er passeret, betyder, at det er udløbet",
+                  "cs-CZ": "Datum v minulosti znamená, že vypršela",
+                  "ar-EG": "التاريخ الذي مضى يعني أن العرض انتهى",
+                  "zh-CN": "日期已过表示已到期",
+                  "zh-TW": "日期已過表示已到期"
+                },
+                "emptyState": {
+                  "titleKey": "No quote is out with a customer",
+                  "titles": {
+                    "de-DE": "Kein Angebot liegt bei einem Kunden",
+                    "fr-FR": "Aucun devis chez un client",
+                    "da-DK": "Intet tilbud ligger hos en kunde",
+                    "cs-CZ": "U zákazníka není žádná nabídka",
+                    "ar-EG": "لا يوجد عرض لدى أي عميل",
+                    "zh-CN": "没有已发给客户的报价",
+                    "zh-TW": "沒有已寄給客戶的報價"
+                  }
+                },
+                "limit": 5,
+                "viewAllHref": "/p/crm-quotes?f.status=eq:sent",
+                "columns": [
+                  {
+                    "name": "id",
+                    "label": "Id",
+                    "logicalType": "integer",
+                    "primaryKey": true,
+                    "hidden": true
+                  },
+                  {
+                    "name": "family_no",
+                    "label": "Quote"
+                  },
+                  {
+                    "name": "valid_until",
+                    "label": "Valid until",
+                    "logicalType": "date"
+                  },
+                  {
+                    "name": "total",
+                    "label": "Total",
+                    "logicalType": "decimal",
+                    "display": {
+                      "kind": "currency"
+                    },
+                    "align": "end"
+                  }
+                ],
+                "binding": {
+                  "kind": "table-query",
+                  "source": {
+                    "name": "quotes",
+                    "type": "table"
+                  },
+                  "shape": "record-list",
+                  "select": [
+                    "id",
+                    "family_no",
+                    "version",
+                    "number",
+                    "valid_until",
+                    "total"
+                  ],
+                  "lookups": [
+                    "deal:deal_id.name"
+                  ],
+                  "filters": [
+                    {
+                      "column": "status",
+                      "op": "eq",
+                      "value": "sent"
+                    }
+                  ],
+                  "orderBy": [
+                    {
+                      "column": "valid_until",
+                      "dir": "asc"
+                    }
+                  ],
+                  "limit": 5
+                },
+                "secondary": [
+                  "deal"
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "ref": "crm-quote-lines",
@@ -21781,7 +23203,8 @@
       "nav": {
         "group": "selling",
         "icon": "list",
-        "order": 9
+        "order": 9,
+        "offRail": true
       },
       "bindings": {
         "rows": "quote_lines"
@@ -21807,7 +23230,8 @@
       "nav": {
         "group": "selling",
         "icon": "message-square",
-        "order": 10
+        "order": 10,
+        "offRail": true
       },
       "bindings": {
         "rows": "comments"
@@ -21833,7 +23257,8 @@
       "nav": {
         "group": "selling",
         "icon": "bookmark",
-        "order": 11
+        "order": 11,
+        "offRail": true
       },
       "bindings": {
         "rows": "saved_views"
@@ -21859,7 +23284,8 @@
       "nav": {
         "group": "selling",
         "icon": "search",
-        "order": 12
+        "order": 12,
+        "offRail": true
       },
       "bindings": {
         "rows": "saved_searches"
@@ -21885,7 +23311,8 @@
       "nav": {
         "group": "selling",
         "icon": "alarm-clock-off",
-        "order": 13
+        "order": 13,
+        "offRail": true
       },
       "bindings": {
         "rows": "nudge_snoozes"
@@ -21911,7 +23338,8 @@
       "nav": {
         "group": "selling",
         "icon": "users",
-        "order": 14
+        "order": 14,
+        "offRail": true
       },
       "bindings": {
         "rows": "deal_members"
@@ -21937,7 +23365,8 @@
       "nav": {
         "group": "selling",
         "icon": "flag",
-        "order": 15
+        "order": 15,
+        "offRail": true
       },
       "bindings": {
         "rows": "deal_marks"
@@ -21963,7 +23392,8 @@
       "nav": {
         "group": "selling",
         "icon": "map-pin",
-        "order": 16
+        "order": 16,
+        "offRail": true
       },
       "bindings": {
         "rows": "site_visits"
@@ -21989,7 +23419,8 @@
       "nav": {
         "group": "selling",
         "icon": "notebook-pen",
-        "order": 17
+        "order": 17,
+        "offRail": true
       },
       "bindings": {
         "rows": "visit_notes"
@@ -22015,7 +23446,8 @@
       "nav": {
         "group": "selling",
         "icon": "list-checks",
-        "order": 18
+        "order": 18,
+        "offRail": true
       },
       "bindings": {
         "rows": "visit_agreed"
@@ -22041,7 +23473,8 @@
       "nav": {
         "group": "selling",
         "icon": "tags",
-        "order": 19
+        "order": 19,
+        "offRail": true
       },
       "bindings": {
         "rows": "price_list"
@@ -22065,9 +23498,9 @@
         "zh-TW": "公司"
       },
       "nav": {
-        "group": "accounts",
+        "group": "console",
         "icon": "building-2",
-        "order": 1
+        "order": 3
       },
       "bindings": {
         "rows": "companies"
@@ -22091,9 +23524,9 @@
         "zh-TW": "聯絡人"
       },
       "nav": {
-        "group": "accounts",
+        "group": "console",
         "icon": "contact",
-        "order": 2
+        "order": 4
       },
       "bindings": {
         "rows": "contacts"
@@ -22119,7 +23552,8 @@
       "nav": {
         "group": "accounts",
         "icon": "map",
-        "order": 3
+        "order": 3,
+        "offRail": true
       },
       "bindings": {
         "rows": "territories"
@@ -22145,7 +23579,8 @@
       "nav": {
         "group": "accounts",
         "icon": "map-pinned",
-        "order": 4
+        "order": 4,
+        "offRail": true
       },
       "bindings": {
         "rows": "territory_places"
@@ -22171,7 +23606,8 @@
       "nav": {
         "group": "accounts",
         "icon": "repeat",
-        "order": 5
+        "order": 5,
+        "offRail": true
       },
       "bindings": {
         "rows": "renewals"
@@ -22197,7 +23633,8 @@
       "nav": {
         "group": "accounts",
         "icon": "share-2",
-        "order": 6
+        "order": 6,
+        "offRail": true
       },
       "bindings": {
         "rows": "referrals"
@@ -22223,7 +23660,8 @@
       "nav": {
         "group": "team",
         "icon": "id-card",
-        "order": 1
+        "order": 1,
+        "offRail": true
       },
       "bindings": {
         "rows": "reps"
@@ -22249,7 +23687,8 @@
       "nav": {
         "group": "team",
         "icon": "target",
-        "order": 2
+        "order": 2,
+        "offRail": true
       },
       "bindings": {
         "rows": "targets"
@@ -22275,7 +23714,8 @@
       "nav": {
         "group": "team",
         "icon": "users-round",
-        "order": 3
+        "order": 3,
+        "offRail": true
       },
       "bindings": {
         "rows": "one_to_ones"
@@ -22301,7 +23741,8 @@
       "nav": {
         "group": "team",
         "icon": "notebook",
-        "order": 4
+        "order": 4,
+        "offRail": true
       },
       "bindings": {
         "rows": "one_to_one_sessions"
@@ -22327,7 +23768,8 @@
       "nav": {
         "group": "team",
         "icon": "graduation-cap",
-        "order": 5
+        "order": 5,
+        "offRail": true
       },
       "bindings": {
         "rows": "coaching_plans"
@@ -22353,7 +23795,8 @@
       "nav": {
         "group": "team",
         "icon": "list-tree",
-        "order": 6
+        "order": 6,
+        "offRail": true
       },
       "bindings": {
         "rows": "coaching_areas"
@@ -22379,7 +23822,8 @@
       "nav": {
         "group": "team",
         "icon": "square-check",
-        "order": 7
+        "order": 7,
+        "offRail": true
       },
       "bindings": {
         "rows": "actions"
@@ -22405,7 +23849,8 @@
       "nav": {
         "group": "team",
         "icon": "presentation",
-        "order": 8
+        "order": 8,
+        "offRail": true
       },
       "bindings": {
         "rows": "meetings"
@@ -22431,7 +23876,8 @@
       "nav": {
         "group": "team",
         "icon": "list-ordered",
-        "order": 9
+        "order": 9,
+        "offRail": true
       },
       "bindings": {
         "rows": "meeting_slots"
@@ -22457,7 +23903,8 @@
       "nav": {
         "group": "team",
         "icon": "gavel",
-        "order": 10
+        "order": 10,
+        "offRail": true
       },
       "bindings": {
         "rows": "meeting_decisions"
@@ -22483,7 +23930,8 @@
       "nav": {
         "group": "team",
         "icon": "messages-square",
-        "order": 11
+        "order": 11,
+        "offRail": true
       },
       "bindings": {
         "rows": "threads"
@@ -22509,7 +23957,8 @@
       "nav": {
         "group": "team",
         "icon": "user-plus",
-        "order": 12
+        "order": 12,
+        "offRail": true
       },
       "bindings": {
         "rows": "thread_members"
@@ -22535,7 +23984,8 @@
       "nav": {
         "group": "team",
         "icon": "message-circle",
-        "order": 13
+        "order": 13,
+        "offRail": true
       },
       "bindings": {
         "rows": "messages"
@@ -22561,7 +24011,8 @@
       "nav": {
         "group": "team",
         "icon": "user-round-plus",
-        "order": 14
+        "order": 14,
+        "offRail": true
       },
       "bindings": {
         "rows": "starters"
@@ -22587,7 +24038,8 @@
       "nav": {
         "group": "team",
         "icon": "list-todo",
-        "order": 15
+        "order": 15,
+        "offRail": true
       },
       "bindings": {
         "rows": "starter_steps"
@@ -22613,7 +24065,8 @@
       "nav": {
         "group": "team",
         "icon": "umbrella",
-        "order": 16
+        "order": 16,
+        "offRail": true
       },
       "bindings": {
         "rows": "covers"
@@ -22639,7 +24092,8 @@
       "nav": {
         "group": "team",
         "icon": "sticky-note",
-        "order": 17
+        "order": 17,
+        "offRail": true
       },
       "bindings": {
         "rows": "cover_notes"
@@ -22663,9 +24117,9 @@
         "zh-TW": "詢問"
       },
       "nav": {
-        "group": "inbox",
+        "group": "console",
         "icon": "inbox",
-        "order": 1
+        "order": 7
       },
       "bindings": {
         "rows": "enquiries"
@@ -22691,7 +24145,8 @@
       "nav": {
         "group": "inbox",
         "icon": "ticket",
-        "order": 2
+        "order": 2,
+        "offRail": true
       },
       "bindings": {
         "rows": "shows"
@@ -22717,7 +24172,8 @@
       "nav": {
         "group": "supply",
         "icon": "boxes",
-        "order": 1
+        "order": 1,
+        "offRail": true
       },
       "bindings": {
         "rows": "deal_stock_needs"
@@ -22743,7 +24199,8 @@
       "nav": {
         "group": "setup",
         "icon": "mail",
-        "order": 1
+        "order": 1,
+        "offRail": true
       },
       "bindings": {
         "rows": "outbox"
@@ -22768,7 +24225,8 @@
       "nav": {
         "group": "setup",
         "icon": "settings",
-        "order": 2
+        "order": 2,
+        "offRail": true
       },
       "bindings": {
         "rows": "settings"
@@ -23051,6 +24509,71 @@
       "entry": "index.html",
       "routes": {
         "manage": "/"
+      }
+    }
+  ],
+  "navLinks": [
+    {
+      "ref": "rules",
+      "label": {
+        "en-US": "Rules",
+        "de-DE": "Regeln",
+        "fr-FR": "Règles",
+        "da-DK": "Regler",
+        "cs-CZ": "Pravidla",
+        "ar-EG": "القواعد",
+        "zh-CN": "规则",
+        "zh-TW": "規則"
+      },
+      "nav": {
+        "group": "setup",
+        "icon": "sliders-horizontal",
+        "order": 1
+      },
+      "to": {
+        "screen": "automations"
+      }
+    },
+    {
+      "ref": "emails",
+      "label": {
+        "en-US": "Emails",
+        "de-DE": "E-Mails",
+        "fr-FR": "E-mails",
+        "da-DK": "E-mails",
+        "cs-CZ": "E-maily",
+        "ar-EG": "رسائل البريد",
+        "zh-CN": "邮件",
+        "zh-TW": "郵件"
+      },
+      "nav": {
+        "group": "setup",
+        "icon": "mail",
+        "order": 2
+      },
+      "to": {
+        "screen": "email-templates"
+      }
+    },
+    {
+      "ref": "sample-data",
+      "label": {
+        "en-US": "Sample data",
+        "de-DE": "Beispieldaten",
+        "fr-FR": "Données d’exemple",
+        "da-DK": "Eksempeldata",
+        "cs-CZ": "Ukázková data",
+        "ar-EG": "بيانات تجريبية",
+        "zh-CN": "示例数据",
+        "zh-TW": "範例資料"
+      },
+      "nav": {
+        "group": "setup",
+        "icon": "flask-conical",
+        "order": 3
+      },
+      "to": {
+        "screen": "settings"
       }
     }
   ]

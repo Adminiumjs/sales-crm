@@ -94,7 +94,21 @@ export function stageManifest(whole, stages, stage) {
   const tableOfPage = (page) => Object.values(page.bindings ?? {}).filter((value) => typeof value === "string");
   const gonePages = new Set(doc.pages.filter((page) => !partOf(page) || tableOfPage(page).some((ref) => goneTables.has(ref))).map((page) => page.ref));
   doc.pages = doc.pages.filter((page) => !gonePages.has(page.ref));
-  const groups = new Set(doc.pages.map((page) => page.nav?.group));
+  // A card of an overview that reads a table that went (a job visit's on the Overview) goes; the page stays.
+  const tablesOfCard = (item) => {
+    const binding = item.config?.binding ?? {};
+    return [binding.source?.name, binding.team?.target?.table, binding.counts?.table].filter((ref) => typeof ref === "string");
+  };
+  for (const page of doc.pages) {
+    const items = page.config?.layout?.items;
+    if (Array.isArray(items)) page.config.layout.items = items.filter((item) => !tablesOfCard(item).some((ref) => goneTables.has(ref)));
+  }
+  // An entry of the app's section that belongs to a part of a later stage goes with it.
+  if (doc.navLinks !== undefined) {
+    doc.navLinks = doc.navLinks.filter((link) => partOf(link));
+    if (doc.navLinks.length === 0) delete doc.navLinks;
+  }
+  const groups = new Set([...doc.pages, ...(doc.navLinks ?? [])].map((entry) => entry.nav?.group));
   doc.navGroups = (doc.navGroups ?? []).filter((group) => groups.has(group.key));
 
   if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id));

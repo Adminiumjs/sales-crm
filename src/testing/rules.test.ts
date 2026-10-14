@@ -70,10 +70,10 @@ const names = (text: string): string[] => [...text.matchAll(/\{\{([^}|]+)/g)].ma
 
 describe("the rules the app ships", () => {
   // What the app cannot work without is switched on as it is installed; what tells people is the owner's to switch on.
-  const WORKS = ["deal-made", "deal-stage-changed", "deal-won-job", "quote-sent-amount", "approval-asked"];
+  const WORKS = ["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "quote-sent-amount", "approval-asked"];
   const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "approval-refused", "week-rep", "week-manager"];
 
-  it("are fifteen: five the app works by, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
+  it("are sixteen: six the app works by, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
     expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...TELLS]);
     for (const one of m.automations) {
       expect(one.enabled, one.key).toBe(WORKS.includes(one.key));
@@ -119,6 +119,24 @@ describe("the rules the app ships", () => {
       ["earlier-missing", "condition", notYet("prev_move_key")],
       ["earlier-line", "action", line("prev_from_stage_id", "stage_from_id", "prev_by_id", "prev_at", "prev_move_key")],
     ]);
+    // A second rule on the same change (decision 131): each move's run reads the deal AS IT WAS just before that move,
+    // which holds the move before it, and writes it unless a run wrote it already. However many moves come before the
+    // rules run, each run writes the one its own "before" holds, and none is lost. (A rule's condition reads the row only,
+    // so what the deal was is first kept on the deal, where the conditions can read it.)
+    expect(rule("deal-stage-was").trigger).toEqual(rule("deal-stage-changed").trigger);
+    expect(rule("deal-stage-was").enabled).toBe(true);
+    const was = (from: string, to: string, by: string, when: string, key: string) => ({
+      kind: "record.create",
+      table: "deal_stage_changes",
+      values: { deal_id: "{{record.id}}", from_stage_id: `{{was.${from}}}`, to_stage_id: `{{was.${to}}}`, by_id: `{{was.${by}}}`, at: `{{was.${when}}}`, move_key: `{{was.${key}}}` },
+    });
+    expect(historyOf("deal-stage-was")).toEqual([
+      ["keep-was", "action", { kind: "record.update", values: { was_move_key: "{{was.move_key}}", was_from_stage: "{{was.stage_from_id}}" } }],
+      ["was-a-move", "condition", { left: { field: "was_from_stage" }, op: "not_empty" }],
+      ["was-keyed", "condition", { left: { field: "was_move_key" }, op: "not_empty" }],
+      ["was-missing", "condition", notYet("was_move_key")],
+      ["was-line", "action", was("stage_from_id", "stage_id", "stage_by_id", "entered_stage_at", "move_key")],
+    ]);
     // Who set the stage is kept on the deal as a person writes it, and handed on: a line a rule writes has no writer of its own.
     expect(column("deals", "stage_by_id").rules).toEqual({ staff: true, stamp: { set: "user-id", on: { columns: ["stage_id"] } } });
     expect(column("deal_stage_changes", "by_id").rules).toEqual({ staff: true });
@@ -149,7 +167,7 @@ describe("the rules the app ships", () => {
     for (const [copy, source] of [["prev_from_stage_id", "stage_from_id"], ["prev_by_id", "stage_by_id"], ["prev_at", "entered_stage_at"], ["stage_from_id", "stage_kept_id"]] as const) expect(at(copy), `${copy} before ${source}`).toBeLessThan(at(source));
     // Nobody but the CRM admin types any of them.
     const roles = (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[] }> }[] }).roles;
-    for (const role of roles.filter((one) => one.key !== "admin" && one.limits?.["deals"]?.writable !== undefined)) for (const ref of [...Object.keys(kept), "first_stage_id", "opened_by_id", "opened_at"]) expect(role.limits!["deals"]!.writable, `${role.key} ${ref}`).not.toContain(ref);
+    for (const role of roles.filter((one) => one.key !== "admin" && one.limits?.["deals"]?.writable !== undefined)) for (const ref of [...Object.keys(kept), "first_stage_id", "opened_by_id", "opened_at", "was_move_key", "was_from_stage"]) expect(role.limits!["deals"]!.writable, `${role.key} ${ref}`).not.toContain(ref);
   });
 
   it("a deal won gets its job, once", () => {
@@ -159,24 +177,38 @@ describe("the rules the app ships", () => {
     expect(steps("deal-won-job")).toEqual([{ kind: "record.create", table: "jobs", values: { deal_id: "{{record.id}}", site_name: "{{record.name}}" } }]);
   });
 
-  it("an approval asked is told to the Sales manager role, in eight languages", () => {
+  it("an approval asked is told to the asker's team lead, else the CRM admin, never the asker, in eight languages", () => {
     expect(rule("approval-asked").trigger).toEqual({ kind: "record", event: "updated", table: "quotes", changedColumn: "approval", when: [{ left: { field: "approval" }, op: "is", right: "asked" }] });
     const [tell] = steps("approval-asked");
-    expect(tell).toMatchObject({ kind: "notification", to: { roles: ["sales-manager"] } });
-    expect(m.roles.map((role) => role.key)).toContain("sales-manager");
+    // Ruling of §0 and decision 136: whoever leads a team the asker is in and opens the quote; with nobody, the CRM admin.
+    expect(tell).toMatchObject({ kind: "notification", to: { column: "asked_by_id", lead: true, else: { roles: ["admin"] } } });
+    expect(staff("quotes", "asked_by_id")).toBe(true);
+    expect(m.roles.map((role) => role.key)).toContain("admin");
     expect(inAll(tell!.title) && inAll(tell!.body)).toBe(true);
+    // Who asked, by name: the lead is told who, in every language.
+    for (const locale of LOCALES) expect((tell!.body as Record<string, string>)[locale], locale).toContain("{{asked_by_id.name}}");
     // The same variables in every language: a translation that dropped the number would still read well.
     for (const text of [tell!.title, tell!.body] as Record<string, string>[]) for (const locale of LOCALES) expect(names(text[locale]!), locale).toEqual(names(text["en-US"]!));
   });
 
-  it("reads only columns of the row a rule runs for", () => {
+  it("reads only columns of the row a rule runs for, as it is or (on a change) as it was, and the name of a person a staff column of it names", () => {
     const columns = (table: string) => new Set(m.requiredSchema.tables.find((one) => one.ref === table)!.columns.map((column) => column.ref));
+    const holdsStaff = (table: string, column: string): boolean => m.requiredSchema.tables.find((one) => one.ref === table)!.columns.find((one) => one.ref === column)?.rules?.staff === true;
     const wrong: string[] = [];
     for (const one of m.automations) {
       const table = one.trigger.table ?? one.trigger.forEach?.table;
       // A rule by the clock with no rows of its own (a weekly summary) has no record to read.
       const own = table === undefined ? new Set<string>() : columns(table);
-      for (const read of names(JSON.stringify(one.graph))) if (!read.startsWith("record.") || !own.has(read.slice(7))) wrong.push(`${one.key}: {{${read}}}`);
+      const changed = one.trigger.kind === "record" && one.trigger.event === "updated";
+      for (const read of names(JSON.stringify(one.graph))) {
+        const [scope, column, more] = read.split(".");
+        if (scope === "record" && own.has(column!) && more === undefined) continue;
+        // `{{was.<column>}}`: only a rule run by a change has the row as it was.
+        if (scope === "was" && changed && own.has(column!) && more === undefined) continue;
+        // `{{<staff column>.name}}`: the person's name, never a link.
+        if (table !== undefined && column === "name" && more === undefined && holdsStaff(table, scope!)) continue;
+        wrong.push(`${one.key}: {{${read}}}`);
+      }
     }
     expect(wrong).toEqual([]);
   });
@@ -192,14 +224,22 @@ describe("the rules the app ships", () => {
       expect(trigger.forEach!.where[0], key).toEqual({ left: { field: "state" }, op: "is", right: "open" });
       expect(steps(key), key).toMatchObject([{ kind: "notification", to: { column: "owner_id" } }]);
     }
-    expect(rule("nudge-quiet").trigger.forEach!.where[1]).toEqual({ left: { field: "last_activity_at" }, op: "more_than_ago", right: { amount: 7, unit: "days" } });
-    expect(rule("nudge-stuck").trigger.forEach!.where[1]).toEqual({ left: { field: "entered_stage_at" }, op: "more_than_ago", right: { amount: 21, unit: "days" } });
-    // Closing within a week, and not yet at the last stage (whose odds are 0.9).
+    // The days are the business's (decision 136): read from the settings row at each morning's run, the number written
+    // here only while the setting holds none. The same three settings the Nudges screen and Settings show.
+    const setting = (column: string) => ({ table: "settings", column });
+    expect(rule("nudge-quiet").trigger.forEach!.where[1]).toEqual({ left: { field: "last_activity_at" }, op: "more_than_ago", right: { amount: 7, unit: "days", setting: setting("nudge_quiet_days") } });
+    expect(rule("nudge-stuck").trigger.forEach!.where[1]).toEqual({ left: { field: "entered_stage_at" }, op: "more_than_ago", right: { amount: 21, unit: "days", setting: setting("nudge_stuck_days") } });
+    // Closing within the days set, and not yet at the last stage (whose odds are 0.9).
     expect(rule("nudge-soon").trigger.forEach!.where.slice(1)).toEqual([
-      { left: { field: "expected_close" }, op: "within_next", right: { amount: 7, unit: "days" } },
+      { left: { field: "expected_close" }, op: "within_next", right: { amount: 7, unit: "days", setting: setting("nudge_soon_days") } },
       { left: { field: "stage_odds" }, op: "lt", right: 0.9 },
     ]);
     expect(staff("deals", "owner_id")).toBe(true);
+    // A fresh install's settings say what the rules fall back to, so nothing changes until somebody moves a number.
+    const settingsDefault = (ref: string): unknown => (m.requiredSchema.tables.find((one) => one.ref === "settings")!.columns.find((one) => one.ref === ref) as { default?: unknown } | undefined)?.default;
+    for (const [key, ref, days] of [["nudge-quiet", "nudge_quiet_days", 7], ["nudge-stuck", "nudge_stuck_days", 21], ["nudge-soon", "nudge_soon_days", 7]] as const) expect([settingsDefault(ref), key]).toEqual([days, key]);
+    // No notice states a number of days the business may have changed.
+    for (const key of ["nudge-quiet", "nudge-stuck"]) for (const locale of LOCALES) expect((steps(key)[0]!.body as Record<string, string>)[locale], `${key} ${locale}`).not.toMatch(/\d/);
   });
 
   it("tells one person, never a whole role, of what is theirs", () => {

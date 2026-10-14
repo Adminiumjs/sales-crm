@@ -75,7 +75,8 @@ describe("the app is made of ten parts", () => {
 });
 
 describe("every table and page is in the part of its menu heading", () => {
-  const headingOf = new Map(pages.map((page) => [Object.values(page.bindings)[0]!, page.nav.group]));
+  // The section's first run (the console's twelve entries, P17) has no heading: those pages are read by their own part.
+  const headingOf = new Map(pages.filter((page) => page.bindings !== undefined).map((page) => [Object.values(page.bindings)[0]!, page.nav.group === "console" ? page.module : page.nav.group]));
 
   it("puts the two quote tables and the price list they read in the part of their own, and every other table in its heading's part", () => {
     // Only a quote's line reads a price: with no quotes the price list would be a page nothing uses.
@@ -89,7 +90,9 @@ describe("every table and page is in the part of its menu heading", () => {
 
   it("puts each page in its table's part", () => {
     const partOf = new Map(tables.map((table) => [table.ref, table.module]));
-    for (const page of pages) expect(page.module, page.ref).toBe(partOf.get(Object.values(page.bindings)[0]!));
+    for (const page of pages.filter((one) => one.bindings !== undefined)) expect(page.module, page.ref).toBe(partOf.get(Object.values(page.bindings)[0]!));
+    // The console's two overviews: the Overview with Selling, which is always on; Approvals with Quotes, and gone with it.
+    expect(pages.filter((one) => one.bindings === undefined).map((one) => [one.ref, one.module])).toEqual([["crm-overview", "selling"], ["crm-approvals", "quotes"]]);
   });
 
   it("leaves the app's settings and its outgoing e-mails in no part: they are always there", () => {
@@ -122,6 +125,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
     expect((manifest.automations as unknown as { key: string; module?: string }[]).map((rule) => [rule.key, rule.module])).toEqual([
       ["deal-made", "selling"],
       ["deal-stage-changed", "selling"],
+      ["deal-stage-was", "selling"],
       // A won deal makes a job only where jobs on site are done at all.
       ["deal-won-job", "jobs"],
       // The amount line is written when a quote is sent: no quotes, no line.
@@ -179,7 +183,7 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(templates.filter((one) => /^crm-(visit|referral)-/.test(one.key))).toHaveLength(4);
     for (const template of templates.filter((one) => /^crm-(visit|referral)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
-    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager"]);
+    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager"]);
     // Every role is still there, without a grant, a limit or a part that names quotes.
     const leftRoles = left.roles as unknown as Role[];
     expect(leftRoles.map((role) => role.key)).toEqual(roles.map((role) => role.key));

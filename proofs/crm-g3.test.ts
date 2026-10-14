@@ -356,10 +356,12 @@ for (const [dialect, reachable] of LEGS) {
         statusColumn: 'stage_id',
         columnsFrom: { table: s.t('stages'), key: 'id', label: 'label', order: 'position' },
         titleColumn: 'name',
-        totals: [{ column: 'amount', fn: 'sum' }],
+        // P17: each heading's two totals, the amount and the weighted value (D10), and the stage's odds as its badge.
+        totals: [{ column: 'amount', fn: 'sum' }, { column: 'weighted_value', fn: 'sum' }],
         // The pipeline is the open deals: the tests each column's count and total are asked by.
         only: [{ column: 'state', in: ['open'] }],
       });
+      expect(JSON.stringify((board?.config as { columnsFrom: { badge?: unknown } }).columnsFrom.badge)).toContain('odds');
       // And the cards are asked for by the same condition.
       expect((board?.config['binding'] as { filters?: unknown }).filters).toEqual([{ column: 'state', op: 'in', value: ['open'] }]);
       // A rep finds it on the menu; the operations manager, who reads no deal, does not.

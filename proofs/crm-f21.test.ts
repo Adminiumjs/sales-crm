@@ -15,10 +15,13 @@
  *  - "Say thank you" on a referral writes its e-mail, once;
  *  - a rep's week holds her own sums and her cover of her target; a manager's
  *    the sums of the people she leads and none of another team's;
- *  - and what is NOT yet so: what a mention says to somebody who cannot open
- *    the deal, written as it is today, so the day the engine changes it this
- *    fails. (Who is told of an approval asked is in `crm-roles`, which has
- *    quotes: it needs the Invoices & Receipts add-on this file does not load.)
+ *  - however many times a deal moves before the rules run, every move is in
+ *    its history (decision 131, by the deal as it was: `{{was.*}}`);
+ *  - a site visit's mails go on all three engines (the Postgres fault of a
+ *    staff column read as a link is gone);
+ *  - a mention names the deal only to somebody who can open it. (Who is told
+ *    of an approval asked is in `crm-roles`, which has quotes: it needs the
+ *    Invoices & Receipts add-on this file does not load.)
  *
  * To run: copy into `~/Work/lanes/p67/apps/server/test/` as `zz-crm-f21.test.ts`, run, remove.
  */
@@ -133,25 +136,63 @@ for (const [dialect, reachable] of LEGS) {
       expect(await history(deal)).toHaveLength(3);
     });
 
-    it('THE LIMIT: of three moves before the rules run, the last two are written, each true, and the first is not', async () => {
+    it('of three moves before the rules run, all three are written, each true: the oldest is no longer lost (decision 131)', async () => {
+      /*
+       * MySQL keeps a moment to the whole second, and Adminium takes two changes of a row that carry the same moment of
+       * change as ONE occurrence of a rule (the run for the later change is not queued). Two moves within one second are
+       * still both written (the first run reads the deal's last move and the one before it); of three within one second,
+       * the oldest is lost, as no run is left whose "before" holds it. Not the app's to change; said in the report. So on
+       * MySQL the moves here are a second apart (still all before the rules run); on SQLite and Postgres they follow at once.
+       */
+      const apart = async (): Promise<void> => {
+        if (dialect === 'mysql') await new Promise((done) => setTimeout(done, 1100));
+      };
       const deal = await makeDeal('dana', 'Lockers', 'dana');
       await jobs();
       expect(said(await s.change('dana', 'deals', deal, { stage_id: stage['b'] }))).toBe('ok');
+      await apart();
       expect(said(await s.change('ivy', 'deals', deal, { stage_id: stage['c'] }))).toBe('ok');
+      await apart();
       expect(said(await s.change('dana', 'deals', deal, { stage_id: stage['a'] }))).toBe('ok');
       await jobs();
-      // The deal keeps the move just made and the one before it. A third one back is in the record's own history only.
-      expect(await history(deal)).toEqual([
+      // Each move's run reads the deal as it was before that move: the run of the second move writes the first.
+      // (MySQL keeps whole seconds and the moves make a ring, so the lines are compared as a set, not in order.)
+      const sorted = (lines: (number | string | null | undefined)[][]) => lines.map((line) => JSON.stringify(line)).sort();
+      expect(sorted(await history(deal))).toEqual(sorted([
         [null, stage['a'], s.ids['dana']],
+        [stage['a'], stage['b'], s.ids['dana']],
         [stage['b'], stage['c'], s.ids['ivy']],
         [stage['c'], stage['a'], s.ids['dana']],
-      ]);
+      ]));
+      // Each move's moment is its own: four lines, four moments no later than the last move, none written twice.
+      const lines = await s.rows(`select at, move_key from crm_deal_stage_changes where deal_id = ${String(deal)}`);
+      const entered = when((await s.rows(`select entered_stage_at from crm_deals where id = ${String(deal)}`))[0]!['entered_stage_at']);
+      expect(Math.max(...lines.map((line) => when(line['at'])))).toBe(entered);
+      expect(new Set(lines.filter((line) => line['move_key'] !== null).map((line) => line['move_key'])).size).toBe(3);
+      await jobs();
+      expect(await history(deal)).toHaveLength(4);
+      // Five moves at once, the rules run once: five lines and the opening one.
+      const many = await makeDeal('dana', 'Coat hooks', 'dana');
+      await jobs();
+      for (const [who, to] of [['dana', 'b'], ['ivy', 'c'], ['dana', 'a'], ['ivy', 'b'], ['dana', 'c']] as const) {
+        expect(said(await s.change(who, 'deals', many, { stage_id: stage[to] }))).toBe('ok');
+        await apart();
+      }
+      await jobs();
+      expect(sorted(await history(many))).toEqual(sorted([
+        [null, stage['a'], s.ids['dana']],
+        [stage['a'], stage['b'], s.ids['dana']],
+        [stage['b'], stage['c'], s.ids['ivy']],
+        [stage['c'], stage['a'], s.ids['dana']],
+        [stage['a'], stage['b'], s.ids['ivy']],
+        [stage['b'], stage['c'], s.ids['dana']],
+      ]));
     });
 
     it('nobody who moves a deal writes where it came from or who moved it', async () => {
       const deal = await makeDeal('dana', 'Booths', 'dana');
       await jobs();
-      for (const forged of [{ stage_kept_id: stage['c'] }, { stage_from_id: stage['c'] }, { stage_by_id: s.ids['ivy'] }, { prev_by_id: s.ids['ivy'] }, { move_key: 'made-up' }]) {
+      for (const forged of [{ stage_kept_id: stage['c'] }, { stage_from_id: stage['c'] }, { stage_by_id: s.ids['ivy'] }, { prev_by_id: s.ids['ivy'] }, { move_key: 'made-up' }, { was_move_key: 'made-up' }, { was_from_stage: String(stage['c']) }]) {
         const res = await s.change('dana', 'deals', deal, { stage_id: stage['b'], ...forged });
         // Refused, or taken with the forged value dropped: either way the deal says what happened.
         if (res.statusCode === 200) expect(said(await s.change('dana', 'deals', deal, { stage_id: stage['a'] }))).toBe('ok');
@@ -221,28 +262,13 @@ for (const [dialect, reachable] of LEGS) {
       for (const row of all) expect(row['visit_id']).toBeNull();
       expect([all[2]!['to'], Number(all[2]!['contact_id'])]).toEqual(['ana.belova@fernway-clinics.com', contact]);
       expect(String(all[2]!['was'])).toContain('Leave two sample chairs');
-      /*
-       * ENGINE FAULT, Postgres only (found here; not the app's to work round): a message linked to a visit cannot be
-       * prepared. The sender follows every `*_id` column of a linked row one hop (`outbox/sender.ts`, the "one hop
-       * further" loop), through the schema model's relations, which include relations INFERRED from a column's name:
-       * `site_visits.rep_id` (a staff column, text) is taken for a key of `reps` (an integer key), and Postgres refuses
-       * `WHERE id = 'usr_…'` ("invalid input syntax for type integer", `outbox/recipient.ts` `rowOf`). SQLite and MySQL
-       * compare loosely and find nothing. The cancellation links no visit (it is gone) and goes. Written as it is, so
-       * this fails the day the engine follows declared keys only.
-       */
-      const broken = (kind: unknown): boolean => dialect === 'postgres' && kind !== 'visit-cancelled';
-      for (const row of all) {
-        if (broken(row['kind'])) expect([row['status'], row['error']], String(row['kind'])).toEqual(['failed', 'The email could not be prepared']);
-        else expect(['sent', 'queued'], `${String(row['kind'])}: ${String(row['error'])}`).toContain(row['status']);
-      }
+      // Every message goes, on all three engines. (On Postgres "booked" and "moved" used to fail: the sender read the visit's
+      // `rep_id`, a staff column, as a link to the rep profiles and compared a person's id with a whole number. Fixed in
+      // Adminium: a staff column is never a guessed link.)
+      for (const row of all) expect(['sent', 'queued'], `${String(row['kind'])}: ${String(row['error'])}`).toContain(row['status']);
 
       // The mails as they were queued (nothing is sent: nothing listens).
       const queued = (await s.emails()).filter((mail) => mail.to === 'ana.belova@fernway-clinics.com');
-      if (dialect === 'postgres') {
-        expect(queued.map((mail) => mail.templateKey)).toEqual(['crm-visit-cancelled']);
-        expect(queued[0]!.text).toContain('will not take place');
-        return;
-      }
       const mails = queued;
       expect(mails.map((mail) => mail.templateKey)).toEqual(['crm-visit-confirmed', 'crm-visit-moved', 'crm-visit-cancelled']);
       const [confirmed, moved, cancelled] = mails;
@@ -387,13 +413,20 @@ for (const [dialect, reachable] of LEGS) {
       for (const who of ['dana', 'ivy']) expect(to(who)[0]!.text, who).not.toContain('{{');
     });
 
-    it('KNOWN GAP, as it is today: a mention names the deal to somebody who cannot open it', async () => {
+    it('a mention names the deal only to somebody who can open it: the table alone to anybody else', async () => {
       const deal = await makeDeal('dana', 'Quiet-room pods', 'dana');
-      expect((await s.make('dana', 'comments', { deal_id: deal, text: `@[Ada](${s.ids['ada']!}) can the crew fit this in August?` })).statusCode).toBe(201);
-      const [notice] = (await noticesOf('ada')).filter((one) => one.kind === 'mention');
-      // Ada, the operations manager, reads no deal: she gets no way in (right), and is told the deal's name all the same (the gap).
-      expect(notice).toMatchObject({ title: 'Dana mentioned you', actionUrl: null, entity: null });
-      expect(notice!.body).toContain('Quiet-room pods');
+      expect((await s.make('dana', 'comments', { deal_id: deal, text: `@[Ada](${s.ids['ada']!}) @[Ivy](${s.ids['ivy']!}) can the crew fit this in August?` })).statusCode).toBe(201);
+      const [adas] = (await noticesOf('ada')).filter((one) => one.kind === 'mention');
+      // Ada, the operations manager, reads no deal: no way in, and no name of the deal; only what kind of record it is.
+      expect(adas).toMatchObject({ title: 'Dana mentioned you', actionUrl: null, entity: null });
+      expect(adas!.body ?? '').not.toContain('Quiet-room pods');
+      expect(adas!.body ?? '').not.toContain(String(deal));
+      expect((adas!.body ?? '').trim()).not.toBe('');
+      // Ivy leads Dana and opens the deal: she is told its name and led to its room in the app.
+      const [ivys] = (await noticesOf('ivy')).filter((one) => one.kind === 'mention' && (one.body ?? '').includes('Quiet-room pods'));
+      expect(ivys).toMatchObject({ title: 'Dana mentioned you', actionUrl: `/apps/crm/staff/deals/${String(deal)}` });
+      // Neither is told what was written.
+      for (const notice of [adas, ivys]) expect(JSON.stringify(notice)).not.toContain('August');
     });
   });
 }
