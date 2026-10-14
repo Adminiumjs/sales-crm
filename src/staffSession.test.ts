@@ -65,7 +65,8 @@ describe("what the page knows of the person", () => {
   it("says what they may do and which parts are on, from the config", async () => {
     const session = await open([]).session;
     expect([session.can("deals", "update"), session.can("deals", "delete"), session.can("quotes", "read")]).toEqual([true, false, false]);
-    expect([session.part("selling"), session.part("jobs"), session.part("never-heard-of")]).toEqual([true, false, true]);
+    // A part the installed app does not have (a later stage's) is off: the server lists every part the app has.
+    expect([session.part("selling"), session.part("jobs"), session.part("never-heard-of")]).toEqual([true, false, false]);
     expect(session.tableId("deals")).toBe("public.crm_deals");
     expect(() => session.tableId("nope")).toThrow(StaffError);
   });

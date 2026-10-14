@@ -213,7 +213,7 @@ export interface StaffSession {
   now(): Date;
   /** Whether the person may do this to a table (`deals`, or an add-on's `inventory:items`), as the server said when the page opened. The server still decides each call. */
   can(ref: string, action: TableAction): boolean;
-  /** Whether a part of the app is switched on. A server that does not say has every part on. */
+  /** Whether a part of the app is switched on. A server that does not say has every part on; a part the installed app does not have (a later stage's) is off. */
   part(id: string): boolean;
   /** A table's stored name, for a door that is not here. */
   tableId(ref: string): string;
@@ -396,7 +396,7 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
       const key = ref.includes(":") ? realName(ref) : ref;
       return key !== undefined && (config!.access.tables[key] ?? []).includes(action);
     },
-    part: (id) => config!.modules === null || config!.modules === undefined || config!.modules[id] !== false,
+    part: (id) => config!.modules === null || config!.modules === undefined || config!.modules[id] === true,
     tableId,
 
     async list<R extends Row>(ref: string, q: ListQuery = {}) {

@@ -21,6 +21,7 @@ product does not: give a sample person a password. `npm run proofs` copies them 
 | `crm-manager` | the figures the manager's screens ask, at the ledger's moment; whose rows each reader's are; who is refused |
 | `crm-supply` | Supply on the real Inventory add-on (needs `ADD_ONS_REPO`, built): the three roles it is for read six of Inventory's tables, read only and a few columns each, nobody else any; a need carries its deal's state; the grants go and Supply waits while Inventory is switched off for the app, and come back with it; installed without Inventory, Supply is off and waits for it, with no grant |
 | `crm-settings` | who writes which setting and the server's refusal for the rest; each number's bounds; the working week; the depot as a place; the column no two companies or contacts share, and a pasted list matched on it; who writes the price list and a rep's own row |
+| `crm-aftercare` | After the job (stage 2): a complaint answered by its move with what we told them, once, and settled; a warranty claim along its moves only, put right saying who paid; an answer added by hand, one a job, by the account manager and the admin only; a call made once with the server's stamps; the part switched off takes its own roles' grants and every write |
 
 ```bash
 ADMINIUM_REPO=~/Work/lanes/p67 ADD_ONS_REPO=~/Work/lanes/p67-add-ons-read npm run proofs

@@ -1,0 +1,423 @@
+/*
+ * After the job: Aftercare calls, What customers said, Customer complaints,
+ * Warranty claims. One card a row, with a coloured edge for where it stands;
+ * the figures are the shared tiles. Every class here starts `crm-ac-`.
+ */
+.crm-ac .crm-screen-sub {
+  max-inline-size: 620px;
+}
+.crm-ac-rule {
+  margin: 6px 0 0;
+  max-inline-size: 620px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-subtle);
+  text-wrap: pretty;
+}
+.crm-ac-stats .crm-stat-value[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-ac-stats .crm-stat-value[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-ac-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-block-start: 14px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.crm-ac-banner > svg {
+  flex-shrink: 0;
+}
+.crm-ac-chips .crm-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.crm-ac-chip-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.crm-ac-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-ac-list[aria-busy="true"] {
+  opacity: 0.75;
+}
+.crm-ac-card {
+  min-inline-size: 0;
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-ac-card[data-tone="danger"],
+.crm-ac-card[data-state="late"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-ac-card[data-tone="warn"] {
+  border-inline-start-color: var(--warn);
+}
+.crm-ac-card[data-tone="info"] {
+  border-inline-start-color: var(--info);
+}
+.crm-ac-card[data-tone="pos"],
+.crm-ac-card[data-state="made"] {
+  border-inline-start-color: var(--pos);
+}
+.crm-ac-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  flex-wrap: wrap;
+}
+.crm-ac-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.crm-ac-tile[data-size="26"] {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+.crm-ac-main {
+  flex: 1 1 220px;
+  min-inline-size: 0;
+}
+.crm-ac-title {
+  display: flex;
+  align-items: center;
+  gap: 6px 9px;
+  flex-wrap: wrap;
+}
+.crm-ac-what {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+.crm-ac-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px 10px;
+  flex-wrap: wrap;
+  margin-block-start: 5px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-ac-co {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-ac-day {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-ac-day[data-late="1"],
+.crm-ac-due[data-late="1"] {
+  color: var(--danger);
+}
+.crm-ac-note-line {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+  text-wrap: pretty;
+}
+.crm-ac-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  text-align: end;
+}
+.crm-ac-due {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-ac-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-ac-quiet {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-ac-who.crm-ac-quiet {
+  font-weight: 600;
+}
+.crm-ac-said {
+  margin: 9px 0 0;
+  padding-inline-start: 11px;
+  border-inline-start: 2px solid var(--border-strong);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-ac-answer,
+.crm-ac-fix {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-block-start: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  font-size: 12px;
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-ac-answer {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+}
+.crm-ac-fix {
+  background: var(--pos-soft);
+  color: var(--pos);
+  font-weight: 600;
+}
+.crm-ac-answer > svg,
+.crm-ac-fix > svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}
+.crm-ac-people {
+  display: flex;
+  align-items: center;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+}
+.crm-ac-theme {
+  font-size: 11px;
+}
+.crm-ac-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-ac-foot > .crm-ac-btn {
+  margin-inline-start: auto;
+}
+.crm-ac-foot > .crm-ac-btn ~ .crm-ac-btn {
+  margin-inline-start: 0;
+}
+.crm-ac-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-block-size: 32px;
+  padding-inline: 12px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.crm-ac-btn[data-tone="pos"] {
+  border-color: transparent;
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.crm-ac-outcome,
+.crm-ac-fair,
+.crm-ac-paid {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+.crm-ac-outcome[data-tone="pos"],
+.crm-ac-paid[data-paid="supplier"] {
+  color: var(--pos);
+}
+.crm-ac-outcome[data-tone="warn"],
+.crm-ac-fair[data-tone="fair"],
+.crm-ac-paid[data-paid="us"] {
+  color: var(--warn);
+}
+.crm-ac-outcome[data-tone="danger"],
+.crm-ac-fair[data-tone="serious"] {
+  color: var(--danger);
+}
+.crm-ac-score {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pos);
+}
+.crm-ac-score[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-ac-note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  text-wrap: pretty;
+}
+.crm-ac-empty {
+  margin-block-start: 12px;
+}
+
+/* What customers said: the answers, and beside them what comes up most. */
+.crm-ac-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 13px;
+  align-items: start;
+  margin-block-start: 6px;
+}
+.crm-ac-col {
+  min-inline-size: 0;
+}
+.crm-ac-themes {
+  margin-block-start: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-ac-themes h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-ac-themes ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-ac-theme-line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.crm-ac-theme-line > span:first-child {
+  flex: 1;
+  min-inline-size: 0;
+  text-wrap: pretty;
+}
+.crm-ac-bar {
+  display: block;
+  block-size: 5px;
+  margin-block-start: 7px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.crm-ac-bar > span {
+  display: block;
+  block-size: 5px;
+  border-radius: 999px;
+  background: var(--warn);
+}
+.crm-ac-bar > span[data-none="1"] {
+  background: var(--fg-subtle);
+}
+@media (max-width: 1040px) {
+  .crm-ac-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Add an answer: a score from one to five. */
+.crm-ac-scores {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-ac-scorepick {
+  min-inline-size: 44px;
+  min-block-size: 40px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crm-ac-scorepick[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-ac-alert {
+  color: var(--danger);
+}
+
+/* The account manager's home: a row's line under its title. */
+.crm-ac-home-sub {
+  margin-block-start: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .crm-ac-end {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    align-items: center;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    text-align: start;
+  }
+}

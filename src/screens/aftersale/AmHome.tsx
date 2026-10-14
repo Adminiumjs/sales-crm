@@ -5,7 +5,8 @@
  * here speaks of an open deal: renewal ideas whose day has come or is coming,
  * introductions nobody has thanked for, and how many reorders are expected.
  * Aftercare calls, complaints and customers' answers join this page with
- * "After the job" (stage 2). Each row opens the list it belongs to.
+ * "After the job" (stage 2: `../aftercare/Home.tsx`). Each row opens the list
+ * it belongs to.
  *
  * Every count is the server's. No total across the lists is shown: it would
  * be two of them added here.
@@ -19,6 +20,7 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import { canOpen, type MenuFacts, type PartId } from "../../shell/routes.ts";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
+import { AfterGroup, AfterKpi, useAfterHome } from "../aftercare/Home.tsx";
 import { RecordName } from "../territory/Name.tsx";
 import { Kpi, useFacts } from "./common.tsx";
 import { readAmHome } from "./data.ts";
@@ -39,6 +41,9 @@ export function AmHome(_props: ScreenProps) {
   const toRenewals = canOpen("renewals", facts);
   const toReferrals = canOpen("referrals", facts);
   const toRepeat = canOpen("repeat", facts);
+  // With "After the job" (stage 2): calls due, complaints open, answers to reply to, each for whoever may open its page.
+  const after = useAfterHome(facts);
+  const toCalls = canOpen("aftercare", facts);
 
   return (
     <div className="crm-screen crm-as crm-as-home mr-screen" data-screen="amhome">
@@ -53,16 +58,22 @@ export function AmHome(_props: ScreenProps) {
           </div>
         </div>
         <div className="crm-screen-actions">
-          {toReferrals && (
+          {toReferrals && !toCalls && (
             <ScreenLink to="referrals" className="crm-btn crm-btn-ghost crm-btn-40 mr-gi">
               <Icon name="heart-handshake" />
               {t("nav.item.referrals")}
             </ScreenLink>
           )}
           {toRenewals && (
-            <ScreenLink to="renewals" className="crm-btn crm-btn-primary crm-btn-40 mr-btn">
+            <ScreenLink to="renewals" className={toCalls ? "crm-btn crm-btn-ghost crm-btn-40 mr-gi" : "crm-btn crm-btn-primary crm-btn-40 mr-btn"}>
               <Icon name="repeat" />
               {t("nav.item.renewals")}
+            </ScreenLink>
+          )}
+          {toCalls && (
+            <ScreenLink to="aftercare" className="crm-btn crm-btn-primary crm-btn-40 mr-btn">
+              <Icon name="phone-call" />
+              {t("nav.item.aftercare")}
             </ScreenLink>
           )}
         </div>
@@ -85,7 +96,10 @@ export function AmHome(_props: ScreenProps) {
         {(data) => (
           <>
             <div className="crm-kpis">
+              <AfterKpi data={after} which="calls" />
               <Kpi testId="amhome-ready" icon="repeat" tone="pos" label={t("amhome.kpi.ready")} value={f.number(data.ready)} sub={`${t("renew.count.ideas", { count: f.number(data.ideaCount) }, data.ideaCount)} · ${t("amhome.kpi.ready.sub", { amount: f.money(data.room) })}`} />
+              <AfterKpi data={after} which="complaints" />
+              <AfterKpi data={after} which="answers" />
               {session.can("referrals", "read") && (
                 <Kpi testId="amhome-thank" icon="heart-handshake" tone="accent" label={t("amhome.kpi.thank")} value={f.number(data.toThankCount)} sub={t("amhome.kpi.thank.sub", { count: f.number(data.introductions) }, data.introductions)} />
               )}
@@ -98,6 +112,7 @@ export function AmHome(_props: ScreenProps) {
                 <span className="crm-queue-hint">{t("amhome.queue.hint")}</span>
               </div>
 
+              <AfterGroup data={after} which="calls" />
               <div data-group="renewals">
                 <div className="crm-queue-group">
                   <span className="crm-dot" data-tone="pos" />
@@ -141,6 +156,8 @@ export function AmHome(_props: ScreenProps) {
                 {data.ideas.length === 0 && <div className="crm-as-queue-empty">{t("amhome.group.renewals.none")}</div>}
               </div>
 
+              <AfterGroup data={after} which="complaints" />
+              <AfterGroup data={after} which="answers" />
               {session.can("referrals", "read") && (
                 <div data-group="thanks">
                   <div className="crm-queue-group">

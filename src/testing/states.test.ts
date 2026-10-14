@@ -194,3 +194,24 @@ describe("every button", () => {
     expect(buttons).toHaveLength(35);
   });
 });
+
+describe("the buttons of After the job", () => {
+  it("answers a complaint with what we told them, and puts a warranty claim right saying who paid", () => {
+    const of = (ref: string) => (states(ref).actions ?? []).map((one) => [one.id, one.move?.to ?? null, one.ask ?? []]);
+    expect(of("complaints")).toEqual([
+      ["answered", "answered", ["answer"]],
+      ["settle", "settled", []],
+    ]);
+    expect(of("warranty_claims")).toEqual([
+      ["raise", "with-supplier", []],
+      ["parts-coming", "parts-coming", []],
+      ["sorted", "sorted", ["paid_by"]],
+      ["turn-down", "turned-down", []],
+    ]);
+    // Whoever may move a complaint may write what was told: a role held to some columns has both or neither.
+    for (const role of (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[] }> }[] }).roles) {
+      const writable = role.limits?.["complaints"]?.writable;
+      if (writable !== undefined) expect(writable.includes("answer"), role.key).toBe(writable.includes("state"));
+    }
+  });
+});

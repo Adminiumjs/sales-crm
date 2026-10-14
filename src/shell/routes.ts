@@ -38,6 +38,7 @@ export type RouteKey =
   | "appsettings"
   | "amhome" | "mkhome"
   | "stock" | "suppliers"
+  | "aftercare" | "feedback" | "complaints" | "claims"
   /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
   | "deal"
   /** A person's own: reached from their name at the top, whatever their role. */
@@ -94,6 +95,11 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   // Supply reads the Inventory add-on's own tables, named `inventory:<its table>` (see `staffSession.ts`).
   stock: { path: "stock", part: "supply", reads: ["deal_stock_needs", "inventory:items"], icon: "package" },
   suppliers: { path: "suppliers", part: "supply", reads: ["inventory:suppliers"], icon: "factory" },
+  // After the job. An aftercare call is a follow-up of its own kind, on a job: without the jobs it is about there is nothing to ring for.
+  aftercare: { path: "aftercare-calls", part: "aftercare", reads: ["follow_ups", "jobs"], icon: "phone-call" },
+  feedback: { path: "what-customers-said", part: "aftercare", reads: ["feedback"], icon: "star" },
+  complaints: { path: "complaints", part: "aftercare", reads: ["complaints"], icon: "frown" },
+  claims: { path: "warranty-claims", part: "aftercare", reads: ["warranty_claims"], icon: "shield-check" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
   me: { path: "me", part: null, reads: [], icon: "user-round" },
   mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
@@ -114,7 +120,7 @@ export const USER_MENU: readonly RouteKey[] = ["me", "mydetails", "notifs"];
 export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"] };
 
 /** The groups of a menu, in the design's words. `top` has no heading. */
-export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "supply" | "team" | "settings";
+export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "supply" | "team" | "settings" | "aftercare";
 
 /** One line of a menu: the screen, and the words it goes by in THIS role's menu ("My targets" for a rep, "Team targets" for her manager). */
 export interface MenuItem {
@@ -131,6 +137,7 @@ const SELL_TEAM: MenuGroup = ["selling", [it("pipeline", "teamBoard"), it("week"
 const ACCOUNTS_FULL: MenuGroup = ["accounts", [it("companies"), it("contacts"), it("referrals"), it("renewals"), it("repeat"), it("map"), it("import")]];
 const INBOX_FULL: MenuGroup = ["inbox", [it("inbox"), it("leads")]];
 const SUPPLY: MenuGroup = ["supply", [it("stock"), it("suppliers")]];
+const AFTER_THE_JOB: MenuGroup = ["aftercare", [it("aftercare"), it("feedback"), it("complaints"), it("claims")]];
 const without = (group: MenuGroup, routes: readonly RouteKey[]): MenuGroup => [group[0], group[1].filter((item) => !routes.includes(item.route))];
 
 /**
@@ -160,6 +167,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     SELL_TEAM,
     without(ACCOUNTS_FULL, ["import"]),
     INBOX_FULL,
+    AFTER_THE_JOB,
     SUPPLY,
     ["team", [it("messages"), it("targets", "teamTargets"), it("meeting")]],
     ["settings", [it("appsettings"), it("nudges", "nudgeRules"), it("import"), it("onboarding"), it("patch")]],
@@ -168,6 +176,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
   "account-manager": [
     ["top", [it("amhome", "home")]],
     ["customers", [it("renewals"), it("repeat"), it("referrals")]],
+    AFTER_THE_JOB,
     ["wonWork", [it("archive", "wonDeals")]],
     ["accounts", [it("companies"), it("contacts")]],
   ],
@@ -184,6 +193,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     without(SELL_TEAM, ["handover"]),
     without(ACCOUNTS_FULL, ["import"]),
     INBOX_FULL,
+    AFTER_THE_JOB,
     SUPPLY,
     ["team", [it("targets", "teamTargets"), it("meeting")]],
     // The design gives Read-only no Settings group. She reads every setting and presses nothing (P15); with no line she had no way to the page.

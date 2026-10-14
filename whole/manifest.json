@@ -14764,7 +14764,10 @@
               },
               "move": {
                 "to": "answered"
-              }
+              },
+              "ask": [
+                "answer"
+              ]
             },
             {
               "id": "settle",
@@ -14875,6 +14878,26 @@
               "ar-EG": "موضوع الشكوى",
               "zh-CN": "投诉内容",
               "zh-TW": "客訴內容"
+            }
+          },
+          {
+            "ref": "answer",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 2000
+              }
+            },
+            "label": {
+              "en-US": "What we told them",
+              "de-DE": "Was wir geantwortet haben",
+              "fr-FR": "Ce que nous avons répondu",
+              "da-DK": "Hvad vi svarede",
+              "cs-CZ": "Co jsme odpověděli",
+              "ar-EG": "ما قلناه لهم",
+              "zh-CN": "我们的答复",
+              "zh-TW": "我們的回覆"
             }
           },
           {
@@ -15265,7 +15288,10 @@
               "move": {
                 "to": "sorted"
               },
-              "tone": "primary"
+              "tone": "primary",
+              "ask": [
+                "paid_by"
+              ]
             },
             {
               "id": "turn-down",
@@ -20978,6 +21004,7 @@
             "job_id",
             "owner_id",
             "text",
+            "answer",
             "cause",
             "fairness",
             "state"
@@ -21291,6 +21318,7 @@
             "job_id",
             "owner_id",
             "text",
+            "answer",
             "cause",
             "fairness",
             "state"

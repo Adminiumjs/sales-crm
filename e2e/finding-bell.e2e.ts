@@ -105,14 +105,17 @@ test("a mention reaches Dana's open bell live; it names the deal and opens its r
     await expectCount(page, before.unreadCount);
 
     // ADA cannot open deals: her notice is the server's with no way in, and her bell draws words only.
-    const toAda = (await notices(ada)).items.find((one) => one.kind === "mention" && (one.body ?? "").includes(name))!;
+    // Ada cannot open the deal: her notice does not name it (the engine names a record only to who can open it).
+    const toAda = (await notices(ada)).items.find((one) => one.kind === "mention")!;
     expect([toAda.title, toAda.actionUrl, toAda.entity]).toEqual(["Ivy Sandoval mentioned you", null, null]);
+    expect(`${toAda.title} ${toAda.body ?? ""}`).not.toContain(name);
     expect((await notices(ada)).unreadCount).toBe(adaBefore + 1);
     const adaPage = await (await as("ada")).newPage();
     await adaPage.goto(STAFF);
     await expectCount(adaPage, adaBefore + 1);
     await bell(adaPage).click();
-    const adaItem = adaPage.getByTestId("bell-panel").getByTestId("bell-item").filter({ hasText: name });
+    const adaItem = adaPage.getByTestId("bell-panel").getByTestId("bell-item").filter({ hasText: "Ivy Sandoval mentioned you" }).first();
+    await expect(adaPage.getByTestId("bell-panel")).not.toContainText(name);
     await expect(adaItem).toContainText("Ivy Sandoval mentioned you");
     await expect(adaItem.getByRole("link")).toHaveCount(0);
     await expect(adaItem.locator('[data-link="0"]')).toHaveCount(1);

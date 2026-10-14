@@ -575,9 +575,10 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   const ivy = ivyContext.request;
   const [ivyId, adaId] = [await userId(ivy), await userId(await api("ada"))];
   const ada = await api("ada");
-  const seenBy = async (person: APIRequestContext) => ((await (await person.get("/api/v1/me/notifications?limit=20")).json()) as { data: { items: { kind: string; title: string; body: string | null; actionUrl: string | null }[] } }).data.items.filter((item) => item.kind === "mention" && (item.body ?? "").includes("Room spec: talk"));
+  // Ivy's notice names the deal; Ada's names none (she cannot open it), so hers are found as the mentions written by Dana.
+  const seenBy = async (person: APIRequestContext, named = true) => ((await (await person.get("/api/v1/me/notifications?limit=20")).json()) as { data: { items: { kind: string; title: string; body: string | null; actionUrl: string | null }[] } }).data.items.filter((item) => item.kind === "mention" && (named ? (item.body ?? "").includes("Room spec: talk") : item.title === "Dana Whitlock mentioned you"));
   // What each had been told before (nothing, on a fresh stand): the newest notice is first.
-  const told = { ivy: (await seenBy(ivy)).length, ada: (await seenBy(ada)).length };
+  const told = { ivy: (await seenBy(ivy)).length, ada: (await seenBy(ada, false)).length };
   await page.goto(`${STAFF}deals/${String(deal.id)}/comments`);
   await expect(page.locator(".crm-cmt-threads .crm-empty")).toContainText("No comments on this deal yet");
   const box = page.locator('[data-box="new"]').getByRole("combobox");
@@ -611,9 +612,10 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   expect(stored.map((one) => one.text)).toEqual([`@[Ada Novak](${adaId}) can the crew fit this in August? @[Ivy Sandoval](${ivyId}) for the price.`]);
   // THE NOTICES ARE THE SERVER'S. Ivy, who can open the deal, gets a way in; Ada, who cannot, gets none. Neither gets a word of what was written.
   await expect.poll(async () => (await seenBy(ivy)).length).toBe(told.ivy + 1);
-  expect((await seenBy(ada)).length).toBe(told.ada + 1);
+  expect((await seenBy(ada, false)).length).toBe(told.ada + 1);
   const [toIvy] = await seenBy(ivy);
-  const [toAda] = await seenBy(ada);
+  const [toAda] = await seenBy(ada, false);
+  expect(`${toAda!.title}${toAda!.body ?? ""}`).not.toContain("Room spec: talk");
   expect(toIvy!.title).toBe("Dana Whitlock mentioned you");
   expect(toIvy!.actionUrl).not.toBeNull();
   expect(toAda!.title).toBe("Dana Whitlock mentioned you");

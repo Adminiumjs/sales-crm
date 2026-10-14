@@ -14,6 +14,7 @@ import { LOCALE_TAGS, type LocaleTag } from "../locales.ts";
 import { accounts } from "../strings/accounts.ts";
 import { appsettings } from "../strings/appsettings.ts";
 import { aftersale } from "../strings/aftersale.ts";
+import { aftercare } from "../strings/aftercare.ts";
 import { base } from "../strings/base.ts";
 import { cover } from "../strings/cover.ts";
 import { customer } from "../strings/customer.ts";
@@ -61,6 +62,7 @@ const AREAS = [
   own satisfies Area<(typeof own)["en-US"]>,
   territory satisfies Area<(typeof territory)["en-US"]>,
   aftersale satisfies Area<(typeof aftersale)["en-US"]>,
+  aftercare satisfies Area<(typeof aftercare)["en-US"]>,
   customer satisfies Area<(typeof customer)["en-US"]>,
   appsettings satisfies Area<(typeof appsettings)["en-US"]>,
   finding satisfies Area<(typeof finding)["en-US"]>,
@@ -100,4 +102,5 @@ export type MessageKey =
   | keyof (typeof callnotes)["en-US"]
   | keyof (typeof territory)["en-US"]
   | keyof (typeof aftersale)["en-US"]
+  | keyof (typeof aftercare)["en-US"]
   | keyof (typeof supply)["en-US"];

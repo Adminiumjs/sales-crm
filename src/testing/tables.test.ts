@@ -246,7 +246,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   waste_removals: { nullable: ["carrier", "note_number"] },
   // After the job
   feedback: { nullable: ["text", "theme", "replied_at", "fix_written"] },
-  complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "fairness", "answered_at", "settled_at"] },
+  complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "answer", "fairness", "answered_at", "settled_at"] },
   warranty_claims: { nullable: ["contact_id", "part", "cover", "cover_years", "supplier_name", "supplier", "paid_by"] },
   // Supply
   deal_stock_needs: { nullable: ["qty", "item"] },
