@@ -16,6 +16,8 @@ import { appsettings } from "../strings/appsettings.ts";
 import { base } from "../strings/base.ts";
 import { cover } from "../strings/cover.ts";
 import { customer } from "../strings/customer.ts";
+import { callnotes } from "../strings/callnotes.ts";
+import { finding } from "../strings/finding.ts";
 import { deal } from "../strings/deal.ts";
 import { inbox } from "../strings/inbox.ts";
 import { own } from "../strings/own.ts";
@@ -56,6 +58,8 @@ const AREAS = [
   own satisfies Area<(typeof own)["en-US"]>,
   customer satisfies Area<(typeof customer)["en-US"]>,
   appsettings satisfies Area<(typeof appsettings)["en-US"]>,
+  finding satisfies Area<(typeof finding)["en-US"]>,
+  callnotes satisfies Area<(typeof callnotes)["en-US"]>,
 ] as const;
 
 /**
@@ -85,4 +89,6 @@ export type MessageKey =
   | keyof (typeof inbox)["en-US"]
   | keyof (typeof own)["en-US"]
   | keyof (typeof customer)["en-US"]
-  | keyof (typeof appsettings)["en-US"];
+  | keyof (typeof appsettings)["en-US"]
+  | keyof (typeof finding)["en-US"]
+  | keyof (typeof callnotes)["en-US"];

@@ -1,0 +1,316 @@
+/*
+ * Call notes (ledger screen 25): the head with who is on the call, three
+ * columns (where the deal was left, the notes, the people and the deal), one
+ * column below 1080 wide. Measures are the design's; logical properties, so
+ * Arabic reads right to left with the same rules.
+ */
+.crm-call {
+  max-inline-size: 1300px;
+}
+.crm-call-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.crm-call-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.crm-call-live-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: crm-call-pulse 1.6s ease-in-out infinite;
+}
+@keyframes crm-call-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crm-call-live-dot {
+    animation: none;
+  }
+}
+.crm-call-title {
+  flex: 1;
+  min-inline-size: 220px;
+}
+.crm-call-title h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-call-title .crm-screen-sub {
+  margin-block-start: 6px;
+  max-inline-size: none;
+}
+.crm-call-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-call-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  block-size: 34px;
+  padding-inline: 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.crm-call-chip[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-call-chip-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+}
+.crm-call-chip-words {
+  max-inline-size: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crm-call-grid {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 274px;
+  gap: 16px;
+  margin-block-start: 22px;
+  align-items: start;
+}
+@media (max-width: 1079px) {
+  .crm-call-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* On one column the notes come first: they are what the screen is for. */
+  .crm-call-main {
+    order: -1;
+  }
+}
+.crm-call-left,
+.crm-call-main,
+.crm-call-rail {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.crm-call .crm-side-card {
+  border-radius: 18px;
+}
+
+.crm-call-last {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-call-last-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-call-last-kind {
+  font-size: 12px;
+  font-weight: 800;
+}
+.crm-call-last-when {
+  margin-inline-start: auto;
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-call-last p {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.crm-call-notes {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-call-marks {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-block-end: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-call-marks-label {
+  margin-inline-end: 2px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-call-mark {
+  min-block-size: 30px;
+  padding-inline: 10px;
+  gap: 6px;
+  font-size: 12px;
+}
+.crm-call-text {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 290px;
+  padding: 18px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.crm-call-text:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent-soft);
+}
+.crm-call-text::placeholder {
+  color: var(--fg-subtle);
+}
+.crm-call-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-call-words {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-call-foot-end {
+  display: flex;
+  gap: 10px;
+  margin-inline-start: auto;
+}
+.crm-call-readonly {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 18px;
+  color: var(--fg-muted);
+}
+.crm-call-readonly p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.crm-call-picked {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-call-picked-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-call-picked-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-call-picked-head span {
+  margin-inline-start: auto;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-call-picked ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-call-picked li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-call-picked li:last-child {
+  border-block-end: none;
+}
+.crm-call-picked .crm-pill {
+  flex-shrink: 0;
+  font-size: 10.5px;
+}
+.crm-call-picked-text {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-call-picked-when {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+
+.crm-call-people {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-call .crm-room-facts dd[data-tone="accent"] {
+  color: var(--accent);
+  font-family: inherit;
+  font-weight: 700;
+}
+.crm-call .crm-btn-wide {
+  margin-block-start: 14px;
+}

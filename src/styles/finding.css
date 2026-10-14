@@ -1,0 +1,499 @@
+/*
+ * Finding things (P08): the top bar's search box and "Jump" button, the Jump
+ * palette, the keyboard shortcuts dialog, the bell. Measures are the
+ * design's. Logical properties throughout: the same rules draw Arabic right
+ * to left.
+ */
+
+/* ── a key, as it is drawn wherever a shortcut is named ─────────────────── */
+.crm-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 20px;
+  block-size: 20px;
+  padding-inline: 5px;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ── the top bar ─────────────────────────────────────────────────────────── */
+.crm-top-grow {
+  flex: 1;
+}
+.crm-search {
+  position: relative;
+  flex: 1;
+  min-inline-size: 0;
+  max-inline-size: 440px;
+}
+.crm-search-glass {
+  position: absolute;
+  inset-inline-start: 12px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--fg-subtle);
+  pointer-events: none;
+}
+.crm-search-field {
+  inline-size: 100%;
+  block-size: 38px;
+  padding-inline: 36px 58px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.crm-search-field::placeholder {
+  color: var(--fg-subtle);
+}
+.crm-search-field:focus-visible,
+.crm-jump-btn:focus-visible,
+.crm-bell-words:focus-visible,
+.crm-bell-all:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent);
+}
+.crm-search-chip {
+  position: absolute;
+  inset-inline-end: 7px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  block-size: 22px;
+  padding-inline: 7px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.crm-jump-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  block-size: 36px;
+  padding-inline: 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+@media (max-width: 899px) {
+  .crm-search-field {
+    padding-inline: 36px 12px;
+  }
+}
+
+/* ── Jump ────────────────────────────────────────────────────────────────── */
+.crm-jump-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 570;
+  background: rgba(10, 10, 15, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: min(11vh, 110px) 20px 20px;
+  animation: mr-scrim 0.14s ease;
+}
+.crm-jump {
+  inline-size: min(600px, 100%);
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 40px 90px -30px rgba(10, 10, 25, 0.6);
+  overflow: hidden;
+  animation: crm-jump-pop 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes crm-jump-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.crm-jump-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-jump-glass {
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+}
+.crm-jump-field {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 26px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.crm-jump-field::placeholder {
+  color: var(--fg-subtle);
+}
+.crm-jump-list {
+  position: relative;
+  max-block-size: min(54vh, 404px);
+  overflow-y: auto;
+  padding: 8px;
+}
+.crm-jump-group {
+  padding: 8px 9px 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-jump-line {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  inline-size: 100%;
+  padding: 9px 10px;
+  border-radius: 11px;
+  cursor: pointer;
+  text-align: start;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.crm-jump-line[data-on="1"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-jump-tile {
+  inline-size: 28px;
+  block-size: 28px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-jump-tile[data-tone="plain"] {
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-jump-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-jump-title,
+.crm-jump-sub {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: start;
+}
+.crm-jump-title {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.crm-jump-sub {
+  margin-block-start: 1px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-jump-right {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+.crm-jump-right[data-mono="1"] {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-jump-line[data-on="1"] .crm-jump-right[data-mono="1"] {
+  color: var(--accent);
+}
+.crm-jump-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 34px 20px 38px;
+  text-align: center;
+  color: var(--fg-subtle);
+}
+.crm-jump-empty strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-jump-empty span {
+  font-size: 12px;
+  font-weight: 600;
+}
+.crm-jump-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-jump-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.crm-jump-count {
+  margin-inline-start: auto;
+}
+
+/* ── the shortcuts dialog ────────────────────────────────────────────────── */
+.crm-dialog-box[data-dialog="shortcuts"] {
+  inline-size: min(640px, 100%);
+}
+.crm-keys {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px 34px;
+}
+.crm-keys-group:first-child {
+  grid-row: span 2;
+}
+@media (max-width: 679px) {
+  .crm-keys {
+    grid-template-columns: 1fr;
+  }
+  .crm-keys-group:first-child {
+    grid-row: auto;
+  }
+}
+.crm-keys-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 11px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-keys-group dl {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.crm-keys-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 30px;
+  padding-inline: 8px;
+  border-radius: 8px;
+}
+.crm-keys-row[data-here="1"] {
+  background: var(--accent-soft);
+}
+.crm-keys-row dt {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  text-align: start;
+}
+.crm-keys-row dd {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin: 0;
+}
+.crm-keys-row .crm-kbd {
+  min-inline-size: 23px;
+  block-size: 23px;
+  padding-inline: 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 11.5px;
+}
+.crm-keys-then {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-keys-note {
+  margin: 9px 0 0;
+  padding-inline: 8px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--fg-subtle);
+}
+.crm-user-item .crm-kbd {
+  margin-inline-start: auto;
+}
+
+/* ── the bell ────────────────────────────────────────────────────────────── */
+.crm-bell {
+  position: relative;
+}
+.crm-bell .crm-icon-btn {
+  position: relative;
+}
+.crm-bell-count {
+  position: absolute;
+  inset-block-start: -5px;
+  inset-inline-end: -5px;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding-inline: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 10.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crm-bell-panel {
+  position: absolute;
+  inset-block-start: 47px;
+  inset-inline-end: 0;
+  z-index: 140;
+  inline-size: 320px;
+  max-inline-size: calc(100vw - 32px);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 15px;
+  box-shadow: 0 26px 54px -22px rgba(10, 10, 25, 0.45);
+  overflow: hidden;
+  animation: mr-drop 0.13s ease;
+}
+@media (max-width: 599px) {
+  .crm-bell-panel {
+    position: fixed;
+    inset-block-start: 64px;
+    inset-inline: 16px;
+    inline-size: auto;
+    max-inline-size: none;
+  }
+}
+.crm-bell-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-bell-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-bell-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crm-bell-list {
+  max-block-size: min(60vh, 420px);
+  overflow-y: auto;
+}
+.crm-bell-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-bell-item {
+  position: relative;
+  border-block-end: 1px solid var(--border);
+}
+.crm-bell-item:last-child {
+  border-block-end: none;
+}
+.crm-bell-dot {
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-start: 6px;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.crm-bell-words {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 14px;
+  color: var(--fg);
+  text-decoration: none;
+}
+.crm-bell-words[data-link="1"]:hover {
+  background: var(--surface-2);
+}
+.crm-bell-text {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.crm-bell-item[data-unread="1"] .crm-bell-text {
+  font-weight: 800;
+}
+.crm-bell-body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+.crm-bell-when {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-bell-quiet {
+  margin: 0;
+  padding: 18px 14px;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}

@@ -47,6 +47,8 @@ if (SURFACE_SIDE === "customer") {
     import("./styles/inbox.css"),
     import("./styles/own.css"),
     import("./styles/appsettings.css"),
+    import("./styles/finding.css"),
+    import("./styles/callnotes.css"),
   ]).then(([{ default: App }]) => {
     root.render(
       <StrictMode>

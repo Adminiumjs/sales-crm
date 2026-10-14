@@ -18,6 +18,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { DEAL_AMOUNT_EVENT } from "../../finding/shortcuts.ts";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
@@ -155,6 +156,13 @@ export function Room({ id }: { id: string }) {
   const [noteDraft, setNoteDraft] = useState<string | null>(null);
   // One key per thing saved: sent again after a lost reply it answers the row the first one made. A changed draft is another save.
   const keys = useRef<{ of: string; activity: string; step: string }>({ of: "", activity: "", step: "" });
+  // `E`, heard by the frame (`finding/Finding.tsx`): open the amount's field, when it may be changed here.
+  const amountKey = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const onAmount = (): void => amountKey.current?.();
+    window.addEventListener(DEAL_AMOUNT_EVENT, onAmount);
+    return () => window.removeEventListener(DEAL_AMOUNT_EVENT, onAmount);
+  }, []);
   useEffect(() => {
     setAmountDraft(null);
     setText("");
@@ -340,6 +348,7 @@ export function Room({ id }: { id: string }) {
     const newestQuote = family === null ? null : newest(family);
     const has = family === null ? null : held(family);
     const quoteState = family === null || newestQuote === null ? null : stateOf(newestQuote, family, today);
+    amountKey.current = canWork && !fromQuote && !busy ? () => setAmountDraft((was) => was ?? String(num(deal.amount))) : null;
     const pool = data.fixed.reps.filter((userId) => userId !== deal.owner_id && !members.some((member) => member.user_id === userId));
     const coverCard = data.cover !== null && coverPhase(data.cover, today) !== "over" ? data.cover : null;
     const coverMine = coverCard !== null && coverCard.owner_id === me && session.can("cover_notes", "create") && open;
@@ -487,6 +496,12 @@ export function Room({ id }: { id: string }) {
                       {f.number(data.openThreads)}
                     </span>
                   )}
+                </ScreenLink>
+              )}
+              {canLog && (
+                <ScreenLink to="deal" rest={[deal.id, "call"]} className="crm-btn crm-btn-ghost crm-btn-32 mr-gi">
+                  <Icon name="phone" size={14} />
+                  {t("room.call")}
                 </ScreenLink>
               )}
               {canWork && (mine || team) && canOpen("handover", facts) && (

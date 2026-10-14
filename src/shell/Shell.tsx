@@ -22,6 +22,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Bell } from "../finding/Bell.tsx";
+import { FindingProvider, JumpButton, SearchBox, ShortcutsItem } from "../finding/Finding.tsx";
 import { appName } from "../i18n/ambient.ts";
 import { useT } from "../i18n/index.tsx";
 import type { MessageKey } from "../i18n/messages/index.ts";
@@ -210,7 +212,9 @@ export function Shell() {
 
   const listed = groups.flatMap((group) => group.items.map((item) => item.route));
   const current = here === null ? null : listed.includes(here.route) ? here.route : ((LIT_BY[here.route] ?? []).find((route) => listed.includes(route)) ?? here.route);
+  const leave = useCallback(() => void signOut(), [signOut]);
   return (
+    <FindingProvider groups={groups} home={home} current={here?.route ?? null} facts={facts} onTheme={theme.toggle} onSignOut={leave}>
     <div className="crm-shell">
       <a className="crm-skip" href="#crm-page">
         {t("shell.skip")}
@@ -230,7 +234,10 @@ export function Shell() {
               <Icon name="menu" size={17} />
             </button>
           )}
+          <SearchBox narrow={narrow} />
           <div className="crm-top-end">
+            {!narrow && <JumpButton />}
+            <Bell />
             <button type="button" className="crm-icon-btn mr-gi" aria-label={t(theme.dark ? "shell.theme.light" : "shell.theme.dark")} onClick={theme.toggle}>
               <Icon name={theme.dark ? "sun" : "moon"} />
             </button>
@@ -267,6 +274,7 @@ export function Shell() {
                           <span>{t(`nav.own.${route}` as MessageKey)}</span>
                         </ScreenLink>
                       ))}
+                      <ShortcutsItem onGo={() => { setUserMenu(false); chip.current?.focus(); }} />
                       <button type="button" role="menuitem" className="crm-user-item crm-user-out mr-row" onClick={() => void signOut()}>
                         <Icon name="log-out" size={15} />
                         <span>{t("shell.signOut")}</span>
@@ -321,5 +329,6 @@ export function Shell() {
         </div>
       )}
     </div>
+    </FindingProvider>
   );
 }
