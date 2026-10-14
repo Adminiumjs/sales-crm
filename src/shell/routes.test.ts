@@ -7,14 +7,18 @@ import { describe, expect, it } from "vitest";
 import manifest from "../../whole/manifest.json";
 import { canOpen, homeFor, HOMES, inMenu, menuFor, MENUS, OWN, rolesOf, ROLE_ORDER, routeForPath, ROUTES, USER_MENU, type MenuFacts, type PartId, type RoleKey, type RouteKey } from "./routes.ts";
 
-type Role = { key: string; permissions: string[] };
+type Role = { key: string; permissions: string[]; tables?: { addOn: string; table: string; actions: string[] }[] };
 const roles = (manifest as unknown as { roles: Role[] }).roles;
 const tables = (manifest as unknown as { requiredSchema: { tables: { ref: string; module?: string }[] } }).requiredSchema.tables;
+/** An add-on's tables the app's roles are given, as the session names them: `inventory:items`. */
+const addOnTables = new Set(roles.flatMap((role) => (role.tables ?? []).map((entry) => `${entry.addOn}:${entry.table}`)));
 const parts = (manifest as unknown as { modules: { id: string }[] }).modules.map((part) => part.id);
 
 /** What a person holding these roles is told, on an install with every part on and every screen built. */
 function facts(held: RoleKey[], over: Partial<MenuFacts> = {}): MenuFacts {
-  const grants = new Set(roles.filter((role) => held.includes(role.key as RoleKey)).flatMap((role) => role.permissions));
+  const mine = roles.filter((role) => held.includes(role.key as RoleKey));
+  // A role's own grants, and what it is given of an add-on's tables (read while the add-on is connected).
+  const grants = new Set([...mine.flatMap((role) => role.permissions), ...mine.flatMap((role) => (role.tables ?? []).filter((entry) => entry.actions.includes("read")).map((entry) => `table:@${entry.addOn}:${entry.table}:read`))]);
   return { roles: held.map((key) => `crm-${key}`), part: () => true, reads: (table) => grants.has(`table:@${table}:read`), built: () => true, ...over };
 }
 const routesOf = (f: MenuFacts): RouteKey[] => menuFor(f).flatMap((group) => group.items.map((item) => item.route));
@@ -23,7 +27,7 @@ describe("the table of screens", () => {
   it("names only parts and tables the manifest has", () => {
     for (const [key, def] of Object.entries(ROUTES)) {
       if (def.part !== null) expect(parts, key).toContain(def.part);
-      for (const table of def.reads) expect(tables.map((t) => t.ref), `${key} reads ${table}`).toContain(table);
+      for (const table of def.reads) expect([...tables.map((t) => t.ref), ...addOnTables], `${key} reads ${table}`).toContain(table);
     }
   });
 
@@ -206,5 +210,37 @@ describe("a person's own screens", () => {
     // With the Inbox off the marketer is left with Accounts, and the front desk with nothing.
     expect(homeFor(facts(["marketer"], { part: (id) => id !== "inbox" }))).toBe("companies");
     expect(homeFor(facts(["front-desk"], { part: (id) => id !== "inbox" }))).toBeNull();
+  });
+});
+
+describe("a part that waits for its add-on", () => {
+  // Supply is built on Inventory: with the add-on not connected, the part is off and none of its tables reads.
+  const off = (held: RoleKey[], waiting: boolean): MenuFacts => facts(held, { part: (id) => id !== "supply", waits: (id) => waiting && id === "supply", reads: (table) => table !== "deal_stock_needs" && !table.startsWith("inventory:") && facts(held).reads(table) });
+
+  it("keeps Supply's lines in the menus of the roles it is for, each opening the page that says what it waits for", () => {
+    for (const role of ["admin", "read-only", "ops-manager"] as const) {
+      expect(routesOf(off([role], true)).filter((route) => ROUTES[route].part === "supply"), role).toEqual(["stock", "suppliers"]);
+    }
+    expect(routesOf({ roles: [], part: (id) => id !== "supply", waits: (id) => id === "supply", reads: () => false, built: () => true }).filter((route) => ROUTES[route].part === "supply")).toEqual(["stock", "suppliers"]);
+    // The operations manager has nothing else: her home is the page that says so, not "nothing is switched on".
+    expect(homeFor(off(["ops-manager"], true))).toBe("stock");
+  });
+
+  it("takes them out when the part is simply switched off, and gives nobody else a line", () => {
+    for (const role of ["admin", "read-only", "ops-manager"] as const) expect(routesOf(off([role], false)).some((route) => ROUTES[route].part === "supply"), role).toBe(false);
+    for (const role of ["rep", "sales-manager", "account-manager", "marketer", "front-desk"] as const) expect(routesOf(off([role], true)).some((route) => ROUTES[route].part === "supply"), role).toBe(false);
+  });
+
+  it("is waiting only while the add-on is not attached and the part is off", async () => {
+    const { waitsFor } = await import("./routes.ts");
+    expect(waitsFor("supply", false, () => false)).toBe(true);
+    expect(waitsFor("supply", false, (key) => key === "inventory")).toBe(false);
+    expect(waitsFor("supply", true, () => false)).toBe(false);
+    expect(waitsFor("inbox", false, () => false)).toBe(false);
+  });
+
+  it("opens Supply for the three roles it is for only with Inventory's tables to read", () => {
+    for (const role of ["admin", "read-only", "ops-manager"] as const) expect([role, canOpen("stock", facts([role])), canOpen("suppliers", facts([role]))]).toEqual([role, true, true]);
+    for (const role of ["rep", "sales-manager"] as const) expect([role, canOpen("suppliers", facts([role])), inMenu("stock", [`crm-${role}`])]).toEqual([role, false, false]);
   });
 });

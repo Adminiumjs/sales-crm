@@ -45,15 +45,41 @@ function Plain({ icon, code, heading, children, home, label }: { icon: string; c
   );
 }
 
-export type RefusedWhy = { kind: "role" } | { kind: "private" } | { kind: "part"; part: string; owner: boolean };
+export type RefusedWhy = { kind: "role" } | { kind: "private" } | { kind: "part"; part: string; owner: boolean } | { kind: "waits"; part: string; addOn: string; owner: boolean };
 
 /** A screen the person's role does not hold, or one of a part that is switched off. */
 export function Refused({ why, who, home }: { why: RefusedWhy; who: { name: string; role: string }; home: WayHome | null }) {
   const t = useT();
-  const sentence = why.kind === "private" ? t("shell.refused.private") : why.kind === "part" ? t(why.owner ? "shell.partOff.owner" : "shell.partOff.ask", { part: why.part }) : t("shell.refused.ask");
+  const sentence = why.kind === "private" ? t("shell.refused.private") : why.kind === "part" || why.kind === "waits" ? t(why.owner ? "shell.partOff.owner" : "shell.partOff.ask", { part: why.part }) : t("shell.refused.ask");
   return (
     <Plain icon="lock" heading={t("shell.refused.heading")} home={home} label="refused">
       <p>{sentence}</p>
+      <div className="crm-plain-who">{t("shell.signedInAs", who)}</div>
+    </Plain>
+  );
+}
+
+/** The names the add-ons a part can wait for go by, in every language: their own. */
+const ADD_ON_NAMES: Record<string, string> = { inventory: "Inventory" };
+
+/**
+ * A screen of a part built on an add-on that is not connected to this app
+ * (`WAITS_FOR`): what it waits for, and who connects it. The install's owner
+ * is told where; everybody else whom to ask. Nothing of the part is read.
+ */
+export function Waits({ why, who, home }: { why: Extract<RefusedWhy, { kind: "waits" }>; who: { name: string; role: string }; home: WayHome | null }) {
+  const t = useT();
+  const words = { part: why.part, addOn: ADD_ON_NAMES[why.addOn] ?? why.addOn };
+  return (
+    <Plain icon="package" heading={t("supply.waits.heading", words)} home={home} label="waits">
+      <p>{t(why.owner ? "supply.waits.owner" : "supply.waits.ask", words)}</p>
+      {why.owner && (
+        <p>
+          <a className="crm-ast-link" href="/studio/apps/crm" data-testid="waits-open">
+            {t("supply.waits.open")}
+          </a>
+        </p>
+      )}
       <div className="crm-plain-who">{t("shell.signedInAs", who)}</div>
     </Plain>
   );

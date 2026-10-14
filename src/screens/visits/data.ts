@@ -200,3 +200,37 @@ export async function readWriteUp(session: StaffSession, id: number | null, mine
   const agreed = note === null ? [] : (await session.list<Agreed>("visit_agreed", { where: { column: "visit_note_id", op: "eq", value: note.id }, order: ["position", "id"], limit: 100 })).rows;
   return { visit, note, agreed, past };
 }
+
+/**
+ * WHAT THE CUSTOMER IS TOLD. Three e-mails are written by the server (the
+ * manifest's outbox): a visit booked, its time moved, and a visit cancelled.
+ * They go to the visit's contact, or to the deal's contact when the visit
+ * names none. One switch of the settings holds all three (`visit_emails`,
+ * the CRM admin's); the dialog reads it and says what will happen, never
+ * what it hopes.
+ */
+export type VisitMails = "on" | "off" | "unknown";
+
+export async function readVisitMails(session: Pick<StaffSession, "can" | "list">): Promise<VisitMails> {
+  if (!session.can("settings", "read")) return "unknown";
+  try {
+    const held = (await session.list<{ visit_emails: boolean | number | string | null }>("settings", { select: ["visit_emails"], limit: 1 })).rows[0]?.visit_emails;
+    if (held === undefined || held === null) return "unknown";
+    // SQLite and MySQL keep a yes or no as 1 or 0.
+    return held === true || held === 1 || held === "1" || held === "true" ? "on" : "off";
+  } catch {
+    return "unknown";
+  }
+}
+
+/** The line of the booking dialog that says what the customer is told: which string, for which state. */
+type ToldMode = "new" | "move" | "cancel";
+export type ToldKey = "visits.told.unknown" | "visits.told.nobody" | "visits.told.nobody.sent" | "visits.told.move.same" | `visits.told.${ToldMode}` | `visits.told.${ToldMode}.sent`;
+
+export function toldLine(mode: ToldMode, mails: VisitMails, named: boolean, timeMoved: boolean): ToldKey {
+  if (mails === "unknown") return "visits.told.unknown";
+  if (mails === "off") return named ? `visits.told.${mode}` : "visits.told.nobody";
+  // A move that keeps the time (its length, its purpose, its note) writes no e-mail.
+  if (mode === "move" && !timeMoved) return "visits.told.move.same";
+  return named ? `visits.told.${mode}.sent` : "visits.told.nobody.sent";
+}

@@ -1,0 +1,446 @@
+/*
+ * Territory: Adminium's map beside the list this screen draws. The map's
+ * eight colours are named here once, so a territory's swatch in the list and
+ * its area and pins on the map are the same colour (the map reads `--viz-N`
+ * from the page it is mounted in).
+ */
+.crm-terr {
+  --viz-1: #4f46e5;
+  --viz-2: #0ea5e9;
+  --viz-3: #14b8a6;
+  --viz-4: #f59e0b;
+  --viz-5: #ef4444;
+  --viz-6: #8b5cf6;
+  --viz-7: #ec4899;
+  --viz-8: #22c55e;
+}
+.crm-terr .crm-screen-sub {
+  max-inline-size: 620px;
+}
+.crm-terr-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-block-start: 22px;
+}
+/* With no map to look at, the list is the page. */
+.crm-terr[data-map="off"] .crm-terr-grid {
+  grid-template-columns: minmax(0, 1fr);
+  max-inline-size: 760px;
+}
+.crm-terr-map,
+.crm-terr-card {
+  min-inline-size: 0;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+/* A card that holds a map does not lift under the pointer. */
+.crm-terr-card.mr-card:hover {
+  transform: none;
+}
+.crm-terr-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  border-block-end: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.crm-terr-bar > span {
+  flex: 1 1 220px;
+  min-inline-size: 0;
+}
+.crm-terr .crm-btn {
+  block-size: 32px;
+  padding-inline: 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  gap: 7px;
+  white-space: nowrap;
+}
+.crm-terr-kit {
+  padding: 12px;
+  min-block-size: 22rem;
+}
+.crm-terr[data-map="ready"] .crm-terr-kit,
+.crm-terr[data-map="loading"] .crm-terr-kit {
+  block-size: 560px;
+}
+.crm-terr[data-map="off"] .crm-terr-kit,
+.crm-terr[data-map="unreachable"] .crm-terr-kit {
+  min-block-size: 0;
+}
+.crm-terr-nokit {
+  padding: 28px 18px;
+}
+.crm-terr-ask {
+  margin: 0;
+  padding: 0 14px 12px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-terr-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-terr-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-inline-size: 0;
+}
+.crm-terr-head {
+  display: flex;
+  align-items: center;
+  gap: 8px 11px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-terr-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-terr-head-stack {
+  display: block;
+}
+.crm-terr-head-stack p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-terr-head-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.crm-terr-note {
+  margin: 0;
+  padding: 11px 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-terr-list,
+.crm-terr-companies,
+.crm-terr-unplaced,
+.crm-terr-offer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-terr-row {
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-terr-row[data-picked="true"] {
+  background: var(--accent-soft);
+}
+.crm-terr-pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  inline-size: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  text-align: start;
+  font: inherit;
+}
+.crm-terr-pick:focus-visible,
+.crm-terr-company:focus-visible,
+.crm-terr-inside-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.crm-terr-swatch {
+  flex-shrink: 0;
+  inline-size: 12px;
+  block-size: 12px;
+  margin-block-start: 4px;
+  border-radius: 9999px;
+  background: var(--viz-1);
+}
+/* The same eight outlines the map gives its pins, so colour is never the only cue. */
+.crm-terr-swatch[data-colour="1"] {
+  background: var(--viz-2);
+  border-radius: 3px;
+}
+.crm-terr-swatch[data-colour="2"] {
+  background: var(--viz-3);
+  border-radius: 50% 50% 50% 0;
+}
+.crm-terr-swatch[data-colour="3"] {
+  background: var(--viz-4);
+  border-radius: 50% 0 50% 50%;
+}
+.crm-terr-swatch[data-colour="4"] {
+  background: var(--viz-5);
+  border-radius: 50% 0;
+}
+.crm-terr-swatch[data-colour="5"] {
+  background: var(--viz-6);
+  border-radius: 0 50%;
+}
+.crm-terr-swatch[data-colour="6"] {
+  background: var(--viz-7);
+  border-radius: 50% 50% 0 0;
+}
+.crm-terr-swatch[data-colour="7"] {
+  background: var(--viz-8);
+  border-radius: 0 0 50% 50%;
+}
+.crm-terr-name {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-terr-name-main {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.crm-terr-owner {
+  display: block;
+  margin-block-start: 3px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-terr-figures {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.crm-terr-value {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.crm-terr-open {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-terr-companies {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-block-start: 8px;
+  padding-inline-start: 23px;
+}
+.crm-terr-companies > li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.crm-terr-company {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+  padding: 2px 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg);
+  text-align: start;
+}
+button.crm-terr-company {
+  color: var(--accent);
+  cursor: pointer;
+}
+button.crm-terr-company[aria-pressed="true"] {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.crm-terr-company-note {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+.crm-terr-company-value {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.crm-terr-other {
+  margin-block-start: 6px;
+  padding-inline-start: 23px;
+  font-size: 11px;
+  color: var(--fg-subtle);
+  direction: inherit;
+}
+.crm-terr-other:empty {
+  display: none;
+}
+.crm-terr-inside,
+.crm-terr-strayed {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+  margin-inline-start: 23px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.crm-terr-inside {
+  background: var(--warn-soft);
+  color: var(--fg);
+}
+.crm-terr-inside > svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--warn);
+}
+.crm-terr-inside > span {
+  flex: 1 1 180px;
+  min-inline-size: 0;
+}
+.crm-terr-inside-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+}
+.crm-terr-strayed {
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-terr-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-block-start: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-terr-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-inline-size: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-terr-fields .crm-input {
+  inline-size: 100%;
+  min-inline-size: 0;
+  block-size: 36px;
+}
+.crm-terr-empty {
+  padding: 16px 18px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-terr-unplaced > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-terr-unplaced-main {
+  flex: 1 1 200px;
+  min-inline-size: 0;
+}
+.crm-terr-unplaced-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-terr-unplaced-addr {
+  display: block;
+  margin-block-start: 3px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+.crm-terr-unplaced .crm-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-terr-offer-list > li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-block-end: 1px solid var(--border);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.crm-terr-offer-list > li > span:last-child {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+.crm-terr-offer-note {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+@media (max-width: 899px) {
+  .crm-terr-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .crm-terr[data-map="ready"] .crm-terr-kit,
+  .crm-terr[data-map="loading"] .crm-terr-kit {
+    block-size: 400px;
+  }
+}
+@media (max-width: 520px) {
+  .crm-terr-kit {
+    padding: 8px;
+  }
+  .crm-terr-row,
+  .crm-terr-head,
+  .crm-terr-unplaced > li,
+  .crm-terr-foot,
+  .crm-terr-note {
+    padding-inline: 14px;
+  }
+}

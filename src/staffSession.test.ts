@@ -70,6 +70,23 @@ describe("what the page knows of the person", () => {
     expect(() => session.tableId("nope")).toThrow(StaffError);
   });
 
+  it("names an attached add-on's tables by its key, and an add-on that is not attached has none", async () => {
+    const config: StaffConfig = {
+      ...CONFIG,
+      addOns: { inventory: { version: "1.0.12", settings: {}, tables: { items: "inventory_items", suppliers: "inventory_suppliers" } } },
+      access: { tables: { ...CONFIG.access!.tables, inventory_items: ["read"] }, roles: CONFIG.access!.roles },
+    };
+    const s = server([json(200, { data: [{ id: 1, name: "Bench desk runs" }], page: { total: 10 } }), json(200, { result: { value: 7 } })]);
+    const session = await connectStaffSession({ config, fetchImpl: s.fetchImpl });
+    expect([session.can("inventory:items", "read"), session.can("inventory:items", "update"), session.can("inventory:suppliers", "read"), session.can("invoices:documents", "read")]).toEqual([true, false, false, false]);
+    expect(session.tableId("inventory:items")).toBe("inventory_items");
+    expect(() => session.tableId("invoices:documents")).toThrow(StaffError);
+    expect((await session.list("inventory:items", { limit: 200 })).total).toBe(10);
+    expect(new URL(s.calls[0]!.url, "http://x").pathname).toBe("/api/v1/data/con_1/inventory_items");
+    await session.figure({ table: "inventory:items", shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] });
+    expect((s.calls[1]!.body as { descriptor: { source: { name: string } } }).descriptor.source.name).toBe("inventory_items");
+  });
+
   it("refuses to open where no config answers", async () => {
     const { fetchImpl } = server([new Response("<!doctype html>", { status: 200 })]);
     await expect(connectStaffSession({ fetchImpl, base: "/apps/crm/staff/" })).rejects.toMatchObject({ code: "NO_CONFIG" });

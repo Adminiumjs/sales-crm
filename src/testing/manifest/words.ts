@@ -123,16 +123,25 @@ export const INSTALL_FLOOR_WORD_NAMES = [
   'automations.perSpell',
   'automations.urgent',
   'automations.digest',
+  'digest.reach',
+  'digest.sum',
+  'digest.by',
+  'digest.target',
   'automations.stepName',
   'automations.many',
   'automations.replyTo',
   'outbox.replyTo',
+  'outbox.onDelete',
   'column.mentions',
   'column.place',
   'column.area',
+  'column.linkable',
   'config.board',
   'states.notPast',
   'publicAccess.requiresWhen',
+  'frontend.records',
+  'nav.offRail',
+  'navLinks',
 ] as const;
 export type ManifestWordName = (typeof INSTALL_FLOOR_WORD_NAMES)[number];
 
@@ -187,6 +196,11 @@ export const WORD_FLOORS: Readonly<Partial<Record<ManifestWordName, string>>> = 
   'automations.urgent': '0.3.28',
   // A summary for each person, of the rows that are theirs.
   'automations.digest': '0.3.28',
+  // A section of a summary: the rows of the people its reader leads, a column added up, a line a person, a sum against a target.
+  'digest.reach': '0.3.28',
+  'digest.sum': '0.3.28',
+  'digest.by': '0.3.28',
+  'digest.target': '0.3.28',
   // A row a step makes, read by a later step.
   'automations.stepName': '0.3.28',
   // More rules than a manifest could ship before (twelve).
@@ -194,17 +208,25 @@ export const WORD_FLOORS: Readonly<Partial<Record<ManifestWordName, string>>> = 
   // A reply that goes to the person a staff column of the row names: a rule's email, an outbox producer's message.
   'automations.replyTo': '0.3.28',
   'outbox.replyTo': '0.3.28',
+  'outbox.onDelete': '0.3.28',
   // A text column in which people are mentioned.
   'column.mentions': '0.3.28',
   // A json column that holds a position on the map, read and checked on every write; one that holds an area.
   'column.place': '0.3.28',
   'column.area': '0.3.28',
+  // A foreign key that may name only a row meeting some conditions (a price-list line still offered).
+  'column.linkable': '0.3.28',
   // A board whose columns an app names: the rows of a table, or the values of an enum it picks.
   'config.board': '0.3.28',
   // A move refused once a date of its row has passed, for every writer.
   'states.notPast': '0.3.28',
   // A column a public write must fill only with some values of another, and may write at no other time.
   'publicAccess.requiresWhen': '0.3.28',
+  // Where a table's record opens on the app's own staff side: read by notices, their e-mails and search.
+  'frontend.records': '0.3.28',
+  // A page kept off the sidebar, and an entry of the app's section that is not a page.
+  'nav.offRail': '0.3.28',
+  'navLinks': '0.3.28',
 };
 
 /** Every word of `document` that needs the install floor, in document order. */
@@ -250,7 +272,11 @@ export function installFloorWords(document: unknown): ManifestWord[] {
     // A phone side: a server that does not know the side refuses the whole manifest.
     list(document['frontends']).forEach((frontend, f) => {
       if (isDoc(frontend) && frontend['side'] === 'mobile') out.push({ word: 'frontend.mobile', path: `frontends.${String(f)}.side` });
+      // Where a record opens on the side: a release before the floor refuses the key.
+      if (isDoc(frontend) && frontend['records'] !== undefined) out.push({ word: 'frontend.records', path: `frontends.${String(f)}.records` });
     });
+    // An entry of the app's section that is not a page.
+    if (document['navLinks'] !== undefined) out.push({ word: 'navLinks', path: 'navLinks' });
   }
 
   list(schema['tables']).forEach((table, t) => {
@@ -286,6 +312,7 @@ export function installFloorWords(document: unknown): ManifestWord[] {
       if (rules['mentions'] !== undefined) out.push({ word: 'column.mentions', path: `${here}.mentions` });
       if (rules['place'] !== undefined) out.push({ word: 'column.place', path: `${here}.place` });
       if (rules['area'] !== undefined) out.push({ word: 'column.area', path: `${here}.area` });
+      if (rules['linkable'] !== undefined) out.push({ word: 'column.linkable', path: `${here}.linkable` });
       for (const key of ['announce', 'plainText', 'customerKey', 'codeLast4'] as const) {
         if (rules[key] !== undefined) out.push({ word: `column.${key}`, path: `${here}.${key}` });
       }
@@ -320,6 +347,8 @@ export function installFloorWords(document: unknown): ManifestWord[] {
   list(document['pages']).forEach((page, p) => {
     const config = isDoc(page) && isDoc(page['config']) ? page['config'] : {};
     const here = `pages.${String(p)}.config`;
+    // A page kept off the sidebar.
+    if (isDoc(page) && isDoc(page['nav']) && page['nav']['offRail'] !== undefined) out.push({ word: 'nav.offRail', path: `pages.${String(p)}.nav.offRail` });
     const toolbar = isDoc(config['layout']) && isDoc(config['layout']['toolbar']) ? config['layout']['toolbar'] : {};
     if (toolbar['links'] !== undefined) out.push({ word: 'toolbar.links', path: `${here}.layout.toolbar.links` });
     if (config['tabs'] !== undefined) out.push({ word: 'config.tabs', path: `${here}.tabs` });
@@ -331,6 +360,8 @@ export function installFloorWords(document: unknown): ManifestWord[] {
   if (isDoc(outbox['pages']) && outbox['pages']['app'] !== undefined) out.push({ word: 'outbox.pages.app', path: 'outbox.pages.app' });
   list(outbox['producers']).forEach((producer, p) => {
     if (isDoc(producer) && producer['replyTo'] !== undefined) out.push({ word: 'outbox.replyTo', path: `outbox.producers.${String(p)}.replyTo` });
+    // A message about a row that was removed.
+    if (isDoc(producer) && producer['onDelete'] !== undefined) out.push({ word: 'outbox.onDelete', path: `outbox.producers.${String(p)}.onDelete` });
   });
   list(document['emailTemplates']).forEach((template, t) => {
     for (const [locale, content] of Object.entries(isDoc(template) && isDoc(template['locales']) ? template['locales'] : {})) {
@@ -363,6 +394,13 @@ export function installFloorWords(document: unknown): ManifestWord[] {
         if (action['kind'] === 'email' && action['replyTo'] !== undefined) out.push({ word: 'automations.replyTo', path: `${at}.${String(n)}.action.replyTo` });
         if (action['urgent'] !== undefined) out.push({ word: 'automations.urgent', path: `${at}.${String(n)}.action.urgent` });
         if (action['kind'] === 'digest') out.push({ word: 'automations.digest', path: `${at}.${String(n)}.action` });
+        if (action['kind'] === 'digest') {
+          list(action['sections']).forEach((section, s) => {
+            for (const key of ['reach', 'sum', 'by', 'target'] as const) {
+              if (isDoc(section) && section[key] !== undefined) out.push({ word: `digest.${key}`, path: `${at}.${String(n)}.action.sections.${String(s)}.${key}` });
+            }
+          });
+        }
         if (action['kind'] === 'record.create' && action['name'] !== undefined) out.push({ word: 'automations.stepName', path: `${at}.${String(n)}.action.name` });
         list(node['branches']).forEach((branch, b) => steps(isDoc(branch) ? branch['nodes'] : undefined, `${at}.${String(n)}.branches.${String(b)}.nodes`));
       });

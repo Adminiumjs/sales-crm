@@ -320,6 +320,25 @@ for (const [dialect, reachable] of LEGS) {
       await s?.close();
     });
 
+    it('names on a quote line only a price-list line still offered, for every writer; a line already naming one retired since keeps it', async () => {
+      const id = made(await post('dana', 'quotes', { deal_id: deal, sent_to_contact_id: contact }));
+      const kept = made(await post('dana', 'quote_lines', { document_id: id, qty: 1, rate: 100, price_id: item }));
+      const retired = made(await post('ivy', 'price_list', { name: 'Old bench', list_rate: 40 }));
+      expect(said(await patch('ivy', 'price_list', retired, { active: false }))).toBe('ok');
+      for (const person of ['dana', 'tessa']) {
+        const refused = await post(person, 'quote_lines', { document_id: id, qty: 1, rate: 40, price_id: retired });
+        expect(refused.statusCode, `${person}: ${refused.body}`).toBe(422);
+        expect(refused.body, person).toContain('not-allowed');
+        // …and nothing of the retired line is told back.
+        expect(refused.body, person).not.toContain('Old bench');
+        expect((await patch(person, 'quote_lines', kept, { price_id: retired })).statusCode, person).toBe(422);
+      }
+      // Retired after the line named it: the line still changes its quantity.
+      expect(said(await patch('ivy', 'price_list', item, { active: false }))).toBe('ok');
+      expect(said(await patch('dana', 'quote_lines', kept, { qty: 2 }))).toBe('ok');
+      expect(said(await patch('ivy', 'price_list', item, { active: true }))).toBe('ok');
+    });
+
     it('the install makes the quote\'s own key, and that key serves two refs and no other', async () => {
       // The app has nothing for a customer who holds no link, so the install hands back the quote's key alone.
       expect(Object.keys(s.token)).toEqual(['quote']);

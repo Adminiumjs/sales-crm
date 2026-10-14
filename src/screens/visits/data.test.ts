@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatters } from "../../lib/format.ts";
 import { StaffError, type HistoryEntry, type Saved, type StaffSession } from "../../staffSession.ts";
-import { cancelVisit, lastMove, overlaps, spanOf, startOfToday, toneOf } from "./data.ts";
+import { cancelVisit, lastMove, overlaps, readVisitMails, spanOf, startOfToday, toldLine, toneOf } from "./data.ts";
 
 const f = formatters({ locale: "en-US", currency: "GBP", timeZone: "Europe/London" });
 // The ledger's clock: Tuesday 28 July 2026, 09:35 in London (08:35 UTC).
@@ -107,5 +107,47 @@ describe("a cancel: the why, then the row is removed", () => {
   it("does not say cancelled when nothing could be confirmed", async () => {
     const answer = await cancelVisit(fake({ remove: () => Promise.resolve({ state: "unknown" }) }, []), { id: 12 }, "why");
     expect(answer.state).toBe("unknown");
+  });
+});
+
+describe("what the booking dialog says the customer is told", () => {
+  const reading = (answer: unknown, may = true) => ({
+    can: () => may,
+    list: async () => {
+      if (answer instanceof Error) throw answer;
+      return { rows: answer === undefined ? [] : [{ visit_emails: answer }] } as never;
+    },
+  });
+
+  it("reads the switch of the three visit e-mails from the settings, as each engine keeps a yes or no", async () => {
+    for (const on of [true, 1, "1"]) expect(await readVisitMails(reading(on))).toBe("on");
+    for (const off of [false, 0, "0"]) expect(await readVisitMails(reading(off))).toBe("off");
+  });
+
+  it("claims nothing when the switch cannot be read", async () => {
+    expect(await readVisitMails(reading(true, false))).toBe("unknown");
+    expect(await readVisitMails(reading(undefined))).toBe("unknown");
+    expect(await readVisitMails(reading(null))).toBe("unknown");
+    expect(await readVisitMails(reading(new StaffError(403, "FORBIDDEN", "No.")))).toBe("unknown");
+  });
+
+  it("says an e-mail goes when the switch is on, to the contact or to the deal's when none is named", () => {
+    expect(toldLine("new", "on", true, true)).toBe("visits.told.new.sent");
+    expect(toldLine("move", "on", true, true)).toBe("visits.told.move.sent");
+    expect(toldLine("cancel", "on", true, true)).toBe("visits.told.cancel.sent");
+    for (const mode of ["new", "move", "cancel"] as const) expect(toldLine(mode, "on", false, true)).toBe("visits.told.nobody.sent");
+  });
+
+  it("says no e-mail goes for a move that keeps the time: only a new time is mailed", () => {
+    expect(toldLine("move", "on", true, false)).toBe("visits.told.move.same");
+    expect(toldLine("move", "on", false, false)).toBe("visits.told.move.same");
+  });
+
+  it("says to tell them yourself when the switch is off, and that it could not be read when it could not", () => {
+    expect(toldLine("new", "off", true, true)).toBe("visits.told.new");
+    expect(toldLine("move", "off", true, true)).toBe("visits.told.move");
+    expect(toldLine("cancel", "off", true, true)).toBe("visits.told.cancel");
+    expect(toldLine("cancel", "off", false, true)).toBe("visits.told.nobody");
+    for (const mode of ["new", "move", "cancel"] as const) expect(toldLine(mode, "unknown", true, true)).toBe("visits.told.unknown");
   });
 });

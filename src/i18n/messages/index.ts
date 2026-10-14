@@ -13,6 +13,7 @@ import type { Translated } from "../untranslated.ts";
 import { LOCALE_TAGS, type LocaleTag } from "../locales.ts";
 import { accounts } from "../strings/accounts.ts";
 import { appsettings } from "../strings/appsettings.ts";
+import { aftersale } from "../strings/aftersale.ts";
 import { base } from "../strings/base.ts";
 import { cover } from "../strings/cover.ts";
 import { customer } from "../strings/customer.ts";
@@ -24,8 +25,10 @@ import { own } from "../strings/own.ts";
 import { quotes } from "../strings/quotes.ts";
 import { selling } from "../strings/selling.ts";
 import { shell } from "../strings/shell.ts";
+import { supply } from "../strings/supply.ts";
 import { team } from "../strings/team.ts";
 import { teamwork } from "../strings/teamwork.ts";
+import { territory } from "../strings/territory.ts";
 import { today } from "../strings/today.ts";
 import { visits } from "../strings/visits.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
@@ -56,10 +59,13 @@ const AREAS = [
   accounts satisfies Area<(typeof accounts)["en-US"]>,
   inbox satisfies Area<(typeof inbox)["en-US"]>,
   own satisfies Area<(typeof own)["en-US"]>,
+  territory satisfies Area<(typeof territory)["en-US"]>,
+  aftersale satisfies Area<(typeof aftersale)["en-US"]>,
   customer satisfies Area<(typeof customer)["en-US"]>,
   appsettings satisfies Area<(typeof appsettings)["en-US"]>,
   finding satisfies Area<(typeof finding)["en-US"]>,
   callnotes satisfies Area<(typeof callnotes)["en-US"]>,
+  supply satisfies Area<(typeof supply)["en-US"]>,
 ] as const;
 
 /**
@@ -91,4 +97,7 @@ export type MessageKey =
   | keyof (typeof customer)["en-US"]
   | keyof (typeof appsettings)["en-US"]
   | keyof (typeof finding)["en-US"]
-  | keyof (typeof callnotes)["en-US"];
+  | keyof (typeof callnotes)["en-US"]
+  | keyof (typeof territory)["en-US"]
+  | keyof (typeof aftersale)["en-US"]
+  | keyof (typeof supply)["en-US"];

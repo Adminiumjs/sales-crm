@@ -34,6 +34,18 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     nullable: [
       "scope",
       "contact_id",
+      // What the deal keeps of its last move and the one before, for its history (written by the server at the move).
+      "prev_from_stage_id",
+      "prev_by_id",
+      "prev_at",
+      "prev_move_key",
+      "stage_from_id",
+      "stage_kept_id",
+      "move_key",
+      // What it keeps of its making, for its opening line.
+      "first_stage_id",
+      "opened_by_id",
+      "opened_at",
       "expected_close",
       "closed_at",
       "closed_on",
@@ -49,7 +61,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "closed_team",
     ],
   },
-  deal_stage_changes: { nullable: ["from_stage_id", "by_id"] },
+  deal_stage_changes: { nullable: ["from_stage_id", "by_id", "move_key"] },
   deal_amount_changes: { nullable: [] },
   follow_ups: { nullable: ["deal_id", "job_id", "call_no", "outcome", "done_by_id", "done_at"] },
   activities: { nullable: [] },
@@ -133,7 +145,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   territories: { nullable: ["owner_id", "area"] },
   territory_places: { nullable: [] },
   renewals: { nullable: ["deal_id", "est_value", "due_on", "every_months"] },
-  referrals: { nullable: ["company_id", "referred_name", "deal_id", "thanked_at", "reward"] },
+  referrals: { nullable: ["company_id", "referred_name", "deal_id", "thanked_at", "thanked_by_id", "reward"] },
   // The team
   reps: { nullable: ["tint", "hours_from", "hours_to", "landing"] },
   targets: { nullable: [] },
@@ -257,6 +269,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "language",
       "contact_id",
       "quote_id",
+      "visit_id",
+      "referral_id",
+      "was",
       "deal_id",
       "due_at",
       "sent_at",
@@ -302,8 +317,10 @@ const OUTBOX_WORD = {
     error: "error",
     skipReason: "skip_reason",
     repeatKey: "repeat_key",
+    // What a moved or a removed visit was, for its e-mail.
+    was: "was",
   },
-  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id" },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id" },
   recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
   kinds: {},
 };
@@ -1001,7 +1018,7 @@ describe("what this batch leaves for a later one", () => {
     expect(days.columns.find((c) => c.ref === "weekday")?.enum).toEqual(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
   });
 
-  it("declares the outbox over the table, with a template for each of its four kinds", () => {
+  it("declares the outbox over the table, with a template for each of its eight kinds", () => {
     const box = (manifest as unknown as { outbox: typeof OUTBOX_WORD & { kinds: Record<string, string> } }).outbox;
     expect({ ...box, kinds: {}, producers: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
     expect(Object.keys(box.kinds)).toEqual(byRef.get("outbox")?.columns.find((c) => c.ref === "kind")?.enum);
@@ -1022,7 +1039,8 @@ describe("the outbox table is the shape the outbox word asks for", () => {
 
   it("keeps every link of it empty-able, since not every email is about one", () => {
     const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
-    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id"]);
+    // A message is about a contact, a quote, a deal, a site visit or a referral.
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id"]);
     for (const link of links) expect(link.nullable, link.ref).toBe(true);
   });
 

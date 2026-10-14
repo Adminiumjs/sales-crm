@@ -248,7 +248,7 @@ test("the Weekly digest for a rep: the rule's state, what the mail holds, a test
 
   // Another person's summary is not hers to send: it answers as one that does not exist.
   const ivys = await summaries(await api("ivy"));
-  expect(ivys.map((one) => one.name)).toEqual(["Each week: every sales manager’s own week by email"]);
+  expect(ivys.map((one) => one.name)).toEqual(["Each week: every sales manager’s team by email"]);
   expect((await send(ivys[0]!.id)).status()).toBe(404);
   expect((await send("auto_00000000000000000000000000")).status()).toBe(404);
 });
@@ -257,7 +257,7 @@ test("the digest for the sales manager and for a role no summary is written to",
   const context = await as("ivy");
   const page = await context.newPage();
   await page.goto(`${STAFF}digest`);
-  await expect(page.locator(".crm-digest-rule-name")).toHaveText("Each week: every sales manager’s own week by email");
+  await expect(page.locator(".crm-digest-rule-name")).toHaveText("Each week: every sales manager’s team by email");
   // The manager's summary as the rule is written today: the deals she owns herself. She owns none.
   const me = stand.people["ivy"]!.id;
   expect(await total(context.request, data, "deals", { and: [{ column: "owner_id", op: "eq", value: me }, { column: "state", op: "eq", value: "open" }] })).toBe(0);

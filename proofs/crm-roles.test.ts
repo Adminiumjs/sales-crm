@@ -984,11 +984,24 @@ for (const [dialect, reachable] of LEGS) {
       // A discount put to approval: every Sales manager is told.
       const second = made(await post('dana', 'quotes', { deal_id: deal, version: 2, replaces_id: quote }));
       expect(said(await post('dana', 'quote_lines', { document_id: second, qty: 2, rate: 200, price_id: priced }))).toBe('ok');
+      const asked = async (person: string) => Number((await s.meta.db.selectFrom('adminium_notifications').select(({ fn }) => fn.countAll<number>().as('n')).where('userId', '=', s.id[person]!).where('title', 'like', '%needs your approval').executeTakeFirst())?.n ?? 0);
       const told = async () => Number((await s.meta.db.selectFrom('adminium_notifications').select(({ fn }) => fn.countAll<number>().as('n')).where('userId', '=', s.id['ivy']!).executeTakeFirst())?.n ?? 0);
       const before = await told();
+      const was = { dana: await asked('dana'), ivy: await asked('ivy'), tessa: await asked('tessa') };
       expect(said(await press('dana', 'quotes', second, 'ask-approval', 'draft', { ask_reason: 'They buy every year' }))).toBe('ok');
       await s.jobs();
       expect(await told()).toBe(before + 1);
+      // Ivy leads Dana: told. Dana, who asked: not.
+      expect([(await asked('ivy')) - was.ivy, (await asked('dana')) - was.dana]).toEqual([1, 0]);
+      // KNOWN GAP (F21, engine): ruling "to the CRM admin when she leads her own team" is not met. A rule tells a role
+      // or the person a staff column names, never "the asker's team lead", so Ivy asking about her own deal is told
+      // herself, and Tessa, the CRM admin, is not. This fails the day the engine can say it.
+      const hers = made(await post('ivy', 'deals', { name: 'Ivy: her own discount', company_id: contact['company_id'], stage_id: stages[0], owner_id: s.id['ivy'], typed_amount: 900 }));
+      const own = made(await post('ivy', 'quotes', { deal_id: hers }));
+      expect(said(await post('ivy', 'quote_lines', { document_id: own, qty: 2, rate: 150, price_id: priced }))).toBe('ok');
+      expect(said(await press('ivy', 'quotes', own, 'ask-approval', 'draft', { ask_reason: 'A long-standing customer' }))).toBe('ok');
+      await s.jobs();
+      expect([(await asked('ivy')) - was.ivy, (await asked('tessa')) - was.tessa]).toEqual([2, 0]);
 
       // The deal is won: its job is made, once, named after the deal; won again after a reopen, no second job.
       expect(said(await press('dana', 'deals', deal, 'mark-won', 'open', { close_note: 'Signed' }))).toBe('ok');

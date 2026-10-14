@@ -63,6 +63,18 @@ describe("a deal's timeline", () => {
       ],
     });
     expect(late).toEqual(early);
+    // Since F21 the rows carry the move's own moment, from where and who: the deal's making is a hair BEFORE the history's
+    // entry of the same write. Still the same three lines.
+    const exact = stage({
+      ...none,
+      history: [back, moved, made],
+      stageChanges: [
+        { id: 23, from_stage_id: 2, to_stage_id: 1, by_id: "usr_ivy", at: "2026-07-28T08:49:59.990Z" },
+        { id: 22, from_stage_id: 1, to_stage_id: 2, by_id: "usr_dana", at: "2026-07-28T08:39:59.990Z" },
+        { id: 21, from_stage_id: null, to_stage_id: 1, by_id: "usr_dana", at: "2026-07-28T08:34:59.980Z" },
+      ],
+    });
+    expect(exact).toEqual(early);
   });
 
   it("starts a deal's story where the deal was made: nothing of an earlier row that had its number", () => {

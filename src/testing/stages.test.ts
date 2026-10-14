@@ -33,7 +33,7 @@ interface Doc {
   version: string;
   modules: { id: string }[];
   requiredSchema: { tables: { ref: string; module?: string; columns: Column[]; indexes?: string[][] }[] };
-  roles: { key: string; modules: string[]; permissions: string[]; limits?: Record<string, { readable?: string[]; writable?: string[]; creatable?: string[] }> }[];
+  roles: { key: string; modules: string[]; permissions: string[]; limits?: Record<string, { readable?: string[]; writable?: string[]; creatable?: string[] }>; tables?: { addOn: string; table: string }[] }[];
   pages: { ref: string; module?: string; bindings?: Record<string, unknown> }[];
   automations: { key: string }[];
   sampleData: { file: string; people: { key: string; role: string }[]; addOns?: Record<string, { file: string }> };
@@ -181,7 +181,9 @@ describe("stage 1, the first release", () => {
         for (const item of items) {
           const route = ROUTES[item.route];
           if (route.part !== null && !parts.has(route.part)) continue;
-          for (const table of route.reads) if (!tables.has(table)) missing.push(`${role}: ${item.route} reads ${table}`);
+          // An add-on's table (`inventory:items`) is one the released file's own role gives that role to read.
+          const given = new Set((doc.roles.find((one) => one.key === role)?.tables ?? []).map((entry) => `${entry.addOn}:${entry.table}`));
+          for (const table of route.reads) if (!tables.has(table) && !given.has(table)) missing.push(`${role}: ${item.route} reads ${table}`);
         }
       }
     }

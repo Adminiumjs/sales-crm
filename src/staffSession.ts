@@ -211,7 +211,7 @@ export interface StaffSession {
   readonly connectionId: string;
   /** The server's clock now, from the difference kept when the config was read. */
   now(): Date;
-  /** Whether the person may do this to a table, as the server said when the page opened. The server still decides each call. */
+  /** Whether the person may do this to a table (`deals`, or an add-on's `inventory:items`), as the server said when the page opened. The server still decides each call. */
   can(ref: string, action: TableAction): boolean;
   /** Whether a part of the app is switched on. A server that does not say has every part on. */
   part(id: string): boolean;
@@ -246,8 +246,18 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
   const connectionId = config.connectionId;
   const skew = config.now === null || config.now === undefined ? 0 : new Date(config.now).getTime() - Date.now();
 
+  /**
+   * A table's stored name. The app's own go by their short name (`deals`); an
+   * attached add-on's by its key and its own short name (`inventory:items`),
+   * as the config lists them. An add-on that is not attached has no tables.
+   */
+  const realName = (ref: string): string | undefined => {
+    const colon = ref.indexOf(":");
+    if (colon === -1) return config!.tables[ref];
+    return config!.addOns[ref.slice(0, colon)]?.tables?.[ref.slice(colon + 1)];
+  };
   const tableId = (ref: string): string => {
-    const real = config!.tables[ref];
+    const real = realName(ref);
     if (real === undefined) throw new StaffError(0, "NO_TABLE", `This app has no table "${ref}".`, { table: ref });
     return real;
   };
@@ -380,7 +390,12 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     },
     connectionId,
     now: () => new Date(Date.now() + skew),
-    can: (ref, action) => config!.access === null || (config!.access.tables[ref] ?? []).includes(action),
+    // An add-on's table is listed by its real name: one that is not attached is nobody's to use.
+    can: (ref, action) => {
+      if (config!.access === null) return !ref.includes(":") || realName(ref) !== undefined;
+      const key = ref.includes(":") ? realName(ref) : ref;
+      return key !== undefined && (config!.access.tables[key] ?? []).includes(action);
+    },
     part: (id) => config!.modules === null || config!.modules === undefined || config!.modules[id] !== false,
     tableId,
 

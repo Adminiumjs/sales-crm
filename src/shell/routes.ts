@@ -91,8 +91,9 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   appsettings: { path: "settings", part: null, reads: ["settings"], icon: "settings" },
   amhome: { path: "home", part: "accounts", reads: ["companies", "renewals"], icon: "house" },
   mkhome: { path: "home", part: "inbox", reads: ["enquiries", "shows"], icon: "house" },
-  stock: { path: "stock", part: "supply", reads: ["deal_stock_needs"], icon: "package" },
-  suppliers: { path: "suppliers", part: "supply", reads: ["deal_stock_needs"], icon: "factory" },
+  // Supply reads the Inventory add-on's own tables, named `inventory:<its table>` (see `staffSession.ts`).
+  stock: { path: "stock", part: "supply", reads: ["deal_stock_needs", "inventory:items"], icon: "package" },
+  suppliers: { path: "suppliers", part: "supply", reads: ["inventory:suppliers"], icon: "factory" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
   me: { path: "me", part: null, reads: [], icon: "user-round" },
   mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
@@ -203,11 +204,22 @@ export const HOMES: Record<RoleKey, RouteKey | null> = {
   "read-only": "team",
 };
 
+/**
+ * A PART BUILT ON AN ADD-ON, and the add-on it waits for. While that add-on is
+ * not connected to this app (never connected, or switched off for it), the
+ * part is off and its tables are not the app's to read. Its lines then stay
+ * in the menus of the roles it is for, and each opens a page that says what
+ * it waits for and who connects it, instead of leaving without a word.
+ */
+export const WAITS_FOR: Partial<Record<PartId, string>> = { supply: "inventory" };
+
 /** A person's menu depends on these and on nothing else. */
 export interface MenuFacts {
   /** The app's roles the person holds, as slugs: `crm-rep`. */
   roles: readonly string[];
   part: (id: PartId) => boolean;
+  /** Whether a part is off only because the add-on it is built on is not connected to the app (`WAITS_FOR`). */
+  waits?: (id: PartId) => boolean;
   reads: (table: string) => boolean;
   /** Whether a screen exists for a route yet. */
   built: (route: RouteKey) => boolean;
@@ -224,10 +236,18 @@ export function rolesOf(slugs: readonly string[]): RoleKey[] {
   return held.length === 0 ? ["admin"] : held;
 }
 
-/** Whether a screen can be offered to this person. */
+/** Whether a screen can be offered to this person. A screen of a part that waits for its add-on is: it says so. */
 export function canOpen(route: RouteKey, facts: MenuFacts): boolean {
   const def = ROUTES[route];
-  return facts.built(route) && (def.part === null || facts.part(def.part)) && def.reads.every((table) => facts.reads(table));
+  if (!facts.built(route)) return false;
+  if (def.part !== null && !facts.part(def.part)) return facts.waits?.(def.part) === true;
+  return def.reads.every((table) => facts.reads(table));
+}
+
+/** Whether a part waits for its add-on, from what the server told the page: the part is off and its add-on is not attached here. */
+export function waitsFor(part: PartId, on: boolean, attached: (addOn: string) => boolean): boolean {
+  const addOn = WAITS_FOR[part];
+  return addOn !== undefined && !on && !attached(addOn);
 }
 
 /**

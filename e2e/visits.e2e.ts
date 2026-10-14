@@ -178,8 +178,9 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(dialog.locator(".crm-bk-other em")).toHaveText("Overlaps");
   await expect(dialog.locator(".crm-bk-flag")).toHaveText("This overlaps one of Dana’s visits. It can still be booked.");
   await expect(book).toBeEnabled();
-  // What the customer is told: nothing by e-mail, said plainly, with her name.
-  await expect(dialog.getByTestId("bk-told")).toHaveText("No e-mail goes to Ines Vaughan about this booking. Tell them the day and the time yourself.");
+  // What the customer is told, read from the switch the server holds: an e-mail goes, said with her name.
+  await expect(dialog.getByTestId("bk-told")).toHaveAttribute("data-mails", "on");
+  await expect(dialog.getByTestId("bk-told")).toHaveText("Ines Vaughan is sent an e-mail with the day and the time, if their address is on file.");
   // A time that has gone by is refused here.
   await dialog.getByLabel("Date").fill("2026-07-27");
   await expect(dialog.getByRole("alert")).toHaveText("That time has passed.");
@@ -214,7 +215,8 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(moving.getByLabel("Date")).toBeFocused();
   // Nothing changed yet: nothing to move.
   await expect(moving.getByRole("button", { name: "Move it" })).toBeDisabled();
-  await expect(moving.getByTestId("bk-told")).toHaveText("Ines Vaughan is not told by e-mail that the time has changed. Tell them yourself.");
+  // …and no e-mail either: only a new time is mailed.
+  await expect(moving.getByTestId("bk-told")).toHaveText("The time stays as it is, so no e-mail goes to Ines Vaughan.");
   // Escape closes it and the keyboard is back on the button.
   await page.keyboard.press("Escape");
   await expect(moving).toHaveCount(0);
@@ -222,6 +224,7 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await page.keyboard.press("Enter");
   await moving.getByLabel("Date").fill("2026-07-30");
   await moving.getByLabel("Start").fill("15:15");
+  await expect(moving.getByTestId("bk-told")).toHaveText("Ines Vaughan is sent an e-mail with the new time and the time it had.");
   await moving.getByLabel("Length").selectOption("90");
   await moving.getByRole("button", { name: "Move it" }).click();
   await expect(page.locator(".crm-toast")).toHaveText(/^Moved: Cobalt Legal, Thu, Jul 30, 15:15, Dana\.$/);
@@ -239,7 +242,7 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   const cancelling = page.getByRole("dialog", { name: "Cancel this site visit" });
   await expect(cancelling.getByLabel("Why is it cancelled?")).toBeFocused();
   await expect(cancelling.locator(".crm-bk-sum")).toContainText("15:15–16:45");
-  await expect(cancelling.getByTestId("bk-told")).toHaveText("Ines Vaughan is not told by e-mail that it is cancelled. Tell them yourself.");
+  await expect(cancelling.getByTestId("bk-told")).toHaveText("Ines Vaughan is sent an e-mail saying the visit is cancelled.");
   const go = cancelling.getByRole("button", { name: "Cancel it" });
   await expect(go).toBeDisabled();
   await page.keyboard.type("no");
@@ -253,6 +256,22 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   // The row is gone for everybody: there is no cancelled visit to list.
   expect(await named(dana, data, "Spec: check the door swing")).toEqual([]);
   expect(await named(await api("tessa"), data, "Spec: check the door swing")).toEqual([]);
+  // What the dialog said is what the server did: three messages about this deal in the log, as the CRM admin reads it
+  // (booked, moved, cancelled). Ines is a sample person with an example address, so each is skipped, never sent.
+  const tessa = await api("tessa");
+  const lockers = await dealNamed(tessa, data, "Records-room lockers");
+  await expect
+    .poll(async () => (await rows<{ kind: string }>(tessa, data, "outbox", { and: [{ column: "deal_id", op: "eq", value: lockers.id }, { column: "kind", op: "in", value: ["visit-confirmed", "visit-moved", "visit-cancelled"] }] }, "&order=id")).map((row) => row.kind).slice(-3), { timeout: 20_000 })
+    .toEqual(["visit-confirmed", "visit-moved", "visit-cancelled"]);
+  const log = (await rows<{ kind: string; status: string; to: string | null; visit_id: number | null; was: string | null }>(tessa, data, "outbox", { and: [{ column: "deal_id", op: "eq", value: lockers.id }, { column: "kind", op: "in", value: ["visit-confirmed", "visit-moved", "visit-cancelled"] }] }, "&order=id")).slice(-3);
+  for (const message of log) {
+    expect(message.status, message.kind).not.toBe("sent");
+    // The visit is gone, and its messages stay without it.
+    expect(message.visit_id, message.kind).toBeNull();
+  }
+  expect(log[2]!.was).toContain("Spec: check the door swing");
+  // Nobody but the CRM admin reads the log.
+  expect((await dana.get(data("outbox", "?limit=1"))).status()).toBe(403);
   expect(problems).toEqual([]);
 });
 
@@ -484,6 +503,49 @@ test("Dana writes up the visit that waits on its notes; her manager's open page 
   await other.goto(`${STAFF}visits/notes/${String(walk.id)}`);
   await expect(other.getByTestId("notes-none")).toContainText("This visit is not there");
   expect(problems).toEqual([]);
+});
+
+test("with the visit e-mails switched off by the CRM admin, the dialog says to tell them yourself, and the server writes no message", async ({ as, api, data }) => {
+  // Worked as the sales manager, who books for the people she leads: Dana's minute of requests is the specs after this one's.
+  const tessa = await api("tessa");
+  const ivy = await api("ivy");
+  await room(ivy, data, 80);
+  const headers = await csrf(tessa);
+  const [settings] = await rows<{ id: number; visit_emails: boolean | number }>(tessa, data, "settings");
+  const flip = async (on: boolean): Promise<void> => {
+    expect((await tessa.patch(data("settings", `/${String(settings!.id)}`), { headers, data: { values: { visit_emails: on } } })).status()).toBe(200);
+  };
+  // The switch is the CRM admin's alone: a sales manager and a rep are refused by the server.
+  for (const who of ["ivy", "dana"] as const) {
+    const person = await api(who);
+    expect((await person.patch(data("settings", `/${String(settings!.id)}`), { headers: await csrf(person), data: { values: { visit_emails: false } } })).status(), who).toBeGreaterThanOrEqual(400);
+  }
+  const visitMessages = async (): Promise<number> => (await rows<{ id: number }>(tessa, data, "outbox", { column: "kind", op: "in", value: ["visit-confirmed", "visit-moved", "visit-cancelled"] })).length;
+  try {
+    await flip(false);
+    const before = await visitMessages();
+    const page = await (await as("ivy")).newPage();
+    await page.goto(`${STAFF}visits`);
+    await page.getByTestId("visit-book").click();
+    const dialog = page.getByRole("dialog", { name: "Book a site visit" });
+    await dialog.getByLabel("Deal").selectOption({ label: "Cobalt Legal · Records-room lockers" });
+    await expect(dialog.getByLabel("Contact")).toHaveValue(/\d+/);
+    await expect(dialog.getByTestId("bk-told")).toHaveAttribute("data-mails", "off");
+    await expect(dialog.getByTestId("bk-told")).toHaveText("No e-mail goes to Ines Vaughan about this booking. Tell them the day and the time yourself.");
+    await dialog.getByLabel("Purpose").fill("Spec: nobody is mailed");
+    await dialog.getByLabel("Start").fill("08:30");
+    await dialog.getByRole("button", { name: "Book", exact: true }).click();
+    await expect(page.locator(".crm-toast")).toHaveText(/^Booked: Cobalt Legal/);
+    const [made] = await named(ivy, data, "Spec: nobody is mailed");
+    // Moved and removed by direct calls: still nothing written.
+    const hers = await csrf(ivy);
+    expect((await ivy.patch(data("site_visits", `/${String(made!.id)}`), { headers: hers, data: { values: { starts_at: "2026-07-30T09:00:00.000Z" } } })).status()).toBe(200);
+    expect((await ivy.delete(data("site_visits", `/${String(made!.id)}?confirm=true`), { headers: hers })).status()).toBeLessThan(300);
+    await page.waitForTimeout(1500);
+    expect(await visitMessages()).toBe(before);
+  } finally {
+    await flip(true);
+  }
 });
 
 test("from the board's look at a deal, a visit is booked on that deal", async ({ as, data }) => {

@@ -184,6 +184,13 @@ function mapsOf(value: unknown): StaffMaps | null {
 export interface StaffAddOn {
   version: string | null;
   settings: Record<string, unknown>;
+  /**
+   * The add-on's own tables, by its short name, as they are really named in
+   * this install (`items` → `inventory_items`). Absent when it keeps none, or
+   * from a server that does not say. What the person may do with each is in
+   * `access`, by the real name.
+   */
+  tables?: Record<string, string>;
 }
 
 export type TableAction = "read" | "create" | "update" | "delete";
@@ -228,7 +235,8 @@ function addOnsOf(value: unknown): Record<string, StaffAddOn> {
   for (const [key, entry] of Object.entries(record(value))) {
     if (entry === null || typeof entry !== "object" || Array.isArray(entry)) continue;
     const e = entry as Record<string, unknown>;
-    out[key] = { version: text(e.version), settings: record(e.settings) };
+    const tables = Object.fromEntries(Object.entries(record(e.tables)).filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== ""));
+    out[key] = { version: text(e.version), settings: record(e.settings), ...(Object.keys(tables).length === 0 ? {} : { tables }) };
   }
   return out;
 }

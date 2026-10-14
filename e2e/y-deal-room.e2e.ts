@@ -19,6 +19,7 @@ import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
+import { room } from "./p12-helpers.ts";
 
 interface Made {
   id: number;
@@ -177,6 +178,8 @@ test("Dana opens a deal from her board: the room, with the ledger's figures and 
 test("an open deal is worked from its room: the amount typed, the stage, what is logged with a next step; a lost reply, a refused move, a colleague's change", async ({ as, api, data }) => {
   const context = await as("dana");
   const dana = context.request;
+  // Dana's minute of requests is shared by every spec that runs as her just before this one (Today, Site visits, This week, the room): wait for a fresh one when it is short.
+  await room(dana, data, 200);
   const deal = await makeDeal(dana, data, "Room spec: work");
   const [discovery, qualified, proposal] = deal.stages as [Made["stages"][number], Made["stages"][number], Made["stages"][number]];
   const page = await context.newPage();
@@ -299,10 +302,15 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   // Nothing went wrong on the page but the one reply this spec dropped itself.
   expect(problems.filter((problem) => !problem.includes("ERR_CONNECTION_RESET"))).toEqual([]);
 
-  // THE RULE'S OWN ROWS land a minute after each move, and may name the stage the deal is in by then rather than the one it moved to. They are the same three moves: the room says each once, from the deal's own history, before the rows land and after.
+  // THE RULE'S OWN ROWS land a minute after each move (F21: each names where from, where to, who and the move's own moment, whatever happened after). They are the same three moves: the room says each once, from the deal's own history, before the rows land and after.
   const said = async (): Promise<number[]> => Promise.all(["Opened at Discovery.", "Moved from Discovery to Qualified.", "Moved from Qualified to Proposal."].map((text) => line(page, text).count()));
   expect(await said()).toEqual([1, 1, 1]);
-  await expect.poll(async () => (await rows(dana, data, "deal_stage_changes", { column: "deal_id", op: "eq", value: deal.id })).length, { timeout: 120_000, intervals: [2000] }).toBe(3);
+  // Asked every five seconds: the rows land a minute after the moves, and Dana's minute of requests is mostly spent by now.
+  await expect.poll(async () => (await rows(dana, data, "deal_stage_changes", { column: "deal_id", op: "eq", value: deal.id })).length, { timeout: 120_000, intervals: [5000] }).toBe(3);
+  // Each line names where the deal went from, where to, and who moved it (F21), whatever happened after.
+  const lines = await rows<{ from_stage_id: number | null; to_stage_id: number; by_id: string }>(dana, data, "deal_stage_changes", { column: "deal_id", op: "eq", value: deal.id }, "&order=at,id");
+  expect(lines.map((one) => [one.from_stage_id, one.to_stage_id])).toEqual([[null, discovery.id], [discovery.id, qualified.id], [qualified.id, proposal.id]]);
+  expect(lines.map((one) => one.by_id)).toEqual([deal.me, deal.me, await userId(ivy)]);
   await page.reload();
   await expect(page.locator('.crm-room-line[data-type="stage"]')).toHaveCount(3);
   expect(await said()).toEqual([1, 1, 1]);

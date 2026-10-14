@@ -141,8 +141,15 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
     ]);
   });
 
-  it("queues the quote's e-mail only while quotes are on", () => {
-    expect((manifest.outbox.producers as unknown as { kind: string; module?: string }[]).map((producer) => [producer.kind, producer.module])).toEqual([["quote-sent", "quotes"], ["quote-accepted", "quotes"]]);
+  it("queues the quote's e-mails only while quotes are on, a visit's with selling and a referral's thanks with accounts", () => {
+    expect((manifest.outbox.producers as unknown as { kind: string; module?: string }[]).map((producer) => [producer.kind, producer.module])).toEqual([
+      ["quote-sent", "quotes"],
+      ["quote-accepted", "quotes"],
+      ["visit-confirmed", "selling"],
+      ["visit-moved", "selling"],
+      ["visit-cancelled", "selling"],
+      ["referral-thanks", "accounts"],
+    ]);
   });
 });
 
@@ -165,8 +172,12 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(quoted.rules?.["rollup"]).toBeUndefined();
     // The outgoing e-mails lose their link to a quote, and the quote's own e-mail.
     expect(kept.find((table) => table.ref === "outbox")!.columns.map((column) => column.ref)).not.toContain("quote_id");
-    expect(left.outbox.producers).toEqual([]);
-    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "approval-asked"]);
+    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks"]);
+    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "approval-asked", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks"]);
+    // The visit's and the referral's e-mails still go, and read nothing of a quote.
+    const templates = (left as unknown as { emailTemplates: { key: string }[] }).emailTemplates;
+    expect(templates.filter((one) => /^crm-(visit|referral)-/.test(one.key))).toHaveLength(4);
+    for (const template of templates.filter((one) => /^crm-(visit|referral)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
     expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager"]);
     // Every role is still there, without a grant, a limit or a part that names quotes.

@@ -87,7 +87,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["companies"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "R", "-", "-", "RX"],
   [["contacts"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "RC", "-", "-", "RX"],
   [["territories", "territory_places"], "RCUD", "RCUD", "R", "R", "R", "-", "-", "-", "R"],
-  [["renewals", "referrals"], "RCUD", "R", "RCU", "RCUD", "-", "-", "-", "-", "R"],
+  // A rep reads what came after a sale and writes none of it: no screen of hers does, and a thank-you mails a contact (the review).
+  [["renewals", "referrals"], "RCUD", "R", "R", "RCUD", "-", "-", "-", "-", "R"],
   [["reps"], "RCUD", "RU;u=own", "RU;u=own", "RU;u=own", "-", "-", "-", "-", "R"],
   [["targets"], "RCUD", "RCU:team", "R:own", "-", "-", "-", "-", "-", "R"],
   [["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"], ...PAIR],
@@ -379,10 +380,33 @@ describe("the app brings nine roles", () => {
     for (const r of roles) expect(`${manifest.key}-${r.key}`.length, r.key).toBeLessThanOrEqual(40);
   });
 
-  it("writes each role out whole: none copies another, none reaches an add-on's table", () => {
+  it("writes each role out whole: none copies another", () => {
+    for (const r of roles) expect(r.cloneFrom, r.key).toBeUndefined();
+  });
+
+  it("lets the three roles Supply is for read six of Inventory's tables, a few columns each, and write none; nobody else reaches the add-on", () => {
+    // P16: the Supply screens read stock, orders and suppliers as Inventory keeps them. What a line or a supplier costs is not read.
+    const SUPPLY_READS: Record<string, string[]> = {
+      items: ["id", "name", "sku", "note", "unit", "active", "on_hand"],
+      suppliers: ["id", "name", "lead_days", "note", "active"],
+      item_suppliers: ["id", "item_id", "supplier_id", "rank", "supplier_name"],
+      stock_points: ["id", "item_id", "place_id", "on_hand", "available", "on_order", "reorder_level", "low", "item_active"],
+      purchase_orders: ["id", "number", "supplier_id", "supplier_name", "status", "sent_on", "expected_on", "lead_days", "received_at"],
+      po_lines: ["id", "po_id", "item_id", "item_name", "qty", "open_qty", "order_status"],
+    };
     for (const r of roles) {
-      expect(r.cloneFrom, r.key).toBeUndefined();
-      expect(r.tables, r.key).toBeUndefined();
+      const tables = (r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables;
+      if (!["admin", "ops-manager", "read-only"].includes(r.key)) {
+        expect(tables, r.key).toBeUndefined();
+        continue;
+      }
+      expect(Object.fromEntries((tables ?? []).map((entry) => [entry.table, entry.limit?.readable])), r.key).toEqual(SUPPLY_READS);
+      for (const entry of tables ?? []) {
+        expect(entry.addOn, r.key).toBe("inventory");
+        expect(entry.actions, `${r.key} on ${entry.table}`).toEqual(["read"]);
+      }
+      // Each of them works in Supply: the grant has a screen to be read on.
+      expect((r as { modules?: string[] }).modules, r.key).toContain("supply");
     }
   });
 

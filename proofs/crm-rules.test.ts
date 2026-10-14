@@ -3,7 +3,7 @@
  * THE SALES CRM'S RULES THAT TELL PEOPLE, against the whole server on SQLite,
  * Postgres and MySQL, with the app's own manifest and signed in as the people
  * it is about: the three nudges, once each time a deal starts to match; a
- * rep's and a sales manager's week by e-mail, each of their own deals only; a
+ * rep's week by e-mail, of her own deals only, and a sales manager's, of her team's; a
  * notice's e-mail held to the end of the reader's quiet hours; a mention in a
  * comment, to somebody who can open the deal and to two who cannot; and a
  * part switched off and on.
@@ -132,7 +132,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await s.send('dana', 'PUT', '/api/v1/me/notification-schedule', { timezone: null, quiet: null, digestDay: null, digestTime: null }))).toBe('ok');
     });
 
-    it('writes a rep and a sales manager their own week: each their own deals, at the hour they chose', async () => {
+    it('writes a rep her own week and a sales manager her team\'s, at the hour they chose', async () => {
       await s.emails();
       await s.meta.db.deleteFrom('adminium_jobs').where('kind', '=', 'digest.send').execute();
       // Dana wants hers on Mondays at 08:00 in Cairo; Ivy and Noor chose nothing.
@@ -149,12 +149,12 @@ for (const [dialect, reachable] of LEGS) {
       await s.jobs({ all: true });
       const mails = await s.emails();
       const to = (who: string) => mails.filter((mail) => mail.to === `${who}@crm.test` && mail.templateKey.startsWith('crm-week-'));
-      // Dana: Atrium closes this week; her follow-up has slipped; Loft is hers now but closes on no day.
+      // Dana: Atrium, Fresh and Loft (handed to her) are open and hers; her follow-up has slipped.
       expect(to('dana')).toHaveLength(1);
       expect(to('dana')[0]!.templateKey).toBe('crm-week-rep');
       expect(to('dana')[0]!.subject).toBe('Your week, Dana');
-      expect(to('dana')[0]!.text).toContain('Closing this week: 1');
-      expect(to('dana')[0]!.text).toContain('Atrium');
+      expect(to('dana')[0]!.text).toContain('Your open deals: 3');
+      for (const hers of ['Atrium', 'Fresh', 'Loft']) expect(to('dana')[0]!.text, hers).toContain(hers);
       expect(to('dana')[0]!.text).toContain('Follow-ups that have slipped: 1');
       expect(to('dana')[0]!.text).toContain('Send the revised layout');
       expect(to('dana')[0]!.text).not.toContain('Yard');
@@ -162,13 +162,18 @@ for (const [dialect, reachable] of LEGS) {
       // Noor: a slipped follow-up of his own, and no deal.
       expect(to('noor')).toHaveLength(1);
       expect(to('noor')[0]!.text).toContain('Call about the booth count');
-      expect(to('noor')[0]!.text).toContain('No deal of yours is due to close this week.');
-      // Ivy reads her team's deals, and her week lists only the deal she owns herself.
+      expect(to('noor')[0]!.text).toContain('You have no open deal.');
+      // Ivy leads Dana and Noor: her week is her team's and her own. Two deals close this week, hers (Yard) and Dana's (Atrium).
+      // (That another team's deals stay out of it is proved in `crm-f21`, which has a second team.)
       expect(to('ivy')).toHaveLength(1);
       expect(to('ivy')[0]!.templateKey).toBe('crm-week-manager');
-      expect(to('ivy')[0]!.text).toContain('Closing this week: 1');
+      expect(to('ivy')[0]!.subject).toBe('The team’s week, Ivy');
+      expect(to('ivy')[0]!.text).toContain('Closing this week: 2');
       expect(to('ivy')[0]!.text).toContain('Yard');
-      expect(to('ivy')[0]!.text).not.toContain('Atrium');
+      expect(to('ivy')[0]!.text).toContain('Atrium');
+      // A line a person, by the name they sign in with.
+      expect(to('ivy')[0]!.text).toContain('Dana');
+      expect(to('ivy')[0]!.text).toContain('Send the revised layout');
       expect(((await s.get('ivy', `/api/v1/data/${s.connectionId}/${s.t('deals')}?limit=50`)).json() as { data: { name: string }[] }).data.map((row) => row.name)).toContain('Atrium');
     });
 
@@ -179,8 +184,10 @@ for (const [dialect, reachable] of LEGS) {
       expect(written.statusCode, written.body).toBe(201);
       const page = (await pagesRepo(s.meta).listForConnection(s.connectionId)).find((one) => one.slug === 'crm-deals')!;
       const mention = async (who: string) => (await noticesOf(who)).filter((notice) => notice.kind === 'mention');
-      // The manager reads her team's deals: she is led to the deal the comment is on.
-      expect(await mention('ivy')).toMatchObject([{ title: 'Dana mentioned you', actionUrl: `/p/${page.slug}/r/${String(deal['atrium'])}` }]);
+      // The manager reads her team's deals: she is led to the deal the comment is on, in the app's own deal room (F21:
+      // the staff side says where a deal opens), and the console's page is still there for her.
+      expect(await mention('ivy')).toMatchObject([{ title: 'Dana mentioned you', actionUrl: `/apps/crm/staff/deals/${String(deal['atrium'])}`, opens: { appKey: 'crm', path: `/deals/${String(deal['atrium'])}` } }]);
+      expect(page.slug).toBe('crm-deals');
       // A rep whose deal it is not, and a fitter with no right on deals: told who and where, with no way in.
       for (const who of ['noor', 'sam']) expect(await mention(who), who).toMatchObject([{ title: 'Dana mentioned you', actionUrl: null, entity: null }]);
       for (const who of ['ivy', 'noor', 'sam']) {

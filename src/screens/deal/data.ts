@@ -281,15 +281,19 @@ export function changesOf(entry: HistoryRow): Change[] {
  *
  * A CHANGE OF STAGE IS KEPT TWICE, AND SAID ONCE. The deal's own history holds
  * every move the moment it is made, with who and when and from where. The
- * app's rule also writes a row of `deal_stage_changes` for it, but a minute
- * later (once the move can no longer be undone), and with the stage the deal
- * is in by then: after two quick moves both rows name the second stage. So the
- * history is what the room says, as far back as it was read; a row is said
- * only for the time before that: the sample's deals, which have rows and no
- * history, and whatever a long history's first hundred entries do not reach.
- * A row that does not say where the deal came from (a rule writes only where
- * it went) came from the stage of the row before it.
+ * app's rule also writes a row of `deal_stage_changes` for it, a minute later
+ * (once the move can no longer be undone); since F21 the row names where from,
+ * where to, who, and the move's own moment, copied from what the server kept
+ * on the deal at the move. The history is what the room says, as far back as
+ * it was read, because it is there at once; a row is said only for the time
+ * before that: the sample's deals, which have rows and no history, and
+ * whatever a long history's first hundred entries do not reach. A row's moment
+ * is the move's, a hair before the history's entry of the same write (the
+ * stamp is taken as the write starts), so the cut leaves a few seconds' room.
+ * A row that does not say where the deal came from (older rows) came from the
+ * stage of the row before it.
  */
+const SAME_WRITE_MS = 5_000;
 export function timelineOf(read: TimelineData): Line[] {
   const history = ownHistory(read.history);
   const data = { ...read, history };
@@ -305,7 +309,7 @@ export function timelineOf(read: TimelineData): Line[] {
   }
   // Where the history read begins: the deal's making when the read holds it, else its oldest entry. Rows from then on are the rule's own copies of moves the history holds.
   const reach = history.reduce((oldest, entry) => Math.min(oldest, moment(entry.createdAt)), Number.POSITIVE_INFINITY);
-  const rows = [...data.stageChanges].sort((a, b) => moment(a.at) - moment(b.at) || a.id - b.id).filter((row) => moment(row.at) < reach);
+  const rows = [...data.stageChanges].sort((a, b) => moment(a.at) - moment(b.at) || a.id - b.id).filter((row) => moment(row.at) < reach - SAME_WRITE_MS);
   rows.forEach((move, index) => {
     const from = move.from_stage_id ?? (index === 0 ? null : rows[index - 1]!.to_stage_id);
     lines.push({ key: `s${String(move.id)}`, at: moment(move.at), type: "stage", who: move.by_id, whoLabel: null, from, to: move.to_stage_id });

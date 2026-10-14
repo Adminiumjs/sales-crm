@@ -30,8 +30,8 @@ import type { MessageKey } from "../i18n/messages/index.ts";
 import { useSession } from "../session/session.tsx";
 import { Icon } from "./icons.tsx";
 import { ScreenLink, useNav } from "./nav.tsx";
-import { NothingOn, NotFound, Rebuilding, Refused, type RefusedWhy, type WayHome } from "./pages.tsx";
-import { canOpen, homeFor, inMenu, LIT_BY, menuFor, MENUS, rolesOf, routeForPath, ROUTES, USER_MENU, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
+import { NothingOn, NotFound, Rebuilding, Refused, Waits, type RefusedWhy, type WayHome } from "./pages.tsx";
+import { canOpen, homeFor, inMenu, LIT_BY, menuFor, MENUS, rolesOf, routeForPath, ROUTES, USER_MENU, waitsFor, WAITS_FOR, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
 import { PageBoundary } from "../ui/boundary.tsx";
 import { LoadFailed } from "../ui/load.tsx";
@@ -152,6 +152,7 @@ export function Shell() {
     () => ({
       roles: (config.access?.roles ?? []).map((role) => role.slug),
       part: (id: PartId) => session.part(id),
+      waits: (id: PartId) => waitsFor(id, session.part(id), (addOn) => config.addOns[addOn] !== undefined),
       reads: (table) => session.can(table, "read"),
       built: isBuilt,
     }),
@@ -204,10 +205,12 @@ export function Shell() {
   } else {
     const def = ROUTES[here.route];
     let why: RefusedWhy | null = null;
-    if (def.part !== null && !facts.part(def.part)) why = { kind: "part", part: t(`nav.group.${def.part}` as MessageKey), owner: appRoles.length === 0 };
+    const waiting = def.part !== null && facts.waits?.(def.part) === true && inMenu(here.route, facts.roles) ? WAITS_FOR[def.part] : undefined;
+    if (waiting !== undefined) why = { kind: "waits", part: t(`nav.group.${def.part!}` as MessageKey), addOn: waiting, owner: appRoles.length === 0 };
+    else if (def.part !== null && !facts.part(def.part)) why = { kind: "part", part: t(`nav.group.${def.part}` as MessageKey), owner: appRoles.length === 0 };
     else if (!def.reads.every((table) => facts.reads(table)) || !inMenu(here.route, facts.roles)) why = (here.route === "notes" || here.route === "coaching") && appRoles.some((role) => role.slug === "crm-admin") ? { kind: "private" } : { kind: "role" };
     const Screen = SCREENS[here.route]!;
-    page = why !== null ? <Refused why={why} who={who} home={wayHome} /> : <Screen rest={here.rest} />;
+    page = why === null ? <Screen rest={here.rest} /> : why.kind === "waits" ? <Waits why={why} who={who} home={wayHome} /> : <Refused why={why} who={who} home={wayHome} />;
   }
 
   const listed = groups.flatMap((group) => group.items.map((item) => item.route));

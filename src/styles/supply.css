@@ -1,0 +1,296 @@
+/*
+ * Supply (P16): Stock and lead times, the Supplier scorecard. Built from the
+ * design's screens 42 and 60: four tiles, a banner, the filter chips, one card
+ * a stock line or a supplier. Logical properties only, so right to left needs
+ * nothing of its own; the tokens carry dark.
+ */
+.crm-sup {
+  max-inline-size: 1160px;
+}
+.crm-sup-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-block-start: 20px;
+}
+.crm-sup-tile {
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-sup-tile-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-sup-tile-value {
+  margin-block: 8px 3px;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-sup-tile-value[data-tone="pos"] {
+  color: var(--pos);
+}
+.crm-sup-tile-value[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-sup-tile-value[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-sup-tile-sub {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-sup-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block-start: 14px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.crm-sup-banner > svg {
+  flex-shrink: 0;
+}
+.crm-sup-banner[data-tone="warn"] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.crm-sup-short {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-sup-quiet {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-sup-chips {
+  margin-block-start: 16px;
+}
+.crm-sup-chips .crm-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.crm-sup-chip-n {
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.crm-sup-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-sup-line {
+  padding: 11px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--pos);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-sup-line[data-state="low"] {
+  border-inline-start-color: var(--warn);
+}
+.crm-sup-line[data-state="empty"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-sup-supplier {
+  border-inline-start-color: var(--border-strong);
+}
+.crm-sup-supplier[data-active="0"] {
+  opacity: 0.75;
+}
+.crm-sup-line-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.crm-sup-line-words {
+  flex: 1;
+  min-inline-size: 190px;
+}
+.crm-sup-line-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-sup-line-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+.crm-sup-line-words > .crm-sup-quiet {
+  margin-block-start: 5px;
+}
+.crm-sup-note {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg);
+  text-wrap: pretty;
+}
+.crm-sup-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 36px;
+  block-size: 36px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-sup-facts {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.crm-sup-facts > div {
+  min-inline-size: 72px;
+}
+.crm-sup-facts dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-sup-facts dd {
+  display: flex;
+  flex-direction: column;
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-sup-facts dd[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-sup-lands {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-sup-facts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 10px;
+  margin-block-start: 12px;
+  padding-block-start: 11px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-sup-deals {
+  margin-block-start: 9px;
+  padding-block-start: 9px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-sup-deals ul {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-sup-deal {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-block-size: 26px;
+  max-inline-size: 100%;
+  padding-inline: 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+.crm-sup-deal > span:first-child {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crm-sup-deal .crm-mono {
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+}
+.crm-sup-next {
+  margin: 11px 0 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-sup-more {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crm-sup-more:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.crm-sup-none {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.crm-sup-where {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 18px 0 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-sup-where > svg {
+  flex-shrink: 0;
+}
+@media (max-width: 520px) {
+  .crm-sup-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crm-sup-line-words {
+    min-inline-size: 0;
+    flex-basis: 100%;
+  }
+}

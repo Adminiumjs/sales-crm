@@ -30,6 +30,7 @@ import type { AddOnStep } from './add-on-steps.ts';
 import { z } from 'zod';
 
 import { addOnNeedsIssues, addOnsSchema, requiresAddOn, type AddOnNeeds } from './add-ons.ts';
+import { NAV_LINK_SCREENS, RECORD_ADDRESS_MESSAGE, SIDE_PATH_MESSAGE, isRecordAddress, isSidePath, railIssues } from './rail.ts';
 import { addOnModuleIssues, moduleIdSchema, moduleIssues, modulesSchema, optionalShapeAddOns, roleNamesSchema, shapeIsOptional, withoutModules } from './modules.ts';
 import { bookingIssues, bookingSchema } from './booking.ts';
 import { occupiesIssues, occupiesSchema } from './occupies.ts';
@@ -784,6 +785,13 @@ export const columnRulesSchema = z
     customerKey: z.object({ of: refSchema }).strict().optional(),
     /** The last four characters of the code in `of`, written by Adminium: what a list shows of a code it never shows. */
     codeLast4: z.object({ of: refSchema }).strict().optional(),
+    /**
+     * A foreign key that may name only a row meeting these conditions (a
+     * price-list line still offered): judged when a new row names one and
+     * when a change moves the link, whoever writes. A row already naming one
+     * that later stops meeting them keeps it while its other columns change.
+     */
+    linkable: z.object({ where: z.array(stateConditionSchema).min(1).max(8) }).strict().optional(),
   })
   .strict();
 export type ColumnRules = z.infer<typeof columnRulesSchema>;
@@ -1223,7 +1231,7 @@ export function shapeDefinitionIssues(
       out.push(...mappingIssues(profile.part, profile.mapping, index, at));
     });
     (shape.outbox?.producers ?? []).forEach((producer, p) => {
-      const source = 'onCreate' in producer ? producer.onCreate : 'onChange' in producer ? producer.onChange : producer.before;
+      const source = 'onCreate' in producer ? producer.onCreate : 'onChange' in producer ? producer.onChange : 'onDelete' in producer ? producer.onDelete : producer.before;
       if (shape.parts[source.table] === undefined) {
         out.push({ path: ['addOn', 'shapes', s, 'outbox', 'producers', p], message: `"${id}" has no part "${source.table}"` });
       }
@@ -1238,11 +1246,24 @@ export function shapeDefinitionIssues(
 
 // ── pages ────────────────────────────────────────────────────────────────────
 
-export const pageNavSchema = z
+/** Where an entry of the app's section sits: its group, its icon, its place in the order. */
+export const railPlaceSchema = z
   .object({
     group: z.string().min(1).max(80),
     icon: z.string().min(1).max(60),
     order: z.number().int(),
+  })
+  .strict();
+
+export const pageNavSchema = railPlaceSchema
+  .extend({
+    /**
+     * The page is kept off the sidebar. It still exists: it opens by its
+     * address for whoever may view it, and search, the command palette and
+     * the assistant still find it for them. Somebody who may not view it
+     * finds it nowhere, as with any page.
+     */
+    offRail: z.literal(true).optional(),
   })
   .strict();
 
@@ -1422,6 +1443,16 @@ export const frontendSchema = z
     placement: z.enum(['internal', 'external']).optional(),
     /** Whether the side starts switched on. Absent means on. */
     enabled: z.boolean().optional(),
+    /**
+     * Where a record opens on this side, by table: `{ "deals": "/deals/{id}" }`.
+     * A notice about such a record, its e-mail's button and a search hit then
+     * open the app's own screen for somebody who may open this side, and the
+     * dashboard's record page for everybody else. The staff side's alone.
+     */
+    records: z
+      .record(z.string().regex(/^[a-z][a-z0-9_]*$/, 'a table ref'), z.string().max(200).refine(isRecordAddress, RECORD_ADDRESS_MESSAGE))
+      .refine((value) => Object.keys(value).length > 0, 'name at least one table')
+      .optional(),
   })
   .strict();
 
@@ -1454,6 +1485,28 @@ export const navGroupSchema = z
     order: z.number().int(),
   })
   .strict();
+
+/**
+ * An entry of the app's sidebar section that is not a page. It opens one of a
+ * closed list of places, never an address the manifest writes out: a screen of
+ * the dashboard narrowed to this app, or a screen of the app's own staff side.
+ */
+export const navLinkSchema = z
+  .object({
+    ref: z.string().regex(/^[a-z][a-z0-9-]*$/, 'a link ref is kebab-case').max(60),
+    label: labelsSchema,
+    nav: railPlaceSchema,
+    to: z.union([
+      /** A dashboard screen showing this app's own: its rules, its e-mails, its settings (parts, sample data). */
+      z.object({ screen: z.enum(NAV_LINK_SCREENS) }).strict(),
+      /** A screen of the app's staff side; no `path` is its first screen. */
+      z.object({ side: z.literal('staff'), path: z.string().max(200).refine(isSidePath, SIDE_PATH_MESSAGE).optional() }).strict(),
+    ]),
+    /** The part of the app the entry belongs to: it leaves the sidebar while the part is off. */
+    module: moduleIdSchema.optional(),
+  })
+  .strict();
+export type NavLink = z.infer<typeof navLinkSchema>;
 
 /** What the app's public screens may do (see `public-access.ts`). */
 export { publicAccessSchema, publicKeysSchema, type PublicAccess };
@@ -2166,6 +2219,21 @@ export function appReferenceIssues(
         // The conditions read this row, as the write leaves it.
         (bound.when ?? []).forEach((condition, w) => out.push(...conditionIssues(table.ref, condition, index, here(side, 'when', w))));
         if (Array.isArray(bound.strict)) bound.strict.forEach((condition, w) => out.push(...conditionIssues(table.ref, condition, index, here(side, 'strict', w))));
+      }
+      if (rules.linkable !== undefined) {
+        // The conditions read the row the link names, so the column is a link and they name that table's columns.
+        if (column.type !== 'fk' || column.references === undefined) {
+          out.push({ path: here('linkable'), message: 'only a foreign key names a row, so only one takes linkable' });
+        } else {
+          const linked = column.references;
+          rules.linkable.where.forEach((condition, w) => {
+            out.push(...conditionIssues(linked, condition, index, here('linkable', 'where', w)));
+            // A refusal says whether the named row meets the condition: never asked of a value kept from every reader.
+            if (tables.get(linked)?.columns.find((x) => x.ref === condition.column)?.rules?.secret === true) {
+              out.push({ path: here('linkable', 'where', w, 'column'), message: `"${linked}.${condition.column}" is a secret, and a link is never judged by one` });
+            }
+          });
+        }
       }
       if (rules.requiredWhen !== undefined) {
         const when = rules.requiredWhen;
@@ -3226,6 +3294,8 @@ export const appManifestSchema = z
      * required-singular shape however their `requiredSchema` was repaired.
      */
     frontends: z.array(frontendSchema).min(1),
+    /** Entries of the app's sidebar section that are not pages (see `rail.ts`). */
+    navLinks: z.array(navLinkSchema).max(24).optional(),
     /** The add-ons the app needs, suggests, or needs for a feature (see `add-ons.ts`). */
     addOns: addOnsSchema.optional(),
     /** The parts of the app its owner switches on and off (see `modules.ts`). */
@@ -3243,6 +3313,7 @@ export const appManifestSchema = z
   .refine(sidesAreDistinct, { ...SIDES_MESSAGE, path: [...SIDES_MESSAGE.path] })
   .superRefine((m, ctx) => {
     for (const issue of phoneSideIssues(m)) ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path });
+    for (const issue of railIssues(m)) ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path });
     for (const issue of installFloorIssues(m)) ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path });
     for (const issue of appReferenceIssues(m)) {
       ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path });

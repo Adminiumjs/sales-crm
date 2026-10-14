@@ -38,7 +38,7 @@ const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'ut
 const MANAGERS = ['approval_threshold_pct', 'quote_valid_days', 'quote_warn_days', 'sitting_warm_days', 'sitting_stale_days', 'nudge_quiet_days', 'nudge_stuck_days', 'nudge_soon_days'];
 /** A value each setting takes, other than the one it starts with. */
 const LEGAL: Record<string, unknown> = {
-  approval_threshold_pct: 7.5, quote_valid_days: 45, quote_warn_days: 5, sitting_warm_days: 10, sitting_stale_days: 40, nudge_quiet_days: 9, nudge_stuck_days: 25, nudge_soon_days: 10,
+  visit_emails: false, approval_threshold_pct: 7.5, quote_valid_days: 45, quote_warn_days: 5, sitting_warm_days: 10, sitting_stale_days: 40, nudge_quiet_days: 9, nudge_stuck_days: 25, nudge_soon_days: 10,
   working_day_hours: 7.5, week_starts: 'sun', work_mon: false, work_tue: false, work_wed: false, work_thu: false, work_fri: false, work_sat: true, work_sun: true, work_from: '09:00', work_to: '18:00',
   depot_name: 'North depot', depot_address: 'Unit 9\nCanal Road', depot_town: 'Bradford', depot_region: 'West Yorkshire', depot_postal_code: 'BD1 4SJ', depot_country: 'GB', depot_lat: 53.79, depot_lng: -1.75,
   depot_place: { lat: 53.79, lng: -1.75 }, distance_unit: 'miles', loan_days: 10, aftercare_days: 21, complaint_answer_days: 2, snag_days: 4, lead_cold_days: 10, certificate_warn_days: 30,

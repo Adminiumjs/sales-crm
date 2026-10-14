@@ -21,9 +21,9 @@ test("the stand holds the sample as the ledger counts it, for each person as the
   expect(new Set(danas.data.map((deal) => deal.owner_id))).toEqual(new Set([stand.people["dana"]!.id]));
 });
 
-test("the staff side opens for whoever is signed in; somebody none of whose screens is built yet is told so", async ({ as }) => {
-  // The operations manager's screens (Supply) come later in the plan: until the first lands she gets the frame and one plain page.
-  // (The front desk was this spec's person until the Inbox was built: she lands there now, see `inbox.e2e.ts`.)
+test("the staff side opens for whoever is signed in, the operations manager on her first screen", async ({ as }) => {
+  // The operations manager was this spec's "screens are being rebuilt" until Supply (P16) was built: she lands on Stock now.
+  // At stage 1 nobody meets that page any more (the front desk has the Inbox, the field crew is not offered); it stays for a later stage's role.
   const page = await (await as("ada")).newPage();
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
@@ -31,10 +31,12 @@ test("the staff side opens for whoever is signed in; somebody none of whose scre
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto(STAFF);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The screens are being rebuilt");
-  await expect(page.getByTestId("signed-in-as")).toHaveText("Signed in as Ada Novak · Operations manager");
+  await expect(page).toHaveURL(/\/stock$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Stock and lead times");
+  await expect(page.locator(".crm-user-chip")).toContainText("Ada Novak");
+  await expect(page.locator(".crm-user-chip")).toContainText("Operations manager");
   expect(errors).toEqual([]);
-  await picture(page, "1-ada-no-screen-yet");
+  await picture(page, "1-ada-first-screen");
 });
 
 test("the config says who they are, what they may do and which parts are on; nothing of anybody else", async ({ api, stand }) => {

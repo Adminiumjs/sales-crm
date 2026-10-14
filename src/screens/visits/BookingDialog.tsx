@@ -27,7 +27,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
-import { cancelVisit, lastMove, LENGTHS, overlaps, readDay, spanOf, type Visit } from "./data.ts";
+import { cancelVisit, lastMove, LENGTHS, overlaps, readDay, readVisitMails, spanOf, toldLine, type Visit, type VisitMails } from "./data.ts";
 
 export type Booking = { mode: "new"; dealId?: number } | { mode: "move"; visit: Visit } | { mode: "cancel"; visit: Visit };
 
@@ -127,6 +127,9 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
   const sameDay = (others.state === "ready" ? others.data : []).filter((one) => one.id !== visit?.id);
   const clashes = drafted === null ? [] : sameDay.filter((one) => overlaps(drafted, one));
 
+  // Whether the customer's e-mails are switched on, read once as the dialog opens.
+  const { load: mails } = useLoad<VisitMails>(() => readVisitMails(session), [session]);
+
   // What the record's history says of an earlier move.
   const { load: moved } = useLoad(() => (visit === null ? Promise.resolve(null) : lastMove(session, visit.id).catch(() => null)), [session, visit?.id]);
   const before = moved.state === "ready" ? moved.data : null;
@@ -176,7 +179,9 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
     onClose();
   };
 
-  const told = contactName === "" ? t("visits.told.nobody") : t(isNew ? "visits.told.new" : isCancel ? "visits.told.cancel" : "visits.told.move", { contact: contactName });
+  // What the customer is told is the server's doing (three e-mails of the outbox, one switch in the settings): the line says which.
+  const timeMoved = startWas === null || start === null || start.getTime() !== startWas.getTime();
+  const told = t(toldLine(isNew ? "new" : isCancel ? "cancel" : "move", mails.state === "ready" ? mails.data : "unknown", contactName !== "", timeMoved), { contact: contactName === "" ? company : contactName });
   const dayWords = /^\d{4}-\d{2}-\d{2}$/.test(day) ? f.dayShort(noonOf(day)) : "";
 
   return (
@@ -389,7 +394,7 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
         </div>
       )}
 
-      <p className="crm-bk-told" data-testid="bk-told">
+      <p className="crm-bk-told" data-testid="bk-told" data-mails={mails.state === "ready" ? mails.data : "reading"}>
         <Icon name="mail" size={15} />
         <span>{told}</span>
       </p>

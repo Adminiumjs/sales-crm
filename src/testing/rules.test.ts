@@ -23,24 +23,48 @@ interface Rule {
     nodes: {
       id: string;
       kind: string;
-      action?: { kind: string; table?: string; values?: Record<string, string>; to?: { roles?: string[]; column?: string }; title?: Text; body?: Text; templateKey?: string; sections?: { key: string; table: string; owner: string }[] };
+      action?: Action;
       condition?: unknown;
+      branches?: { id: string; nodes: { id: string; kind: string; action?: Action; condition?: unknown }[] }[];
     }[];
   };
 }
+interface Section {
+  key: string;
+  table: string;
+  owner: string;
+  reach?: string;
+  sum?: string[];
+  by?: string;
+  target?: Record<string, string>;
+  where?: unknown[];
+}
+interface Action {
+  kind: string;
+  table?: string;
+  values?: Record<string, string>;
+  to?: { roles?: string[]; column?: string };
+  title?: Text;
+  body?: Text;
+  templateKey?: string;
+  sections?: Section[];
+}
 interface Template {
   key: string;
-  locales: Record<string, { subject: string; blocks: { block: string; data: { text: string; section?: string; empty?: string } }[] }>;
+  locales: Record<string, { subject: string; footer?: string; blocks: { block: string; showWhen?: { var: string }; data: { text: string; section?: string; empty?: string; label?: string; url?: string; lines?: { label: string; amount: string }[] } }[] }>;
 }
 const m = manifest as unknown as {
   automations: Rule[];
   emailTemplates: Template[];
-  outbox: { kinds: Record<string, string>; producers: { kind: string; link: string; recipient?: { column: string; name?: string }; onChange?: { table: string; column: string; to: string } }[] };
+  outbox: { kinds: Record<string, string>; links: Record<string, string>; columns: Record<string, string>; producers: Record<string, unknown>[] };
+  frontends: { side: string; records?: Record<string, string> }[];
   roles: { key: string }[];
   requiredSchema: { tables: { ref: string; columns: { ref: string; type: string; nullable?: boolean; rules?: { personal?: boolean; copy?: unknown; staff?: boolean; mentions?: unknown } }[] }[] };
 };
 const rule = (key: string): Rule => m.automations.find((one) => one.key === key)!;
 const steps = (key: string) => rule(key).graph.nodes.filter((node) => node.kind === "action").map((node) => node.action!);
+/** Every step of a rule, a fork's own steps where the fork sits. */
+const walked = (key: string) => rule(key).graph.nodes.flatMap((node) => [node, ...(node.branches ?? []).flatMap((branch) => branch.nodes)]);
 const inAll = (text: Text | undefined): boolean => typeof text === "object" && LOCALES.every((locale) => (text[locale] ?? "").trim() !== "");
 const names = (text: string): string[] => [...text.matchAll(/\{\{([^}|]+)/g)].map((found) => found[1]!.trim()).sort();
 
@@ -58,21 +82,74 @@ describe("the rules the app ships", () => {
     }
   });
 
+  // A rule reads the deal as it is when the rule RUNS, a minute after the write. So the deal keeps, written by the server
+  // at the move itself, the move just made and the one before it, and the rules copy both into the history, each once.
+  const column = (table: string, ref: string) => m.requiredSchema.tables.find((one) => one.ref === table)!.columns.find((one) => one.ref === ref)!;
+  const line = (from: string, to: string, by: string, when: string, key: string) => ({
+    kind: "record.create",
+    table: "deal_stage_changes",
+    values: { deal_id: "{{record.id}}", from_stage_id: `{{record.${from}}}`, to_stage_id: `{{record.${to}}}`, by_id: `{{record.${by}}}`, at: `{{record.${when}}}`, move_key: `{{record.${key}}}` },
+  });
+  const notYet = (key: string) => ({ left: { count: { table: "deal_stage_changes", matchColumn: "move_key", equalsField: key } }, op: "is", right: 0 });
+  const historyOf = (key: string) => walked(key).filter((node) => node.id !== "t" && node.id !== "mark").map((node) => [node.id, node.kind, node.action ?? node.condition]);
+
   it("a deal made gets its mark and the first line of its history", () => {
     expect(rule("deal-made").trigger).toEqual({ kind: "record", event: "created", table: "deals" });
     expect(steps("deal-made")).toEqual([
       { kind: "record.create", table: "deal_marks", values: { deal_id: "{{record.id}}" } },
-      // Who set the stage is kept on the deal as a person writes it, and handed on: a line a rule writes has no writer of its own.
-      { kind: "record.create", table: "deal_stage_changes", values: { deal_id: "{{record.id}}", to_stage_id: "{{record.stage_id}}", by_id: "{{record.stage_by_id}}" } },
+      // From no stage, into the stage it started in, by who made it, at that moment: read from what the deal keeps of its
+      // making for good, so a deal moved on before this rule runs still opens where it opened.
+      { kind: "record.create", table: "deal_stage_changes", values: { deal_id: "{{record.id}}", to_stage_id: "{{record.first_stage_id}}", by_id: "{{record.opened_by_id}}", at: "{{record.opened_at}}" } },
     ]);
+    expect(column("deals", "first_stage_id").rules).toEqual({ stamp: { set: { copy: "stage_id" }, on: "create" } });
+    expect(column("deals", "opened_by_id").rules).toEqual({ stamp: { set: "user-id", on: "create" } });
+    expect(column("deals", "opened_at").rules).toEqual({ stamp: { set: "now", on: "create" } });
   });
 
-  it("a deal that changes stage gets a line in its history, and only then", () => {
+  it("a deal that changes stage gets a line in its history that names where from, where to, who and when, and only then", () => {
     expect(rule("deal-stage-changed").trigger).toEqual({ kind: "record", event: "updated", table: "deals", changedColumn: "stage_id" });
-    expect(steps("deal-stage-changed")).toEqual([{ kind: "record.create", table: "deal_stage_changes", values: { deal_id: "{{record.id}}", to_stage_id: "{{record.stage_id}}", by_id: "{{record.stage_by_id}}" } }]);
-    const column = (table: string, ref: string) => m.requiredSchema.tables.find((one) => one.ref === table)!.columns.find((one) => one.ref === ref)!;
+    expect(historyOf("deal-stage-changed")).toEqual([
+      // The move the deal holds now, unless a run before this one wrote it…
+      ["this-move", "branch", notYet("move_key")],
+      ["line", "action", line("stage_from_id", "stage_id", "stage_by_id", "entered_stage_at", "move_key")],
+      // …and the move before it, when the deal was moved again before the rule for that one ran.
+      ["had-earlier", "condition", { left: { field: "prev_move_key" }, op: "not_empty" }],
+      // (the deal's making is a move from no stage, and has its own line)
+      ["earlier-was-a-move", "condition", { left: { field: "prev_from_stage_id" }, op: "not_empty" }],
+      ["earlier-missing", "condition", notYet("prev_move_key")],
+      ["earlier-line", "action", line("prev_from_stage_id", "stage_from_id", "prev_by_id", "prev_at", "prev_move_key")],
+    ]);
+    // Who set the stage is kept on the deal as a person writes it, and handed on: a line a rule writes has no writer of its own.
     expect(column("deals", "stage_by_id").rules).toEqual({ staff: true, stamp: { set: "user-id", on: { columns: ["stage_id"] } } });
     expect(column("deal_stage_changes", "by_id").rules).toEqual({ staff: true });
+    // A line's moment is the move's, written by the rule; no stamp of the minute the rule ran.
+    expect(column("deal_stage_changes", "at")).toMatchObject({ type: "timestamptz", default: "now" });
+    expect(column("deal_stage_changes", "at").rules).toBeUndefined();
+    // No move is written twice.
+    expect(column("deal_stage_changes", "move_key")).toMatchObject({ type: "text", nullable: true, unique: true });
+  });
+
+  it("keeps on the deal, at the move, the stage it left, and the move before it", () => {
+    const deals = m.requiredSchema.tables.find((one) => one.ref === "deals")!.columns;
+    const on = { columns: ["stage_id"] };
+    const kept = Object.fromEntries(deals.filter((one) => (one.rules as { stamp?: { on?: unknown } } | undefined)?.stamp !== undefined && JSON.stringify((one.rules as { stamp: { on: unknown } }).stamp.on) === JSON.stringify(on)).map((one) => [one.ref, (one.rules as { stamp: { set: unknown } }).stamp.set]));
+    expect(kept).toEqual({
+      prev_from_stage_id: { copy: "stage_from_id" },
+      prev_by_id: { copy: "stage_by_id" },
+      prev_at: { copy: "entered_stage_at" },
+      prev_move_key: { copy: "move_key" },
+      stage_from_id: { copy: "stage_kept_id" },
+      stage_kept_id: { copy: "stage_id" },
+      entered_stage_at: "now",
+      stage_by_id: "user-id",
+      move_key: { hashOf: { columns: ["id", "stage_from_id", "stage_id", "entered_stage_at", "stage_by_id", "prev_move_key"] } },
+    });
+    // The order is the mechanism: a stamp reads the row as the stamps BEFORE it left it, so each copy sits before its source.
+    const at = (ref: string) => deals.findIndex((one) => one.ref === ref);
+    for (const [copy, source] of [["prev_from_stage_id", "stage_from_id"], ["prev_by_id", "stage_by_id"], ["prev_at", "entered_stage_at"], ["stage_from_id", "stage_kept_id"]] as const) expect(at(copy), `${copy} before ${source}`).toBeLessThan(at(source));
+    // Nobody but the CRM admin types any of them.
+    const roles = (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[] }> }[] }).roles;
+    for (const role of roles.filter((one) => one.key !== "admin" && one.limits?.["deals"]?.writable !== undefined)) for (const ref of [...Object.keys(kept), "first_stage_id", "opened_by_id", "opened_at"]) expect(role.limits!["deals"]!.writable, `${role.key} ${ref}`).not.toContain(ref);
   });
 
   it("a deal won gets its job, once", () => {
@@ -149,23 +226,46 @@ describe("the rules the app ships", () => {
     }
   });
 
-  it("writes each rep and each sales manager their own week, on Mondays unless they chose another day", () => {
+  it("writes each rep their own week and each sales manager her team's, on Mondays unless they chose another day", () => {
     for (const [key, roles, template, sections] of [
-      ["week-rep", ["rep", "account-manager"], "crm-week-rep", ["closing", "due", "slipped"]],
-      ["week-manager", ["sales-manager"], "crm-week-manager", ["closing", "slipped", "quiet"]],
+      ["week-rep", ["rep", "account-manager"], "crm-week-rep", ["open", "cover", "due", "slipped", "sitting", "quiet"]],
+      ["week-manager", ["sales-manager"], "crm-week-manager", ["reps", "cover", "closing", "quiet", "sitting", "slipped"]],
     ] as const) {
       expect(rule(key).trigger, key).toEqual({ kind: "schedule", schedule: { kind: "weekly", dayOfWeek: 1, time: "07:00" } });
       const [sum] = steps(key);
       expect(sum, key).toMatchObject({ kind: "digest", templateKey: template, to: { roles } });
       expect(sum!.sections!.map((section) => section.key), key).toEqual(sections);
-      // Each section is of the reader's own rows: by the staff column that names them.
+      // Each section is of rows by the staff column that names their owner.
       for (const section of sum!.sections!) expect(staff(section.table, section.owner), `${key} ${section.key}`).toBe(true);
+      // A rep's sections are her own rows; every section of a manager's reaches the people she leads, and no further.
+      for (const section of sum!.sections!) expect(section.reach, `${key} ${section.key}`).toBe(key === "week-manager" ? "team" : undefined);
       // The template draws every section, in every language, and says something when a section is empty.
       const drawn = m.emailTemplates.find((one) => one.key === template)!;
       for (const locale of LOCALES) {
         const rows = drawn.locales[locale]!.blocks.filter((block) => block.block === "email.rows");
         expect(rows.map((block) => block.data.section).sort(), `${template} ${locale}`).toEqual([...sections].sort());
         for (const block of rows) expect((block.data.empty ?? "").trim(), `${template} ${locale}`).not.toBe("");
+        expect((drawn.locales[locale]!.footer ?? "").trim(), `${template} ${locale}`).not.toBe("");
+      }
+    }
+  });
+
+  it("adds a week's sums up on the server, and measures cover as one figure over one target", () => {
+    const section = (key: string, name: string) => steps(key)[0]!.sections!.find((one) => one.key === name)!;
+    // The rep: what her open deals add up to, at full value and weighted.
+    expect(section("week-rep", "open")).toMatchObject({ table: "deals", owner: "owner_id", sum: ["amount", "weighted_value"], where: [{ left: { field: "state" }, op: "is", right: "open" }] });
+    // The manager: a line a person, each with their open deals' sums.
+    expect(section("week-manager", "reps")).toMatchObject({ table: "deals", owner: "owner_id", reach: "team", by: "owner", sum: ["amount", "weighted_value"] });
+    // Cover: what counts toward the target (a won deal's amount, an open deal's weighted value: one stored column) over the year's target.
+    const target = { table: "targets", owner: "rep_id", column: "amount", year: "year", of: "target_value" };
+    for (const key of ["week-rep", "week-manager"]) expect(section(key, "cover"), key).toMatchObject({ table: "deals", owner: "owner_id", by: "owner", sum: ["target_value"], target, where: [{ left: { field: "state" }, op: "is_not", right: "lost" }] });
+    expect(staff("targets", "rep_id")).toBe(true);
+    // A figure a reader cannot be answered is left out, so each target and cover is written with a backup.
+    for (const template of ["crm-week-rep", "crm-week-manager"]) {
+      for (const locale of LOCALES) {
+        const words = JSON.stringify(m.emailTemplates.find((one) => one.key === template)!.locales[locale]);
+        const bare = [...words.matchAll(/\{\{((?:row\.)?(?:target|cover)[^}]*)\}\}/g)].map((found) => found[1]!).filter((read) => !read.includes("|"));
+        expect(bare, `${template} ${locale}`).toEqual([]);
       }
     }
   });
@@ -179,19 +279,66 @@ describe("a comment on a deal may mention a colleague", () => {
 });
 
 describe("the e-mails the app ships", () => {
-  it("are six: four to one address, each in eight languages with a subject, a heading and its text, and two weekly summaries", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager"]);
-    for (const template of m.emailTemplates) expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
-    for (const template of m.emailTemplates.slice(0, 4)) {
+  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"];
+  const shape = (key: string, locale = "en-US") => m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks.map((block) => block.block);
+
+  it("are ten: eight to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"]);
+    for (const template of m.emailTemplates) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
         const content = template.locales[locale]!;
         expect(content.subject.trim(), `${template.key} ${locale}`).not.toBe("");
-        // The quote's own e-mail also says where the quote can be read and answered, and carries the button that goes there.
-        expect(content.blocks.map((block) => block.block), `${template.key} ${locale}`).toEqual(template.key === "crm-quote-sent" ? ["email.heading", "email.text", "email.text", "email.button", "email.text"] : ["email.heading", "email.text", "email.text"]);
-        for (const block of content.blocks) expect(String(block.block === "email.button" ? (block.data as { label?: string }).label : block.data.text).trim(), `${template.key} ${locale}`).not.toBe("");
+        // The same blocks in every language: a translation that dropped one would still read well.
+        expect(content.blocks.map((block) => block.block), `${template.key} ${locale}`).toEqual(shape(template.key));
+        for (const block of content.blocks) {
+          if (block.block === "email.button") expect(String(block.data.label).trim(), `${template.key} ${locale}`).not.toBe("");
+          if (block.block === "email.text" || block.block === "email.heading") expect(String(block.data.text).trim(), `${template.key} ${locale}`).not.toBe("");
+          for (const fact of block.data.lines ?? []) expect(fact.label.trim() !== "" && fact.amount.trim() !== "", `${template.key} ${locale}`).toBe(true);
+        }
       }
     }
+    expect(TO_ONE.every((key) => m.emailTemplates.some((one) => one.key === key))).toBe(true);
+  });
+
+  it("draws each for a mail client: a heading, its words, its facts as rows, and the button the design gives it", () => {
+    // The quote: the deal's name, what it comes to, until when, and the button that opens the customer's page.
+    expect(shape("crm-quote-sent")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.button", "email.text"]);
+    expect(shape("crm-quote-accepted")).toEqual(["email.heading", "email.text", "email.text"]);
+    // A visit: day, time, where, what for. No button: a mail client drops a calendar file made in the page.
+    expect(shape("crm-visit-confirmed")).toEqual(["email.heading", "email.text", "email.tax-breakdown"]);
+    expect(shape("crm-visit-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown"]);
+    expect(shape("crm-visit-cancelled")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
+    // The thank-you: its sentence, and the code only when the referral holds one.
+    expect(shape("crm-referral-thanks")).toEqual(["email.heading", "email.text", "email.text", "email.box"]);
+    for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-referral-thanks")!.locales[locale]!.blocks.slice(2).map((block) => block.showWhen), locale).toEqual([{ var: "referral.reward" }, { var: "referral.reward" }]);
+    // Each says why the reader got it.
+    for (const key of ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"]) for (const locale of LOCALES) expect((m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.footer ?? "").trim(), `${key} ${locale}`).not.toBe("");
+  });
+
+  it("every button carries its record, and no customer's e-mail names a number of ours, a stage or another customer", () => {
+    for (const locale of LOCALES) {
+      const button = m.emailTemplates.find((one) => one.key === "crm-quote-sent")!.locales[locale]!.blocks.find((block) => block.block === "email.button")!;
+      // The customer's page, opened by the quote's own code: the link names this quote and no other.
+      expect(button.data.url, locale).toBe("{{manage_url}}#{{quote.share_code}}");
+    }
+    const customers = ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"];
+    for (const key of customers) {
+      const read = names(JSON.stringify(m.emailTemplates.find((one) => one.key === key)!.locales["en-US"]));
+      // Never a key of ours, a stage, who owns the deal, or (on the thank-you) the deal or the company that was introduced.
+      for (const name of read) expect(name, `${key} {{${name}}}`).not.toMatch(/(^|\.)(id|number|stage_id|stage_odds|owner_id|rep_id|target_value|weighted_value)$/);
+      if (key === "crm-referral-thanks") for (const name of read) expect(name.startsWith("deal.") || name.startsWith("referral.company") || name === "referral.referred_name", name).toBe(false);
+    }
+    // A removed visit is read from what the message kept, never from the row that is gone.
+    expect(names(JSON.stringify(m.emailTemplates.find((one) => one.key === "crm-visit-cancelled")!.locales["en-US"])).filter((name) => name.startsWith("visit."))).toEqual([]);
+  });
+
+  it("opens a record from a notice in the app's own screen: a deal, a quote, a company, a contact, a site visit", () => {
+    const staffSide = m.frontends.find((side) => side.side === "staff")!;
+    expect(staffSide.records).toEqual({ deals: "/deals/{id}", quotes: "/quotes/{id}", companies: "/companies/{id}", contacts: "/contacts/{id}", site_visits: "/visits/notes/{id}" });
+    // Every rule that tells people is about one of them, or about a follow-up (which has no screen of its own).
+    const told = new Set(m.automations.filter((one) => steps(one.key).some((step) => step.kind === "notification")).map((one) => one.trigger.table ?? one.trigger.forEach?.table));
+    expect([...told].sort()).toEqual(["deals", "follow_ups", "quotes"]);
   });
 
   it("read the same variables in every language", () => {
@@ -204,7 +351,16 @@ describe("the e-mails the app ships", () => {
 
 describe("the outbox", () => {
   it("has a template for each kind", () => {
-    expect(m.outbox.kinds).toEqual({ "quote-sent": "crm-quote-sent", "quote-accepted": "crm-quote-accepted", "handover-intro": "crm-handover-intro", "approval-asked": "crm-approval-asked" });
+    expect(m.outbox.kinds).toEqual({
+      "quote-sent": "crm-quote-sent",
+      "quote-accepted": "crm-quote-accepted",
+      "handover-intro": "crm-handover-intro",
+      "approval-asked": "crm-approval-asked",
+      "visit-confirmed": "crm-visit-confirmed",
+      "visit-moved": "crm-visit-moved",
+      "visit-cancelled": "crm-visit-cancelled",
+      "referral-thanks": "crm-referral-thanks",
+    });
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });
 
@@ -213,8 +369,8 @@ describe("the outbox", () => {
     expect(steps("quote-sent-amount")).toEqual([{ kind: "record.create", table: "deal_amount_changes", values: { deal_id: "{{record.deal_id}}", quote_id: "{{record.id}}", amount: "{{record.subtotal}}" } }]);
   });
 
-  it("has two producers: a quote that reaches \"sent\" is mailed to the address kept on it, and so is its acceptance", () => {
-    expect(m.outbox.producers).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" }, replyTo: { staff: "deal_id.owner_id" } },
+  it("mails a quote that reaches \"sent\" to the address kept on it, and so its acceptance", () => {
+    expect(m.outbox.producers.slice(0, 2)).toEqual([{ kind: "quote-sent", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "sent" }, replyTo: { staff: "deal_id.owner_id" } },
       // …and when it is accepted, by the customer or by the office, the same address is told so: an acceptance nobody there made does not pass unseen.
       { kind: "quote-accepted", module: "quotes", link: "quote_id", recipient: { column: "sent_to_email", name: "sent_to_name" }, onChange: { table: "quotes", column: "status", to: "accepted" } },
     ]);
@@ -227,5 +383,49 @@ describe("the outbox", () => {
     // Sending stamps where it went, and that no longer follows the contact: the record of who was mailed stays true.
     expect(column("sent_to_email").rules).toEqual({ personal: true, stamp: { set: { copy: "to_email" }, on: { column: "status", values: ["sent"] } } });
     expect(column("sent_to_name").rules).toEqual({ stamp: { set: { copy: "to_name" }, on: { column: "status", values: ["sent"] } } });
+  });
+});
+
+describe("a site visit tells the customer", () => {
+  const producer = (kind: string) => m.outbox.producers.find((one) => one["kind"] === kind)!;
+  const told = { setting: { table: "settings", column: "visit_emails" } };
+  const booked = { column: "state", eq: "booked" };
+
+  it("when it is booked, when its time moves, and when it is cancelled: three e-mails, one switch", () => {
+    expect(producer("visit-confirmed")).toEqual({ kind: "visit-confirmed", module: "selling", link: "visit_id", gate: told, onCreate: { table: "site_visits", where: booked }, replyTo: { staff: "rep_id" } });
+    // Each move is told, with the time the visit had; a change of its length or its purpose is not a move.
+    expect(producer("visit-moved")).toEqual({ kind: "visit-moved", module: "selling", link: "visit_id", gate: told, onChange: { table: "site_visits", columns: ["starts_at"], changed: true, where: booked }, batchMinutes: 15, was: ["starts_at"], replyTo: { staff: "rep_id" } });
+    // A cancel removes the visit, so the mail reads what the message kept. A visit already made is removed by nobody.
+    expect(producer("visit-cancelled")).toEqual({ kind: "visit-cancelled", module: "selling", link: "visit_id", gate: told, onDelete: { table: "site_visits", where: booked }, was: ["starts_at", "purpose"] });
+    expect(m.outbox.links["visit"]).toBe("visit_id");
+    expect(m.outbox.columns["was"]).toBe("was");
+    const column = (table: string, ref: string) => m.requiredSchema.tables.find((one) => one.ref === table)!.columns.find((one) => one.ref === ref)!;
+    expect(column("outbox", "was")).toMatchObject({ type: "text", nullable: true });
+    // The switch is the CRM admin's, on as installed; the booking dialog reads it.
+    expect(column("settings", "visit_emails")).toMatchObject({ type: "bool", default: true });
+    const roles = (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[] }> }[] }).roles;
+    expect(roles.find((one) => one.key === "sales-manager")!.limits!["settings"]!.writable).not.toContain("visit_emails");
+    // A reply to the confirmation reaches the rep who goes.
+    expect(column("site_visits", "rep_id").rules?.staff).toBe(true);
+    // What is kept of a moved or a removed visit is never personal data.
+    for (const ref of ["starts_at", "purpose"]) expect(column("site_visits", ref).rules?.personal, ref).toBeUndefined();
+  });
+});
+
+describe("a referral is thanked", () => {
+  it("by an e-mail to who made the introduction, once, when somebody fills the moment of the thanks", () => {
+    expect(m.outbox.producers.find((one) => one["kind"] === "referral-thanks")).toEqual({
+      kind: "referral-thanks",
+      module: "accounts",
+      link: "referral_id",
+      onChange: { table: "referrals", columns: ["thanked_at"], changed: true, where: { column: "thanked_at", isNull: false } },
+      replyTo: { staff: "thanked_by_id" },
+    });
+    expect(m.outbox.links["referral"]).toBe("referral_id");
+    const referrals = m.requiredSchema.tables.find((one) => one.ref === "referrals")!.columns;
+    // Who thanked is the server's to say, and a reply reaches them.
+    expect(referrals.find((one) => one.ref === "thanked_by_id")!.rules).toEqual({ staff: true, stamp: { set: "user-id", on: { column: "thanked_at", filled: true } } });
+    // The message finds its reader by the one link a referral has to a contact.
+    expect(referrals.filter((one) => (one as { references?: string }).references === "contacts").map((one) => one.ref)).toEqual(["from_contact_id"]);
   });
 });

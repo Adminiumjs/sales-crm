@@ -104,7 +104,7 @@ describe("loadStaffConfig", () => {
       csrfToken: "tok",
       publicKeys: { kiosk: "adm_pub_k", broken: 3 },
       access: { tables: { tickets: ["read", "update", "fly"], odd: "all" }, roles: [{ slug: "pos-cashier", name: "POS cashier" }, { name: "no slug" }] },
-      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" } }, odd: 3 },
+      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" } }, inventory: { version: "1.0.12", settings: {}, tables: { items: "inventory_items", odd: 4 } }, odd: 3 },
       sharedTables: { menu_items: ["ordering"], tickets: [], odd: "all" },
       modules: { selling: true, jobs: false, odd: "yes" },
       locale: "ar-EG",
@@ -126,7 +126,8 @@ describe("loadStaffConfig", () => {
       csrfToken: "tok",
       publicKeys: { kiosk: "adm_pub_k" },
       access: { tables: { tickets: ["read", "update"] }, roles: [{ slug: "pos-cashier", name: "POS cashier" }] },
-      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" } } },
+      // An add-on's own tables, by its short name: what is not a name is dropped.
+      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" } }, inventory: { version: "1.0.12", settings: {}, tables: { items: "inventory_items" } } },
       sharedTables: { menu_items: ["ordering"] },
       // The app's parts, each on or off; the person's own language and its direction.
       modules: { selling: true, jobs: false },
