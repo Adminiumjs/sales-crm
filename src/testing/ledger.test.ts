@@ -140,12 +140,17 @@ describe("the sample is the one the manifest names", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("brings sixteen people, each in one of the app's nine roles, and the sales team", () => {
+  it("brings sixteen people, each in one of the app's nine roles, the sales team and the two crews", () => {
     expect(sample.people).toHaveLength(16);
     expect(sample.people.filter((one) => !roles.includes(one.role))).toEqual([]);
     expect(new Set(sample.people.map((one) => one.role)).size).toBe(9);
     expect(new Set(sample.people.map((one) => one.key)).size).toBe(16);
-    expect(sample.teams).toEqual([{ name: "Sales", lead: "ivy", members: ["dana", "priya", "sam", "leo"] }]);
+    // Each crew is a team the operations manager leads (D11 Q10; F19).
+    expect(sample.teams).toEqual([
+      { name: "Sales", lead: "ivy", members: ["dana", "priya", "sam", "leo"] },
+      { name: "Blue crew", lead: "ada", members: ["f_yusuf", "cal"] },
+      { name: "Red crew", lead: "ada", members: ["rina", "mo", "sean"] },
+    ]);
   });
 });
 

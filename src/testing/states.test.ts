@@ -59,7 +59,8 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
   // A cancelled showroom booking is removed, never marked (F17, P19); one somebody came in for without a confirmation is still "been in".
   showroom_bookings: { column: "state", initial: "tentative", moves: ["tentative → confirmed", "tentative → done", "confirmed → done"] },
   jobs: { column: "state", initial: "open", moves: ["open → installed", "installed → signed-off: blocking_snags = 0; 1 sign_offs"] },
-  job_visits: { column: "state", initial: "waiting", moves: ["waiting → booked: day filled; crew_id filled", "booked → done", "booked → waiting", "booked → cancelled: cancel_reason filled"] },
+  // A visit to a job that is called off is removed (F17), the why written to it first so the removal's own entry keeps it: no "cancelled" state.
+  job_visits: { column: "state", initial: "waiting", moves: ["waiting → booked: day filled; crew_id filled", "booked → done", "booked → waiting"] },
   snags: { column: "state", initial: "open", moves: ["open → waiting-part", "open → put-right: put_right_note filled", "waiting-part → open", "waiting-part → put-right: put_right_note filled"] },
   complaints: { column: "state", initial: "open", moves: ["open → answered", "answered → settled"] },
   warranty_claims: {
@@ -163,7 +164,8 @@ describe("what a state locks", () => {
     expect(locks).toEqual({ deals: ["won", "lost"], quotes: ["sent", "accepted", "declined", "withdrawn"], time_sheets: ["sent", "signed-off"] });
     const children = Object.fromEntries(tables.filter((one) => one.states?.children !== undefined).map((one) => [one.ref, Object.entries(one.states!.children!).map(([child, rule]) => `${child}${rule.lock === true ? " locked" : ""}${rule.createIn === undefined ? "" : ` made in ${rule.createIn.join(", ")}`}`)]));
     // On a closed deal nobody is added or taken off.
-    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked"], jobs: ["sign_offs made in open, installed"], time_sheets: ["time_sheet_lines locked"] });
+    // A signed-off job still takes a sign-off: the correction of the one it holds (F19), never a change of it.
+    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked"], jobs: ["sign_offs made in open, installed, signed-off"], time_sheets: ["time_sheet_lines locked"] });
   });
 });
 
@@ -187,9 +189,9 @@ describe("every button", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("there are thirty-four", () => {
-    // The showroom's "Cancel" went with its state (P19): a cancel removes the booking.
-    expect(buttons).toHaveLength(34);
+  it("there are thirty-three", () => {
+    // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row.
+    expect(buttons).toHaveLength(33);
   });
 });
 

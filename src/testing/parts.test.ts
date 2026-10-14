@@ -142,6 +142,10 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["approval-refused", "quotes"],
       ["week-rep", "selling"],
       ["week-manager", "selling"],
+      // A crew is told its day sheet changed only where jobs on site are done at all.
+      ["day-sheet-changed", "jobs"],
+      ["day-sheet-crew", "jobs"],
+      ["day-sheet-moved", "jobs"],
     ]);
   });
 
@@ -156,6 +160,10 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["showroom-confirmed", "showroom"],
       ["showroom-moved", "showroom"],
       ["showroom-cancelled", "showroom"],
+      // A delivery's three e-mails go with Jobs on site.
+      ["delivery-booked", "jobs"],
+      ["delivery-moved", "jobs"],
+      ["delivery-cancelled", "jobs"],
     ]);
   });
 });
@@ -179,14 +187,14 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(quoted.rules?.["rollup"]).toBeUndefined();
     // The outgoing e-mails lose their link to a quote, and the quote's own e-mail.
     expect(kept.find((table) => table.ref === "outbox")!.columns.map((column) => column.ref)).not.toContain("quote_id");
-    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled"]);
-    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "approval-asked", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled"]);
-    // The visit's, the referral's and the showroom's e-mails still go, and read nothing of a quote.
+    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled"]);
+    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "approval-asked", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled"]);
+    // The visit's, the referral's, the showroom's and a delivery's e-mails still go, and read nothing of a quote.
     const templates = (left as unknown as { emailTemplates: { key: string }[] }).emailTemplates;
     expect(templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))).toHaveLength(7);
     for (const template of templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
-    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager"]);
+    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved"]);
     // Every role is still there, without a grant, a limit or a part that names quotes.
     const leftRoles = left.roles as unknown as Role[];
     expect(leftRoles.map((role) => role.key)).toEqual(roles.map((role) => role.key));

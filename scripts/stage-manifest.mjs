@@ -16,11 +16,16 @@
  *  - a column of a kept table that points into a table that went, goes
  *    (a follow-up's link to a job), and with it every mention of that column:
  *    an index, a role's column lists;
+ *  - a column or a right `stage.json` gives to a later part goes (a setting
+ *    only that part reads; the operations manager's read of won deals), and a
+ *    column it gives to a later stage (an action's link to its session);
+ *  - an e-mail every producer of which went goes, with its template, its
+ *    links and the settings it reads;
  *  - a role keeps the parts it still has; a role left with none goes, and the
- *    sample's people who held it with it;
- *  - the sample loses the rows of tables that went, the columns that went,
- *    the rows `stage.json` names as belonging to a later part, and any file
- *    no row still uses.
+ *    sample's people who held it with it (and a team left with only its lead);
+ *  - the sample loses the rows of tables that went, the columns that went
+ *    (and a row's label only such a column named), the rows `stage.json`
+ *    names as belonging to a later part, and any file no row still uses.
  *
  * Nothing is added and nothing is reworded: every stage is a subset of the
  * whole, and the last stage IS the whole (a test holds both).
@@ -46,6 +51,9 @@ export function partsOf(stages, stage) {
   return parts;
 }
 
+/** Whether a column rule of `stage.json` keeps its columns out of this stage: they come with a later part, or a later stage. */
+const laterColumns = (rule, keep, stage) => (rule.part !== undefined ? !keep.has(rule.part) : stage < Number(rule.stage));
+
 /**
  * The manifest of a stage. Pure: the whole in, the stage out.
  * Answers the manifest and what was cut from it, for the sample and for a test.
@@ -59,9 +67,10 @@ export function stageManifest(whole, stages, stage) {
   doc.requiredSchema.tables = doc.requiredSchema.tables.filter((table) => partOf(table));
 
   // Columns that point into a table that went, then columns worked out through one of those, until nothing more goes.
+  // A column `stage.json` gives to a later part goes with it too (a setting only that part reads).
   const goneColumns = {};
   for (const table of doc.requiredSchema.tables) {
-    const gone = new Set();
+    const gone = new Set((stages.columns ?? []).filter((rule) => laterColumns(rule, keep, stage) && rule.table === table.ref).flatMap((rule) => rule.columns));
     for (let more = true; more; ) {
       more = false;
       for (const column of table.columns) {
@@ -76,7 +85,7 @@ export function stageManifest(whole, stages, stage) {
       }
     }
     if (gone.size === 0) continue;
-    goneColumns[table.ref] = [...gone];
+    goneColumns[table.ref] = table.columns.filter((column) => gone.has(column.ref)).map((column) => column.ref);
     table.columns = table.columns.filter((column) => !gone.has(column.ref));
     if (table.indexes !== undefined) table.indexes = table.indexes.filter((index) => !index.some((ref) => gone.has(ref)));
   }
@@ -113,20 +122,7 @@ export function stageManifest(whole, stages, stage) {
 
   if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id));
   if (doc.outbox?.producers !== undefined) doc.outbox.producers = doc.outbox.producers.filter((producer) => partOf(producer) && !goneTables.has(producer.onChange?.table));
-  // A link of the outbox whose column went (a mail about a showroom booking) goes with it.
-  const goneOutbox = goneColumns[doc.outbox?.table] ?? [];
-  if (doc.outbox?.links !== undefined) doc.outbox.links = Object.fromEntries(Object.entries(doc.outbox.links).filter(([, column]) => !goneOutbox.includes(column)));
-  // …and the e-mails of a later part: a kind every producer of which went with its part (a showroom booking's), and its template.
-  // The kind's value stays on the outbox's column: a stage is a subset of the next, column by column.
-  const sentBy = (producers) => new Set((producers ?? []).map((producer) => producer.kind));
-  const before = sentBy(whole.outbox?.producers);
-  const after = sentBy(doc.outbox?.producers);
-  const goneKinds = [...before].filter((kind) => !after.has(kind));
-  if (goneKinds.length > 0 && doc.outbox?.kinds !== undefined) {
-    const goneTemplates = new Set(goneKinds.map((kind) => doc.outbox.kinds[kind]).filter((key) => key !== undefined));
-    for (const kind of goneKinds) delete doc.outbox.kinds[kind];
-    if (doc.emailTemplates !== undefined) doc.emailTemplates = doc.emailTemplates.filter((template) => !goneTemplates.has(template.key) || Object.values(doc.outbox.kinds).includes(template.key));
-  }
+  if (doc.outbox !== undefined) cutOutbox(doc, whole, goneColumns);
 
   // Roles: what each still holds. One left with no part is not offered.
   const goneRoles = new Set();
@@ -135,6 +131,12 @@ export function stageManifest(whole, stages, stage) {
     if (role.modules.length === 0) {
       goneRoles.add(role.key);
       return false;
+    }
+    // A right `stage.json` gives a role only with a later part (the operations manager reads won deals for Jobs on site).
+    for (const rule of stages.grants ?? []) {
+      if (keep.has(rule.part) || rule.role !== role.key) continue;
+      role.permissions = role.permissions.filter((permission) => !(rule.permissions ?? []).includes(permission));
+      for (const ref of rule.limits ?? []) if (role.limits !== undefined) delete role.limits[ref];
     }
     role.permissions = role.permissions.filter((permission) => {
       const [kind, target] = permission.split(":");
@@ -158,9 +160,41 @@ export function stageManifest(whole, stages, stage) {
     for (const team of doc.sampleData.teams ?? []) {
       for (const list of ["members", "leads"]) if (Array.isArray(team[list])) team[list] = team[list].filter((key) => people.has(key));
     }
+    // A team left with nobody in it but its lead (a crew, before the crew's part) is not made.
+    if (doc.sampleData.teams !== undefined) doc.sampleData.teams = doc.sampleData.teams.filter((team) => !Array.isArray(team.members) || team.members.length > 0);
   }
 
   return { manifest: doc, cut: { parts: whole.modules.map((part) => part.id).filter((id) => !keep.has(id)), tables: [...goneTables], columns: goneColumns, pages: [...gonePages], rules: [...goneRules], roles: [...goneRoles] } };
+}
+
+/**
+ * The outbox of a stage: a link whose column went, a setting it reads that went, and a kind every one of whose
+ * producers went (a delivery's e-mails, before Jobs on site), with its template and its value of the kind column.
+ * A kind no producer ever queued (one the app's screens or a rule send) stays.
+ */
+function cutOutbox(doc, whole, goneColumns) {
+  const outbox = doc.outbox;
+  const gone = goneColumns[outbox.table] ?? [];
+  if (outbox.links !== undefined) outbox.links = Object.fromEntries(Object.entries(outbox.links).filter(([, column]) => !gone.includes(column)));
+  if (outbox.settings !== undefined) {
+    const lost = goneColumns[outbox.settings.table] ?? [];
+    outbox.settings = Object.fromEntries(Object.entries(outbox.settings).filter(([key, column]) => key === "table" || !lost.includes(column)));
+    if (Object.keys(outbox.settings).length === 1) delete outbox.settings;
+  }
+  const producedOnce = new Set((whole.outbox?.producers ?? []).map((producer) => producer.kind));
+  const producedNow = new Set((outbox.producers ?? []).map((producer) => producer.kind));
+  const goneKinds = Object.keys(outbox.kinds ?? {}).filter((kind) => producedOnce.has(kind) && !producedNow.has(kind));
+  if (goneKinds.length === 0) return;
+  const goneTemplates = goneKinds.map((kind) => outbox.kinds[kind]);
+  for (const kind of goneKinds) delete outbox.kinds[kind];
+  const kindColumn = doc.requiredSchema.tables.find((table) => table.ref === outbox.table)?.columns.find((column) => column.ref === outbox.columns.kind);
+  if (kindColumn !== undefined) {
+    kindColumn.enum = kindColumn.enum.filter((value) => !goneKinds.includes(value));
+    const labels = kindColumn.rules?.enumLabels?.labels;
+    if (labels !== undefined) for (const kind of goneKinds) delete labels[kind];
+  }
+  const stillSent = new Set([...Object.values(outbox.kinds ?? {}), ...JSON.stringify(doc.automations ?? []).matchAll(/"templateKey":"([^"]+)"/g)].map((one) => (Array.isArray(one) ? one[1] : one)));
+  doc.emailTemplates = (doc.emailTemplates ?? []).filter((template) => !goneTemplates.includes(template.key) || stillSent.has(template.key));
 }
 
 const walk = (value, visit) => {
@@ -176,6 +210,8 @@ export function stageSample(sample, stages, stage, cut) {
   const keep = new Set(partsOf(stages, stage));
   const out = structuredClone(sample);
   const laterRows = (stages.rows ?? []).filter((rule) => !keep.has(rule.part));
+  // The labels a column that went named: a row keeps its label only while something still names it.
+  const named = new Set();
   out.tables = out.tables
     .filter((table) => !cut.tables.includes(table.ref))
     .map((table) => {
@@ -183,9 +219,19 @@ export function stageSample(sample, stages, stage, cut) {
       const rules = laterRows.filter((rule) => rule.table === table.ref);
       const rows = table.rows
         .filter((row) => !rules.some((rule) => Object.entries(rule.where).every(([column, values]) => values.includes(row[column]))))
-        .map((row) => Object.fromEntries(Object.entries(row).filter(([column]) => !gone.includes(column))));
+        .map((row) => {
+          for (const column of gone) walk(row[column], (node) => typeof node["@ref"] === "string" && named.add(node["@ref"]));
+          return Object.fromEntries(Object.entries(row).filter(([column]) => !gone.includes(column)));
+        });
       return { ...table, rows };
     });
+  if (named.size > 0) {
+    const still = new Set();
+    walk(out.tables, (node) => {
+      if (typeof node["@ref"] === "string") still.add(node["@ref"]);
+    });
+    for (const table of out.tables) for (const row of table.rows) if (named.has(row["@label"]) && !still.has(row["@label"])) delete row["@label"];
+  }
   if (out.assets !== undefined) {
     const used = new Set();
     walk(out.tables, (node) => {

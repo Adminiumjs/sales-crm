@@ -62,7 +62,9 @@ const talk = (cell: string) => [cell, cell, cell, cell, "-", "-", "-", "-", "-"]
 const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // The sales manager keeps the stages and the reasons a deal is lost for; taking one away is the CRM admin's.
   [["stages", "lost_reasons"], "RCUD", "RCU", "R", "R", "-", "-", "-", "-", "R"],
-  [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won", "-", "-", "-", "-", "RX"],
+  // The operations manager reads a won deal (five columns: its name, state, close day and how many jobs it has) to make
+  // the job of one won before Jobs on site was switched on ("jobs still to make", P15); nothing of an open deal.
+  [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won", "-", "-", "R:won", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
   [["deal_amount_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
@@ -109,11 +111,13 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
   [["showroom_spaces", "samples", "display_pieces"], "RCUD", "R", "R", "-", "-", "RCUD", "-", "-", "R"],
   [["showroom_bookings", "sample_loans", "sample_chases"], "RCUD", "R", "RCU", "-", "-", "RCUD", "-", "-", "R"],
-  // The operations manager reads no deal, so she names none: a job is made by the rule when its deal is won, and she works it.
-  [["jobs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RU", "-", "R"],
+  // A job is made by the rule when its deal is won, and by the operations manager for a deal won before the part was on:
+  // she names a won deal, the only kind she reads.
+  [["jobs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCU", "-", "R"],
   [["crews", "crew_members", "crew_days"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
   [["job_visits"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
-  [["sign_offs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCU", "RC:own", "R"],
+  // A sign-off is never changed or removed once made, by anybody: a correction is a new row that names the one it corrects.
+  [["sign_offs"], "RC", "R:team", "R:own", "R", "-", "-", "RC", "RC:own", "R"],
   [["snags"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["delivery_notes", "delivery_note_lines"], "RCUD", "-", "-", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["waste_removals"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
@@ -148,6 +152,12 @@ const PERSONAL: Record<string, readonly RoleKey[]> = {
   enquiries: ["admin", "sales-manager", "rep", "marketer", "front-desk"],
   // The address a quote was sent to is copied from its contact: as personal there as on the contact. Read-only sees it masked.
   quotes: ["admin", "sales-manager", "rep"],
+  // A crew member's phone: the operations manager rings her crews, the CRM admin sets them up.
+  crew_members: ["admin", "ops-manager"],
+  // A job's street and the site's phone, and the copies of them on its visits: the office books the day and rings the site,
+  // and the crew goes there (its day sheet, P22). Read-only, a rep and her manager read them masked.
+  jobs: ["admin", "ops-manager"],
+  job_visits: ["admin", "ops-manager", "crew"],
 };
 
 /** The settings the sales manager may change: the Selling keys. */
@@ -676,7 +686,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 74, "sales-manager": 62, rep: 60, "account-manager": 30, marketer: 8, "front-desk": 11, "ops-manager": 24, crew: 16, "read-only": 68 });
+    expect(menu).toEqual({ admin: 74, "sales-manager": 62, rep: 60, "account-manager": 30, marketer: 8, "front-desk": 11, "ops-manager": 25, crew: 16, "read-only": 68 });
   });
 });
 
@@ -830,7 +840,7 @@ describe("a time sheet is signed off or sent back by the operations manager", ()
 
 describe("the field crew writes what the day asks of it", () => {
   it("ticks the four ticks of a visit and changes nothing else of it", () => {
-    expect(limitOf("crew", "job_visits")?.writable).toEqual(["tick_loaded", "tick_arrived", "tick_fitted", "tick_cleared"]);
+    expect(limitOf("crew", "job_visits")?.writable).toEqual(["tick_loaded", "tick_arrived", "tick_done", "tick_cleared"]);
     expect(held("crew", "job_visits")).toEqual(["read", "update"]);
   });
 
@@ -1046,7 +1056,12 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "marketer: deal_marks", "read-only: quotes", "read-only: covers"]);
+    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "read-only: quotes", "read-only: covers"]);
+    // A crew member reads the notes of his crew's visits, not the totals Adminium keeps of every line (a line is reached by
+    // its own crew, so a total over another crew's lines would show through): he counts his lines himself.
+    expect(limitOf("crew", "delivery_notes")?.readable).not.toContain("ordered");
+    // Of a won deal, the operations manager reads what "jobs still to make" names, and no amount, company or owner.
+    expect(limitOf("ops-manager", "deals")?.readable).toEqual(["id", "name", "state", "closed_on", "job_count"]);
   });
 
   it("shows the marketer that a company has an open deal, and nothing of the deal", () => {

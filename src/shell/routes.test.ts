@@ -94,8 +94,8 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
       expect([role, group?.items.map((item) => item.route)]).toEqual([role, [...showroom]]);
     }
     for (const role of ["rep", "sales-manager", "account-manager", "marketer", "ops-manager", "crew"] as const) for (const route of showroom) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
-    // The admin's groups: Inbox, then the showroom, After the job, then Supply.
-    expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "aftercare", "supply", "team", "settings"]);
+    // The admin's groups: Inbox, then the showroom, Jobs on site, After the job, then Supply.
+    expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "jobs", "aftercare", "supply", "team", "settings"]);
   });
 });
 
@@ -239,8 +239,10 @@ describe("a part that waits for its add-on", () => {
       expect(routesOf(off([role], true)).filter((route) => ROUTES[route].part === "supply"), role).toEqual(["stock", "suppliers"]);
     }
     expect(routesOf({ roles: [], part: (id) => id !== "supply", waits: (id) => id === "supply", reads: () => false, built: () => true }).filter((route) => ROUTES[route].part === "supply")).toEqual(["stock", "suppliers"]);
-    // The operations manager has nothing else: her home is the page that says so, not "nothing is switched on".
-    expect(homeFor(off(["ops-manager"], true))).toBe("stock");
+    // Before Jobs on site, the operations manager has nothing else: her home is the page that says so, not "nothing is switched on".
+    expect(homeFor({ ...off(["ops-manager"], true), part: (id) => id !== "supply" && id !== "jobs" })).toBe("stock");
+    // With Jobs on site, her home is her own.
+    expect(homeFor(off(["ops-manager"], true))).toBe("ophome");
   });
 
   it("takes them out when the part is simply switched off, and gives nobody else a line", () => {

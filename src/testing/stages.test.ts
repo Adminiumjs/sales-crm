@@ -87,7 +87,17 @@ describe("the stages", () => {
       for (const table of now.requiredSchema.tables) {
         const later = next.requiredSchema.tables.find((one) => one.ref === table.ref);
         expect(later, table.ref).toBeDefined();
-        for (const column of table.columns) expect(later!.columns.find((one) => one.ref === column.ref), `${table.ref}.${column.ref}`).toEqual(column);
+        for (const column of table.columns) {
+          const after = later!.columns.find((one) => one.ref === column.ref) as (Column & { enum?: string[] }) | undefined;
+          // The outbox's kinds grow with the parts that send e-mail (a delivery's, with Jobs on site): every kind kept, with its label.
+          if (table.ref === "outbox" && column.ref === "kind") {
+            const before = column as Column & { enum: string[]; rules: { enumLabels: { labels: Record<string, unknown> } } };
+            expect(after?.enum?.slice(0, before.enum.length), "outbox.kind").toEqual(before.enum);
+            for (const kind of before.enum) expect((after?.rules as typeof before.rules).enumLabels.labels[kind], `outbox.kind ${kind}`).toEqual(before.rules.enumLabels.labels[kind]);
+            continue;
+          }
+          expect(after, `${table.ref}.${column.ref}`).toEqual(column);
+        }
       }
       for (const role of now.roles) {
         const later = next.roles.find((one) => one.key === role.key)!;
@@ -133,10 +143,13 @@ describe("stage 1, the first release", () => {
       expect(text.includes(`"table":"${ref}"`), `a mention of ${ref}`).toBe(false);
       expect(text.includes(`"from":"${ref}"`), `a figure from ${ref}`).toBe(false);
     }
-    // The columns of kept tables that pointed into a later part: a follow-up's job, and an e-mail's showroom booking (with its link).
-    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], outbox: ["booking_id"] });
+    // The columns of kept tables that point into a later part (a follow-up's job; how many jobs a deal has; an e-mail's
+    // visit to a job), the two settings only Jobs on site reads, and an action's link to its session, which comes with
+    // stage 2 (`stage.json`): the released stage does not move.
+    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"] });
+    expect(JSON.stringify(doc)).not.toContain('"session_id"');
     expect(Object.values((doc as unknown as { outbox: { links: Record<string, string> } }).outbox.links)).not.toContain("booking_id");
-    // …and the showroom's three e-mails: no kind, no template (the kind's value stays on the column, as in every stage).
+    // …and the showroom's three e-mails: no kind, no template.
     const mails = doc as unknown as { outbox: { kinds: Record<string, string> }; emailTemplates: { key: string }[] };
     expect(Object.keys(mails.outbox.kinds).filter((kind) => kind.startsWith("showroom-"))).toEqual([]);
     expect(mails.emailTemplates.map((template) => template.key).filter((key) => key.startsWith("crm-showroom-"))).toEqual([]);
@@ -146,9 +159,13 @@ describe("stage 1, the first release", () => {
     for (const role of doc.roles) for (const list of Object.values(role.limits?.["follow_ups"] ?? {})) if (Array.isArray(list)) expect(list, role.key).not.toContain("job_id");
     const pages = new Set(doc.pages.map((page) => page.ref));
     for (const role of doc.roles) for (const permission of role.permissions) if (permission.startsWith("page:@")) expect(pages.has(permission.split(":")[1]!.slice(1)), `${role.key}: ${permission}`).toBe(true);
-    // The rule that makes a job of a won deal belongs to Jobs on site: it is not here to run.
+    // The rules of Jobs on site (a won deal makes its job; a crew is told its day sheet changed) are not here to run.
     expect(doc.automations.map((rule) => rule.key)).not.toContain("deal-won-job");
-    expect(one.cut.rules).toEqual(["deal-won-job"]);
+    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved"]);
+    // Nor are the delivery e-mails, their templates, or the operations manager's read of won deals.
+    expect(Object.keys((doc as unknown as { outbox: { kinds: Record<string, string> } }).outbox.kinds).filter((kind) => kind.startsWith("delivery-"))).toEqual([]);
+    expect(JSON.stringify(doc).includes("crm-delivery-")).toBe(false);
+    expect(doc.roles.find((role) => role.key === "ops-manager")!.permissions).not.toContain("table:@deals:read");
   });
 
   it("its sample holds rows of its own tables only, every link of which lands, and no person of a role it lacks", () => {

@@ -33,6 +33,7 @@ import { territory } from "../strings/territory.ts";
 import { today } from "../strings/today.ts";
 import { visits } from "../strings/visits.ts";
 import { showroom } from "../strings/showroom.ts";
+import { jobs } from "../strings/jobs.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
 
 /**
@@ -70,6 +71,7 @@ const AREAS = [
   callnotes satisfies Area<(typeof callnotes)["en-US"]>,
   supply satisfies Area<(typeof supply)["en-US"]>,
   showroom satisfies Area<(typeof showroom)["en-US"]>,
+  jobs satisfies Area<(typeof jobs)["en-US"]>,
 ] as const;
 
 /**
@@ -106,4 +108,5 @@ export type MessageKey =
   | keyof (typeof aftersale)["en-US"]
   | keyof (typeof aftercare)["en-US"]
   | keyof (typeof supply)["en-US"]
-  | keyof (typeof showroom)["en-US"];
+  | keyof (typeof showroom)["en-US"]
+  | keyof (typeof jobs)["en-US"];

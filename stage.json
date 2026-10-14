@@ -7,5 +7,12 @@
   },
   "rows": [
     { "part": "aftercare", "table": "follow_ups", "where": { "kind": ["aftercare"] } }
+  ],
+  "columns": [
+    { "part": "jobs", "table": "settings", "columns": ["delivery_emails", "office_phone"] },
+    { "stage": 2, "table": "actions", "columns": ["session_id"] }
+  ],
+  "grants": [
+    { "part": "jobs", "role": "ops-manager", "permissions": ["table:@deals:read", "page:@crm-deals:view"], "limits": ["deals"] }
   ]
 }

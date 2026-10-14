@@ -41,6 +41,10 @@ export type RouteKey =
   | "aftercare" | "feedback" | "complaints" | "claims"
   /** Showroom and samples (stage 2, P19): the front desk's home and the five screens of the part. */
   | "deskhome" | "showroom" | "showfollow" | "samples" | "returns" | "floor"
+  /** Jobs on site, the office side (P20) and the route (P21); the operations manager's home. */
+  | "ophome" | "deliveries" | "daysheet" | "route" | "signoff" | "dnotes" | "snags" | "waste"
+  /** Settings for the operations manager, who keeps the crews and writes no setting: the Settings screen, its Crews tab alone. */
+  | "crews"
   /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
   | "deal"
   /** A person's own: reached from their name at the top, whatever their role. */
@@ -108,6 +112,15 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   samples: { path: "samples", part: "showroom", reads: ["samples", "sample_loans"], icon: "layers" },
   returns: { path: "sample-returns", part: "showroom", reads: ["sample_loans"], icon: "phone" },
   floor: { path: "display-stock", part: "showroom", reads: ["display_pieces", "showroom_spaces"], icon: "armchair" },
+  ophome: { path: "home", part: "jobs", reads: ["job_visits", "snags"], icon: "house" },
+  deliveries: { path: "deliveries", part: "jobs", reads: ["job_visits", "crews"], icon: "truck" },
+  daysheet: { path: "day-sheet", part: "jobs", reads: ["job_visits", "crews"], icon: "notebook-tabs" },
+  route: { path: "route", part: "jobs", reads: ["job_visits", "crews", "jobs"], icon: "route" },
+  signoff: { path: "sign-off", part: "jobs", reads: ["jobs", "sign_offs", "snags"], icon: "clipboard-check" },
+  dnotes: { path: "delivery-notes", part: "jobs", reads: ["delivery_notes", "delivery_note_lines"], icon: "clipboard-list" },
+  snags: { path: "snags", part: "jobs", reads: ["snags", "jobs"], icon: "wrench" },
+  waste: { path: "recycling", part: "jobs", reads: ["waste_removals"], icon: "recycle" },
+  crews: { path: "settings", part: "jobs", reads: ["crews"], icon: "settings" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
   me: { path: "me", part: null, reads: [], icon: "user-round" },
   mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
@@ -128,7 +141,7 @@ export const USER_MENU: readonly RouteKey[] = ["me", "mydetails", "notifs"];
 export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"] };
 
 /** The groups of a menu, in the design's words. `top` has no heading. */
-export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "showroom" | "supply" | "team" | "settings" | "aftercare";
+export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "showroom" | "jobs" | "supply" | "team" | "settings" | "aftercare";
 
 /** One line of a menu: the screen, and the words it goes by in THIS role's menu ("My targets" for a rep, "Team targets" for her manager). */
 export interface MenuItem {
@@ -147,6 +160,7 @@ const INBOX_FULL: MenuGroup = ["inbox", [it("inbox"), it("leads")]];
 const SUPPLY: MenuGroup = ["supply", [it("stock"), it("suppliers")]];
 const AFTER_THE_JOB: MenuGroup = ["aftercare", [it("aftercare"), it("feedback"), it("complaints"), it("claims")]];
 const SHOWROOM: MenuGroup = ["showroom", [it("showroom"), it("showfollow"), it("samples"), it("returns"), it("floor")]];
+const JOBS: MenuGroup = ["jobs", [it("deliveries"), it("daysheet"), it("route"), it("signoff"), it("dnotes"), it("snags"), it("waste")]];
 const without = (group: MenuGroup, routes: readonly RouteKey[]): MenuGroup => [group[0], group[1].filter((item) => !routes.includes(item.route))];
 
 /**
@@ -177,6 +191,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     without(ACCOUNTS_FULL, ["import"]),
     INBOX_FULL,
     SHOWROOM,
+    JOBS,
     AFTER_THE_JOB,
     SUPPLY,
     ["team", [it("messages"), it("targets", "teamTargets"), it("meeting")]],
@@ -196,7 +211,9 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     ["accounts", [it("companies"), it("contacts")]],
   ],
   "front-desk": [["top", [it("deskhome", "home")]], SHOWROOM, ["inbox", [it("inbox")]]],
-  "ops-manager": [SUPPLY],
+  // The design's sixteen, less what a later stage brings (Vehicles and crew), and a Settings line for the crews, their people
+  // and their days (P3): a crew is set up there, by her.
+  "ops-manager": [["top", [it("ophome", "home")]], JOBS, SUPPLY, ["settings", [it("crews", "appsettings")]]],
   crew: [],
   "read-only": [
     without(TOP_TEAM, ["nudges"]),
@@ -204,6 +221,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     without(ACCOUNTS_FULL, ["import"]),
     INBOX_FULL,
     SHOWROOM,
+    JOBS,
     AFTER_THE_JOB,
     SUPPLY,
     ["team", [it("targets", "teamTargets"), it("meeting")]],
@@ -220,7 +238,7 @@ export const HOMES: Record<RoleKey, RouteKey | null> = {
   "account-manager": "amhome",
   marketer: "mkhome",
   "front-desk": "deskhome",
-  "ops-manager": null,
+  "ops-manager": "ophome",
   crew: null,
   "read-only": "team",
 };

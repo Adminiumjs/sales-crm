@@ -1,0 +1,1301 @@
+/*
+ * Jobs on site, the office side and the route (P20, P21). Every class is
+ * `crm-jb-…`; the shared pieces (a screen, a pill, a chip, a card, the
+ * booking dialog's parts) are the app's own. Logical properties only: the
+ * page mirrors in Arabic. Colours are the tokens: dark follows by itself.
+ */
+
+:root {
+  --crm-jb-c0: var(--accent);
+  --crm-jb-c1: var(--danger);
+  --crm-jb-c2: var(--pos);
+  --crm-jb-c3: var(--warn);
+  --crm-jb-c4: var(--info);
+  --crm-jb-c5: #7c3aed;
+  --crm-jb-c6: #0d9488;
+  --crm-jb-c7: #b25e09;
+}
+
+.crm-jb-lead {
+  max-inline-size: 640px;
+}
+.crm-jb-quiet {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+  line-height: 1.5;
+}
+.crm-jb-quiet svg {
+  vertical-align: -2px;
+  margin-inline-end: 5px;
+}
+.crm-jb-fact-head {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* A crew's colour: a dot, a tile. */
+.crm-jb-dot {
+  display: inline-block;
+  inline-size: 9px;
+  block-size: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--fg-subtle);
+}
+.crm-jb-dot[data-colour="0"],
+.crm-jb-crewtile[data-colour="0"] {
+  background: var(--crm-jb-c0);
+}
+.crm-jb-dot[data-colour="1"],
+.crm-jb-crewtile[data-colour="1"] {
+  background: var(--crm-jb-c1);
+}
+.crm-jb-dot[data-colour="2"],
+.crm-jb-crewtile[data-colour="2"] {
+  background: var(--crm-jb-c2);
+}
+.crm-jb-dot[data-colour="3"],
+.crm-jb-crewtile[data-colour="3"] {
+  background: var(--crm-jb-c3);
+}
+.crm-jb-dot[data-colour="4"],
+.crm-jb-crewtile[data-colour="4"] {
+  background: var(--crm-jb-c4);
+}
+.crm-jb-dot[data-colour="5"],
+.crm-jb-crewtile[data-colour="5"] {
+  background: var(--crm-jb-c5);
+}
+.crm-jb-dot[data-colour="6"],
+.crm-jb-crewtile[data-colour="6"] {
+  background: var(--crm-jb-c6);
+}
+.crm-jb-dot[data-colour="7"],
+.crm-jb-crewtile[data-colour="7"] {
+  background: var(--crm-jb-c7);
+}
+.crm-jb-dot[data-tone="pos"] {
+  background: var(--pos);
+}
+.crm-jb-dot[data-tone="warn"] {
+  background: var(--warn);
+}
+.crm-jb-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 30px;
+  block-size: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-jb-tile[data-tone="pos"] {
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.crm-jb-tile[data-tone="warn"] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.crm-jb-tile[data-tone="danger"] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.crm-jb-tile[data-tone="info"] {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.crm-jb [data-tone="warn"].crm-mono,
+.crm-jb .crm-mono[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-jb .crm-mono[data-tone="danger"] {
+  color: var(--danger);
+}
+
+/* ── figures ─────────────────────────────────────────────────────────────── */
+.crm-jb-stats {
+  margin-block-start: 18px;
+}
+.crm-jb-stat[data-tone="danger"] .crm-jb-stat-value {
+  color: var(--danger);
+}
+.crm-jb-stat[data-tone="warn"] .crm-jb-stat-value {
+  color: var(--warn);
+}
+.crm-jb-stat[data-tone="pos"] .crm-jb-stat-value {
+  color: var(--pos);
+}
+.crm-jb .crm-banner {
+  margin-block-start: 14px;
+}
+.crm-jb .crm-chips {
+  margin-block-start: 14px;
+}
+
+/* ── the week bar and the chips ──────────────────────────────────────────── */
+.crm-jb-weekbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 16px;
+}
+.crm-jb-arrow {
+  inline-size: 32px;
+  block-size: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.crm-jb-weeklabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding-inline: 4px;
+  white-space: nowrap;
+}
+.crm-jb-weeknote {
+  margin-inline-start: auto;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-jb-days .crm-chip-btn[data-quiet="1"] {
+  opacity: 0.6;
+}
+.crm-jb-crews .crm-chip-btn {
+  gap: 7px;
+}
+
+/* ── Deliveries ──────────────────────────────────────────────────────────── */
+.crm-jb-dv {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 18px;
+  margin-block-start: 6px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .crm-jb-dv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crm-jb-dv-main {
+  min-inline-size: 0;
+}
+.crm-jb-alerts {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-jb-alerts li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.crm-jb-alerts svg {
+  flex-shrink: 0;
+}
+/* The week's days: they scroll inside themselves on a narrow screen, the page does not. */
+.crm-jb-week {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 1fr);
+  gap: 10px;
+  margin-block-start: 14px;
+  overflow-x: auto;
+  padding-block-end: 6px;
+}
+.crm-jb-day {
+  min-inline-size: 0;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-jb-day[data-over="1"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.crm-jb-day[data-bounce="1"] {
+  border-color: var(--danger);
+}
+.crm-jb-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  white-space: nowrap;
+}
+.crm-jb-day-name {
+  font-size: 13px;
+  font-weight: 800;
+}
+.crm-jb-load {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 9px;
+  font-size: 11.5px;
+}
+.crm-jb-load-track {
+  flex: 1;
+  display: flex;
+  block-size: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-3);
+}
+.crm-jb-load-bar {
+  block-size: 100%;
+  background: var(--info);
+  border-radius: 999px;
+}
+.crm-jb-load-bar[data-tone="warn"] {
+  background: var(--warn);
+}
+.crm-jb-bounce {
+  margin-block-start: 9px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.crm-jb-day-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-block-start: 9px;
+  min-block-size: 64px;
+}
+.crm-jb-day-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 64px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-jb-card {
+  padding: 10px 11px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  cursor: grab;
+}
+.crm-jb-card[draggable="false"] {
+  cursor: default;
+}
+.crm-jb-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.crm-jb-card-top .crm-jb-dot {
+  margin-block-start: 5px;
+}
+.crm-jb-card-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-jb-card-site {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.crm-jb-card-what {
+  margin-block-start: 3px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+.crm-jb-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+}
+.crm-jb-card-acts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-block-start: 9px;
+}
+.crm-jb-tobook {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.crm-jb-tobook-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-jb-tobook-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+.crm-jb-tobook-head .crm-jb-quiet {
+  margin-inline-start: auto;
+}
+.crm-jb-tobook-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-block-size: 560px;
+  overflow-y: auto;
+}
+.crm-jb-tobook-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 15px;
+  border-block-end: 1px solid var(--border);
+  cursor: grab;
+}
+.crm-jb-tobook-row[draggable="false"] {
+  cursor: default;
+}
+.crm-jb-tobook-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-jb-tobook-acts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+.crm-jb-still {
+  margin-block-start: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--warn);
+  background: var(--warn-soft);
+}
+.crm-jb-still-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--warn);
+}
+.crm-jb-still-head h2 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--fg);
+}
+.crm-jb-still-sub {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-jb-still-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-jb-still-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+}
+.crm-jb-still-name {
+  font-weight: 700;
+  flex: 1;
+  min-inline-size: 160px;
+}
+
+/* ── the booking dialog's own fields ─────────────────────────────────────── */
+.crm-jb-bk .crm-bk-when {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 560px) {
+  .crm-jb-bk .crm-bk-when {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crm-jb-bk .crm-form-error {
+  flex-wrap: wrap;
+}
+
+/* ── the day sheet ───────────────────────────────────────────────────────── */
+.crm-jb-sheet {
+  margin-block-start: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-jb-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crm-jb-crewtile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  block-size: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 800;
+  background: var(--fg-subtle);
+}
+.crm-jb-sheet-words {
+  flex: 1;
+  min-inline-size: 180px;
+}
+.crm-jb-sheet-words h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+.crm-jb-sheet-end {
+  text-align: end;
+}
+.crm-jb-sheet-date {
+  font-weight: 700;
+}
+.crm-jb-sheet-hours {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+@media (max-width: 520px) {
+  .crm-jb-sheet-end {
+    text-align: start;
+  }
+  .crm-jb-sheet-hours {
+    justify-content: flex-start;
+  }
+}
+.crm-jb-stops {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crm-jb-stop {
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-jb-stop-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.crm-jb-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 26px;
+  block-size: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.crm-jb-num[data-by="town"] {
+  background: transparent;
+  border: 1.5px dashed var(--fg-subtle);
+}
+.crm-jb-stop-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-jb-stop-line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-jb-time {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-jb-stop-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-block-start: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.crm-jb-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 4px;
+  min-block-size: 32px;
+  color: var(--pos);
+  font-weight: 700;
+  text-decoration: none;
+}
+.crm-jb-ticks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-block-start: 12px;
+}
+.crm-jb-tick {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-block-size: 40px;
+  padding: 8px 11px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: start;
+}
+button.crm-jb-tick {
+  cursor: pointer;
+}
+.crm-jb-tick[aria-pressed="true"],
+.crm-jb-tick[data-on="1"] {
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+}
+.crm-jb-tick-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 18px;
+  block-size: 18px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: #fff;
+}
+[aria-pressed="true"] > .crm-jb-tick-box,
+[data-on="1"] > .crm-jb-tick-box {
+  background: var(--pos);
+  border-color: var(--pos);
+}
+.crm-jb-sheet-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: 14px;
+}
+.crm-jb-print h1 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.crm-jb-print p {
+  margin: 0 0 4px;
+}
+.crm-jb-print ol {
+  margin: 12px 0 0;
+  padding-inline-start: 20px;
+}
+.crm-jb-print li {
+  margin-block-end: 12px;
+  line-height: 1.55;
+}
+.crm-jb-print-ticks {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+/* On paper: the print layout alone, in black on white. */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .crm-jb-print,
+  .crm-jb-print * {
+    visibility: visible !important;
+    color: #000 !important;
+  }
+  .crm-jb-print {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 100%;
+    background: #fff;
+  }
+}
+
+/* ── the route ───────────────────────────────────────────────────────────── */
+.crm-jb-route {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-block-start: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .crm-jb-route {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* On a phone the list comes first, the map under it (D5). */
+  .crm-jb-route-side {
+    order: -1;
+  }
+}
+.crm-jb-route-map {
+  min-inline-size: 0;
+}
+.crm-jb-route-kit {
+  block-size: 480px;
+}
+@media (max-width: 900px) {
+  .crm-jb-route-kit {
+    block-size: 360px;
+  }
+}
+.crm-jb-route-side {
+  min-inline-size: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-jb-route-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-jb-route-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+.crm-jb-route-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-block-start: 12px;
+}
+.crm-jb-mini {
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.crm-jb-mini-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-jb-mini-value {
+  margin-block-start: 5px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.crm-jb-route-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+.crm-jb-route-start {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-start: 12px;
+}
+.crm-jb-route-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-jb-route-list > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-block-end: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.crm-jb-depot-mark {
+  display: inline-block;
+  inline-size: 14px;
+  block-size: 14px;
+  margin-block-start: 3px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  border: 2px solid var(--fg-muted);
+}
+.crm-jb-route-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-jb-route-end {
+  text-align: end;
+  white-space: nowrap;
+}
+.crm-jb-leg {
+  margin-block-start: 4px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-jb-route-home,
+.crm-jb-route-none {
+  color: var(--fg-muted);
+}
+.crm-jb-route-acts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 12px;
+}
+
+/* ── the sign-off ────────────────────────────────────────────────────────── */
+.crm-jb-picker .crm-chip-btn {
+  gap: 8px;
+}
+.crm-jb-so {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 14px;
+  margin-block-start: 16px;
+  align-items: start;
+}
+@media (max-width: 1040px) {
+  .crm-jb-so {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crm-jb-so-card,
+.crm-jb-panel {
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-jb-so-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.crm-jb-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.crm-jb-so-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crm-jb-so-words {
+  flex: 1;
+  min-inline-size: 180px;
+}
+.crm-jb-so-words h2 {
+  margin: 0 0 3px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.crm-jb-so-words .crm-pill {
+  margin-block-start: 6px;
+}
+.crm-jb-so-end {
+  text-align: end;
+  font-size: 13px;
+}
+@media (max-width: 520px) {
+  .crm-jb-so-end {
+    text-align: start;
+  }
+}
+.crm-jb-so-block {
+  margin-block-start: 16px;
+  padding-block-start: 14px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-jb-so-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-end: 9px;
+}
+.crm-jb-so-block-head h2,
+.crm-jb-so-block-head h3 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+.crm-jb-checks,
+.crm-jb-so-snags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-jb-checks li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.crm-jb-so-snags li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+.crm-jb-so-snags li[data-tone="warn"] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.crm-jb-so-snags li[data-tone="danger"] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.crm-jb-so-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+}
+.crm-jb-so-add .crm-input {
+  flex: 1;
+  min-inline-size: 200px;
+}
+.crm-jb-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-block-size: 32px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.crm-jb-signed-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--pos);
+}
+.crm-jb-signed-line strong {
+  color: var(--fg);
+}
+/* A signature reads as paper in both themes. */
+.crm-jb-signature {
+  display: block;
+  margin-block-start: 10px;
+  max-inline-size: 100%;
+  block-size: 120px;
+  object-fit: contain;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.crm-jb-hint {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.crm-jb-hint[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-jb-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crm-jb-others {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.crm-jb-other {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.crm-jb-other:hover {
+  background: var(--surface-2);
+}
+.crm-jb-other-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── lists of rows: snags, notes, removals ───────────────────────────────── */
+.crm-jb-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.crm-jb-row {
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-jb-row[data-tone="pos"] {
+  border-inline-start-color: var(--pos);
+}
+.crm-jb-row[data-tone="warn"] {
+  border-inline-start-color: var(--warn);
+}
+.crm-jb-row[data-tone="danger"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-jb-row[data-tone="info"] {
+  border-inline-start-color: var(--info);
+}
+.crm-jb-row-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+.crm-jb-row-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.crm-jb-row-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-jb-row-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: end;
+  font-size: 12px;
+}
+.crm-jb-row-acts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+}
+.crm-jb-row-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+}
+.crm-jb-note {
+  display: flex;
+  gap: 7px;
+  margin-block-start: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-jb-fix {
+  margin-block-start: 10px;
+}
+.crm-jb-lines {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.crm-jb-lines li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-block-end: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.crm-jb-tonnes {
+  font-size: 16px;
+  font-weight: 700;
+}
+.crm-jb-tonnes[data-tone="pos"] {
+  color: var(--pos);
+}
+.crm-jb-tonnes[data-tone="info"] {
+  color: var(--info);
+}
+.crm-jb-tonnes[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-jb-bar {
+  block-size: 5px;
+  margin-block-start: 9px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.crm-jb-bar span {
+  display: block;
+  block-size: 100%;
+  border-radius: 99px;
+  background: var(--fg-subtle);
+}
+.crm-jb-bar span[data-tone="pos"] {
+  background: var(--pos);
+}
+.crm-jb-bar span[data-tone="info"] {
+  background: var(--info);
+}
+.crm-jb-bar span[data-tone="danger"] {
+  background: var(--danger);
+}
+.crm-jb-log {
+  margin-block-start: 14px;
+}
+.crm-jb-log .crm-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── the operations manager's home ───────────────────────────────────────── */
+.crm-jb-home-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 18px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-jb-home-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.crm-jb-home-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-jb-home-link {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--fg);
+  text-decoration: none;
+}
+.crm-jb-home-link:hover {
+  text-decoration: underline;
+}
+.crm-jb-home-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  text-align: end;
+  font-size: 12px;
+}
+.crm-jb-home-empty {
+  padding: 12px 18px;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+@media (max-width: 520px) {
+  .crm-jb-home-row {
+    flex-wrap: wrap;
+  }
+  .crm-jb-home-end {
+    align-items: flex-start;
+    text-align: start;
+    inline-size: 100%;
+    padding-inline-start: 41px;
+  }
+  .crm-jb-row-top {
+    flex-wrap: wrap;
+  }
+  .crm-jb-row-end {
+    align-items: flex-start;
+    text-align: start;
+  }
+}
+
+/* ── Settings → Crews ────────────────────────────────────────────────────── */
+.crm-jb-crew {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.crm-jb-crew .crm-jb-dot {
+  margin-block-start: 30px;
+}
+.crm-jb-crew-fields {
+  flex: 1;
+}
+.crm-jb-people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-jb-person {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-block-end: 1px solid var(--border);
+}
+.crm-jb-person-name {
+  flex: 1;
+  min-inline-size: 120px;
+  font-weight: 700;
+}
+.crm-jb-person-phone {
+  inline-size: 170px;
+  max-inline-size: 100%;
+}
+.crm-jb-addperson {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+}
+.crm-jb-addperson .crm-ast-input {
+  flex: 1;
+  min-inline-size: 180px;
+}
+
+/* A small primary button keeps its own colours (the small size's own text colour is for a quiet button). */
+:is(.crm-jb, .crm-jb-crews-tab) .crm-btn-primary:is(.crm-btn-32, .crm-btn-28) {
+  color: var(--accent-fg);
+}
+/* A crew's pill on a narrow card wraps rather than spill out of it. */
+.crm-jb-card-meta .crm-pill {
+  white-space: normal;
+  max-inline-size: 100%;
+}
+
+.crm-jb-crew-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.crm-jb-crew .crm-jb-dot {
+  margin-block-start: 34px;
+}
+.crm-jb-num-depot {
+  border-radius: 4px;
+  border: 1.5px solid var(--fg-muted);
+  background: var(--surface);
+}
+.crm-jb-panel > .crm-btn {
+  align-self: flex-start;
+}

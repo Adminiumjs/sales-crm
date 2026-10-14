@@ -122,8 +122,10 @@ for (const [dialect, reachable] of LEGS) {
       const job = await w.create('jobs', { deal_id: free['id'], site_name: 'A new site' });
       const made = (await h.rows(`SELECT code, code_seq FROM ${h.real('jobs')} WHERE id = ${String(job['id'])}`))[0]!;
       expect([made['code'], Number(made['code_seq'])]).toEqual(['J-09', 9]);
-      // Taken out again, so that the count of what the sample leaves behind is the sample's own.
+      // Taken out again, so that the count of what the sample leaves behind is the sample's own; and the deal's count of
+      // its jobs put back, which a removal straight in the database does not count again (else the deal reads as changed).
       await h.rows(`DELETE FROM ${h.real('jobs')} WHERE id = ${String(job['id'])}`);
+      await h.rows(`UPDATE ${h.real('deals')} SET job_count = 0 WHERE id = ${String(free['id'])}`);
     });
 
     it('takes it all away again', async () => {

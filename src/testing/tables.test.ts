@@ -156,7 +156,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   one_to_one_sessions: { nullable: ["notes"] },
   coaching_plans: { nullable: ["review_on", "runs_to"] },
   coaching_areas: { nullable: [] },
-  actions: { nullable: ["due_on", "done_at", "one_to_one_id", "meeting_id", "coaching_area_id"] },
+  // An action keeps the one-to-one session it came from (F19), as well as the pair, the meeting and the coaching area.
+  actions: { nullable: ["due_on", "done_at", "one_to_one_id", "session_id", "meeting_id", "coaching_area_id"] },
   meetings: { nullable: [] },
   meeting_slots: { nullable: ["who_id"] },
   meeting_decisions: { nullable: ["who_id"] },
@@ -210,9 +211,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   display_pieces: { nullable: ["promised_booking_id", "lent_company_id", "lent_until", "item"] },
   // Jobs on site. A job's number and the count behind it are empty on a sample
   // row, which brings its own text.
-  jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "access_note", "ask_for", "site_phone"] },
+  jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "place", "access_note", "ask_for", "site_phone"] },
   crews: { nullable: ["vehicle_id", "day_hours"] },
-  crew_members: { nullable: ["since"] },
+  crew_members: { nullable: ["since", "phone"] },
   // The weekdays a crew works: a visit is not booked on a day it has no row for.
   crew_days: { nullable: [] },
   job_visits: {
@@ -223,15 +224,18 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "vehicle_id",
       "hours",
       "crew_size",
+      "note",
       "stock_ready_on",
       "cancel_reason",
       "site_address",
       "site_town",
       "site_phone",
       "access_note",
+      "ask_for",
     ],
   },
-  sign_offs: { nullable: ["visit_id", "crew_id", "photos", "copy_sent_to"] },
+  // A correction names the sign-off it corrects; its version is one more (F19).
+  sign_offs: { nullable: ["visit_id", "crew_id", "photos", "copy_sent_to", "corrects_id", "corrects_version", "version"] },
   snags: {
     nullable: [
       "visit_id",
@@ -246,7 +250,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "put_right_photo",
     ],
   },
-  delivery_notes: { nullable: ["crew_id", "taken_by_id", "signed_by_contact_id", "signed_name", "note"] },
+  // What a note comes to (kept from its lines) and whether it needs sorting: short, damaged or unsigned, until the office sorts it.
+  delivery_notes: { nullable: ["crew_id", "taken_by_id", "signed_by_contact_id", "signed_name", "note", "short", "sorted_on", "needs_sorting"] },
   delivery_note_lines: { nullable: ["crew_id"] },
   waste_removals: { nullable: ["carrier", "note_number"] },
   // After the job
@@ -263,7 +268,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_back_note"] },
   time_sheet_lines: { nullable: ["visit_id", "job_id"] },
   certificates: { nullable: ["course_on"] },
-  subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "chased_at"] },
+  subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "email", "chased_at"] },
   insurance_incidents: { nullable: ["company_id", "insurer_ref"] },
   // The app's own. Every column of the outbox but its kind and status may be
   // empty: Adminium fills them as it sends, and not every email is about a quote.
@@ -277,6 +282,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "visit_id",
       "referral_id",
       "booking_id",
+      "job_visit_id",
+      "job_id",
       "was",
       "deal_id",
       "due_at",
@@ -287,7 +294,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   settings: {
-    nullable: ["showroom_address", "depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "depot_lat", "depot_lng", "aftercare_owner_id"],
+    nullable: ["showroom_address", "depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "office_phone", "depot_lat", "depot_lng", "aftercare_owner_id"],
   },
 };
 
@@ -326,10 +333,11 @@ const OUTBOX_WORD = {
     // What a moved or a removed visit was, for its e-mail.
     was: "was",
   },
-  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id" },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id" },
   recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
   // The settings row, read by a template as `practice.*` (where the showroom is).
-  settings: { table: "settings" },
+  // …and the office's phone, for "call us" in a delivery's e-mail.
+  settings: { table: "settings", phone: "office_phone" },
   kinds: {},
 };
 
@@ -408,9 +416,9 @@ function indexed(table: Table, ref: string): boolean {
   return firstInAnIndex(table, ref);
 }
 
-/** Whether a declared index starts with this column. */
+/** Whether a declared index, or a set of columns unique together (an index too), starts with this column. */
 function firstInAnIndex(table: Table, ref: string): boolean {
-  return (table.indexes ?? []).some((set) => set[0] === ref);
+  return [...(table.indexes ?? []), ...((table as unknown as { unique?: string[][] }).unique ?? [])].some((set) => set[0] === ref);
 }
 
 /**
@@ -878,8 +886,13 @@ describe("what Adminium copies, numbers and stamps on the jobs tables", () => {
     expect(rulesOf("time_sheets", "signed_by_id")).toMatchObject({ staff: true, stamp: { set: "user-id", on: { column: "state", values: ["signed-off"] } } });
   });
 
-  it("holds one feedback and one sign-off a job, a score from 1 to 5, and one sheet a person a week", () => {
-    for (const ref of ["feedback", "sign_offs"]) expect(byRef.get(ref)?.columns.find((c) => c.ref === "job_id"), ref).toMatchObject({ unique: true });
+  it("holds one feedback and one sign-off a job (and one correction of each), a score from 1 to 5, and one sheet a person a week", () => {
+    expect(byRef.get("feedback")?.columns.find((c) => c.ref === "job_id")).toMatchObject({ unique: true });
+    // A sign-off is version 1 of its job, a correction one more than the version it corrects, and no version is there twice.
+    expect((byRef.get("sign_offs") as unknown as { unique?: unknown }).unique).toEqual([["job_id", "version"]]);
+    expect(byRef.get("sign_offs")?.columns.find((c) => c.ref === "corrects_id")).toMatchObject({ type: "fk", references: "sign_offs", unique: true, nullable: true });
+    expect(rulesOf("sign_offs", "corrects_version").copy).toEqual({ via: "corrects_id", from: "version", mode: "always" });
+    expect(rulesOf("sign_offs", "version").formula).toEqual({ add: [{ coalesce: ["corrects_version", 0] }, 1] });
     expect(rulesOf("feedback", "score").validation).toEqual({ min: 1, max: 5 });
     expect(byRef.get("time_sheets")?.unique).toEqual([["user_id", "week_of"]]);
   });
@@ -897,7 +910,8 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
   /** Every move of each table, from each state, in order. */
   const MOVES: Record<string, { initial: string; moves: Record<string, string[]> }> = {
     jobs: { initial: "open", moves: { open: ["installed"], installed: ["signed-off"] } },
-    job_visits: { initial: "waiting", moves: { waiting: ["booked"], booked: ["done", "waiting", "cancelled"] } },
+    // Called off is removed, never kept "cancelled" (F17).
+    job_visits: { initial: "waiting", moves: { waiting: ["booked"], booked: ["done", "waiting"] } },
     snags: { initial: "open", moves: { open: ["waiting-part", "put-right"], "waiting-part": ["open", "put-right"] } },
     complaints: { initial: "open", moves: { open: ["answered"], answered: ["settled"] } },
     warranty_claims: {
@@ -936,14 +950,17 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
   it("books a visit only with a day and a crew, and not before its stock is ready", () => {
     expect(needs("job_visits", "waiting", "booked")).toEqual({ where: [{ column: "day", isNull: false }, { column: "crew_id", isNull: false }] });
     expect(rulesOf("job_visits", "day").notBefore).toEqual({ column: "stock_ready_on", when: [{ column: "state", in: ["booked"] }] });
-    expect(needs("job_visits", "booked", "cancelled")).toEqual({ where: [{ column: "cancel_reason", isNull: false }] });
-    expect(byRef.get("job_visits")?.states?.actions?.find((action) => action.id === "cancel")).toMatchObject({ ask: ["cancel_reason"] });
+    // A visit called off is removed: the why is written to it first, so the removal's own entry keeps it. One that was made stays.
+    expect(byRef.get("job_visits")?.states?.actions?.find((action) => action.id === "cancel")).toBeUndefined();
+    expect((byRef.get("job_visits")?.states as unknown as { noDelete?: unknown }).noDelete).toEqual({ when: ["done"] });
+    expect(byRef.get("job_visits")?.columns.find((c) => c.ref === "cancel_reason")).toMatchObject({ type: "text", nullable: true });
   });
 
   it("signs a job off only with a sign-off, and with no open snag that stops it", () => {
     const jobs = byRef.get("jobs") as Table;
     expect(needs("jobs", "installed", "signed-off")).toEqual({ children: { sign_offs: 1 }, where: [{ column: "blocking_snags", eq: 0 }] });
-    expect((jobs.states as unknown as { children?: unknown }).children).toEqual({ sign_offs: { via: "job_id", createIn: ["open", "installed"] } });
+    // A signed-off job still takes a sign-off: the correction of the one it holds, never a change of it (F19).
+    expect((jobs.states as unknown as { children?: unknown }).children).toEqual({ sign_offs: { via: "job_id", createIn: ["open", "installed", "signed-off"] } });
     // The count Adminium keeps: snags of the job that stop sign-off and are not put right.
     expect(rulesOf("jobs", "blocking_snags").rollup).toEqual({
       from: "snags",
@@ -1047,7 +1064,7 @@ describe("the outbox table is the shape the outbox word asks for", () => {
   it("keeps every link of it empty-able, since not every email is about one", () => {
     const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
     // A message is about a contact, a quote, a deal, a site visit, a referral or a showroom booking.
-    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id"]);
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id"]);
     for (const link of links) expect(link.nullable, link.ref).toBe(true);
   });
 

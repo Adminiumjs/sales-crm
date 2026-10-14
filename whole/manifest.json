@@ -1241,6 +1241,28 @@
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
             }
+          },
+          {
+            "ref": "job_count",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "jobs",
+                "via": "deal_id",
+                "count": true
+              }
+            },
+            "label": {
+              "en-US": "Jobs",
+              "de-DE": "Aufträge",
+              "fr-FR": "Chantiers",
+              "da-DK": "Opgaver",
+              "cs-CZ": "Zakázky",
+              "ar-EG": "أوامر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
           }
         ]
       },
@@ -8245,6 +8267,22 @@
             }
           },
           {
+            "ref": "session_id",
+            "type": "fk",
+            "references": "one_to_one_sessions",
+            "nullable": true,
+            "label": {
+              "en-US": "From the session",
+              "de-DE": "Aus dem Gespräch",
+              "fr-FR": "De l’entretien",
+              "da-DK": "Fra samtalen",
+              "cs-CZ": "Z rozhovoru",
+              "ar-EG": "من الجلسة",
+              "zh-CN": "来自面谈",
+              "zh-TW": "來自面談"
+            }
+          },
+          {
             "ref": "meeting_id",
             "type": "fk",
             "references": "meetings",
@@ -11628,7 +11666,8 @@
               "via": "job_id",
               "createIn": [
                 "open",
-                "installed"
+                "installed",
+                "signed-off"
               ]
             }
           },
@@ -11833,6 +11872,9 @@
               "ar-EG": "العنوان",
               "zh-CN": "地址",
               "zh-TW": "地址"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -11882,6 +11924,24 @@
             }
           },
           {
+            "ref": "place",
+            "type": "json",
+            "nullable": true,
+            "rules": {
+              "place": true
+            },
+            "label": {
+              "en-US": "Where the site is",
+              "de-DE": "Lage des Einsatzorts",
+              "fr-FR": "Emplacement du site",
+              "da-DK": "Stedets placering",
+              "cs-CZ": "Poloha místa",
+              "ar-EG": "موقع العمل",
+              "zh-CN": "现场位置",
+              "zh-TW": "現場位置"
+            }
+          },
+          {
             "ref": "access_note",
             "type": "text",
             "maxLength": 400,
@@ -11927,6 +11987,9 @@
               "ar-EG": "هاتف الموقع",
               "zh-CN": "现场电话",
               "zh-TW": "現場電話"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -12245,6 +12308,25 @@
             }
           },
           {
+            "ref": "phone",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "personal": true
+            },
+            "label": {
+              "en-US": "Phone",
+              "de-DE": "Telefon",
+              "fr-FR": "Téléphone",
+              "da-DK": "Telefon",
+              "cs-CZ": "Telefon",
+              "ar-EG": "الهاتف",
+              "zh-CN": "电话",
+              "zh-TW": "電話"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -12533,18 +12615,7 @@
             ],
             "booked": [
               "done",
-              "waiting",
-              {
-                "to": "cancelled",
-                "requires": {
-                  "where": [
-                    {
-                      "column": "cancel_reason",
-                      "isNull": false
-                    }
-                  ]
-                }
-              }
+              "waiting"
             ]
           },
           "actions": [
@@ -12597,28 +12668,13 @@
               "move": {
                 "to": "waiting"
               }
-            },
-            {
-              "id": "cancel",
-              "label": {
-                "en-US": "Cancel",
-                "de-DE": "Absagen",
-                "fr-FR": "Annuler",
-                "da-DK": "Aflys",
-                "cs-CZ": "Zrušit",
-                "ar-EG": "ألغِ",
-                "zh-CN": "取消",
-                "zh-TW": "取消"
-              },
-              "move": {
-                "to": "cancelled"
-              },
-              "tone": "danger",
-              "ask": [
-                "cancel_reason"
-              ]
             }
-          ]
+          ],
+          "noDelete": {
+            "when": [
+              "done"
+            ]
+          }
         },
         "columns": [
           {
@@ -12819,6 +12875,22 @@
             }
           },
           {
+            "ref": "note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "label": {
+              "en-US": "Note",
+              "de-DE": "Notiz",
+              "fr-FR": "Note",
+              "da-DK": "Note",
+              "cs-CZ": "Poznámka",
+              "ar-EG": "ملاحظة",
+              "zh-CN": "备注",
+              "zh-TW": "備註"
+            }
+          },
+          {
             "ref": "stock_ready_on",
             "type": "date",
             "nullable": true,
@@ -12839,8 +12911,7 @@
             "enum": [
               "waiting",
               "booked",
-              "done",
-              "cancelled"
+              "done"
             ],
             "default": "waiting",
             "rules": {
@@ -12875,16 +12946,6 @@
                     "ar-EG": "تمت",
                     "zh-CN": "已完成",
                     "zh-TW": "已完成"
-                  },
-                  "cancelled": {
-                    "en-US": "Cancelled",
-                    "de-DE": "Abgesagt",
-                    "fr-FR": "Annulée",
-                    "da-DK": "Aflyst",
-                    "cs-CZ": "Zrušen",
-                    "ar-EG": "ملغاة",
-                    "zh-CN": "已取消",
-                    "zh-TW": "已取消"
                   }
                 }
               }
@@ -12947,18 +13008,18 @@
             }
           },
           {
-            "ref": "tick_fitted",
+            "ref": "tick_done",
             "type": "bool",
             "default": false,
             "label": {
-              "en-US": "Fitted",
-              "de-DE": "Montiert",
-              "fr-FR": "Posé",
-              "da-DK": "Monteret",
-              "cs-CZ": "Namontováno",
-              "ar-EG": "تم التركيب",
-              "zh-CN": "已安装",
-              "zh-TW": "已安裝"
+              "en-US": "Done on site",
+              "de-DE": "Vor Ort erledigt",
+              "fr-FR": "Fait sur place",
+              "da-DK": "Udført på stedet",
+              "cs-CZ": "Hotovo na místě",
+              "ar-EG": "أُنجز في الموقع",
+              "zh-CN": "现场完成",
+              "zh-TW": "現場完成"
             }
           },
           {
@@ -13010,7 +13071,8 @@
                 "from": "address_lines",
                 "mode": "always",
                 "follow": true
-              }
+              },
+              "personal": true
             },
             "label": {
               "en-US": "Site address",
@@ -13058,7 +13120,8 @@
                 "from": "site_phone",
                 "mode": "always",
                 "follow": true
-              }
+              },
+              "personal": true
             },
             "label": {
               "en-US": "Site phone",
@@ -13093,6 +13156,30 @@
               "ar-EG": "ملاحظة الدخول",
               "zh-CN": "进场说明",
               "zh-TW": "進場說明"
+            }
+          },
+          {
+            "ref": "ask_for",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "ask_for",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Ask for",
+              "de-DE": "Ansprechperson",
+              "fr-FR": "Demander",
+              "da-DK": "Spørg efter",
+              "cs-CZ": "Ptát se na",
+              "ar-EG": "اسأل عن",
+              "zh-CN": "联系人",
+              "zh-TW": "聯絡人"
             }
           },
           {
@@ -13172,7 +13259,6 @@
             "ref": "job_id",
             "type": "fk",
             "references": "jobs",
-            "unique": true,
             "rules": {
               "copy": {
                 "via": "visit_id",
@@ -13387,6 +13473,73 @@
             }
           },
           {
+            "ref": "corrects_id",
+            "type": "fk",
+            "references": "sign_offs",
+            "nullable": true,
+            "unique": true,
+            "label": {
+              "en-US": "Corrects",
+              "de-DE": "Berichtigt",
+              "fr-FR": "Corrige",
+              "da-DK": "Retter",
+              "cs-CZ": "Opravuje",
+              "ar-EG": "يصحح",
+              "zh-CN": "更正",
+              "zh-TW": "更正"
+            }
+          },
+          {
+            "ref": "corrects_version",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "corrects_id",
+                "from": "version",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Version it corrects",
+              "de-DE": "Berichtigte Fassung",
+              "fr-FR": "Version corrigée",
+              "da-DK": "Rettet version",
+              "cs-CZ": "Opravená verze",
+              "ar-EG": "النسخة المصحَّحة",
+              "zh-CN": "被更正的版本",
+              "zh-TW": "被更正的版本"
+            }
+          },
+          {
+            "ref": "version",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "add": [
+                  {
+                    "coalesce": [
+                      "corrects_version",
+                      0
+                    ]
+                  },
+                  1
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Version",
+              "de-DE": "Fassung",
+              "fr-FR": "Version",
+              "da-DK": "Version",
+              "cs-CZ": "Verze",
+              "ar-EG": "النسخة",
+              "zh-CN": "版本",
+              "zh-TW": "版本"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -13406,6 +13559,12 @@
               "zh-TW": "重試鍵"
             }
           }
+        ],
+        "unique": [
+          [
+            "job_id",
+            "version"
+          ]
         ]
       },
       {
@@ -14143,6 +14302,167 @@
               "ar-EG": "ملاحظة",
               "zh-CN": "备注",
               "zh-TW": "備註"
+            }
+          },
+          {
+            "ref": "ordered",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "delivery_note_lines",
+                "via": "note_id",
+                "sum": "ordered"
+              }
+            },
+            "label": {
+              "en-US": "Items ordered",
+              "de-DE": "Bestellte Stück",
+              "fr-FR": "Articles commandés",
+              "da-DK": "Bestilte enheder",
+              "cs-CZ": "Objednané kusy",
+              "ar-EG": "القطع المطلوبة",
+              "zh-CN": "订购件数",
+              "zh-TW": "訂購件數"
+            }
+          },
+          {
+            "ref": "delivered",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "delivery_note_lines",
+                "via": "note_id",
+                "sum": "delivered"
+              }
+            },
+            "label": {
+              "en-US": "Items delivered",
+              "de-DE": "Gelieferte Stück",
+              "fr-FR": "Articles livrés",
+              "da-DK": "Leverede enheder",
+              "cs-CZ": "Dodané kusy",
+              "ar-EG": "القطع المسلَّمة",
+              "zh-CN": "送达件数",
+              "zh-TW": "送達件數"
+            }
+          },
+          {
+            "ref": "short",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "sub": [
+                  "ordered",
+                  "delivered"
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Short by",
+              "de-DE": "Fehlmenge",
+              "fr-FR": "Manquant",
+              "da-DK": "Mangler",
+              "cs-CZ": "Chybí",
+              "ar-EG": "الناقص",
+              "zh-CN": "短缺",
+              "zh-TW": "短缺"
+            }
+          },
+          {
+            "ref": "sorted",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Sorted",
+              "de-DE": "Erledigt",
+              "fr-FR": "Réglé",
+              "da-DK": "Ordnet",
+              "cs-CZ": "Vyřešeno",
+              "ar-EG": "تمت معالجته",
+              "zh-CN": "已处理",
+              "zh-TW": "已處理"
+            }
+          },
+          {
+            "ref": "sorted_on",
+            "type": "date",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "today",
+                "on": {
+                  "column": "sorted",
+                  "values": [
+                    true
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Sorted on",
+              "de-DE": "Erledigt am",
+              "fr-FR": "Réglé le",
+              "da-DK": "Ordnet den",
+              "cs-CZ": "Vyřešeno dne",
+              "ar-EG": "تاريخ المعالجة",
+              "zh-CN": "处理日期",
+              "zh-TW": "處理日期"
+            }
+          },
+          {
+            "ref": "needs_sorting",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "eq": [
+                      "sorted",
+                      true
+                    ]
+                  },
+                  0,
+                  {
+                    "if": [
+                      {
+                        "or": [
+                          {
+                            "gt": [
+                              "short",
+                              0
+                            ]
+                          },
+                          {
+                            "eq": [
+                              "damage",
+                              true
+                            ]
+                          },
+                          {
+                            "isNull": "signed_name"
+                          }
+                        ]
+                      },
+                      1,
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Needs sorting",
+              "de-DE": "Zu klären",
+              "fr-FR": "À régler",
+              "da-DK": "Skal ordnes",
+              "cs-CZ": "K vyřešení",
+              "ar-EG": "تحتاج إلى معالجة",
+              "zh-CN": "待处理",
+              "zh-TW": "待處理"
             }
           },
           {
@@ -17347,6 +17667,22 @@
             }
           },
           {
+            "ref": "email",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "E-mail",
+              "de-DE": "E-Mail",
+              "fr-FR": "E-mail",
+              "da-DK": "E-mail",
+              "cs-CZ": "E-mail",
+              "ar-EG": "البريد الإلكتروني",
+              "zh-CN": "邮箱",
+              "zh-TW": "電子郵件"
+            }
+          },
+          {
             "ref": "chased_at",
             "type": "timestamptz",
             "nullable": true,
@@ -17695,7 +18031,10 @@
               "referral-thanks",
               "showroom-confirmed",
               "showroom-moved",
-              "showroom-cancelled"
+              "showroom-cancelled",
+              "delivery-booked",
+              "delivery-moved",
+              "delivery-cancelled"
             ],
             "rules": {
               "enumLabels": {
@@ -17809,6 +18148,36 @@
                     "ar-EG": "إلغاء حجز صالة العرض",
                     "zh-CN": "展厅预约已取消",
                     "zh-TW": "展示間預約已取消"
+                  },
+                  "delivery-booked": {
+                    "en-US": "Delivery booked",
+                    "de-DE": "Lieferung eingeplant",
+                    "fr-FR": "Livraison planifiée",
+                    "da-DK": "Levering booket",
+                    "cs-CZ": "Dodávka naplánována",
+                    "ar-EG": "حجز توصيل",
+                    "zh-CN": "送货已排期",
+                    "zh-TW": "送貨已排程"
+                  },
+                  "delivery-moved": {
+                    "en-US": "Delivery moved",
+                    "de-DE": "Lieferung verschoben",
+                    "fr-FR": "Livraison déplacée",
+                    "da-DK": "Levering flyttet",
+                    "cs-CZ": "Dodávka přesunuta",
+                    "ar-EG": "تغيير موعد توصيل",
+                    "zh-CN": "送货已改期",
+                    "zh-TW": "送貨已改期"
+                  },
+                  "delivery-cancelled": {
+                    "en-US": "Delivery cancelled",
+                    "de-DE": "Lieferung abgesagt",
+                    "fr-FR": "Livraison annulée",
+                    "da-DK": "Levering aflyst",
+                    "cs-CZ": "Dodávka zrušena",
+                    "ar-EG": "إلغاء توصيل",
+                    "zh-CN": "送货已取消",
+                    "zh-TW": "送貨已取消"
                   }
                 }
               }
@@ -18203,6 +18572,38 @@
               "ar-EG": "مفتاح التكرار",
               "zh-CN": "重复键",
               "zh-TW": "重複鍵"
+            }
+          },
+          {
+            "ref": "job_visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "nullable": true,
+            "label": {
+              "en-US": "Visit to a job",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg på opgave",
+              "cs-CZ": "Výjezd na zakázku",
+              "ar-EG": "زيارة عمل",
+              "zh-CN": "现场上门",
+              "zh-TW": "現場到訪"
+            }
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "nullable": true,
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
             }
           }
         ]
@@ -19084,6 +19485,40 @@
               "zh-CN": "售后回访负责人",
               "zh-TW": "售後回訪負責人"
             }
+          },
+          {
+            "ref": "delivery_emails",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "E-mail the customer about deliveries",
+              "de-DE": "Kundschaft per E-Mail über Lieferungen informieren",
+              "fr-FR": "Prévenir le client des livraisons par e-mail",
+              "da-DK": "Send kunden e-mail om leveringer",
+              "cs-CZ": "Posílat zákazníkovi e-maily o dodávkách",
+              "ar-EG": "مراسلة العميل بشأن التوصيلات",
+              "zh-CN": "通过邮件告知客户送货安排",
+              "zh-TW": "以郵件告知客戶送貨安排"
+            }
+          },
+          {
+            "ref": "office_phone",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "personal": false
+            },
+            "label": {
+              "en-US": "Office phone",
+              "de-DE": "Telefon des Büros",
+              "fr-FR": "Téléphone du bureau",
+              "da-DK": "Kontorets telefon",
+              "cs-CZ": "Telefon do kanceláře",
+              "ar-EG": "هاتف المكتب",
+              "zh-CN": "办公室电话",
+              "zh-TW": "辦公室電話"
+            }
           }
         ]
       }
@@ -19315,8 +19750,6 @@
         "table:@job_visits:delete",
         "table:@sign_offs:read",
         "table:@sign_offs:create",
-        "table:@sign_offs:update",
-        "table:@sign_offs:delete",
         "table:@snags:read",
         "table:@snags:create",
         "table:@snags:update",
@@ -19455,7 +19888,10 @@
         "page:@crm-outbox:view",
         "page:@crm-settings:view",
         "page:@crm-overview:view",
-        "page:@crm-approvals:view"
+        "page:@crm-approvals:view",
+        "table:@jobs:read_pii",
+        "table:@crew_members:read_pii",
+        "table:@job_visits:read_pii"
       ],
       "limits": {
         "saved_views": {
@@ -20355,6 +20791,7 @@
             "done",
             "source",
             "one_to_one_id",
+            "session_id",
             "meeting_id",
             "coaching_area_id"
           ],
@@ -21109,6 +21546,7 @@
             "done",
             "source",
             "one_to_one_id",
+            "session_id",
             "meeting_id",
             "coaching_area_id"
           ],
@@ -21934,13 +22372,17 @@
       ],
       "permissions": [
         "app:@:staff",
+        "table:@deals:read",
         "table:@jobs:read",
+        "table:@jobs:read_pii",
+        "table:@jobs:create",
         "table:@jobs:update",
         "table:@crews:read",
         "table:@crews:create",
         "table:@crews:update",
         "table:@crews:delete",
         "table:@crew_members:read",
+        "table:@crew_members:read_pii",
         "table:@crew_members:create",
         "table:@crew_members:update",
         "table:@crew_members:delete",
@@ -21949,12 +22391,12 @@
         "table:@crew_days:update",
         "table:@crew_days:delete",
         "table:@job_visits:read",
+        "table:@job_visits:read_pii",
         "table:@job_visits:create",
         "table:@job_visits:update",
         "table:@job_visits:delete",
         "table:@sign_offs:read",
         "table:@sign_offs:create",
-        "table:@sign_offs:update",
         "table:@snags:read",
         "table:@snags:create",
         "table:@snags:update",
@@ -22011,6 +22453,7 @@
         "table:@insurance_incidents:update",
         "table:@insurance_incidents:delete",
         "table:@settings:read",
+        "page:@crm-deals:view",
         "page:@crm-jobs:view",
         "page:@crm-crews:view",
         "page:@crm-crew-members:view",
@@ -22044,10 +22487,23 @@
             "town",
             "lat",
             "lng",
+            "place",
             "access_note",
             "ask_for",
             "site_phone",
             "state"
+          ],
+          "creatable": [
+            "deal_id",
+            "site_name",
+            "address_lines",
+            "town",
+            "lat",
+            "lng",
+            "place",
+            "access_note",
+            "ask_for",
+            "site_phone"
           ]
         },
         "job_visits": {
@@ -22061,17 +22517,18 @@
             "vehicle_id",
             "hours",
             "crew_size",
+            "note",
             "stock_ready_on",
             "state",
             "cancel_reason",
             "tick_loaded",
             "tick_arrived",
-            "tick_fitted",
+            "tick_done",
             "tick_cleared"
           ]
         },
         "sign_offs": {
-          "writable": [
+          "creatable": [
             "job_id",
             "visit_id",
             "check_1",
@@ -22082,7 +22539,8 @@
             "signer_name",
             "signature",
             "photos",
-            "copy_sent_to"
+            "copy_sent_to",
+            "corrects_id"
           ]
         },
         "snags": {
@@ -22103,6 +22561,16 @@
         },
         "delivery_notes": {
           "writable": [
+            "job_id",
+            "visit_id",
+            "taken_by_id",
+            "signed_by_contact_id",
+            "signed_name",
+            "damage",
+            "note",
+            "sorted"
+          ],
+          "creatable": [
             "job_id",
             "visit_id",
             "taken_by_id",
@@ -22184,6 +22652,26 @@
             "item",
             "qty"
           ]
+        },
+        "deals": {
+          "readable": [
+            "id",
+            "name",
+            "state",
+            "closed_on",
+            "job_count"
+          ],
+          "rows": {
+            "read": {
+              "reach": "all",
+              "while": {
+                "column": "state",
+                "in": [
+                  "won"
+                ]
+              }
+            }
+          }
         }
       },
       "tables": [
@@ -22318,6 +22806,7 @@
         "table:@crew_members:read",
         "table:@crew_days:read",
         "table:@job_visits:read",
+        "table:@job_visits:read_pii",
         "table:@job_visits:update",
         "table:@sign_offs:read",
         "table:@sign_offs:create",
@@ -22367,7 +22856,7 @@
           "writable": [
             "tick_loaded",
             "tick_arrived",
-            "tick_fitted",
+            "tick_done",
             "tick_cleared"
           ],
           "rows": {
@@ -22448,7 +22937,19 @@
             "update": {
               "reach": "own"
             }
-          }
+          },
+          "readable": [
+            "id",
+            "job_id",
+            "visit_id",
+            "crew_id",
+            "taken_by_id",
+            "signed_by_contact_id",
+            "signed_name",
+            "damage",
+            "note",
+            "retry_key"
+          ]
         },
         "delivery_note_lines": {
           "writable": [
@@ -23045,6 +23546,23 @@
           "priya",
           "sam",
           "leo"
+        ]
+      },
+      {
+        "name": "Blue crew",
+        "lead": "ada",
+        "members": [
+          "f_yusuf",
+          "cal"
+        ]
+      },
+      {
+        "name": "Red crew",
+        "lead": "ada",
+        "members": [
+          "rina",
+          "mo",
+          "sean"
         ]
       }
     ]
@@ -24844,6 +25362,288 @@
           }
         ]
       }
+    },
+    {
+      "key": "day-sheet-changed",
+      "name": {
+        "en-US": "A visit of today or tomorrow starts at another time: tell the crew",
+        "de-DE": "Einsatz von heute oder morgen beginnt zu anderer Zeit: dem Team Bescheid geben",
+        "fr-FR": "Une intervention d’aujourd’hui ou de demain change d’heure : prévenir l’équipe",
+        "da-DK": "Et besøg i dag eller i morgen starter på et andet tidspunkt: giv holdet besked",
+        "cs-CZ": "Výjezd na dnes nebo zítra začíná jindy: dát vědět četě",
+        "ar-EG": "تغيّر موعد بداية زيارة اليوم أو غدًا: أخبر الفريق",
+        "zh-CN": "今天或明天的上门改了开始时间：通知班组",
+        "zh-TW": "今天或明天的到訪改了開始時間：通知班組"
+      },
+      "description": {
+        "en-US": "When a visit booked for today or tomorrow is given another start, its crew is told at once, also in their quiet hours.",
+        "de-DE": "Bekommt ein Einsatz für heute oder morgen einen anderen Beginn, erfährt sein Team es sofort, auch in seinen Ruhezeiten.",
+        "fr-FR": "Quand une intervention prévue aujourd’hui ou demain change d’heure de début, son équipe est prévenue tout de suite, même pendant ses heures calmes.",
+        "da-DK": "Når et besøg booket i dag eller i morgen får et andet starttidspunkt, får holdet besked med det samme, også i deres stille timer.",
+        "cs-CZ": "Když výjezd na dnes nebo zítra dostane jiný začátek, jeho četa se to dozví hned, i v klidových hodinách.",
+        "ar-EG": "عند تغيير موعد بداية زيارة محجوزة اليوم أو غدًا، يُبلَّغ فريقها فورًا، حتى في ساعات الهدوء.",
+        "zh-CN": "今天或明天已排期的上门改了开始时间时，立即通知其班组，免打扰时段也照常通知。",
+        "zh-TW": "今天或明天已排程的到訪改了開始時間時，立即通知其班組，勿擾時段也照常通知。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "job_visits",
+        "changedColumn": "start_time",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "booked"
+          },
+          {
+            "left": {
+              "field": "day"
+            },
+            "op": "within_next",
+            "right": {
+              "amount": 1,
+              "unit": "days"
+            }
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A booked visit of today or tomorrow starts at another time"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell its crew at once",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "roles": [
+                  "crew"
+                ]
+              },
+              "urgent": true,
+              "title": {
+                "en-US": "Your day sheet changed: {{record.what}}",
+                "de-DE": "Ihr Tagesplan hat sich geändert: {{record.what}}",
+                "fr-FR": "Votre feuille de journée a changé : {{record.what}}",
+                "da-DK": "Din dagsplan er ændret: {{record.what}}",
+                "cs-CZ": "Váš denní list se změnil: {{record.what}}",
+                "ar-EG": "تغيّرت ورقة يومك: {{record.what}}",
+                "zh-CN": "您的当日工单有变：{{record.what}}",
+                "zh-TW": "您的當日工單有變：{{record.what}}"
+              },
+              "body": {
+                "en-US": "{{record.site_name}}, {{record.site_town}}: now from {{record.start_time}}. Open My day for the rest.",
+                "de-DE": "{{record.site_name}}, {{record.site_town}}: jetzt ab {{record.start_time}}. Den Rest finden Sie unter Mein Tag.",
+                "fr-FR": "{{record.site_name}}, {{record.site_town}} : désormais à partir de {{record.start_time}}. Le reste est dans Ma journée.",
+                "da-DK": "{{record.site_name}}, {{record.site_town}}: nu fra kl. {{record.start_time}}. Resten står under Min dag.",
+                "cs-CZ": "{{record.site_name}}, {{record.site_town}}: nově od {{record.start_time}}. Zbytek najdete v Můj den.",
+                "ar-EG": "{{record.site_name}}، {{record.site_town}}: الآن من الساعة {{record.start_time}}. التفاصيل في يومي.",
+                "zh-CN": "{{record.site_name}}，{{record.site_town}}：现在 {{record.start_time}} 开始。其余见“我的一天”。",
+                "zh-TW": "{{record.site_name}}，{{record.site_town}}：現在 {{record.start_time}} 開始。其餘見「我的一天」。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "day-sheet-crew",
+      "name": {
+        "en-US": "A visit of today or tomorrow goes to another crew: tell that crew",
+        "de-DE": "Einsatz von heute oder morgen geht an ein anderes Team: diesem Team Bescheid geben",
+        "fr-FR": "Une intervention d’aujourd’hui ou de demain passe à une autre équipe : prévenir cette équipe",
+        "da-DK": "Et besøg i dag eller i morgen går til et andet hold: giv det hold besked",
+        "cs-CZ": "Výjezd na dnes nebo zítra přechází na jinou četu: dát vědět té četě",
+        "ar-EG": "انتقلت زيارة اليوم أو غدًا إلى فريق آخر: أخبر ذلك الفريق",
+        "zh-CN": "今天或明天的上门换了班组：通知新班组",
+        "zh-TW": "今天或明天的到訪換了班組：通知新班組"
+      },
+      "description": {
+        "en-US": "When a visit booked for today or tomorrow is given to another crew, the crew it is now for is told at once, also in their quiet hours. The crew it was for is not told by this rule.",
+        "de-DE": "Geht ein Einsatz für heute oder morgen an ein anderes Team, erfährt das neue Team es sofort, auch in seinen Ruhezeiten. Das bisherige Team erfährt es durch diese Regel nicht.",
+        "fr-FR": "Quand une intervention prévue aujourd’hui ou demain passe à une autre équipe, la nouvelle équipe est prévenue tout de suite, même pendant ses heures calmes. L’ancienne équipe n’est pas prévenue par cette règle.",
+        "da-DK": "Når et besøg booket i dag eller i morgen gives til et andet hold, får det nye hold besked med det samme, også i deres stille timer. Det tidligere hold får ikke besked af denne regel.",
+        "cs-CZ": "Když výjezd na dnes nebo zítra přejde na jinou četu, nová četa se to dozví hned, i v klidových hodinách. Původní četa se to touto pravidlem nedozví.",
+        "ar-EG": "عند إسناد زيارة محجوزة اليوم أو غدًا إلى فريق آخر، يُبلَّغ الفريق الجديد فورًا، حتى في ساعات الهدوء. ولا تُبلغ هذه القاعدة الفريق السابق.",
+        "zh-CN": "今天或明天已排期的上门交给另一个班组时，立即通知新班组，免打扰时段也照常通知。原班组不会收到这条规则的通知。",
+        "zh-TW": "今天或明天已排程的到訪交給另一個班組時，立即通知新班組，勿擾時段也照常通知。原班組不會收到這條規則的通知。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "job_visits",
+        "changedColumn": "crew_id",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "booked"
+          },
+          {
+            "left": {
+              "field": "day"
+            },
+            "op": "within_next",
+            "right": {
+              "amount": 1,
+              "unit": "days"
+            }
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A booked visit of today or tomorrow goes to another crew"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell the crew it is now for, at once",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "roles": [
+                  "crew"
+                ]
+              },
+              "urgent": true,
+              "title": {
+                "en-US": "A visit is now yours: {{record.what}}",
+                "de-DE": "Ein Einsatz gehört jetzt Ihnen: {{record.what}}",
+                "fr-FR": "Une intervention est désormais pour vous : {{record.what}}",
+                "da-DK": "Et besøg er nu jeres: {{record.what}}",
+                "cs-CZ": "Výjezd je teď váš: {{record.what}}",
+                "ar-EG": "زيارة صارت لكم الآن: {{record.what}}",
+                "zh-CN": "这次上门现由你们负责：{{record.what}}",
+                "zh-TW": "這次到訪現由你們負責：{{record.what}}"
+              },
+              "body": {
+                "en-US": "{{record.site_name}}, {{record.site_town}}, on {{record.day}}. Open My day for the rest.",
+                "de-DE": "{{record.site_name}}, {{record.site_town}}, am {{record.day}}. Den Rest finden Sie unter Mein Tag.",
+                "fr-FR": "{{record.site_name}}, {{record.site_town}}, le {{record.day}}. Le reste est dans Ma journée.",
+                "da-DK": "{{record.site_name}}, {{record.site_town}}, den {{record.day}}. Resten står under Min dag.",
+                "cs-CZ": "{{record.site_name}}, {{record.site_town}}, {{record.day}}. Zbytek najdete v Můj den.",
+                "ar-EG": "{{record.site_name}}، {{record.site_town}}، يوم {{record.day}}. التفاصيل في يومي.",
+                "zh-CN": "{{record.site_name}}，{{record.site_town}}，{{record.day}}。其余见“我的一天”。",
+                "zh-TW": "{{record.site_name}}，{{record.site_town}}，{{record.day}}。其餘見「我的一天」。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "day-sheet-moved",
+      "name": {
+        "en-US": "A visit moved onto today or tomorrow: tell the crew",
+        "de-DE": "Einsatz auf heute oder morgen verlegt: dem Team Bescheid geben",
+        "fr-FR": "Intervention déplacée à aujourd’hui ou demain : prévenir l’équipe",
+        "da-DK": "Besøg flyttet til i dag eller i morgen: giv holdet besked",
+        "cs-CZ": "Výjezd přesunut na dnes nebo zítra: dát vědět četě",
+        "ar-EG": "نُقلت زيارة إلى اليوم أو غدًا: أخبر الفريق",
+        "zh-CN": "上门改到今天或明天：通知班组",
+        "zh-TW": "到訪改到今天或明天：通知班組"
+      },
+      "description": {
+        "en-US": "When a booked visit is moved onto today or tomorrow, its crew is told at once, also in their quiet hours.",
+        "de-DE": "Wird ein Einsatz auf heute oder morgen verlegt, erfährt sein Team es sofort, auch in seinen Ruhezeiten.",
+        "fr-FR": "Quand une intervention est déplacée à aujourd’hui ou demain, son équipe est prévenue tout de suite, même pendant ses heures calmes.",
+        "da-DK": "Når et booket besøg flyttes til i dag eller i morgen, får holdet besked med det samme, også i deres stille timer.",
+        "cs-CZ": "Když se výjezd přesune na dnes nebo zítra, jeho četa se to dozví hned, i v klidových hodinách.",
+        "ar-EG": "عند نقل زيارة محجوزة إلى اليوم أو غدًا، يُبلَّغ فريقها فورًا، حتى في ساعات الهدوء.",
+        "zh-CN": "已排期的上门改到今天或明天时，立即通知其班组，免打扰时段也照常通知。",
+        "zh-TW": "已排程的到訪改到今天或明天時，立即通知其班組，勿擾時段也照常通知。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "job_visits",
+        "changedColumn": "day",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "booked"
+          },
+          {
+            "left": {
+              "field": "day"
+            },
+            "op": "within_next",
+            "right": {
+              "amount": 1,
+              "unit": "days"
+            }
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A booked visit moves onto today or tomorrow"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell its crew at once",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "roles": [
+                  "crew"
+                ]
+              },
+              "urgent": true,
+              "title": {
+                "en-US": "Your day sheet changed: {{record.what}}",
+                "de-DE": "Ihr Tagesplan hat sich geändert: {{record.what}}",
+                "fr-FR": "Votre feuille de journée a changé : {{record.what}}",
+                "da-DK": "Din dagsplan er ændret: {{record.what}}",
+                "cs-CZ": "Váš denní list se změnil: {{record.what}}",
+                "ar-EG": "تغيّرت ورقة يومك: {{record.what}}",
+                "zh-CN": "您的当日工单有变：{{record.what}}",
+                "zh-TW": "您的當日工單有變：{{record.what}}"
+              },
+              "body": {
+                "en-US": "{{record.site_name}}, {{record.site_town}}: now on {{record.day}}. Open My day for the rest.",
+                "de-DE": "{{record.site_name}}, {{record.site_town}}: jetzt am {{record.day}}. Den Rest finden Sie unter Mein Tag.",
+                "fr-FR": "{{record.site_name}}, {{record.site_town}} : désormais le {{record.day}}. Le reste est dans Ma journée.",
+                "da-DK": "{{record.site_name}}, {{record.site_town}}: nu den {{record.day}}. Resten står under Min dag.",
+                "cs-CZ": "{{record.site_name}}, {{record.site_town}}: nově {{record.day}}. Zbytek najdete v Můj den.",
+                "ar-EG": "{{record.site_name}}، {{record.site_town}}: الآن يوم {{record.day}}. التفاصيل في يومي.",
+                "zh-CN": "{{record.site_name}}，{{record.site_town}}：现改为 {{record.day}}。其余见“我的一天”。",
+                "zh-TW": "{{record.site_name}}，{{record.site_town}}：現改為 {{record.day}}。其餘見「我的一天」。"
+              }
+            }
+          }
+        ]
+      }
     }
   ],
   "publicKeys": {
@@ -24961,7 +25761,9 @@
       "deal": "deal_id",
       "visit": "visit_id",
       "referral": "referral_id",
-      "booking": "booking_id"
+      "booking": "booking_id",
+      "job_visit": "job_visit_id",
+      "job": "job_id"
     },
     "recipient": {
       "via": "contact_id",
@@ -24980,7 +25782,10 @@
       "referral-thanks": "crm-referral-thanks",
       "showroom-confirmed": "crm-showroom-confirmed",
       "showroom-moved": "crm-showroom-moved",
-      "showroom-cancelled": "crm-showroom-cancelled"
+      "showroom-cancelled": "crm-showroom-cancelled",
+      "delivery-booked": "crm-delivery-booked",
+      "delivery-moved": "crm-delivery-moved",
+      "delivery-cancelled": "crm-delivery-cancelled"
     },
     "producers": [
       {
@@ -25174,10 +25979,79 @@
           "starts_at",
           "minutes"
         ]
+      },
+      {
+        "kind": "delivery-booked",
+        "module": "jobs",
+        "link": "job_visit_id",
+        "gate": {
+          "setting": {
+            "table": "settings",
+            "column": "delivery_emails"
+          }
+        },
+        "onChange": {
+          "table": "job_visits",
+          "column": "state",
+          "to": "booked"
+        },
+        "repeat": true
+      },
+      {
+        "kind": "delivery-moved",
+        "module": "jobs",
+        "link": "job_visit_id",
+        "gate": {
+          "setting": {
+            "table": "settings",
+            "column": "delivery_emails"
+          }
+        },
+        "onChange": {
+          "table": "job_visits",
+          "columns": [
+            "day",
+            "start_time"
+          ],
+          "changed": true,
+          "where": {
+            "column": "state",
+            "eq": "booked"
+          }
+        },
+        "was": [
+          "day",
+          "start_time"
+        ],
+        "batchMinutes": 15
+      },
+      {
+        "kind": "delivery-cancelled",
+        "module": "jobs",
+        "link": "job_visit_id",
+        "gate": {
+          "setting": {
+            "table": "settings",
+            "column": "delivery_emails"
+          }
+        },
+        "onDelete": {
+          "table": "job_visits",
+          "where": {
+            "column": "state",
+            "eq": "booked"
+          }
+        },
+        "was": [
+          "day",
+          "start_time",
+          "what"
+        ]
       }
     ],
     "settings": {
-      "table": "settings"
+      "table": "settings",
+      "phone": "office_phone"
     }
   },
   "emailTemplates": [
@@ -31418,6 +32292,1348 @@
             }
           ],
           "footer": "您收到這封郵件，是因為曾為您預約了我們展示間的參觀。"
+        }
+      }
+    },
+    {
+      "key": "crm-delivery-booked",
+      "name": "Delivery booked",
+      "vars": [
+        "recipient.first_name",
+        "job_visit.day.day_month",
+        "job_visit.start_time.time",
+        "job_visit.hours.number",
+        "job_visit.what",
+        "job_visit.crew.name",
+        "job.site_name",
+        "practice.office_phone"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your delivery is booked for {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "We are coming on {{job_visit.day.day_month}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, {{job_visit.what}} is booked."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Day",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "We arrive",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "On site",
+                    "amount": "{{job_visit.hours.number}} h"
+                  },
+                  {
+                    "label": "Crew",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "Where",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "What",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "To change the day, call us on {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "You got this because a delivery to {{job.site_name}} was booked with you."
+        },
+        "de-DE": {
+          "subject": "Ihre Lieferung ist für den {{job_visit.day.day_month}} eingeplant",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Wir kommen am {{job_visit.day.day_month}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, {{job_visit.what}} ist eingeplant."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Tag",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Wir kommen um",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "Vor Ort",
+                    "amount": "{{job_visit.hours.number}} Std."
+                  },
+                  {
+                    "label": "Team",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "Wo",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Was",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Wenn der Tag nicht passt, rufen Sie uns an: {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil eine Lieferung an {{job.site_name}} mit Ihnen vereinbart wurde."
+        },
+        "fr-FR": {
+          "subject": "Votre livraison est prévue le {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Nous venons le {{job_visit.day.day_month}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, {{job_visit.what}} est planifié."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Jour",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Arrivée",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "Sur place",
+                    "amount": "{{job_visit.hours.number}} h"
+                  },
+                  {
+                    "label": "Équipe",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "Lieu",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Quoi",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pour changer de jour, appelez-nous au {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce qu’une livraison à {{job.site_name}} a été convenue avec vous."
+        },
+        "da-DK": {
+          "subject": "Din levering er booket til den {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vi kommer den {{job_visit.day.day_month}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, {{job_visit.what}} er booket."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dag",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Vi kommer kl.",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "På stedet",
+                    "amount": "{{job_visit.hours.number}} t"
+                  },
+                  {
+                    "label": "Hold",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "Hvor",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Hvad",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Ring til os på {{practice.office_phone}}, hvis dagen ikke passer."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi der er aftalt en levering til {{job.site_name}} med dig."
+        },
+        "cs-CZ": {
+          "subject": "Vaše dodávka je naplánována na {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Přijedeme {{job_visit.day.day_month}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, {{job_visit.what}} je naplánováno."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Den",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Přijedeme v",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "Na místě",
+                    "amount": "{{job_visit.hours.number}} h"
+                  },
+                  {
+                    "label": "Četa",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "Kde",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Co",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pokud vám den nevyhovuje, zavolejte nám na {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože s vámi byla domluvena dodávka na místo {{job.site_name}}."
+        },
+        "ar-EG": {
+          "subject": "تم حجز التوصيل إليك يوم {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "سنأتي يوم {{job_visit.day.day_month}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، تم حجز {{job_visit.what}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "اليوم",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "نصل الساعة",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "في الموقع",
+                    "amount": "{{job_visit.hours.number}} ساعة"
+                  },
+                  {
+                    "label": "الفريق",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "المكان",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "العمل",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "لتغيير اليوم، اتصل بنا على {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأن توصيلًا إلى {{job.site_name}} حُجز معك."
+        },
+        "zh-CN": {
+          "subject": "您的送货已安排在 {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "我们将于 {{job_visit.day.day_month}} 上门"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，{{job_visit.what}} 已排期。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "到达时间",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "现场时长",
+                    "amount": "{{job_visit.hours.number}} 小时"
+                  },
+                  {
+                    "label": "班组",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "地点",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "内容",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需改期，请致电 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此邮件，是因为已与您约定向 {{job.site_name}} 送货。"
+        },
+        "zh-TW": {
+          "subject": "您的送貨已安排在 {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "我們將於 {{job_visit.day.day_month}} 到府"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，{{job_visit.what}} 已排程。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "抵達時間",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "現場時長",
+                    "amount": "{{job_visit.hours.number}} 小時"
+                  },
+                  {
+                    "label": "班組",
+                    "amount": "{{job_visit.crew.name|}}"
+                  },
+                  {
+                    "label": "地點",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "內容",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需改期，請致電 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此郵件，是因為已與您約定向 {{job.site_name}} 送貨。"
+        }
+      }
+    },
+    {
+      "key": "crm-delivery-moved",
+      "name": "Delivery moved",
+      "vars": [
+        "recipient.first_name",
+        "job_visit.day.day_month",
+        "job_visit.start_time.time",
+        "job_visit.what",
+        "was.day.day_month",
+        "was.start_time.time",
+        "job.site_name",
+        "practice.office_phone"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your delivery has moved to {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Your delivery has a new day"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, the delivery that was on {{was.day.day_month}} has been moved."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "New day",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "We arrive",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "It was",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Where",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "What",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "If the new day does not suit you, call us on {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "You got this because a delivery to {{job.site_name}} was booked with you."
+        },
+        "de-DE": {
+          "subject": "Ihre Lieferung wurde auf den {{job_visit.day.day_month}} verlegt",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ihre Lieferung hat einen neuen Tag"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, die Lieferung vom {{was.day.day_month}} wurde verlegt."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Neuer Tag",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Wir kommen um",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "Bisher",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Wo",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Was",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Passt Ihnen der neue Tag nicht, rufen Sie uns an: {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil eine Lieferung an {{job.site_name}} mit Ihnen vereinbart wurde."
+        },
+        "fr-FR": {
+          "subject": "Votre livraison est déplacée au {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Votre livraison a un nouveau jour"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, la livraison prévue le {{was.day.day_month}} a été déplacée."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Nouveau jour",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Arrivée",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "C’était",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Lieu",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Quoi",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Si le nouveau jour ne vous convient pas, appelez-nous au {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce qu’une livraison à {{job.site_name}} a été convenue avec vous."
+        },
+        "da-DK": {
+          "subject": "Din levering er flyttet til den {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Din levering har fået en ny dag"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, leveringen den {{was.day.day_month}} er blevet flyttet."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Ny dag",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Vi kommer kl.",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "Det var",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Hvor",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Hvad",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Ring til os på {{practice.office_phone}}, hvis den nye dag ikke passer."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi der er aftalt en levering til {{job.site_name}} med dig."
+        },
+        "cs-CZ": {
+          "subject": "Vaše dodávka se přesouvá na {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vaše dodávka má nový den"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, dodávka plánovaná na {{was.day.day_month}} byla přesunuta."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Nový den",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "Přijedeme v",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "Původně",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Kde",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Co",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pokud vám nový den nevyhovuje, zavolejte nám na {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože s vámi byla domluvena dodávka na místo {{job.site_name}}."
+        },
+        "ar-EG": {
+          "subject": "تم نقل التوصيل إلى يوم {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "للتوصيل يوم جديد"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، التوصيل الذي كان يوم {{was.day.day_month}} نُقل إلى يوم آخر."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "اليوم الجديد",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "نصل الساعة",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "كان الموعد",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "المكان",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "العمل",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "إن لم يناسبك اليوم الجديد، اتصل بنا على {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأن توصيلًا إلى {{job.site_name}} حُجز معك."
+        },
+        "zh-CN": {
+          "subject": "您的送货已改到 {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的送货有了新日期"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，原定 {{was.day.day_month}} 的送货已改期。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "新日期",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "到达时间",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "原定",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "地点",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "内容",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如新日期不合适，请致电 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此邮件，是因为已与您约定向 {{job.site_name}} 送货。"
+        },
+        "zh-TW": {
+          "subject": "您的送貨已改到 {{job_visit.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的送貨有了新日期"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，原定 {{was.day.day_month}} 的送貨已改期。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "新日期",
+                    "amount": "{{job_visit.day.day_month}}"
+                  },
+                  {
+                    "label": "抵達時間",
+                    "amount": "{{job_visit.start_time.time|}}"
+                  },
+                  {
+                    "label": "原定",
+                    "amount": "{{was.day.day_month}} {{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "地點",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "內容",
+                    "amount": "{{job_visit.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如新日期不合適，請致電 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此郵件，是因為已與您約定向 {{job.site_name}} 送貨。"
+        }
+      }
+    },
+    {
+      "key": "crm-delivery-cancelled",
+      "name": "Delivery cancelled",
+      "vars": [
+        "recipient.first_name",
+        "was.day.day_month",
+        "was.start_time.time",
+        "was.what",
+        "job.site_name",
+        "practice.office_phone"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your delivery on {{was.day.day_month}} is cancelled",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Your delivery is cancelled"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, the delivery on {{was.day.day_month}} will not take place."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Day",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "We arrive",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Where",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "What",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "To book another day, call us on {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "You got this because a delivery to {{job.site_name}} was booked with you."
+        },
+        "de-DE": {
+          "subject": "Ihre Lieferung am {{was.day.day_month}} ist abgesagt",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ihre Lieferung ist abgesagt"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, die Lieferung am {{was.day.day_month}} findet nicht statt."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Tag",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "Wir kommen um",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Wo",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Was",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Für einen anderen Tag rufen Sie uns an: {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil eine Lieferung an {{job.site_name}} mit Ihnen vereinbart wurde."
+        },
+        "fr-FR": {
+          "subject": "Votre livraison du {{was.day.day_month}} est annulée",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Votre livraison est annulée"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, la livraison du {{was.day.day_month}} n’aura pas lieu."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Jour",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "Arrivée",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Lieu",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Quoi",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pour un autre jour, appelez-nous au {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce qu’une livraison à {{job.site_name}} a été convenue avec vous."
+        },
+        "da-DK": {
+          "subject": "Din levering den {{was.day.day_month}} er aflyst",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Din levering er aflyst"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, leveringen den {{was.day.day_month}} bliver ikke til noget."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dag",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "Vi kommer kl.",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Hvor",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Hvad",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Ring til os på {{practice.office_phone}} for at booke en anden dag."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi der er aftalt en levering til {{job.site_name}} med dig."
+        },
+        "cs-CZ": {
+          "subject": "Vaše dodávka na {{was.day.day_month}} je zrušena",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vaše dodávka je zrušena"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, dodávka plánovaná na {{was.day.day_month}} se neuskuteční."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Den",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "Přijedeme v",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "Kde",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "Co",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Chcete-li jiný den, zavolejte nám na {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože s vámi byla domluvena dodávka na místo {{job.site_name}}."
+        },
+        "ar-EG": {
+          "subject": "أُلغي التوصيل يوم {{was.day.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "أُلغي التوصيل"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، لن يتم التوصيل يوم {{was.day.day_month}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "اليوم",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "نصل الساعة",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "المكان",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "العمل",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "لحجز يوم آخر، اتصل بنا على {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأن توصيلًا إلى {{job.site_name}} حُجز معك."
+        },
+        "zh-CN": {
+          "subject": "您 {{was.day.day_month}} 的送货已取消",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的送货已取消"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，{{was.day.day_month}} 的送货将不再进行。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "到达时间",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "地点",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "内容",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需另约日期，请致电 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此邮件，是因为已与您约定向 {{job.site_name}} 送货。"
+        },
+        "zh-TW": {
+          "subject": "您 {{was.day.day_month}} 的送貨已取消",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的送貨已取消"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，{{was.day.day_month}} 的送貨將不再進行。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{was.day.day_month}}"
+                  },
+                  {
+                    "label": "抵達時間",
+                    "amount": "{{was.start_time.time|}}"
+                  },
+                  {
+                    "label": "地點",
+                    "amount": "{{job.site_name}}"
+                  },
+                  {
+                    "label": "內容",
+                    "amount": "{{was.what}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需另約日期，請致電 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此郵件，是因為已與您約定向 {{job.site_name}} 送貨。"
         }
       }
     }

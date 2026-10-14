@@ -72,11 +72,14 @@ describe("the rules the app ships", () => {
   // What the app cannot work without is switched on as it is installed; what tells people is the owner's to switch on.
   const WORKS = ["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "quote-sent-amount", "approval-asked"];
   const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "approval-refused", "week-rep", "week-manager"];
+  // Jobs on site tells a crew at once that today's or tomorrow's sheet changed (e-mail 10). It arrives with its part, which an
+  // update brings switched off; the rule is on, so the day the owner switches the part on the crew is told.
+  const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved"];
 
-  it("are sixteen: six the app works by, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
-    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...TELLS]);
+  it("are nineteen: six the app works by and three that tell a crew, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
+    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...TELLS, ...CREW]);
     for (const one of m.automations) {
-      expect(one.enabled, one.key).toBe(WORKS.includes(one.key));
+      expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || CREW.includes(one.key));
       expect(inAll(one.name), `${one.key} name`).toBe(true);
       expect(inAll(one.description), `${one.key} description`).toBe(true);
     }
@@ -319,11 +322,11 @@ describe("a comment on a deal may mention a colleague", () => {
 });
 
 describe("the e-mails the app ships", () => {
-  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled"];
+  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"];
   const shape = (key: string, locale = "en-US") => m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks.map((block) => block.block);
 
-  it("are thirteen: eleven to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled"]);
+  it("are sixteen: fourteen to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"]);
     for (const template of m.emailTemplates) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
@@ -357,8 +360,13 @@ describe("the e-mails the app ships", () => {
     // The thank-you: its sentence, and the code only when the referral holds one.
     expect(shape("crm-referral-thanks")).toEqual(["email.heading", "email.text", "email.text", "email.box"]);
     for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-referral-thanks")!.locales[locale]!.blocks.slice(2).map((block) => block.showWhen), locale).toEqual([{ var: "referral.reward" }, { var: "referral.reward" }]);
+    // A delivery: its facts, and the office's phone only when the install keeps one.
+    for (const key of ["crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"]) {
+      expect(shape(key)).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
+      for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks[3]!.showWhen, `${key} ${locale}`).toEqual({ var: "practice.office_phone" });
+    }
     // Each says why the reader got it.
-    for (const key of ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"]) for (const locale of LOCALES) expect((m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.footer ?? "").trim(), `${key} ${locale}`).not.toBe("");
+    for (const key of ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"]) for (const locale of LOCALES) expect((m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.footer ?? "").trim(), `${key} ${locale}`).not.toBe("");
   });
 
   it("every button carries its record, and no customer's e-mail names a number of ours, a stage or another customer", () => {
@@ -367,23 +375,26 @@ describe("the e-mails the app ships", () => {
       // The customer's page, opened by the quote's own code: the link names this quote and no other.
       expect(button.data.url, locale).toBe("{{manage_url}}#{{quote.share_code}}");
     }
-    const customers = ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"];
+    const customers = ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"];
     for (const key of customers) {
       const read = names(JSON.stringify(m.emailTemplates.find((one) => one.key === key)!.locales["en-US"]));
       // Never a key of ours, a stage, who owns the deal, or (on the thank-you) the deal or the company that was introduced.
-      for (const name of read) expect(name, `${key} {{${name}}}`).not.toMatch(/(^|\.)(id|number|stage_id|stage_odds|owner_id|rep_id|target_value|weighted_value)$/);
+      // (`.number` after a column is how it is written, not a column called "number": a visit's hours, `{{job_visit.hours.number}}`.)
+      for (const name of read) expect(name.replace(/^(job_visit\.hours)\.number$/, "$1"), `${key} {{${name}}}`).not.toMatch(/(^|\.)(id|number|stage_id|stage_odds|owner_id|rep_id|target_value|weighted_value)$/);
       if (key === "crm-referral-thanks") for (const name of read) expect(name.startsWith("deal.") || name.startsWith("referral.company") || name === "referral.referred_name", name).toBe(false);
     }
     // A removed visit is read from what the message kept, never from the row that is gone.
     expect(names(JSON.stringify(m.emailTemplates.find((one) => one.key === "crm-visit-cancelled")!.locales["en-US"])).filter((name) => name.startsWith("visit."))).toEqual([]);
+    expect(names(JSON.stringify(m.emailTemplates.find((one) => one.key === "crm-delivery-cancelled")!.locales["en-US"])).filter((name) => name.startsWith("job_visit."))).toEqual([]);
   });
 
   it("opens a record from a notice in the app's own screen: a deal, a quote, a company, a contact, a site visit", () => {
     const staffSide = m.frontends.find((side) => side.side === "staff")!;
     expect(staffSide.records).toEqual({ deals: "/deals/{id}", quotes: "/quotes/{id}", companies: "/companies/{id}", contacts: "/contacts/{id}", site_visits: "/visits/notes/{id}" });
-    // Every rule that tells people is about one of them, or about a follow-up (which has no screen of its own).
+    // Every rule that tells people is about one of them, about a follow-up (which has no screen of its own), or about a
+    // visit to a job, told to its crew (whose phone screens arrive with the crew's part of stage 2, P22).
     const told = new Set(m.automations.filter((one) => steps(one.key).some((step) => step.kind === "notification")).map((one) => one.trigger.table ?? one.trigger.forEach?.table));
-    expect([...told].sort()).toEqual(["deals", "follow_ups", "quotes"]);
+    expect([...told].sort()).toEqual(["deals", "follow_ups", "job_visits", "quotes"]);
   });
 
   it("read the same variables in every language", () => {
@@ -408,6 +419,9 @@ describe("the outbox", () => {
       "showroom-confirmed": "crm-showroom-confirmed",
       "showroom-moved": "crm-showroom-moved",
       "showroom-cancelled": "crm-showroom-cancelled",
+      "delivery-booked": "crm-delivery-booked",
+      "delivery-moved": "crm-delivery-moved",
+      "delivery-cancelled": "crm-delivery-cancelled",
     });
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });

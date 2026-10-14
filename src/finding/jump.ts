@@ -110,7 +110,9 @@ const named = (column: string, typed: string): Condition => ({ column, op: "ilik
 /** Which tables a person's records are looked for in: the ones whose part is on and that they read. */
 export function kindsFor(session: Pick<StaffSession, "part" | "can">): RecordKind[] {
   const out: RecordKind[] = [];
-  if (session.part("selling") && session.can("deals", "read")) out.push("deal");
+  // A deal's line names its stage: somebody who reads deals and no stage (the operations manager, who reads a won deal's
+  // name to make its job) has no deal room to open either.
+  if (session.part("selling") && session.can("deals", "read") && session.can("stages", "read")) out.push("deal");
   if (session.part("accounts") && session.can("companies", "read")) out.push("company");
   if (session.part("accounts") && session.can("contacts", "read")) out.push("contact");
   if (session.part("quotes") && session.can("quotes", "read")) out.push("quote");

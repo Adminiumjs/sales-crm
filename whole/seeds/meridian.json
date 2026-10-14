@@ -35,6 +35,7 @@
      "depot_place": {
       "placeId": 2644688
      },
+     "office_phone": "0113 496 0100",
      "distance_unit": "km",
      "loan_days": 14,
      "aftercare_days": 28,
@@ -8074,6 +8075,7 @@
    "ref": "one_to_one_sessions",
    "rows": [
     {
+     "@label": "oosess:dana:2026-07-16",
      "one_to_one_id": {
       "@ref": "oo:dana"
      },
@@ -8101,6 +8103,7 @@
      }
     },
     {
+     "@label": "oosess:dana:2026-07-02",
      "one_to_one_id": {
       "@ref": "oo:dana"
      },
@@ -8128,6 +8131,7 @@
      }
     },
     {
+     "@label": "oosess:dana:2026-06-18",
      "one_to_one_id": {
       "@ref": "oo:dana"
      },
@@ -8155,6 +8159,7 @@
      }
     },
     {
+     "@label": "oosess:priya:2026-07-16",
      "one_to_one_id": {
       "@ref": "oo:priya"
      },
@@ -8182,6 +8187,7 @@
      }
     },
     {
+     "@label": "oosess:priya:2026-07-02",
      "one_to_one_id": {
       "@ref": "oo:priya"
      },
@@ -8209,6 +8215,7 @@
      }
     },
     {
+     "@label": "oosess:sam:2026-07-17",
      "one_to_one_id": {
       "@ref": "oo:sam"
      },
@@ -8236,6 +8243,7 @@
      }
     },
     {
+     "@label": "oosess:sam:2026-07-03",
      "one_to_one_id": {
       "@ref": "oo:sam"
      },
@@ -8263,6 +8271,7 @@
      }
     },
     {
+     "@label": "oosess:leo:2026-07-17",
      "one_to_one_id": {
       "@ref": "oo:leo"
      },
@@ -8290,6 +8299,7 @@
      }
     },
     {
+     "@label": "oosess:leo:2026-07-03",
      "one_to_one_id": {
       "@ref": "oo:leo"
      },
@@ -8797,6 +8807,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-16"
      }
     },
     {
@@ -8822,6 +8835,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-16"
      }
     },
     {
@@ -8847,6 +8863,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-02"
      }
     },
     {
@@ -8872,6 +8891,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-02"
      }
     },
     {
@@ -8900,6 +8922,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:dana:0"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-06-18"
      }
     },
     {
@@ -8931,6 +8956,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:priya:0"
+     },
+     "session_id": {
+      "@ref": "oosess:priya:2026-07-16"
      }
     },
     {
@@ -8956,6 +8984,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:priya"
+     },
+     "session_id": {
+      "@ref": "oosess:priya:2026-07-02"
      }
     },
     {
@@ -8981,6 +9012,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:sam"
+     },
+     "session_id": {
+      "@ref": "oosess:sam:2026-07-17"
      }
     },
     {
@@ -9006,6 +9040,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:sam"
+     },
+     "session_id": {
+      "@ref": "oosess:sam:2026-07-03"
      }
     },
     {
@@ -9034,6 +9071,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:leo:0"
+     },
+     "session_id": {
+      "@ref": "oosess:leo:2026-07-17"
      }
     },
     {
@@ -9062,6 +9102,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:leo:0"
+     },
+     "session_id": {
+      "@ref": "oosess:leo:2026-07-03"
      }
     },
     {
@@ -12275,6 +12318,9 @@
      "town": "Leeds",
      "lat": 53.8008,
      "lng": -1.5491,
+     "place": {
+      "placeId": 2644688
+     },
      "access_note": {
       "@t": {
        "en-US": "Loading bay off Sovereign Street. Ask at the desk for Tomas.",
@@ -12303,6 +12349,9 @@
      "town": "Edinburgh",
      "lat": 55.9533,
      "lng": -3.1883,
+     "place": {
+      "placeId": 2650225
+     },
      "access_note": {
       "@t": {
        "en-US": "Street parking, one hour. Unload fast.",
@@ -12331,6 +12380,9 @@
      "town": "Manchester",
      "lat": 53.4808,
      "lng": -2.2426,
+     "place": {
+      "placeId": 2643123
+     },
      "access_note": {
       "@t": {
        "en-US": "Second floor, lift at the back. Book the lift with building management.",
@@ -12359,6 +12411,9 @@
      "town": "Hull",
      "lat": 53.7676,
      "lng": -0.3274,
+     "place": {
+      "placeId": 2645425
+     },
      "access_note": {
       "@t": {
        "en-US": "Gate 4, weighbridge first. Hard hats on from the yard in.",
@@ -12387,6 +12442,9 @@
      "town": "Bristol",
      "lat": 51.4545,
      "lng": -2.5879,
+     "place": {
+      "placeId": 2654675
+     },
      "access_note": {
       "@t": {
        "en-US": "Side entrance only, and not before 09:30.",
@@ -12415,6 +12473,9 @@
      "town": "Leeds",
      "lat": 53.8008,
      "lng": -1.5491,
+     "place": {
+      "placeId": 2644688
+     },
      "access_note": {
       "@t": {
        "en-US": "Loading bay off Sovereign Street. Ask at the desk for Tomas.",
@@ -12443,6 +12504,9 @@
      "town": "Cambridge",
      "lat": 52.2053,
      "lng": 0.1218,
+     "place": {
+      "placeId": 2653941
+     },
      "access_note": {
       "@t": {
        "en-US": "Sign in at reception for a visitor badge. No phones on the test floor.",
@@ -12471,6 +12535,9 @@
      "town": "Glasgow",
      "lat": 55.8642,
      "lng": -4.2518,
+     "place": {
+      "placeId": 2648579
+     },
      "access_note": {
       "@t": {
        "en-US": "Goods lift is small. Two trips for anything over 1.6m.",
@@ -12525,7 +12592,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12561,7 +12628,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12597,7 +12664,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12633,7 +12700,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12669,7 +12736,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12705,7 +12772,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12741,7 +12808,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12777,7 +12844,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12812,7 +12879,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12847,7 +12914,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12882,7 +12949,7 @@
      "state": "done",
      "tick_loaded": true,
      "tick_arrived": true,
-     "tick_fitted": true,
+     "tick_done": true,
      "tick_cleared": true
     },
     {
@@ -12919,7 +12986,7 @@
      "state": "booked",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -12956,7 +13023,7 @@
      "state": "booked",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -12982,7 +13049,7 @@
      "state": "waiting",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -13008,7 +13075,7 @@
      "state": "waiting",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -13038,7 +13105,7 @@
      "state": "waiting",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -13068,7 +13135,7 @@
      "state": "waiting",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -13105,7 +13172,7 @@
      "state": "booked",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     },
     {
@@ -13131,7 +13198,7 @@
      "state": "waiting",
      "tick_loaded": false,
      "tick_arrived": false,
-     "tick_fitted": false,
+     "tick_done": false,
      "tick_cleared": false
     }
    ]

@@ -10598,10 +10598,7 @@
               "visit-confirmed",
               "visit-moved",
               "visit-cancelled",
-              "referral-thanks",
-              "showroom-confirmed",
-              "showroom-moved",
-              "showroom-cancelled"
+              "referral-thanks"
             ],
             "rules": {
               "enumLabels": {
@@ -10685,36 +10682,6 @@
                     "ar-EG": "شكر على التعريف",
                     "zh-CN": "感谢引荐",
                     "zh-TW": "感謝引薦"
-                  },
-                  "showroom-confirmed": {
-                    "en-US": "Showroom booking confirmed",
-                    "de-DE": "Showroom-Termin bestätigt",
-                    "fr-FR": "Réservation du showroom confirmée",
-                    "da-DK": "Showroombooking bekræftet",
-                    "cs-CZ": "Rezervace showroomu potvrzena",
-                    "ar-EG": "تأكيد حجز صالة العرض",
-                    "zh-CN": "展厅预约已确认",
-                    "zh-TW": "展示間預約已確認"
-                  },
-                  "showroom-moved": {
-                    "en-US": "Showroom booking moved",
-                    "de-DE": "Showroom-Termin verschoben",
-                    "fr-FR": "Réservation du showroom déplacée",
-                    "da-DK": "Showroombooking flyttet",
-                    "cs-CZ": "Rezervace showroomu přesunuta",
-                    "ar-EG": "تغيير موعد حجز صالة العرض",
-                    "zh-CN": "展厅预约已改期",
-                    "zh-TW": "展示間預約已改期"
-                  },
-                  "showroom-cancelled": {
-                    "en-US": "Showroom booking cancelled",
-                    "de-DE": "Showroom-Termin abgesagt",
-                    "fr-FR": "Réservation du showroom annulée",
-                    "da-DK": "Showroombooking aflyst",
-                    "cs-CZ": "Rezervace showroomu zrušena",
-                    "ar-EG": "إلغاء حجز صالة العرض",
-                    "zh-CN": "展厅预约已取消",
-                    "zh-TW": "展示間預約已取消"
                   }
                 }
               }
@@ -16810,10 +16777,7 @@
           "staff": "thanked_by_id"
         }
       }
-    ],
-    "settings": {
-      "table": "settings"
-    }
+    ]
   },
   "emailTemplates": [
     {
