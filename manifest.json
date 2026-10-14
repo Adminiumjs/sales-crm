@@ -12224,7 +12224,6 @@
               "id",
               "name",
               "lead_days",
-              "note",
               "active"
             ]
           }
@@ -14222,7 +14221,6 @@
               "id",
               "name",
               "lead_days",
-              "note",
               "active"
             ]
           }
@@ -14513,7 +14511,6 @@
               "id",
               "name",
               "lead_days",
-              "note",
               "active"
             ]
           }

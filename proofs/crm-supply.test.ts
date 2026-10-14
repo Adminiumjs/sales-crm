@@ -61,7 +61,7 @@ function packed(stage: Stage): Record<string, string> {
 /** What Supply's three roles read of each of Inventory's tables, and nothing more. */
 const READ: Record<string, string[]> = {
   inventory_items: ['id', 'name', 'sku', 'note', 'unit', 'active', 'on_hand'],
-  inventory_suppliers: ['id', 'name', 'lead_days', 'note', 'active'],
+  inventory_suppliers: ['id', 'name', 'lead_days', 'active'],
   inventory_item_suppliers: ['id', 'item_id', 'supplier_id', 'rank', 'supplier_name'],
   inventory_stock_points: ['id', 'item_id', 'place_id', 'on_hand', 'available', 'on_order', 'reorder_level', 'low', 'item_active'],
   inventory_purchase_orders: ['id', 'number', 'supplier_id', 'supplier_name', 'status', 'sent_on', 'expected_on', 'lead_days', 'received_at'],

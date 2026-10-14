@@ -55,7 +55,6 @@ export interface Supplier extends Row {
   id: number;
   name: string;
   lead_days: number | null;
-  note: string | null;
   active: boolean | number;
 }
 interface Offer extends Row {
@@ -165,7 +164,7 @@ export async function readStock(session: StaffSession): Promise<StockData> {
   const openNeed: Condition = { column: "deal_state", op: "eq", value: "open" };
   const [lines, suppliers, offers, orderLines, all, inStock, empty, lowAnswer, levelsSet, onOrder, askedAnswer, needs] = await Promise.all([
     session.list<Line>(INV.items, { select: ["id", "name", "sku", "note", "on_hand"], where: ACTIVE, order: ["name", "id"], limit: LIMIT, count: "exact" }),
-    session.list<Supplier>(INV.suppliers, { select: ["id", "name", "lead_days", "note", "active"], order: ["lead_days.desc", "name"], limit: LIMIT }),
+    session.list<Supplier>(INV.suppliers, { select: ["id", "name", "lead_days", "active"], order: ["lead_days.desc", "name"], limit: LIMIT }),
     session.list<Offer>(INV.itemSuppliers, { select: ["id", "item_id", "supplier_id", "rank"], limit: LIMIT }),
     session.list<OrderLine>(INV.orderLines, { select: ["id", "item_id", "open_qty"], where: { and: [{ column: "order_status", op: "in", value: [...OPEN_ORDER] }, { column: "open_qty", op: "gt", value: 0 }] }, lookup: ["expected:po_id.expected_on"], order: ["id"], limit: LIMIT }),
     count(session, INV.items, [ACTIVE]),
@@ -247,7 +246,7 @@ export async function readSuppliers(session: StaffSession): Promise<SuppliersDat
   const OPEN: Condition = { column: "status", op: "in", value: [...OPEN_ORDER] };
   const RECEIVED: Condition = { column: "status", op: "eq", value: "received" };
   const [suppliers, offers, open, inUse, coming, received, comingBy, receivedBy] = await Promise.all([
-    session.list<Supplier>(INV.suppliers, { select: ["id", "name", "lead_days", "note", "active"], order: ["name", "id"], limit: LIMIT, count: "exact" }),
+    session.list<Supplier>(INV.suppliers, { select: ["id", "name", "lead_days", "active"], order: ["name", "id"], limit: LIMIT, count: "exact" }),
     session.list<Offer>(INV.itemSuppliers, { select: ["id", "item_id", "supplier_id", "rank"], lookup: ["item:item_id.name"], order: ["id"], limit: LIMIT }),
     session.list<Order>(INV.orders, { select: ["id", "number", "supplier_id", "status", "expected_on"], where: OPEN, order: ["id"], limit: LIMIT }),
     count(session, INV.suppliers, [{ column: "active", op: "eq", value: true }]),

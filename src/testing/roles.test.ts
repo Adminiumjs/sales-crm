@@ -388,7 +388,7 @@ describe("the app brings nine roles", () => {
     // P16: the Supply screens read stock, orders and suppliers as Inventory keeps them. What a line or a supplier costs is not read.
     const SUPPLY_READS: Record<string, string[]> = {
       items: ["id", "name", "sku", "note", "unit", "active", "on_hand"],
-      suppliers: ["id", "name", "lead_days", "note", "active"],
+      suppliers: ["id", "name", "lead_days", "active"],
       item_suppliers: ["id", "item_id", "supplier_id", "rank", "supplier_name"],
       stock_points: ["id", "item_id", "place_id", "on_hand", "available", "on_order", "reorder_level", "low", "item_active"],
       purchase_orders: ["id", "number", "supplier_id", "supplier_name", "status", "sent_on", "expected_on", "lead_days", "received_at"],

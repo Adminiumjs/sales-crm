@@ -48,10 +48,10 @@ function fake(reads: { deals: boolean }) {
   const rows: Record<string, Row[]> = {
     "inventory:items": LINES,
     "inventory:suppliers": [
-      { id: 6, name: "Marchmont Joinery", lead_days: 49, note: null, active: true },
-      { id: 5, name: "Fenlow Acoustics", lead_days: 42, note: null, active: true },
-      { id: 3, name: "Ostrom Seating", lead_days: 21, note: null, active: true },
-      { id: 1, name: "Halvard Werke", lead_days: 14, note: null, active: true },
+      { id: 6, name: "Marchmont Joinery", lead_days: 49, active: true },
+      { id: 5, name: "Fenlow Acoustics", lead_days: 42, active: true },
+      { id: 3, name: "Ostrom Seating", lead_days: 21, active: true },
+      { id: 1, name: "Halvard Werke", lead_days: 14, active: true },
     ],
     "inventory:item_suppliers": [
       { id: 1, item_id: 1, supplier_id: 1, rank: "preferred", item: "Bench desk runs" },

@@ -91,7 +91,6 @@ function SuppliersBody({ data, f, busy }: { data: SuppliersData; f: Formatters; 
                         </>
                       )}
                     </p>
-                    {supplier.note !== null && supplier.note !== "" && <p className="crm-sup-note">{supplier.note}</p>}
                   </div>
                 </div>
                 <dl className="crm-sup-facts crm-sup-facts-row">
