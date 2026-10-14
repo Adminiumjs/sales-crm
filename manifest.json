@@ -11,7 +11,7 @@
   "license": "AGPL-3.0-only",
   "description": {
     "key": "mft.crm.desc",
-    "fallback": "Sales CRM is being rebuilt. This version installs the tables for selling, with quotes, for accounts, the team, the inbox, the showroom, jobs on site, aftercare, supply, and vehicles and crew, and no screens yet."
+    "fallback": "A sales app for a team that sells: deals on a board, quotes a customer accepts from a link, companies and contacts, the team's targets, cover and one-to-ones, an inbox of enquiries, and stock for a deal from the Inventory add-on. For any business, in its own currency."
   },
   "categories": [
     "crm"
