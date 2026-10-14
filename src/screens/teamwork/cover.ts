@@ -13,6 +13,7 @@
  * WHO COUNTS. Every count here is the total the server answers for a list
  * of the reader's rows; every sum is a figure of the server's.
  */
+import { workDaysOf, workingDaysBetween, type Day } from "../appsettings/data.ts";
 import type { Formatters } from "../../lib/format.ts";
 import { addDays } from "../../lib/format.ts";
 import { LostReply, StaffError, type Condition, type Grouped, type Saved, type StaffSession } from "../../staffSession.ts";
@@ -39,14 +40,9 @@ export function coverState(cover: Pick<Cover, "starts_on" | "ends_on">, today: s
   return to !== null && today > to ? "over" : "running";
 }
 
-/** Monday to Friday between two days, both counted. */
-export function workingDays(from: string, to: string): number {
-  let days = 0;
-  for (let day = from; day <= to; day = addDays(day, 1)) {
-    const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
-    if (weekday !== 0 && weekday !== 6) days += 1;
-  }
-  return days;
+/** The working days between two days, both counted: by the business's working week (Settings, Working time), Monday to Friday when none is given. */
+export function workingDays(from: string, to: string, week: ReadonlySet<Day> = workDaysOf(null)): number {
+  return workingDaysBetween(from, to, week);
 }
 
 export const COVER_COLUMNS = ["id", "owner_id", "cover_id", "starts_on", "ends_on"];

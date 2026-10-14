@@ -110,6 +110,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   // Accounts
   companies: {
     nullable: [
+      "customer_no",
       "sector",
       "headcount",
       "address_lines",
@@ -128,7 +129,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "ask_for_contact_id",
     ],
   },
-  contacts: { nullable: ["job_title", "email", "phone", "unsubscribed_at"] },
+  contacts: { nullable: ["reference", "job_title", "email", "phone", "unsubscribed_at"] },
   territories: { nullable: ["owner_id", "area"] },
   territory_places: { nullable: [] },
   renewals: { nullable: ["deal_id", "est_value", "due_on", "every_months"] },
@@ -265,7 +266,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   settings: {
-    nullable: ["depot_name", "depot_address", "depot_town", "depot_lat", "depot_lng", "aftercare_owner_id"],
+    nullable: ["depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "depot_lat", "depot_lng", "aftercare_owner_id"],
   },
 };
 

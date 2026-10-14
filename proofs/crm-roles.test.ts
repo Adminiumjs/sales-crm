@@ -507,6 +507,18 @@ for (const [dialect, reachable] of LEGS) {
       // The list price is the price list's (ruling F): the manager writes it, a rep reads it and types none.
       const listed = await post('ivy', 'price_list', { name: 'Stacking chair', list_rate: 100 });
       t('20a the manager writes the price list; a rep reads it and writes none of it', [said(listed), (await get('dana', 'price_list', `/${String(made(listed))}`)).statusCode, refused(await post('dana', 'price_list', { name: 'My own price', list_rate: 1 })), refused(await patch('dana', 'price_list', made(listed), { list_rate: 1 }))], ['ok', 200, '403', '403']);
+      // F20, who writes the price list: the manager and the CRM admin add, reprice and retire a line; the admin alone removes one; a price is never below nothing; Read-only reads; who has no business with prices reads none.
+      const unlist = (person: string, key: number) => s.app.inject({ method: 'DELETE', url: url('price_list', `/${String(key)}?confirm=true`), headers: { cookie: who(person) } });
+      const desk = await post('tessa', 'price_list', { name: 'Bench desk (F20)', list_rate: 480 });
+      t('20c the price list: who reprices, retires and removes a line', [
+        said(desk), said(await patch('ivy', 'price_list', made(desk), { list_rate: 495.5 })), said(await patch('ivy', 'price_list', made(desk), { active: false })),
+        refused(await patch('ivy', 'price_list', made(desk), { list_rate: -1 })), refused(await post('tessa', 'price_list', { name: 'Free chair', list_rate: -5 })),
+        refused(await unlist('ivy', made(desk))), refused(await unlist('dana', made(desk))), refused(await unlist('grace', made(desk))),
+        (await get('grace', 'price_list', `/${String(made(desk))}`)).statusCode, refused(await patch('grace', 'price_list', made(desk), { list_rate: 1 })), refused(await post('grace', 'price_list', { name: 'Read-only price', list_rate: 1 })),
+        ...(await Promise.all(['hugo', 'lena', 'corin'].map(async (person) => (await get(person, 'price_list', '?limit=5')).statusCode))),
+        Number((await one(`SELECT list_rate FROM ${s.real('price_list')} WHERE id = ${String(made(desk))}`))['list_rate']),
+        said(await unlist('tessa', made(desk))), (await get('ivy', 'price_list', `/${String(made(desk))}`)).statusCode,
+      ], ['ok', 'ok', 'ok', '422', '422', '403', '403', '403', 200, '403', '403', 403, 403, 403, 495.5, 'ok', 404]);
       const quote = made(await post('dana', 'quotes', { deal_id: danaOpen, sent_to_contact_id: Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE email IS NOT NULL ORDER BY id`))['id']) }));
       t('20b a rep does not type a line\'s list price', refused(await post('dana', 'quote_lines', { document_id: quote, qty: 10, rate: 91, list_rate: 91 })), '403');
       const line = made(await post('dana', 'quote_lines', { document_id: quote, qty: 10, rate: 91, price_id: made(listed) }));
@@ -963,9 +975,11 @@ for (const [dialect, reachable] of LEGS) {
       expect(asGrace['sent_to_email']).not.toBe(contact['email']);
       expect(asGrace['to_email']).not.toBe(contact['email']);
       // The contact's address changes afterwards: the record of where the quote went does not.
-      expect(said(await patch('dana', 'contacts', contact['id'], { email: 'moved@elsewhere.example' }))).toBe('ok');
+      // Dana may not move it (decision 117: where a quote and its link are mailed); the manager may.
+      expect((await patch('dana', 'contacts', contact['id'], { email: 'moved@elsewhere.example' })).statusCode).toBe(403);
+      expect(said(await patch('ivy', 'contacts', contact['id'], { email: 'moved@elsewhere.example' }))).toBe('ok');
       expect((await one(`SELECT to_email, sent_to_email FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ to_email: 'moved@elsewhere.example', sent_to_email: contact['email'] });
-      expect(said(await patch('dana', 'contacts', contact['id'], { email: contact['email'] }))).toBe('ok');
+      expect(said(await patch('ivy', 'contacts', contact['id'], { email: contact['email'] }))).toBe('ok');
 
       // A discount put to approval: every Sales manager is told.
       const second = made(await post('dana', 'quotes', { deal_id: deal, version: 2, replaces_id: quote }));

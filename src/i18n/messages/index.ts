@@ -12,6 +12,7 @@
 import type { Translated } from "../untranslated.ts";
 import { LOCALE_TAGS, type LocaleTag } from "../locales.ts";
 import { accounts } from "../strings/accounts.ts";
+import { appsettings } from "../strings/appsettings.ts";
 import { base } from "../strings/base.ts";
 import { cover } from "../strings/cover.ts";
 import { customer } from "../strings/customer.ts";
@@ -54,6 +55,7 @@ const AREAS = [
   inbox satisfies Area<(typeof inbox)["en-US"]>,
   own satisfies Area<(typeof own)["en-US"]>,
   customer satisfies Area<(typeof customer)["en-US"]>,
+  appsettings satisfies Area<(typeof appsettings)["en-US"]>,
 ] as const;
 
 /**
@@ -82,4 +84,5 @@ export type MessageKey =
   | keyof (typeof accounts)["en-US"]
   | keyof (typeof inbox)["en-US"]
   | keyof (typeof own)["en-US"]
-  | keyof (typeof customer)["en-US"];
+  | keyof (typeof customer)["en-US"]
+  | keyof (typeof appsettings)["en-US"];

@@ -18,6 +18,7 @@ product does not: give a sample person a password. `npm run proofs` copies them 
 | `crm-g3` | the pipeline board, a pasted list, places and areas |
 | `crm-visits` | site visits and cover: who books for whom, a move read from the history, a cancel that removes the row, one cover of a person at a time |
 | `crm-manager` | the figures the manager's screens ask, at the ledger's moment; whose rows each reader's are; who is refused |
+| `crm-settings` | who writes which setting and the server's refusal for the rest; each number's bounds; the working week; the depot as a place; the column no two companies or contacts share, and a pasted list matched on it; who writes the price list and a rep's own row |
 
 ```bash
 ADMINIUM_REPO=~/Work/lanes/p67 ADD_ONS_REPO=~/Work/lanes/p67-add-ons-read npm run proofs

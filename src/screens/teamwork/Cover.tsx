@@ -34,6 +34,8 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { Avatar, Head, NOBODY, readWho, useF, type Who } from "./common.tsx";
+import type { Day } from "../appsettings/data.ts";
+import { useWorkWeek } from "../appsettings/workweek.ts";
 import { cancelCover, coverState, dayOf, endToday, readCovers, readLent, workingDays, type Cover as CoverRow, type CoverState, type LentDeal, type Note } from "./cover.ts";
 import { CoverDialog, type CoverEdit } from "./CoverDialog.tsx";
 
@@ -60,8 +62,10 @@ export function Cover(_: ScreenProps) {
       reload();
     }, [session, reload]),
   );
-  useLive(["covers", "cover_notes"], again);
+  // The working days a cover counts are a setting: heard on the same stream.
+  useLive(["covers", "cover_notes", ...(session.can("settings", "read") ? ["settings"] : [])], again);
 
+  const week = useWorkWeek(round);
   const canNew = session.can("covers", "create");
   const canDate = session.can("covers", "update");
   const canCancel = session.can("covers", "delete");
@@ -78,8 +82,8 @@ export function Cover(_: ScreenProps) {
       return t("cover.head.coming", { count: f.number(days) }, days);
     }
     if (state === "over") return t("cover.head.over", { day: f.dayShort(noonOf(cover.ends_on ?? cover.starts_on)) });
-    const day = f.number(Math.max(1, workingDays(cover.starts_on, today)));
-    return cover.ends_on === null ? t("cover.head.running.open", { day }) : t("cover.head.running", { day, count: f.number(Math.max(1, workingDays(cover.starts_on, cover.ends_on))) });
+    const day = f.number(Math.max(1, workingDays(cover.starts_on, today, week)));
+    return cover.ends_on === null ? t("cover.head.running.open", { day }) : t("cover.head.running", { day, count: f.number(Math.max(1, workingDays(cover.starts_on, cover.ends_on, week))) });
   };
   const when = (cover: Pick<CoverRow, "starts_on" | "ends_on">): string =>
     cover.ends_on === null ? t("cover.when.open", { from: f.dayShort(noonOf(cover.starts_on)) }) : t("cover.when", { from: f.dayShort(noonOf(cover.starts_on)), to: f.dayShort(noonOf(cover.ends_on)) });
@@ -172,7 +176,7 @@ export function Cover(_: ScreenProps) {
                   <p>{t(seesAll ? "cover.none.team" : "cover.none.mine")}</p>
                 </div>
               ) : (
-                <Entry key={`${String(shown.id)}:${shown.starts_on}:${shown.ends_on ?? ""}`} cover={shown} who={who} f={f} now={now} today={today} round={round} seesAll={seesAll} me={me} when={when(shown)} heading={heading(shown)} onChanged={again} />
+                <Entry key={`${String(shown.id)}:${shown.starts_on}:${shown.ends_on ?? ""}`} cover={shown} who={who} f={f} now={now} today={today} round={round} week={week} seesAll={seesAll} me={me} when={when(shown)} heading={heading(shown)} onChanged={again} />
               )}
 
               {edit !== null && (
@@ -223,7 +227,7 @@ export function Cover(_: ScreenProps) {
 }
 
 /** One cover: its card, and what it lends when the reader may be shown that. */
-function Entry({ cover, who, f, now, today, round, seesAll, me, when, heading, onChanged }: { cover: CoverRow; who: Who; f: Formatters; now: Date; today: string; round: number; seesAll: boolean; me: string; when: string; heading: string; onChanged: () => void }) {
+function Entry({ cover, who, f, now, today, round, week, seesAll, me, when, heading, onChanged }: { cover: CoverRow; who: Who; f: Formatters; now: Date; today: string; round: number; week: ReadonlySet<Day>; seesAll: boolean; me: string; when: string; heading: string; onChanged: () => void }) {
   const t = useT();
   const session = useSession();
   const state = coverState(cover, today);
@@ -236,7 +240,7 @@ function Entry({ cover, who, f, now, today, round, seesAll, me, when, heading, o
   const { load, reload } = useLoad(() => (early ? Promise.resolve(null) : readLent(session, cover, now, f, seesAll)), [session, cover.id, cover.starts_on, cover.ends_on, early, seesAll, round]);
   const back = cover.ends_on === null ? null : f.dayShort(noonOf(addDays(cover.ends_on, 1)));
   const first = f.dayShort(noonOf(cover.starts_on));
-  const days = useMemo(() => (cover.ends_on === null ? null : workingDays(cover.starts_on, cover.ends_on)), [cover.starts_on, cover.ends_on]);
+  const days = useMemo(() => (cover.ends_on === null ? null : workingDays(cover.starts_on, cover.ends_on, week)), [cover.starts_on, cover.ends_on, week]);
 
   return (
     <>

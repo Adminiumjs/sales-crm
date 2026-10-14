@@ -185,6 +185,8 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     INBOX_FULL,
     SUPPLY,
     ["team", [it("targets", "teamTargets"), it("meeting")]],
+    // The design gives Read-only no Settings group. She reads every setting and presses nothing (P15); with no line she had no way to the page.
+    ["settings", [it("appsettings")]],
   ],
 };
 

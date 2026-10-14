@@ -31,6 +31,10 @@
      "depot_town": "Leeds",
      "depot_lat": 53.8008,
      "depot_lng": -1.5491,
+     "depot_country": "GB",
+     "depot_place": {
+      "placeId": 2644688
+     },
      "distance_unit": "km",
      "loan_days": 14,
      "aftercare_days": 28,

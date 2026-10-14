@@ -289,7 +289,7 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.change('corin', 'enquiries', enquiry, { state: 'claimed' })).statusCode).toBeGreaterThanOrEqual(400);
       const toDana = await s.send('corin', 'POST', url('enquiries', `/${String(enquiry)}/actions/pass`), { from: 'open', values: { passed_to_id: s.ids['dana'] } });
       expect(toDana.statusCode, toDana.body).toBe(200);
- are the sales manager's to set within bounds.
+      // What needs approval, and how long a quote holds, are the sales manager's to set within bounds.
       const settings = Number((await s.rows('select id from crm_settings'))[0]!['id']);
       for (const bad of [{ approval_threshold_pct: 100 }, { approval_threshold_pct: -1 }, { quote_valid_days: 0 }, { quote_valid_days: 5000 }]) {
         expect((await s.change('ivy', 'settings', settings, bad)).statusCode, JSON.stringify(bad)).toBeGreaterThanOrEqual(400);

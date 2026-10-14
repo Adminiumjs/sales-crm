@@ -82,6 +82,12 @@
             "ref": "odds",
             "type": "decimal",
             "scale": 2,
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 1
+              }
+            },
             "label": {
               "en-US": "Odds",
               "de-DE": "Wahrscheinlichkeit",
@@ -5614,6 +5620,26 @@
             }
           },
           {
+            "ref": "customer_no",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "normalize": "code"
+            },
+            "label": {
+              "en-US": "Customer number",
+              "de-DE": "Kundennummer",
+              "fr-FR": "Numéro de client",
+              "da-DK": "Kundenummer",
+              "cs-CZ": "Číslo zákazníka",
+              "ar-EG": "رقم العميل",
+              "zh-CN": "客户编号",
+              "zh-TW": "客戶編號"
+            }
+          },
+          {
             "ref": "sector",
             "type": "text",
             "maxLength": 80,
@@ -5959,6 +5985,26 @@
               "ar-EG": "الاسم",
               "zh-CN": "姓名",
               "zh-TW": "姓名"
+            }
+          },
+          {
+            "ref": "reference",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "normalize": "code"
+            },
+            "label": {
+              "en-US": "Reference",
+              "de-DE": "Referenz",
+              "fr-FR": "Référence",
+              "da-DK": "Reference",
+              "cs-CZ": "Reference",
+              "ar-EG": "المرجع",
+              "zh-CN": "编号",
+              "zh-TW": "編號"
             }
           },
           {
@@ -17564,6 +17610,12 @@
             "ref": "quote_warn_days",
             "type": "int",
             "default": 3,
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 30
+              }
+            },
             "label": {
               "en-US": "Warn before a quote runs out (days)",
               "de-DE": "Warnung vor Angebotsablauf (Tage)",
@@ -17579,6 +17631,12 @@
             "ref": "sitting_warm_days",
             "type": "int",
             "default": 14,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 364
+              }
+            },
             "label": {
               "en-US": "Sitting in a stage: warm after (days)",
               "de-DE": "Verweildauer in der Phase: auffällig ab (Tage)",
@@ -17594,6 +17652,12 @@
             "ref": "sitting_stale_days",
             "type": "int",
             "default": 30,
+            "rules": {
+              "validation": {
+                "min": 2,
+                "max": 365
+              }
+            },
             "label": {
               "en-US": "Sitting in a stage: stale after (days)",
               "de-DE": "Verweildauer in der Phase: festgefahren ab (Tage)",
@@ -17673,6 +17737,12 @@
             "type": "decimal",
             "scale": 2,
             "default": 8,
+            "rules": {
+              "validation": {
+                "min": 4,
+                "max": 12
+              }
+            },
             "label": {
               "en-US": "Hours in a working day",
               "de-DE": "Stunden pro Arbeitstag",
@@ -17741,6 +17811,155 @@
             }
           },
           {
+            "ref": "work_mon",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Works on Monday",
+              "de-DE": "Arbeitet montags",
+              "fr-FR": "Travaille le lundi",
+              "da-DK": "Arbejder mandag",
+              "cs-CZ": "Pracuje v pondělí",
+              "ar-EG": "يعمل يوم الاثنين",
+              "zh-CN": "周一上班",
+              "zh-TW": "週一上班"
+            }
+          },
+          {
+            "ref": "work_tue",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Works on Tuesday",
+              "de-DE": "Arbeitet dienstags",
+              "fr-FR": "Travaille le mardi",
+              "da-DK": "Arbejder tirsdag",
+              "cs-CZ": "Pracuje v úterý",
+              "ar-EG": "يعمل يوم الثلاثاء",
+              "zh-CN": "周二上班",
+              "zh-TW": "週二上班"
+            }
+          },
+          {
+            "ref": "work_wed",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Works on Wednesday",
+              "de-DE": "Arbeitet mittwochs",
+              "fr-FR": "Travaille le mercredi",
+              "da-DK": "Arbejder onsdag",
+              "cs-CZ": "Pracuje ve středu",
+              "ar-EG": "يعمل يوم الأربعاء",
+              "zh-CN": "周三上班",
+              "zh-TW": "週三上班"
+            }
+          },
+          {
+            "ref": "work_thu",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Works on Thursday",
+              "de-DE": "Arbeitet donnerstags",
+              "fr-FR": "Travaille le jeudi",
+              "da-DK": "Arbejder torsdag",
+              "cs-CZ": "Pracuje ve čtvrtek",
+              "ar-EG": "يعمل يوم الخميس",
+              "zh-CN": "周四上班",
+              "zh-TW": "週四上班"
+            }
+          },
+          {
+            "ref": "work_fri",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Works on Friday",
+              "de-DE": "Arbeitet freitags",
+              "fr-FR": "Travaille le vendredi",
+              "da-DK": "Arbejder fredag",
+              "cs-CZ": "Pracuje v pátek",
+              "ar-EG": "يعمل يوم الجمعة",
+              "zh-CN": "周五上班",
+              "zh-TW": "週五上班"
+            }
+          },
+          {
+            "ref": "work_sat",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Works on Saturday",
+              "de-DE": "Arbeitet samstags",
+              "fr-FR": "Travaille le samedi",
+              "da-DK": "Arbejder lørdag",
+              "cs-CZ": "Pracuje v sobotu",
+              "ar-EG": "يعمل يوم السبت",
+              "zh-CN": "周六上班",
+              "zh-TW": "週六上班"
+            }
+          },
+          {
+            "ref": "work_sun",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Works on Sunday",
+              "de-DE": "Arbeitet sonntags",
+              "fr-FR": "Travaille le dimanche",
+              "da-DK": "Arbejder søndag",
+              "cs-CZ": "Pracuje v neděli",
+              "ar-EG": "يعمل يوم الأحد",
+              "zh-CN": "周日上班",
+              "zh-TW": "週日上班"
+            }
+          },
+          {
+            "ref": "work_from",
+            "type": "text",
+            "maxLength": 5,
+            "default": "08:30",
+            "rules": {
+              "validation": {
+                "minLength": 5,
+                "maxLength": 5
+              }
+            },
+            "label": {
+              "en-US": "The working day starts",
+              "de-DE": "Der Arbeitstag beginnt",
+              "fr-FR": "La journée de travail commence",
+              "da-DK": "Arbejdsdagen begynder",
+              "cs-CZ": "Pracovní den začíná",
+              "ar-EG": "يبدأ يوم العمل",
+              "zh-CN": "工作日开始",
+              "zh-TW": "工作日開始"
+            }
+          },
+          {
+            "ref": "work_to",
+            "type": "text",
+            "maxLength": 5,
+            "default": "17:30",
+            "rules": {
+              "validation": {
+                "minLength": 5,
+                "maxLength": 5
+              }
+            },
+            "label": {
+              "en-US": "The working day ends",
+              "de-DE": "Der Arbeitstag endet",
+              "fr-FR": "La journée de travail se termine",
+              "da-DK": "Arbejdsdagen slutter",
+              "cs-CZ": "Pracovní den končí",
+              "ar-EG": "ينتهي يوم العمل",
+              "zh-CN": "工作日结束",
+              "zh-TW": "工作日結束"
+            }
+          },
+          {
             "ref": "depot_name",
             "type": "text",
             "maxLength": 120,
@@ -17761,6 +17980,9 @@
             "type": "text",
             "maxLength": 400,
             "nullable": true,
+            "rules": {
+              "personal": false
+            },
             "label": {
               "en-US": "Depot address",
               "de-DE": "Adresse des Depots",
@@ -17816,6 +18038,81 @@
               "ar-EG": "خط طول المستودع",
               "zh-CN": "仓库经度",
               "zh-TW": "倉庫經度"
+            }
+          },
+          {
+            "ref": "depot_region",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Depot: region",
+              "de-DE": "Depot: Region",
+              "fr-FR": "Dépôt : région",
+              "da-DK": "Depot: region",
+              "cs-CZ": "Sklad: kraj",
+              "ar-EG": "المستودع: الإقليم",
+              "zh-CN": "仓库：地区",
+              "zh-TW": "倉庫：地區"
+            }
+          },
+          {
+            "ref": "depot_postal_code",
+            "type": "text",
+            "maxLength": 20,
+            "nullable": true,
+            "rules": {
+              "personal": false
+            },
+            "label": {
+              "en-US": "Depot: postal code",
+              "de-DE": "Depot: Postleitzahl",
+              "fr-FR": "Dépôt : code postal",
+              "da-DK": "Depot: postnummer",
+              "cs-CZ": "Sklad: PSČ",
+              "ar-EG": "المستودع: الرمز البريدي",
+              "zh-CN": "仓库：邮编",
+              "zh-TW": "倉庫：郵遞區號"
+            }
+          },
+          {
+            "ref": "depot_country",
+            "type": "text",
+            "maxLength": 2,
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "minLength": 2,
+                "maxLength": 2
+              }
+            },
+            "label": {
+              "en-US": "Depot: country",
+              "de-DE": "Depot: Land",
+              "fr-FR": "Dépôt : pays",
+              "da-DK": "Depot: land",
+              "cs-CZ": "Sklad: země",
+              "ar-EG": "المستودع: البلد",
+              "zh-CN": "仓库：国家",
+              "zh-TW": "倉庫：國家"
+            }
+          },
+          {
+            "ref": "depot_place",
+            "type": "json",
+            "nullable": true,
+            "rules": {
+              "place": true
+            },
+            "label": {
+              "en-US": "Depot: place on the map",
+              "de-DE": "Depot: Ort auf der Karte",
+              "fr-FR": "Dépôt : emplacement sur la carte",
+              "da-DK": "Depot: sted på kortet",
+              "cs-CZ": "Sklad: místo na mapě",
+              "ar-EG": "المستودع: الموقع على الخريطة",
+              "zh-CN": "仓库：地图位置",
+              "zh-TW": "倉庫：地圖位置"
             }
           },
           {
@@ -17927,6 +18224,12 @@
             "ref": "lead_cold_days",
             "type": "int",
             "default": 14,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 365
+              }
+            },
             "label": {
               "en-US": "A lead goes cold after (days)",
               "de-DE": "Lead erkaltet nach (Tagen)",
@@ -19085,6 +19388,7 @@
           "writable": [
             "company_id",
             "name",
+            "reference",
             "job_title",
             "email",
             "phone",
@@ -19875,6 +20179,7 @@
           "writable": [
             "company_id",
             "name",
+            "reference",
             "job_title",
             "phone",
             "may_email"
@@ -20312,6 +20617,7 @@
           "writable": [
             "company_id",
             "name",
+            "reference",
             "job_title",
             "phone",
             "may_email"
