@@ -809,7 +809,9 @@ describe("a hand-over button is pressed by a role that may change the row", () =
         const writable = limitOf(key, table.ref)?.writable;
         if (writable === undefined) continue;
         for (const column of [table.states?.column ?? "", ...(action.ask ?? [])]) expect(writable, `${key}: ${table.ref}.${column}`).toContain(column);
-        expect(limitOf(key, table.ref)?.writableValues?.[table.states?.column ?? ""], key).toBeUndefined();
+        // A role held to some states still makes the button's move (the front desk passes an enquiry on, and claims none).
+        const allowed = limitOf(key, table.ref)?.writableValues?.[table.states?.column ?? ""];
+        if (allowed !== undefined && "move" in action) expect(allowed, key).toContain((action as { move: { to: string } }).move.to);
       }
     }
   });

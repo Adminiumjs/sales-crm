@@ -73,7 +73,7 @@ async function read(session: StaffSession, id: number, fixed: Promise<{ prices: 
     fixed,
   ]);
   // The quote read by itself carries what its reader's role shows of it; the list asks for fewer columns. Where the link went comes from the first.
-  const family = all.filter((quote) => (quote.family_no ?? quote.number) === (one.family_no ?? one.number)).sort((a, b) => a.version - b.version).map((quote) => (quote.id === id ? { ...quote, sent_to_email: one.sent_to_email ?? null } : quote));
+  const family = all.filter((quote) => (quote.family_no ?? quote.number) === (one.family_no ?? one.number)).sort((a, b) => a.version - b.version).map((quote) => (quote.id === id ? { ...quote, sent_to_email: one.sent_to_email ?? null, to_email: one.to_email ?? null } : quote));
   if (!family.some((quote) => quote.id === id)) return null;
   const names = await readNames(session, family.flatMap((quote) => [quote.owner_id, quote.asked_by_id, quote.decided_by_id]));
   return { family, lines: lines.rows, deal, names, ...rest };
@@ -455,6 +455,10 @@ export function QuotePage({ id }: { id: string }) {
                         </>
                       ) : (
                         <p className="crm-side-note">{t("quote.send.body", { name: contact, until: f.date(noonOf(addDays(today, data.validDays))), amount: f.money(quote.subtotal) })} {t("quote.send.link")}{has !== null && has.id !== quote.id ? ` ${t("quote.send.replaces", { number: has.number ?? "" })}` : ""}</p>
+                      )}
+                      {/* The address it goes to, as the contact holds it now: the sender sees it before it leaves (a contact's address is where the customer's link is mailed). */}
+                      {contact !== null && typeof quote.to_email === "string" && quote.to_email !== "" && (
+                        <p className="crm-side-note crm-mono" data-testid="quote-goes-to">{t("quote.send.goesTo", { address: quote.to_email })}</p>
                       )}
                       {!linesOk && <p className="crm-side-check">{t("quote.linesCheck")}</p>}
                       <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" disabled={busy || !linesOk || contact === null} onClick={() => void send()}>

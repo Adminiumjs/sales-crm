@@ -268,7 +268,28 @@ for (const [dialect, reachable] of LEGS) {
         expect((await s.make(person, 'deal_members', { deal_id: second, user_id: s.ids['sam'] })).statusCode, `${person} adds`).toBeGreaterThanOrEqual(400);
       }
       expect(await s.rows(`select id from crm_deal_members where deal_id = ${String(second)}`)).toEqual([]);
-      // What needs approval, and how long a quote holds, are the sales manager's to set within bounds.
+      // A contact's address is where a quote and its customer's link are mailed: a rep does not change it (she could send a colleague's
+      // quote to herself and accept it as the customer); the manager does.
+      const petra = contact['petra']!;
+      expect((await s.change('dana', 'contacts', petra, { email: 'dana@inbox.test' })).statusCode).toBe(403);
+      expect(said(await s.change('dana', 'contacts', petra, { phone: '+44 20 7946 0000' }))).toBe('ok');
+      expect(said(await s.change('ivy', 'contacts', petra, { email: 'petra@nordwind.test' }))).toBe('ok');
+      // Whose a company is and its territory are not a rep's to change.
+      expect((await s.change('dana', 'companies', company, { account_owner_id: s.ids['dana'] })).statusCode).toBe(403);
+      // An enquiry goes only to somebody who can work it, by its button and by a plain change alike (Read-only reads enquiries and
+      // changes none: given one, it would answer to nobody); the front desk claims none.
+      const enquiry = made(await s.make('corin', 'enquiries', { company_name: 'Walk-in', person: 'Ana', source: 'phone' }));
+      for (const person of ['corin', 'dana', 'ivy']) {
+        const lost = await s.change(person, 'enquiries', enquiry, { passed_to_id: s.ids['grace'] });
+        expect(lost.statusCode, `${person}: ${lost.body}`).toBe(422);
+        expect(lost.body, person).toContain('cannot-open');
+      }
+      const toGrace = await s.send('corin', 'POST', url('enquiries', `/${String(enquiry)}/actions/pass`), { from: 'open', values: { passed_to_id: s.ids['grace'] } });
+      expect(toGrace.statusCode, toGrace.body).toBeGreaterThanOrEqual(400);
+      expect((await s.change('corin', 'enquiries', enquiry, { state: 'claimed' })).statusCode).toBeGreaterThanOrEqual(400);
+      const toDana = await s.send('corin', 'POST', url('enquiries', `/${String(enquiry)}/actions/pass`), { from: 'open', values: { passed_to_id: s.ids['dana'] } });
+      expect(toDana.statusCode, toDana.body).toBe(200);
+ are the sales manager's to set within bounds.
       const settings = Number((await s.rows('select id from crm_settings'))[0]!['id']);
       for (const bad of [{ approval_threshold_pct: 100 }, { approval_threshold_pct: -1 }, { quote_valid_days: 0 }, { quote_valid_days: 5000 }]) {
         expect((await s.change('ivy', 'settings', settings, bad)).statusCode, JSON.stringify(bad)).toBeGreaterThanOrEqual(400);

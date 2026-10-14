@@ -28,7 +28,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useLoad } from "../../ui/load.tsx";
 import { initials } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
-import { addressOf, PAGE, type Company, type Person, type Reach } from "./data.ts";
+import { addressOf, fixedOn, PAGE, type Company, type Person, type Reach } from "./data.ts";
 import { useAccounts } from "./shared.tsx";
 
 export type Rec =
@@ -238,11 +238,14 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
   }
 
   const adding = rec.mode === "add";
+  // A new record's fields are all the writer's; a stored one keeps what is not hers to change, shown and not sent.
+  const fixed = adding ? [] : fixedOn(isCompany ? "company" : "contact", (session.config.access?.roles ?? []).map((role) => role.slug));
   const save = async (): Promise<void> => {
     const name = (draft["name"] ?? "").trim();
     if (name === "") return setError(t(isCompany ? "acc.rec.error.name" : "acc.rec.error.person"));
     const values: Row = {};
     for (const column of texts) {
+      if (fixed.includes(column)) continue;
       const typed = (draft[column] ?? "").trim();
       if (column === "headcount") {
         if (typed !== "" && !/^\d{1,9}$/.test(typed)) return setError(t("acc.rec.error.headcount"));
@@ -310,8 +313,14 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
               type={column === "email" ? "email" : "text"}
               autoComplete="off"
               {...(column === "country" || column === "region" || column === "postal_code" || column === "website" ? { placeholder: t(column === "country" ? "acc.rec.co.country.hint" : "acc.rec.optional") } : {})}
+              {...(fixed.includes(column) ? { readOnly: true, "aria-describedby": `crm-rec-${column}-fixed` } : {})}
               onChange={(event) => set(column, event.target.value)}
             />
+            {fixed.includes(column) && (
+              <p className="crm-field-note" id={`crm-rec-${column}-fixed`}>
+                {t("acc.rec.fixed")}
+              </p>
+            )}
           </div>
         ))}
 

@@ -19876,7 +19876,6 @@
             "company_id",
             "name",
             "job_title",
-            "email",
             "phone",
             "may_email"
           ]
@@ -20102,6 +20101,23 @@
             "starts_on",
             "ends_on"
           ]
+        },
+        "companies": {
+          "writable": [
+            "name",
+            "sector",
+            "headcount",
+            "town",
+            "region",
+            "country",
+            "lat",
+            "lng",
+            "place",
+            "website",
+            "logo",
+            "access_note",
+            "ask_for_contact_id"
+          ]
         }
       }
     },
@@ -20297,7 +20313,6 @@
             "company_id",
             "name",
             "job_title",
-            "email",
             "phone",
             "may_email"
           ]
@@ -20362,6 +20377,23 @@
             "cover_id",
             "starts_on",
             "ends_on"
+          ]
+        },
+        "companies": {
+          "writable": [
+            "name",
+            "sector",
+            "headcount",
+            "town",
+            "region",
+            "country",
+            "lat",
+            "lng",
+            "place",
+            "website",
+            "logo",
+            "access_note",
+            "ask_for_contact_id"
           ]
         }
       }
@@ -20541,6 +20573,12 @@
               "reach": "own",
               "unowned": true
             }
+          },
+          "writableValues": {
+            "state": [
+              "passed",
+              "dropped"
+            ]
           }
         },
         "showroom_bookings": {

@@ -499,6 +499,15 @@ export function addressOf(company: Pick<Company, "address_lines" | "town" | "reg
   return [company.address_lines, company.town, company.region, company.postal_code, countryName(company.country, locale)].filter((part) => part !== null && part !== undefined && String(part).trim() !== "").join(", ");
 }
 
+/**
+ * What a person sees on a record and does not change. A contact's e-mail is
+ * where her quotes and their customer's link are mailed, and a company's
+ * street and postal code are kept from the roles that paste: the CRM admin's
+ * and the sales manager's to change (the server refuses anybody else).
+ */
+export const fixedOn = (kind: "company" | "contact", slugs: readonly string[]): readonly string[] =>
+  slugs.length === 0 || slugs.includes("crm-admin") || slugs.includes("crm-sales-manager") ? [] : kind === "contact" ? ["email"] : ["address_lines", "postal_code"];
+
 // ── paste a list ─────────────────────────────────────────────────────────────
 
 /** The columns a list may bring: never one the server works out itself, and never a company's street or postal code (kept from the roles that paste). */

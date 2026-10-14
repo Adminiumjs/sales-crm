@@ -79,13 +79,12 @@ export function PasteLeads({ shows, onShows }: { shows: Show[]; onShows: () => v
   picked.current = show;
   const labels = useMemo(() => ({ source: t("paste.col.source"), show: t("paste.col.show"), received: t("paste.col.received") }), [t]);
   /*
-   * WHEN A LEAD WAS SCANNED. An enquiry typed in is stamped "received now" by
-   * the server; a row brought in by a list is not (the import runs none of a
-   * table's stamps), and the database refuses a row without it. So the list
-   * also says when: the show's first day, at noon where the business is.
-   * Only somebody who may write that column can say it: the CRM admin and
-   * whoever runs the install. The marketer may not, and her list is refused
-   * until Adminium stamps an imported row itself (the report's engine gaps).
+   * WHEN A LEAD WAS SCANNED. A line brought in is stamped "received now" by
+   * the server, as an enquiry typed in is, unless the list says when. So the
+   * list says it: the show's first day, at noon where the business is. Only
+   * somebody who may write that column can say it: the CRM admin and whoever
+   * runs the install. The marketer may not, and her leads are dated the day
+   * she brings them in (decision 120).
    */
   const roles = config.access?.roles ?? [];
   const datesRows = roles.length === 0 || roles.some((role) => role.slug === "crm-admin");

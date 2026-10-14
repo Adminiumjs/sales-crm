@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addressOf, COMPANY_COLUMNS, CONTACT_COLUMNS, countryName, mainLine, modesFor, newestFirst, openLine, quietLines, readsDeals, sinceOf, toneOf, typed, type Entry, type Mark } from "./data.ts";
+import { addressOf, COMPANY_COLUMNS, fixedOn, CONTACT_COLUMNS, countryName, mainLine, modesFor, newestFirst, openLine, quietLines, readsDeals, sinceOf, toneOf, typed, type Entry, type Mark } from "./data.ts";
 
 describe("what a company's card says about open deals", () => {
   it("a team's reader: the deals she reaches; how many there are where she reaches none; nothing open", () => {
@@ -131,5 +131,16 @@ describe("paste a list", () => {
     for (const column of ["id", "retry_key", "lat", "lng", "place", "account_owner_id"]) expect(COMPANY_COLUMNS as readonly string[]).not.toContain(column);
     expect(CONTACT_COLUMNS).toContain("company_id");
     expect(CONTACT_COLUMNS).toContain("may_email");
+  });
+});
+
+describe("what a record shows and does not let change", () => {
+  it("keeps a contact's e-mail and a company's street from a rep and an account manager, and from nobody who leads or runs the CRM", () => {
+    expect(fixedOn("contact", ["crm-rep"])).toEqual(["email"]);
+    expect(fixedOn("company", ["crm-account-manager"])).toEqual(["address_lines", "postal_code"]);
+    expect(fixedOn("contact", ["crm-rep", "crm-sales-manager"])).toEqual([]);
+    expect(fixedOn("company", ["crm-admin"])).toEqual([]);
+    // The install's owner holds no app role: nothing is kept from her.
+    expect(fixedOn("contact", [])).toEqual([]);
   });
 });

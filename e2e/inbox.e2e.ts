@@ -249,6 +249,12 @@ test("the front desk passes an enquiry to a rep by keyboard: it becomes his, and
     const other = await corin.post(data("enquiries"), { data: { values: { source: "phone", company_name: "P14 Second" }, clientKey: "p14pass2AAAAAAAAAAAAAAAAAAAAAAAA" }, headers: await csrf(corin) });
     const second = ((await other.json()) as { data: { id: number } }).data.id;
     expect((await corin.post(data("enquiries", `/${String(second)}/actions/pass`), { data: { from: "open", values: { passed_to_id: stand.people["ada"]!.id } }, headers: await csrf(corin) })).status()).toBe(422);
+    // …nor by writing the column straight, with the move or without it: the button is not the only door.
+    for (const values of [{ passed_to_id: stand.people["ada"]!.id }, { passed_to_id: stand.people["ada"]!.id, state: "passed" }]) {
+      expect((await corin.patch(data("enquiries", `/${String(second)}`), { data: { values }, headers: await csrf(corin) })).status()).toBe(422);
+    }
+    // And the front desk claims none, by the button or by a call.
+    expect((await corin.patch(data("enquiries", `/${String(second)}`), { data: { values: { state: "claimed" } }, headers: await csrf(corin) })).status()).toBeGreaterThanOrEqual(400);
     // And "passed" needs a somebody: the move with nobody named is refused.
     expect([409, 422]).toContain((await corin.post(data("enquiries", `/${String(second)}/actions/pass`), { data: { from: "open" }, headers: await csrf(corin) })).status());
   } finally {
@@ -422,7 +428,7 @@ test("the CRM admin rings a lead and drops one; Read-only and a rep do not; 390 
   expect(stand.people["lena"]).toBeDefined();
 });
 
-test("a show's list is pasted: every line a lead of that show for the CRM admin; the marketer's is refused today; a rep's is refused outright", async ({ as, api, data }) => {
+test("a show's list is pasted: every line a lead of that show for the CRM admin, dated the show's day; the marketer's dated the day she brings it; a rep's is refused outright", async ({ as, api, data }) => {
   const admin = await api("tessa");
   await clear(admin, data);
   const show = (await rows<{ id: number; name: string }>(admin, data, "shows"))[0]!;
@@ -468,10 +474,9 @@ test("a show's list is pasted: every line a lead of that show for the CRM admin;
     await clear(admin, data);
 
     /*
-     * THE MARKETER'S LIST IS REFUSED TODAY, and this is the engine's gap, not the plan's wish (decision 14 gives her the list).
-     * An import runs none of a table's stamps, "received at" has no value without one, and she may not write it herself:
-     * the lines are judged "new" and the database then refuses each. The screen says so; nothing is half brought in.
-     * When Adminium stamps an imported row, this half of the spec turns red and is rewritten to the admin's.
+     * THE MARKETER'S LIST (decision 14; decision 120 turned 115 round). A brought-in line is her create: the table's stamps
+     * fill what it leaves out, so "received at" is the day she brings it in (she may not say a show's day herself), and
+     * the lines come in whole.
      */
     const hers = await (await as("lena")).newPage();
     await hers.goto(`${STAFF}trade-show-leads/paste`);
@@ -480,11 +485,18 @@ test("a show's list is pasted: every line a lead of that show for the CRM admin;
     await wizard2.getByTestId("import-paste-use").click();
     await expect.poll(() => mapping(wizard2)).toEqual(["source", "show_id", "company_name", "person", "warmth"]);
     await wizard2.getByTestId("wizard-validate").click();
-    await expect(wizard2.getByTestId("validation-summary")).toBeVisible();
+    await expect(wizard2.getByTestId("validation-summary")).toHaveText("2 new lines will be brought in.");
     await wizard2.getByTestId("wizard-run").click();
     await expect(wizard2.getByTestId("import-review")).toBeVisible({ timeout: 30_000 });
-    await expect(hers.locator(".crm-toast")).toHaveText("2 lines of the list were refused by the server and not brought in (0 were). The report on this page says why.");
-    expect(await total(admin, data, { column: "company_name", op: "like", value: "P14 Hers%" })).toBe(0);
+    await expect(hers.locator(".crm-toast")).toHaveText("2 leads were brought in.");
+    const brought = await rows<{ company_name: string; source: string; show_id: number; warmth: string; state: string; received_at: string | null }>(admin, data, "enquiries", { column: "company_name", op: "like", value: "P14 Hers%" }, "&order=company_name");
+    expect(brought.map((row) => [row.company_name, row.source, row.show_id, row.warmth, row.state])).toEqual([
+      ["P14 Hers One", "show", show.id, "hot", "open"],
+      ["P14 Hers Two", "show", show.id, "warm", "open"],
+    ]);
+    // Dated by the server as it brought them in: not empty, and not the show's day.
+    for (const row of brought) expect(row.received_at === null || row.received_at === "2026-07-15T11:00:00.000Z", row.company_name).toBe(false);
+    await clear(admin, data);
     // She may not say when herself: the server's refusal of that column, by the import's own door.
     const lena = await api("lena");
     const lenaHeaders = await csrf(lena);
