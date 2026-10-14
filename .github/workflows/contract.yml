@@ -123,4 +123,6 @@ jobs:
           path: |
             e2e/.results
             e2e/.stand/server.log
+          # Both folders' names begin with a dot, which upload-artifact v4 leaves out unless told.
+          include-hidden-files: true
           if-no-files-found: ignore
