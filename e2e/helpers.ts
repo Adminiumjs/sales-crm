@@ -67,3 +67,14 @@ export async function inArabic(person: APIRequestContext, run: () => Promise<voi
  * Let a person's minute run out. The server counts each person's requests by the minute (300), every sample person is signed in once and reused, and a run of heavy screens as one person can spend the lot: the next spec as that person would then be made to wait by the server, past its own patience. Called between such runs, not inside one.
  */
 export const minuteOut = (): Promise<void> => new Promise((done) => setTimeout(done, 45_000));
+
+/**
+ * Open every group of the menu. A long menu (a manager's, the CRM admin's) starts with its lower groups folded, so a spec
+ * that looks for a line under "The team" or "Settings" unfolds them first, as a person would.
+ */
+export async function unfoldMenu(page: Page): Promise<void> {
+  // The menu is drawn once the person's session has answered: a look taken before that finds nothing to unfold.
+  await page.getByRole("navigation", { name: "Menu" }).getByRole("link").first().waitFor();
+  const heads = page.getByRole("navigation", { name: "Menu" }).locator('button.crm-menu-head[aria-expanded="false"]');
+  for (let left = await heads.count(); left > 0; left -= 1) await heads.first().click();
+}

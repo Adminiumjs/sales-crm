@@ -3,7 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { manifestsRepo, rolesRepo, usersRepo, type MetaDb } from '@adminium/meta';
 import { LEGS, installInvoicing, writerFor, type InvoicingHarness } from './invoicing-install.helpers.js';
 
-const manifest = () => JSON.parse(readFileSync(`${process.env.HOME}/Work/lanes/p67-app/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
+// The app this copy of the proofs came from (`npm run proofs` names it), not a fixed lane.
+const manifest = () => JSON.parse(readFileSync(`${process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 
 /** The Invoices add-on the app's quotes are built on, there before the app: the engine's own fixture, at a version the app accepts. */
 /** The install as an owner who ticks Invoices & Receipts and every part: quotes are a part that waits for the add-on. */
@@ -366,6 +367,8 @@ for (const [dialect, reachable] of LEGS) {
       await w.update('stages', s2['id'], { odds: 0.8 });
       d = await read('deals', 'stage_odds, weighted_value', deal['id']);
       expect([Number(d['stage_odds']), Number(d['weighted_value'])]).toEqual([0.8, 38400]);
+      // What counts toward its owner's target (Targets, ledger 14): while it is open, its weighted value.
+      expect(Number((await read('deals', 'target_value', deal['id']))['target_value'])).toBe(38400);
       // the mark
       const mark = await w.create('deal_marks', { deal_id: deal['id'] });
       let m = await read('deal_marks', 'company_id, stage_id, owner_id, state', mark['id']);
@@ -378,6 +381,13 @@ for (const [dialect, reachable] of LEGS) {
       // The day it closed, and the whole days it was open: opened and closed today, so none.
       expect(String(d['closed_on']).slice(0, 10)).toBe(String(d['opened_on']).slice(0, 10));
       expect(Number(d['cycle_days'])).toBe(0);
+      // Won, it counts toward the target at its whole amount; lost, at nothing.
+      expect(Number((await read('deals', 'target_value', deal['id']))['target_value'])).toBe(48000);
+      const other = await w.create('deals', { name: 'Desk rows, phase two', company_id: co['id'], contact_id: ct['id'], owner_id: dana.id, stage_id: s1['id'], typed_amount: 9000 });
+      expect(Number((await read('deals', 'target_value', other['id']))['target_value'])).toBe(4500);
+      const reason = await w.create('lost_reasons', { label: 'Budget pulled', position: 1 });
+      await w.update('deals', other['id'], { state: 'lost', lost_reason_id: reason['id'] });
+      expect(Number((await read('deals', 'target_value', other['id']))['target_value'])).toBe(0);
       // a visit, its note, an agreed line three links from the deal
       const visit = await w.create('site_visits', { deal_id: deal['id'], rep_id: dana.id, starts_at: '2026-07-29T10:30:00Z', minutes: 90, purpose: 'Walk the floor' });
       const note = await w.create('visit_notes', { visit_id: visit['id'], saw: 'x'.repeat(1500) });

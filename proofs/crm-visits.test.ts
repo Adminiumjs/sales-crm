@@ -199,7 +199,9 @@ for (const [dialect, reachable] of LEGS) {
       const done = await s.send('dana', 'POST', url('site_visits', `/${String(id)}/actions/done`), { from: 'booked' });
       expect(done.statusCode, done.body).toBe(200);
       expect(said(await remove('dana', 'visit_agreed', agreed))).toBe('ok');
-      expect(said(await remove('dana', 'visit_notes', note))).toBe('ok');
+      // A write-up is not a rep's to remove, her own included (a helper on the deal could otherwise remove the owner's): the CRM admin takes it away.
+      expect((await remove('dana', 'visit_notes', note)).statusCode).toBe(403);
+      expect(said(await remove('tessa', 'visit_notes', note))).toBe('ok');
       expect(Number((await row('dana', 'site_visits', id))?.['written'])).toBe(0);
       const kept = await remove('dana', 'site_visits', id);
       expect(said(kept)).toBe('409 DELETE_REFUSED');
@@ -234,10 +236,55 @@ for (const [dialect, reachable] of LEGS) {
       // The covering rep ends nothing and re-dates nothing.
       expect((await s.change('priya', 'covers', cover, { ends_on: day(30) })).statusCode).toBe(403);
       expect((await remove('priya', 'covers', cover)).statusCode).toBe(403);
+      // A manager who leads only whoever COVERS (Sam is hers, Noor is not) does not re-date, redirect or remove that cover:
+      // each would lend her and her rep another team's book for as long as she liked (the review, 2026-10-14).
+      for (const change of [{ starts_on: day(-1) }, { ends_on: null }, { ends_on: day(90) }, { cover_id: s.ids['priya'] }, { cover_id: s.ids['ivy'] }]) {
+        expect((await s.change('ivy', 'covers', across, change)).statusCode, JSON.stringify(change)).toBeGreaterThanOrEqual(403);
+      }
+      expect((await remove('ivy', 'covers', across)).statusCode).toBeGreaterThanOrEqual(403);
+      const kept = (await row('tessa', 'covers', across))!;
+      expect([String(kept['cover_id']), String(kept['starts_on']).slice(0, 10), String(kept['ends_on']).slice(0, 10)]).toEqual([s.ids['sam'], day(40), day(44)]);
       expect(said(await remove('tessa', 'covers', across))).toBe('ok');
       expect(said(await remove('ivy', 'covers', cover))).toBe('ok');
       // Cancelled: the row is gone, and the lent deal with it, the same moment.
       expect(await row('priya', 'deals', deal['danas']!)).toBeNull();
+    });
+
+    it('the review\'s other findings: a write-up is not a rep\'s to remove, a comment stays on its deal, a closed deal takes nobody, two settings have bounds, and a colleague\'s deal is told to a rep as a company and a state', async () => {
+      // A rep, the owner of the visit included, removes no write-up (a helper on the deal could remove the owner's).
+      const note = Number((await s.rows('select id from crm_visit_notes order by id'))[0]?.['id']);
+      if (Number.isFinite(note)) for (const person of ['dana', 'sam', 'priya']) expect((await remove(person, 'visit_notes', note)).statusCode, person).toBeGreaterThanOrEqual(403);
+      // Her own comment stays on its deal and in its thread.
+      const company = Number((await s.rows('select id from crm_companies order by id'))[0]!['id']);
+      const stage = Number((await s.rows('select id from crm_stages order by position'))[0]!['id']);
+      const second = made(await s.make('owner', 'deals', { name: 'second deal', company_id: company, owner_id: s.ids['dana'], stage_id: stage }));
+      const comment = made(await s.make('dana', 'comments', { deal_id: deal['danas'], text: 'Where it belongs' }));
+      expect((await s.change('dana', 'comments', comment, { deal_id: second })).statusCode).toBeGreaterThanOrEqual(400);
+      expect(Number((await s.rows(`select deal_id from crm_comments where id = ${String(comment)}`))[0]!['deal_id'])).toBe(deal['danas']);
+      // On a closed deal nobody is added: by its owner, her manager or the admin.
+      const won = await s.send('dana', 'POST', url('deals', `/${String(second)}/actions/mark-won`), { from: 'open' });
+      expect(won.statusCode, won.body).toBe(200);
+      for (const person of ['dana', 'ivy', 'tessa']) {
+        expect((await s.make(person, 'deal_members', { deal_id: second, user_id: s.ids['sam'] })).statusCode, `${person} adds`).toBeGreaterThanOrEqual(400);
+      }
+      expect(await s.rows(`select id from crm_deal_members where deal_id = ${String(second)}`)).toEqual([]);
+      // What needs approval, and how long a quote holds, are the sales manager's to set within bounds.
+      const settings = Number((await s.rows('select id from crm_settings'))[0]!['id']);
+      for (const bad of [{ approval_threshold_pct: 100 }, { approval_threshold_pct: -1 }, { quote_valid_days: 0 }, { quote_valid_days: 5000 }]) {
+        expect((await s.change('ivy', 'settings', settings, bad)).statusCode, JSON.stringify(bad)).toBeGreaterThanOrEqual(400);
+      }
+      expect(said(await s.change('ivy', 'settings', settings, { approval_threshold_pct: 7.5 }))).toBe('ok');
+      expect(said(await s.change('ivy', 'settings', settings, { approval_threshold_pct: 5 }))).toBe('ok');
+      // A rep reads of a colleague's deal that a company has one, its state, and the numbers of the deal and its stage (a link is
+      // always shown): never whose it is, so no colleague's count of deals won, lost or open can be made from it.
+      await s.jobs();
+      const marks = await s.rows(`select m.id from crm_deal_marks m join crm_deals d on d.id = m.deal_id where d.owner_id = '${s.ids['sam']!}' order by m.id`);
+      expect(marks.length, 'a mark of a deal of Sam\'s').toBeGreaterThan(0);
+      for (const person of ['dana', 'priya', 'lena']) {
+        const seen = await row(person, 'deal_marks', Number(marks[0]!['id']));
+        expect(Object.keys(seen ?? {}), person).not.toContain('owner_id');
+        expect(seen?.['company_id'], person).toBeDefined();
+      }
     });
 
     it('holds one person\'s book to one cover at a time, open ends included', async () => {

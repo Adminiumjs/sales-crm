@@ -12,12 +12,14 @@
 import type { Translated } from "../untranslated.ts";
 import { LOCALE_TAGS, type LocaleTag } from "../locales.ts";
 import { base } from "../strings/base.ts";
+import { cover } from "../strings/cover.ts";
 import { customer } from "../strings/customer.ts";
 import { deal } from "../strings/deal.ts";
 import { quotes } from "../strings/quotes.ts";
 import { selling } from "../strings/selling.ts";
 import { shell } from "../strings/shell.ts";
 import { team } from "../strings/team.ts";
+import { teamwork } from "../strings/teamwork.ts";
 import { today } from "../strings/today.ts";
 import { visits } from "../strings/visits.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
@@ -43,6 +45,8 @@ const AREAS = [
   deal satisfies Area<(typeof deal)["en-US"]>,
   visits satisfies Area<(typeof visits)["en-US"]>,
   team satisfies Area<(typeof team)["en-US"]>,
+  cover satisfies Area<(typeof cover)["en-US"]>,
+  teamwork satisfies Area<(typeof teamwork)["en-US"]>,
   customer satisfies Area<(typeof customer)["en-US"]>,
 ] as const;
 
@@ -67,4 +71,6 @@ export type MessageKey =
   | keyof (typeof deal)["en-US"]
   | keyof (typeof visits)["en-US"]
   | keyof (typeof team)["en-US"]
+  | keyof (typeof cover)["en-US"]
+  | keyof (typeof teamwork)["en-US"]
   | keyof (typeof customer)["en-US"];

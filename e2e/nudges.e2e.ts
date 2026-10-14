@@ -16,7 +16,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
 const rule = (page: Page, id: string) => page.locator(`.crm-ndg-rule[data-rule="${id}"]`);
 const group = (page: Page, id: string) => page.locator(`.crm-panel[data-group="${id}"]`);
@@ -111,6 +111,7 @@ test("a threshold moved moves the list, for the CRM admin by keyboard and live f
     await expect(caught(ivy)).toHaveText("4 deals caught of 14 open");
     // The admin reaches it from her Settings group, as "Nudge rules".
     await tessa.goto(STAFF);
+    await unfoldMenu(tessa);
     await tessa.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Nudge rules" }).click();
     await expect(caught(tessa)).toHaveText("4 deals caught of 14 open");
     // Quiet from 7 days down to 3, by keyboard: eight deals (the ledger's line).

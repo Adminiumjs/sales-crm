@@ -81,7 +81,9 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["deal_marks"], "R", "R", "R", "R", "R", "-", "-", "-", "R"],
   // A visit is read by whoever reaches its deal; it is moved and cancelled by the rep it names (a manager, those of her people).
   [["site_visits"], "RCUD", "RCUD;r=team;u=team-named;d=team-named", "RCUD;r=own;u=own-named;d=own-named", "-", "-", "-", "-", "-", "R"],
-  [["visit_notes", "visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
+  // A rep takes an agreed point back; nobody but the CRM admin removes a visit's write-up (a helper could remove the owner's).
+  [["visit_notes"], "RCUD", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
+  [["visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
   [["companies"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "R", "-", "-", "RX"],
   [["contacts"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "RC", "-", "-", "RX"],
   [["territories", "territory_places"], "RCUD", "RCUD", "R", "R", "R", "-", "-", "-", "R"],
@@ -99,7 +101,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // NARROWER THAN "EVERY COVER": a sales manager does not hold every cover. A cover opens
   // its rep's deals to whoever it names, so a manager who could write one for any rep could read any
   // team's deals by covering for them. They read every cover, and write one for the people they lead.
-  [["covers"], "RCUD", "RCUD;u=team;d=team", "R", "R", "-", "-", "-", "-", "R"],
+  // A manager changes or removes a cover only of somebody she leads who is the one AWAY: leading whoever covers is not enough (the review, 2026-10-14).
+  [["covers"], "RCUD", "RCUD;u=team-away;d=team-away", "R", "R", "-", "-", "-", "-", "R"],
   [["cover_notes"], "RCUD", "RCUD:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
   [["enquiries"], "RCUDI", "RCU:team+free", "RCU:own+free", "-", "RCI", "RCU:own+free", "-", "-", "R"],
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
@@ -206,6 +209,7 @@ const REACHES: Record<string, Reach> = {
   // Of the visits they reach, only the ones that name them as the rep who goes.
   "own-named": { reach: "own", by: "rep_id" },
   "team-named": { reach: "team", by: "rep_id" },
+  "team-away": { reach: "team", by: "owner_id" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
@@ -922,7 +926,7 @@ describe("a listing a table is read through is not a way in", () => {
     // One person's book is lent once at a time; an empty end runs until further notice.
     expect(tableOf.get("covers")?.occupies).toEqual({ resource: "owner_id", day: "starts_on", until: "ends_on" });
     expect(ROLES.filter((key) => held(key, "covers").some((action) => action !== "read"))).toEqual(["admin", "sales-manager"]);
-    expect(limitOf("sales-manager", "covers")?.rows).toEqual({ update: { reach: "team" }, delete: { reach: "team" } });
+    expect(limitOf("sales-manager", "covers")?.rows).toEqual({ update: { reach: "team", by: "owner_id" }, delete: { reach: "team", by: "owner_id" } });
     // Everybody who holds the table still reads every cover.
     for (const key of ROLES) expect(limitOf(key, "covers")?.rows?.read, key).toBeUndefined();
   });
@@ -971,7 +975,8 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "marketer: deal_marks", "read-only: quotes", "read-only: covers"]);
+    // A rep and the account manager read of a colleague's deal what the marketer does: that a company has one, and its state.
+    expect(apart).toEqual(["rep: starters", "rep: covers", "rep: deal_marks", "account-manager: covers", "account-manager: deal_marks", "marketer: deal_marks", "read-only: quotes", "read-only: covers"]);
   });
 
   it("shows the marketer that a company has an open deal, and nothing of the deal", () => {

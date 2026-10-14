@@ -42,6 +42,7 @@ if (SURFACE_SIDE === "customer") {
     import("./styles/deal.css"),
     import("./styles/visits.css"),
     import("./styles/team.css"),
+    import("./styles/teamwork.css"),
   ]).then(([{ default: App }]) => {
     root.render(
       <StrictMode>

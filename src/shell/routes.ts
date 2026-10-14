@@ -220,7 +220,15 @@ export function canOpen(route: RouteKey, facts: MenuFacts): boolean {
  * "not part of your role", whatever tables they read. (What the server
  * refuses is a separate matter, and is the server's.)
  */
+/**
+ * Screens somebody reaches by a link and not from their menu, where the design gives their role no line for it:
+ * a new starter's own steps (a rep's), and Cover for whoever only reads it. What they may read there is the
+ * server's to say, as everywhere.
+ */
+const BY_LINK: ReadonlySet<RouteKey> = new Set<RouteKey>(["onboarding", "patch"]);
+
 export function inMenu(route: RouteKey, slugs: readonly string[]): boolean {
+  if (BY_LINK.has(route)) return true;
   // A screen reached from another and not from the menu (a deal's room, from the board or from Closed) is a role's when the screen it is reached from is.
   const held = [route, ...(LIT_BY[route] ?? [])];
   return rolesOf(slugs).some((role) => MENUS[role].some(([, items]) => items.some((item) => held.includes(item.route))));

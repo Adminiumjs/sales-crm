@@ -165,7 +165,8 @@ describe("what a state locks", () => {
     const locks = Object.fromEntries(tables.filter((one) => one.states?.lock !== undefined).map((one) => [one.ref, one.states!.lock!.when]));
     expect(locks).toEqual({ deals: ["won", "lost"], quotes: ["sent", "accepted", "declined", "withdrawn"], time_sheets: ["sent", "signed-off"] });
     const children = Object.fromEntries(tables.filter((one) => one.states?.children !== undefined).map((one) => [one.ref, Object.entries(one.states!.children!).map(([child, rule]) => `${child}${rule.lock === true ? " locked" : ""}${rule.createIn === undefined ? "" : ` made in ${rule.createIn.join(", ")}`}`)]));
-    expect(children).toEqual({ quotes: ["quote_lines locked"], jobs: ["sign_offs made in open, installed"], time_sheets: ["time_sheet_lines locked"] });
+    // On a closed deal nobody is added or taken off.
+    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked"], jobs: ["sign_offs made in open, installed"], time_sheets: ["time_sheet_lines locked"] });
   });
 });
 

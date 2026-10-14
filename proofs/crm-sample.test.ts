@@ -7,7 +7,8 @@ import { createSampleDataService, findSampleApp } from '../src/apps/sample-data.
 import type { FileStore } from '../src/files/store.js';
 import { LEGS, installInvoicing, writerFor, type InvoicingHarness } from './invoicing-install.helpers.js';
 
-const APP = `${process.env.HOME}/Work/lanes/p67-app`;
+// The app this copy of the proofs came from (`npm run proofs` names it), not a fixed lane.
+const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 // The sample the app ships, from the app's own repo.
 const SEEDS = process.env.CRM_SEEDS ?? `${APP}/whole/seeds`;
 const bundle = () => JSON.parse(readFileSync(`${SEEDS}/meridian.json`, 'utf8')) as { tables: { ref: string; rows: unknown[] }[] };
@@ -70,6 +71,11 @@ for (const [dialect, reachable] of LEGS) {
       expect(await n(`SELECT COUNT(*) AS n FROM ${deals} WHERE state = 'open' AND (closed_on IS NOT NULL OR cycle_days IS NOT NULL)`)).toBe(0);
       const cycle = (await h.rows(`SELECT SUM(cycle_days) AS s, MAX(cycle_days) AS m, COUNT(*) AS n FROM ${deals} WHERE state = 'won'`))[0]!;
       expect([Math.round(Number(cycle['s']) / Number(cycle['n'])), Number(cycle['m'])]).toEqual([54, 77]);
+      // Targets (ledger 14): what counts toward a target is ONE column the engine keeps, so the server can add it up for whoever reads it:
+      // a won deal's amount, an open deal's weighted value, nothing of a lost one. Open and won together: 156,562.50 + 130,000.
+      expect(await n(`SELECT COUNT(*) AS n FROM ${deals} WHERE target_value IS NULL OR (state = 'lost' AND target_value <> 0) OR (state = 'won' AND target_value <> amount) OR (state = 'open' AND target_value <> weighted_value)`)).toBe(0);
+      expect(Number((await h.rows(`SELECT SUM(target_value) AS s FROM ${deals}`))[0]!['s'])).toBe(286562.5);
+      expect(Number((await h.rows(`SELECT SUM(target_value) AS s FROM ${deals} WHERE owner_id = '${dana.id}' AND state = 'open'`))[0]!['s'])).toBe(95740);
       // S1: the five quoted deals stand at their newest SENT version.
       const quoted = await h.rows(`SELECT quoted_amount FROM ${deals} WHERE quoted_amount IS NOT NULL`);
       expect(quoted.map((r) => Number(r['quoted_amount'])).sort((a, b) => a - b)).toEqual([21500, 27500, 31000, 38000, 52800]);

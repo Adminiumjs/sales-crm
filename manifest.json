@@ -321,7 +321,13 @@
               ],
               "handOver": true
             }
-          ]
+          ],
+          "children": {
+            "deal_members": {
+              "via": "deal_id",
+              "lock": true
+            }
+          }
         },
         "columns": [
           {
@@ -824,6 +830,46 @@
               "ar-EG": "القيمة المرجّحة",
               "zh-CN": "加权金额",
               "zh-TW": "加權金額"
+            }
+          },
+          {
+            "ref": "target_value",
+            "type": "decimal",
+            "scale": "currency",
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "eq": [
+                      "state",
+                      "won"
+                    ]
+                  },
+                  "amount",
+                  {
+                    "if": [
+                      {
+                        "eq": [
+                          "state",
+                          "open"
+                        ]
+                      },
+                      "weighted_value",
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Counts toward the target",
+              "de-DE": "Zählt für das Ziel",
+              "fr-FR": "Compte pour l’objectif",
+              "da-DK": "Tæller mod målet",
+              "cs-CZ": "Počítá se do cíle",
+              "ar-EG": "يُحتسب ضمن الهدف",
+              "zh-CN": "计入目标的金额",
+              "zh-TW": "計入目標的金額"
             }
           },
           {
@@ -10466,6 +10512,12 @@
               "ar-EG": "حد الموافقة (%)",
               "zh-CN": "审批阈值（%）",
               "zh-TW": "核准門檻（%）"
+            },
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 50
+              }
             }
           },
           {
@@ -10481,6 +10533,12 @@
               "ar-EG": "صلاحية عرض السعر (أيام)",
               "zh-CN": "报价有效期（天）",
               "zh-TW": "報價有效期（天）"
+            },
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 365
+              }
             }
           },
           {
@@ -11687,8 +11745,6 @@
         },
         "comments": {
           "writable": [
-            "deal_id",
-            "parent_id",
             "text",
             "settled_by_id",
             "settled_at"
@@ -11972,10 +12028,12 @@
         "covers": {
           "rows": {
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "by": "owner_id"
             },
             "delete": {
-              "reach": "team"
+              "reach": "team",
+              "by": "owner_id"
             }
           }
         },
@@ -12113,7 +12171,6 @@
         "table:@visit_notes:read",
         "table:@visit_notes:create",
         "table:@visit_notes:update",
-        "table:@visit_notes:delete",
         "table:@visit_agreed:read",
         "table:@visit_agreed:create",
         "table:@visit_agreed:update",
@@ -12397,8 +12454,6 @@
         },
         "comments": {
           "writable": [
-            "deal_id",
-            "parent_id",
             "text",
             "settled_by_id",
             "settled_at"
@@ -12527,9 +12582,6 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
-            },
-            "delete": {
               "reach": "own"
             }
           }
@@ -12714,6 +12766,12 @@
             "cover_id",
             "starts_on",
             "ends_on"
+          ]
+        },
+        "deal_marks": {
+          "readable": [
+            "company_id",
+            "state"
           ]
         }
       }
@@ -12920,6 +12978,12 @@
             "cover_id",
             "starts_on",
             "ends_on"
+          ]
+        },
+        "deal_marks": {
+          "readable": [
+            "company_id",
+            "state"
           ]
         }
       }

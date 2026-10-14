@@ -13,7 +13,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test, type Who } from "./fixtures.ts";
-import { csrf, inArabic, removeDeals, rows, STAFF, watch } from "./helpers.ts";
+import { csrf, inArabic, removeDeals, rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
 
 type Stand = Who["stand"];
 
@@ -134,6 +134,7 @@ test("the CRM admin and Read-only land on the Team view; Read-only has no button
   await expect(rep(tessa, "Dana").getByRole("link", { name: "One-to-one" })).toBeVisible();
   await expect(tessa.locator(".crm-tm-longest").getByRole("link", { name: "Stage health" })).toBeVisible();
   // The admin's Nudges sits under Settings, as "Nudge rules".
+  await unfoldMenu(tessa);
   await expect(tessa.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Nudge rules" })).toHaveCount(1);
 
   const grace = await (await as("grace")).newPage();
