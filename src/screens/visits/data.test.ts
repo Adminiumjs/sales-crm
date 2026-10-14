@@ -71,6 +71,12 @@ describe("a move's old day, who and when, from the record's history", () => {
     // The same moment written two ways is no move.
     expect(await lastMove(session([entry(1, "Dana", { before: { starts_at: "2026-07-30 14:15:00+00" }, after: { starts_at: "2026-07-30T14:15:00.000Z" } } as never)]), 7)).toBeNull();
   });
+
+  it("reads no further than the visit's own making: an earlier visit that had the same number (SQLite gives it again) moved nothing of this one", async () => {
+    const made = { ...entry(2, "Dana", { after: { starts_at: "2026-07-30T14:15:00Z" } } as never), action: "record.create" };
+    const before = entry(1, "Ivy", { before: { starts_at: "2026-07-20T09:00:00Z" }, after: { starts_at: "2026-07-21T09:00:00Z" } } as never);
+    expect(await lastMove(session([made, before]), 7)).toBeNull();
+  });
 });
 
 describe("a cancel: the why, then the row is removed", () => {

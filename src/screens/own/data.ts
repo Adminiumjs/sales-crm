@@ -196,6 +196,10 @@ export interface Schedule {
   digestDay: number | null;
   digestTime: string | null;
   fallbackTimezone: string;
+  /** Quiet hours switched on; off keeps the hours for when they are on again (absent: an older server, on). */
+  quietOn?: boolean;
+  /** "Not me": no rule's summary is made for her; the day and time are kept (absent: an older server, on). */
+  summariesOn?: boolean;
 }
 
 export const readTold = (session: StaffSession): Promise<Told> => session.call<{ data: Told }>("GET", "/me/notification-prefs").then((doc) => doc.data);
@@ -242,19 +246,23 @@ export interface Quiet {
   mixed: boolean;
 }
 const DAYS = ["0", "1", "2", "3", "4", "5", "6"] as const;
-export function quietOf(schedule: Pick<Schedule, "quiet">): Quiet {
+export function quietOf(schedule: Pick<Schedule, "quiet" | "quietOn">): Quiet {
   const held = schedule.quiet === null ? [] : DAYS.map((day) => schedule.quiet![day]).filter((one): one is { from: string; to: string } => one !== undefined);
   const first = held[0];
   if (first === undefined) return { on: false, from: "18:30", to: "08:00", mixed: false };
-  return { on: true, from: first.from, to: first.to, mixed: held.length !== DAYS.length || held.some((one) => one.from !== first.from || one.to !== first.to) };
+  // Switched off, the hours are kept by the server: shown, ready for when she switches them on again.
+  return { on: schedule.quietOn !== false, from: first.from, to: first.to, mixed: held.length !== DAYS.length || held.some((one) => one.from !== first.from || one.to !== first.to) };
 }
-export const quietFor = (quiet: Pick<Quiet, "on" | "from" | "to">): Schedule["quiet"] => (quiet.on ? Object.fromEntries(DAYS.map((day) => [day, { from: quiet.from, to: quiet.to }])) : null);
+/** The hours as the server keeps them: every day the same, kept whether they are on or off (the switch says which). */
+export const quietFor = (quiet: Pick<Quiet, "from" | "to">): Schedule["quiet"] => Object.fromEntries(DAYS.map((day) => [day, { from: quiet.from, to: quiet.to }]));
 
 export interface ToldChoice {
   kinds: Partial<Record<Kind, { inApp: boolean; email: boolean }>>;
   quiet: Pick<Quiet, "on" | "from" | "to">;
   digestDay: number | null;
   digestTime: string | null;
+  /** False: "not me", no summary is made for her. */
+  summariesOn: boolean;
 }
 
 /**
@@ -264,7 +272,7 @@ export interface ToldChoice {
  */
 export async function saveTold(session: StaffSession, was: { told: Told; schedule: Schedule }, choice: ToldChoice): Promise<{ state: "saved"; told: Told; schedule: Schedule } | { state: "refused"; error: StaffError } | { state: "unknown" }> {
   const events = (Object.keys(choice.kinds) as Kind[]).map((key) => ({ key, channels: { ...channelsOf(was.told, key), ...choice.kinds[key] } }));
-  const hours = { timezone: was.schedule.timezone, quiet: quietFor(choice.quiet), digestDay: choice.digestDay, digestTime: choice.digestTime };
+  const hours = { timezone: was.schedule.timezone, quiet: quietFor(choice.quiet), quietOn: choice.quiet.on, digestDay: choice.digestDay, digestTime: choice.digestTime, summariesOn: choice.summariesOn };
   const once = async (): Promise<{ told: Told; schedule: Schedule }> => {
     const told = events.length === 0 ? was.told : (await session.call<{ data: Told }>("PUT", "/me/notification-prefs", { events })).data;
     const schedule = (await session.call<{ data: Schedule }>("PUT", "/me/notification-schedule", hours)).data;

@@ -50,6 +50,10 @@
   white-space: nowrap;
   color: var(--fg-muted);
 }
+/* The muted colour is the ghost kind's; a small primary button keeps the accent's own. */
+.crm-btn-32.crm-btn-primary {
+  color: var(--accent-fg);
+}
 .crm-mono {
   font-family: var(--font-mono);
   direction: ltr;

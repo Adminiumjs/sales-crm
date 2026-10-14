@@ -70,12 +70,13 @@ describe("how she is told, as Adminium keeps it", () => {
   });
   it("holds quiet hours as one stretch, and says when the server holds several", () => {
     expect(quietOf({ quiet: null })).toEqual({ on: false, from: "18:30", to: "08:00", mixed: false });
-    const same = quietFor({ on: true, from: "19:00", to: "07:30" });
+    const same = quietFor({ from: "19:00", to: "07:30" });
     expect(Object.keys(same ?? {})).toEqual(["0", "1", "2", "3", "4", "5", "6"]);
     expect(quietOf({ quiet: same })).toEqual({ on: true, from: "19:00", to: "07:30", mixed: false });
     expect(quietOf({ quiet: { "1": { from: "19:00", to: "07:30" } } }).mixed).toBe(true);
     expect(quietOf({ quiet: { ...same, "6": { from: "12:00", to: "23:00" } } }).mixed).toBe(true);
-    expect(quietFor({ on: false, from: "19:00", to: "07:30" })).toBeNull();
+    // Switched off, the server keeps the hours: shown as they were, off.
+    expect(quietOf({ quiet: same, quietOn: false })).toEqual({ on: false, from: "19:00", to: "07:30", mixed: false });
   });
   it("writes a language the way each side keeps it", () => {
     expect(toServerLocale("zh-TW")).toBe("zh_TW");

@@ -258,6 +258,8 @@ export interface Moved {
 export async function lastMove(session: StaffSession, id: number): Promise<Moved | null> {
   const { entries } = await session.history("showroom_bookings", id, { limit: 50 });
   for (const entry of entries as (Omit<HistoryEntry, "createdAt"> & { createdAt: string | number })[]) {
+    // Newest first: past this row's own making, the entries are of an earlier row that had the same number (SQLite gives a removed row's number again).
+    if (/create|insert/i.test(entry.action)) break;
     const changes = entry.changes as { before?: Record<string, unknown>; after?: Record<string, unknown> } | null;
     const before = changes?.before;
     if (before === undefined || before === null || !("starts_at" in before) || before["starts_at"] === null) continue;

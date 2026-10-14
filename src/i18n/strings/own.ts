@@ -279,6 +279,7 @@ export const own = tables({
   "told.digest.body": ["One e-mail a week with what is yours: the deals closing and the follow-ups due.", "Eine E-Mail pro Woche mit dem, was Ihnen gehört: Deals vor dem Abschluss und fällige Follow-ups.", "Un e-mail par semaine avec ce qui est à vous : les affaires à signer et les relances à faire.", "Én e-mail om ugen med det, der er dit: de deals, der lukker, og de opfølgninger, der forfalder.", "Jeden e-mail týdně s tím, co je vaše: končící obchody a splatné kroky.", "每周一封邮件，写的是属于你的内容：即将成交的商机和到期的跟进。", "每週一封郵件，寫的是屬於你的內容：即將成交的案件和到期的跟進。", "بريد واحد في الأسبوع بما يخصك: الصفقات التي تُغلق والمتابعات المستحقة."],
   "told.digest.day": ["Which day", "Welcher Tag", "Quel jour", "Hvilken dag", "Který den", "哪一天", "哪一天", "أي يوم"],
   "told.digest.rule": ["As the rule is set", "Wie in der Regel", "Comme la règle", "Som reglen er sat", "Podle pravidla", "按规则设定", "依規則設定", "كما في القاعدة"],
+  "told.digest.none": ["Not me", "Nicht an mich", "Pas pour moi", "Ikke til mig", "Ne mně", "不发给我", "不發給我", "مش ليا"],
   "told.digest.time": ["At what time", "Um welche Uhrzeit", "À quelle heure", "På hvilket tidspunkt", "V kolik hodin", "几点", "幾點", "في أي وقت"],
   "told.digest.see": ["See it", "Ansehen", "Le voir", "Se den", "Zobrazit", "查看", "查看", "اعرضه"],
   "told.save": ["Save how I am told", "Speichern, wie ich benachrichtigt werde", "Enregistrer mes notifications", "Gem, hvordan jeg får besked", "Uložit, jak se to dozvím", "保存通知方式", "儲存通知方式", "احفظ طريقة إبلاغي"],

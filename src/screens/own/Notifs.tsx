@@ -67,6 +67,7 @@ function Form(props: { told: Told; schedule: Schedule; summaries: Summary[] }) {
     quiet: quietOf(from.schedule),
     digestDay: from.schedule.digestDay,
     digestTime: from.schedule.digestTime,
+    summariesOn: from.schedule.summariesOn !== false,
   });
   const [choice, setHeldChoice] = useState<ToldChoice>(() => start({ told: props.told, schedule: props.schedule }));
   const [busy, setBusy] = useState(false);
@@ -194,20 +195,24 @@ function Form(props: { told: Told; schedule: Schedule; summaries: Summary[] }) {
             <h2 id="crm-told-digest">{t("told.digest")}</h2>
             <p>{t("told.digest.body")}</p>
             <div className="crm-chips" role="group" aria-label={t("told.digest.day")}>
-              <button type="button" className="crm-chip-btn mr-chip" aria-pressed={choice.digestTime === null} data-day="rule" disabled={busy} onClick={() => setChoice((was) => ({ ...was, digestDay: null, digestTime: null }))}>
+              <button type="button" className="crm-chip-btn mr-chip" aria-pressed={choice.summariesOn && choice.digestTime === null} data-day="rule" disabled={busy} onClick={() => setChoice((was) => ({ ...was, summariesOn: true, digestDay: null, digestTime: null }))}>
                 {t("told.digest.rule")}
               </button>
               {WEEK.map((day) => (
-                <button key={day} type="button" className="crm-chip-btn mr-chip" aria-pressed={choice.digestTime !== null && choice.digestDay === day} data-day={day} disabled={busy} onClick={() => setChoice((was) => ({ ...was, digestDay: day, digestTime: was.digestTime ?? "07:00" }))}>
+                <button key={day} type="button" className="crm-chip-btn mr-chip" aria-pressed={choice.summariesOn && choice.digestTime !== null && choice.digestDay === day} data-day={day} disabled={busy} onClick={() => setChoice((was) => ({ ...was, summariesOn: true, digestDay: day, digestTime: was.digestTime ?? "07:00" }))}>
                   {f.weekdayShort(noonOf(`2026-03-0${String(1 + day)}`))}
                 </button>
               ))}
+              {/* "Not me": the day and time she chose are kept by the server for when she wants it again. */}
+              <button type="button" className="crm-chip-btn mr-chip" aria-pressed={!choice.summariesOn} data-day="none" disabled={busy} onClick={() => setChoice((was) => ({ ...was, summariesOn: false }))}>
+                {t("told.digest.none")}
+              </button>
             </div>
             <div className="crm-told-times">
               <label className="crm-sr" htmlFor="crm-digest-time">
                 {t("told.digest.time")}
               </label>
-              <input id="crm-digest-time" className="crm-input crm-mono mr-fld" type="time" value={choice.digestTime ?? ""} disabled={busy || choice.digestTime === null} onChange={(event) => setChoice((was) => ({ ...was, digestTime: event.target.value === "" ? was.digestTime : event.target.value }))} />
+              <input id="crm-digest-time" className="crm-input crm-mono mr-fld" type="time" value={choice.digestTime ?? ""} disabled={busy || choice.digestTime === null || !choice.summariesOn} onChange={(event) => setChoice((was) => ({ ...was, digestTime: event.target.value === "" ? was.digestTime : event.target.value }))} />
               {isBuilt("digest") && (
                 <ScreenLink to="digest" className="crm-btn crm-btn-ghost crm-btn-40 mr-gi">
                   <Icon name="mail" />

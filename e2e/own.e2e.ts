@@ -336,13 +336,13 @@ test("saving how I am told: Adminium holds it, a lost reply is sent again, and i
   const context = await as("leo");
   const page = await context.newPage();
   const headers = await csrf(context.request);
-  const read = async (): Promise<{ events: { key: string; channels: { inApp: boolean; email: boolean } }[]; schedule: { quiet: Record<string, { from: string; to: string }> | null; digestDay: number | null; digestTime: string | null } }> => ({
+  const read = async (): Promise<{ events: { key: string; channels: { inApp: boolean; email: boolean } }[]; schedule: { quiet: Record<string, { from: string; to: string }> | null; digestDay: number | null; digestTime: string | null; quietOn?: boolean; summariesOn?: boolean } }> => ({
     events: ((await (await context.request.get("/api/v1/me/notification-prefs")).json()) as { data: { events: { key: string; channels: { inApp: boolean; email: boolean } }[] } }).data.events,
-    schedule: ((await (await context.request.get("/api/v1/me/notification-schedule")).json()) as { data: { quiet: Record<string, { from: string; to: string }> | null; digestDay: number | null; digestTime: string | null } }).data,
+    schedule: ((await (await context.request.get("/api/v1/me/notification-schedule")).json()) as { data: { quiet: Record<string, { from: string; to: string }> | null; digestDay: number | null; digestTime: string | null; quietOn?: boolean; summariesOn?: boolean } }).data,
   });
   const putBack = async (): Promise<void> => {
     await context.request.put("/api/v1/me/notification-prefs", { data: { events: [{ key: "mention", channels: { inApp: true, email: true, push: false } }, { key: "automation.notice", channels: { inApp: true, email: true, push: false } }] }, headers });
-    await context.request.put("/api/v1/me/notification-schedule", { data: { timezone: null, quiet: null, digestDay: null, digestTime: null }, headers });
+    await context.request.put("/api/v1/me/notification-schedule", { data: { timezone: null, quiet: null, digestDay: null, digestTime: null, quietOn: true, summariesOn: true }, headers });
   };
   await putBack();
   try {
@@ -390,6 +390,19 @@ test("saving how I am told: Adminium holds it, a lost reply is sent again, and i
     await page.goto(`${STAFF}notifications`);
     await expect(byMail).toHaveAttribute("aria-checked", "false");
     await expect(quiet).toHaveText("Quiet hours are on");
+    // Quiet hours switched off keep their hours on the server; "Not me" keeps the day and time she chose.
+    await quiet.click();
+    await expect(quiet).toHaveText("Quiet hours are off");
+    await page.getByTestId("told-digest").locator('[data-day="none"]').click();
+    await expect(page.getByTestId("told-digest").locator('[data-day="none"]')).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("told-save").click();
+    await expect(page.locator(".crm-toast")).toHaveText("Saved.");
+    const kept = (await read()).schedule;
+    expect([kept.quietOn, kept.summariesOn, kept.quiet?.["3"], kept.digestDay, kept.digestTime]).toEqual([false, false, { from: "18:30", to: "08:00" }, 5, "08:00"]);
+    await page.goto(`${STAFF}notifications`);
+    await expect(quiet).toHaveText("Quiet hours are off");
+    await expect(page.getByLabel("Quiet from")).toHaveValue("18:30");
+    await expect(page.getByTestId("told-digest").locator('[data-day="none"]')).toHaveAttribute("aria-pressed", "true");
     await page.getByTestId("told-off").click();
     await expect(page.locator(".crm-screen-sub")).toContainText("0 of 4 switches are on.");
     await page.getByTestId("told-save").click();

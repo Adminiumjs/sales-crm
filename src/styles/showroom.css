@@ -29,11 +29,6 @@
   --sh-tint-soft: var(--danger-soft);
 }
 
-/* A small primary button keeps its own colour (`.crm-btn-32` sets the muted one for the ghost kind). */
-.crm-sh .crm-btn-primary {
-  color: var(--accent-fg);
-}
-
 .crm-sh-note {
   margin-block-start: 7px;
   font-size: 11.5px;
