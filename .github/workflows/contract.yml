@@ -13,10 +13,7 @@
 #            (`e2e/stand.mjs`), on SQLite. The other two engines are walked at
 #            a release's gate, not on every push.
 #
-# UNTIL ADMINIUM 0.3.28 IS RELEASED the manifest asks for a version no tag
-# has, so the engine is taken from its branch and told to say 0.3.28
-# (`CRM_STAND_VERSION`; the proofs do the same for themselves). At the release
-# `ADMINIUM_REF` becomes the tag and that variable goes.
+# The engine is the released tag the manifest asks for at least.
 
 name: contract
 
@@ -27,9 +24,8 @@ on:
   workflow_dispatch:
 
 env:
-  ADMINIUM_REF: plan-67-core
+  ADMINIUM_REF: v0.3.28
   ADD_ONS_REF: v1.0.12
-  CRM_STAND_VERSION: 0.3.28
 
 jobs:
   contract:
