@@ -24,6 +24,7 @@
  */
 import { leadRole } from "../../shell/roles.ts";
 import type { Condition, Grouped, ListQuery, Measure, Page, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 
 export const num = (value: unknown): number => (typeof value === "number" ? value : Number(value) || 0);
 
@@ -91,7 +92,7 @@ export const typed = (columns: readonly string[], q: string): Condition | undefi
 
 const grouped = (figure: Grouped): Record<string, number> => {
   const out: Record<string, number> = {};
-  for (const item of figure.items) if (item.key !== null && item.key !== "") out[String(item.key)] = num(item.values?.["n"] ?? item.value);
+  for (const item of figure.items) if (!noValue(item.key)) out[String(item.key)] = num(item.values?.["n"] ?? item.value);
   return out;
 };
 

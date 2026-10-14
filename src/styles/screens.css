@@ -568,6 +568,10 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+/* A person's initials in a picked chip: on the surface, not on a second tint (4.36:1, axe, P18). */
+.crm-chip-btn[aria-pressed="true"] .crm-avatar {
+  background: var(--surface);
+}
 .crm-avatar-sm {
   inline-size: 20px;
   block-size: 20px;

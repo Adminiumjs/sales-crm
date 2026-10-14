@@ -47,9 +47,14 @@ test("the account manager lands on his home: renewals coming up and introduction
   await expect(page.locator('[data-screen="amhome"]')).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Good (morning|afternoon), Hugo\.$/);
   await expect(page.locator(".crm-now")).toContainText("Tuesday, July 28, 2026");
-  // His menu, as the design gives it at this stage.
+  // His menu holds the stage-1 lines the design gives him, in this order; a later stage adds its own (After the job) between
+  // them, so the menu is not read as an exact list. None of a rep's or a manager's lines is his.
   await unfoldMenu(page);
-  await expect(menu(page).getByRole("link")).toHaveText(["Home", "Renewals", "Repeat orders", "Referrals", "Won deals", "Companies", "Contacts"]);
+  await expect(menu(page).getByRole("link", { name: "Contacts", exact: true })).toBeVisible();
+  const lines = (await menu(page).getByRole("link").allInnerTexts()).map((text) => text.trim());
+  const his = ["Home", "Renewals", "Repeat orders", "Referrals", "Won deals", "Companies", "Contacts"];
+  expect(lines.filter((line) => his.includes(line))).toEqual(his);
+  for (const theirs of ["Today", "Pipeline", "Quotes", "Approvals", "Team view", "Team inbox"]) expect(lines, theirs).not.toContain(theirs);
 
   // The figures, asked of the server as Hugo.
   const ideas = await single(hugo, stand, "renewals", IDEA);

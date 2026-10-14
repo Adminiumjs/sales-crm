@@ -20,6 +20,7 @@
  * Environment: ADMINIUM_REPO (built: `apps/server/dist`, `apps/dashboard/dist`),
  * ADD_ONS_REPO (built: `packages/invoices`, `packages/inventory`),
  * CRM_STAND_PORT (default 4774), CRM_STAND_ENGINE (sqlite | postgres | mysql),
+ * CRM_STAND_ADD_ONS (the add-ons staged and attached: `invoices,inventory` unless set; `none` for neither),
  * CRM_STAND_STAGE (which stage of the app to install: the released one unless set),
  * CRM_STAND_VERSION (the version the server says, while the engine is unreleased),
  * CRM_STAND_NOW (the moment the sample is added at; the ledger's, unless set;
@@ -327,9 +328,11 @@ export async function standUp() {
     // Money is the install's currency: the stand's business keeps its books in pounds.
     await call("the currency", "PATCH", `/api/v1/connections/${state.connectionId}`, { currency: process.env.CRM_STAND_CURRENCY ?? "GBP" });
 
-    // The add-ons as they are built in their checkout. Inventory is optional: Supply waits for it.
+    // The add-ons as they are built in their checkout. Inventory is optional: Supply waits for it. `CRM_STAND_ADD_ONS` names the
+    // ones to stage (`none` for none): an install without Invoices and Inventory is the smaller app, Quotes and Supply left out.
     const staged = [];
-    for (const key of ["invoices", "inventory"]) {
+    const wanted = (process.env.CRM_STAND_ADD_ONS ?? "invoices,inventory").split(",").map((one) => one.trim()).filter((one) => one !== "" && one !== "none");
+    for (const key of ["invoices", "inventory"].filter((one) => wanted.includes(one))) {
       const dir = join(addOnsRepo, "packages", key);
       if (!existsSync(join(dir, "manifest.json"))) continue;
       const packDir = mkdtempSync(join(tmpdir(), "crm-stand-pack-"));

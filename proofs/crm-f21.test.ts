@@ -138,21 +138,15 @@ for (const [dialect, reachable] of LEGS) {
 
     it('of three moves before the rules run, all three are written, each true: the oldest is no longer lost (decision 131)', async () => {
       /*
-       * MySQL keeps a moment to the whole second, and Adminium takes two changes of a row that carry the same moment of
-       * change as ONE occurrence of a rule (the run for the later change is not queued). Two moves within one second are
-       * still both written (the first run reads the deal's last move and the one before it); of three within one second,
-       * the oldest is lost, as no run is left whose "before" holds it. Not the app's to change; said in the report. So on
-       * MySQL the moves here are a second apart (still all before the rules run); on SQLite and Postgres they follow at once.
+       * The moves follow at once, on every engine. MySQL keeps a moment to the whole second, so the three changes carry
+       * the same moment of change; Adminium makes each change it writes its own occurrence of a rule all the same (engine
+       * `c29f6e633`, "each change Adminium writes is its own run"), so no move's "before" is lost. Until then MySQL needed
+       * the moves a second apart; the wait is gone because this passes without it.
        */
-      const apart = async (): Promise<void> => {
-        if (dialect === 'mysql') await new Promise((done) => setTimeout(done, 1100));
-      };
       const deal = await makeDeal('dana', 'Lockers', 'dana');
       await jobs();
       expect(said(await s.change('dana', 'deals', deal, { stage_id: stage['b'] }))).toBe('ok');
-      await apart();
       expect(said(await s.change('ivy', 'deals', deal, { stage_id: stage['c'] }))).toBe('ok');
-      await apart();
       expect(said(await s.change('dana', 'deals', deal, { stage_id: stage['a'] }))).toBe('ok');
       await jobs();
       // Each move's run reads the deal as it was before that move: the run of the second move writes the first.
@@ -176,8 +170,7 @@ for (const [dialect, reachable] of LEGS) {
       await jobs();
       for (const [who, to] of [['dana', 'b'], ['ivy', 'c'], ['dana', 'a'], ['ivy', 'b'], ['dana', 'c']] as const) {
         expect(said(await s.change(who, 'deals', many, { stage_id: stage[to] }))).toBe('ok');
-        await apart();
-      }
+        }
       await jobs();
       expect(sorted(await history(many))).toEqual(sorted([
         [null, stage['a'], s.ids['dana']],
@@ -281,8 +274,14 @@ for (const [dialect, reachable] of LEGS) {
       expect(cancelled!.subject).toMatch(/^Your visit on .+ is cancelled$/);
       expect(cancelled!.text).toContain('will not take place');
       expect(cancelled!.text).toContain('Leave two sample chairs with the ward team');
-      // No mail carries a number of ours, a stage or the placeholder it was written with.
-      for (const mail of mails) expect(`${mail.subject} ${mail.text}`).not.toMatch(/\{\{|Qualified|Proposal|Negotiation/);
+      // Each names the rep who comes, by the people list's name and nothing else of them (never their address); the
+      // cancellation from what the message kept. (An empty name leaves the line out: the engine's outbox-staff-name test.)
+      expect(confirmed!.text).toContain('Your visit is with Dana.');
+      expect(moved!.text).toContain('Your visit is with Dana.');
+      expect(cancelled!.text).toContain('The visit was to be with Dana.');
+      expect(String(all[2]!['was'])).toContain(s.ids['dana']!);
+      // No mail carries a number of ours, a stage, a colleague's address or the placeholder it was written with.
+      for (const mail of mails) expect(`${mail.subject} ${mail.text}`).not.toMatch(/\{\{|Qualified|Proposal|Negotiation|dana@/);
     });
 
     it('a visit moved and then cancelled within the quarter-hour tells the customer it is cancelled, not that it moved', async () => {

@@ -348,10 +348,18 @@ describe("the e-mails the app ships", () => {
     // The quote: the deal's name, what it comes to, until when, and the button that opens the customer's page.
     expect(shape("crm-quote-sent")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.button", "email.text"]);
     expect(shape("crm-quote-accepted")).toEqual(["email.heading", "email.text", "email.text"]);
-    // A visit: day, time, where, what for. No button: a mail client drops a calendar file made in the page.
-    expect(shape("crm-visit-confirmed")).toEqual(["email.heading", "email.text", "email.tax-breakdown"]);
-    expect(shape("crm-visit-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown"]);
-    expect(shape("crm-visit-cancelled")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
+    // A visit: who comes (only when the rep can be named), day, time, where, what for. No button: a mail client drops a calendar file made in the page.
+    expect(shape("crm-visit-confirmed")).toEqual(["email.heading", "email.text", "email.text", "email.tax-breakdown"]);
+    expect(shape("crm-visit-moved")).toEqual(["email.heading", "email.text", "email.text", "email.tax-breakdown"]);
+    expect(shape("crm-visit-cancelled")).toEqual(["email.heading", "email.text", "email.text", "email.tax-breakdown", "email.text"]);
+    // The rep is named by the people list's name, never their address; somebody suspended or removed reads empty and the line is left out.
+    for (const [key, name] of [["crm-visit-confirmed", "visit.rep_id.name"], ["crm-visit-moved", "visit.rep_id.name"], ["crm-visit-cancelled", "was.rep_id.name"]] as const) {
+      for (const locale of LOCALES) {
+        const block = m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks[2]!;
+        expect((block.data as { onlyWith?: string }).onlyWith, `${key} ${locale}`).toBe(name);
+        expect(block.data.text, `${key} ${locale}`).toContain(`{{${name}}}`);
+      }
+    }
     // A showroom booking (P19): day, time, space, how many; what they come to see and where the showroom is, each only when it is known.
     expect(shape("crm-showroom-confirmed")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.text"]);
     expect(shape("crm-showroom-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
@@ -458,7 +466,7 @@ describe("a site visit tells the customer", () => {
     // Each move is told, with the time the visit had; a change of its length or its purpose is not a move.
     expect(producer("visit-moved")).toEqual({ kind: "visit-moved", module: "selling", link: "visit_id", gate: told, onChange: { table: "site_visits", columns: ["starts_at"], changed: true, where: booked }, batchMinutes: 15, was: ["starts_at"], replyTo: { staff: "rep_id" } });
     // A cancel removes the visit, so the mail reads what the message kept. A visit already made is removed by nobody.
-    expect(producer("visit-cancelled")).toEqual({ kind: "visit-cancelled", module: "selling", link: "visit_id", gate: told, onDelete: { table: "site_visits", where: booked }, was: ["starts_at", "purpose"] });
+    expect(producer("visit-cancelled")).toEqual({ kind: "visit-cancelled", module: "selling", link: "visit_id", gate: told, onDelete: { table: "site_visits", where: booked }, was: ["starts_at", "purpose", "rep_id"] });
     expect(m.outbox.links["visit"]).toBe("visit_id");
     expect(m.outbox.columns["was"]).toBe("was");
     const column = (table: string, ref: string) => m.requiredSchema.tables.find((one) => one.ref === table)!.columns.find((one) => one.ref === ref)!;

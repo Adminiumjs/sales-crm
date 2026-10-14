@@ -1006,7 +1006,8 @@
               "ar-EG": "المبلغ المُدخل",
               "zh-CN": "手填金额",
               "zh-TW": "手動輸入金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "quoted_amount",
@@ -1093,7 +1094,8 @@
               "ar-EG": "القيمة بسعر القائمة",
               "zh-CN": "目录价金额",
               "zh-TW": "牌價金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "stage_odds",
@@ -1139,7 +1141,8 @@
               "ar-EG": "القيمة المرجّحة",
               "zh-CN": "加权金额",
               "zh-TW": "加權金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "target_value",
@@ -1179,7 +1182,8 @@
               "ar-EG": "يُحتسب ضمن الهدف",
               "zh-CN": "计入目标的金额",
               "zh-TW": "計入目標的金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "closed_team",
@@ -2074,7 +2078,8 @@
               "validation": {
                 "min": 0
               }
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "active",
@@ -2429,7 +2434,8 @@
               "ar-EG": "مبلغ الضريبة",
               "zh-CN": "税额",
               "zh-TW": "稅額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "total",
@@ -2721,7 +2727,8 @@
               "ar-EG": "القيمة بسعر القائمة",
               "zh-CN": "目录价金额",
               "zh-TW": "牌價金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "under_list_pct",
@@ -2809,7 +2816,8 @@
               "ar-EG": "القيمة بلا سعر قائمة",
               "zh-CN": "无目录价的金额",
               "zh-TW": "無牌價的金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "threshold_pct",
@@ -3029,7 +3037,8 @@
               "ar-EG": "القيمة المعتمدة بلا سعر قائمة",
               "zh-CN": "已批准的无目录价金额",
               "zh-TW": "已核准的無牌價金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "may_send",
@@ -3821,7 +3830,8 @@
               "ar-EG": "السعر",
               "zh-CN": "单价",
               "zh-TW": "單價"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "discount_kind",
@@ -4025,7 +4035,8 @@
                 "from": "list_rate",
                 "mode": "always"
               }
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "list_amount",
@@ -6811,7 +6822,8 @@
               "ar-EG": "القيمة التقديرية",
               "zh-CN": "预估金额",
               "zh-TW": "預估金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "due_on",
@@ -9144,7 +9156,8 @@
               "ar-EG": "هدف السنة الأولى",
               "zh-CN": "首年目标",
               "zh-TW": "首年目標"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "user_id",
@@ -9956,7 +9969,8 @@
               "ar-EG": "القيمة التقديرية",
               "zh-CN": "预估金额",
               "zh-TW": "預估金額"
-            }
+            },
+            "semantic": "money"
           },
           {
             "ref": "town",
@@ -16755,7 +16769,8 @@
         },
         "was": [
           "starts_at",
-          "purpose"
+          "purpose",
+          "rep_id"
         ]
       },
       {
@@ -20385,7 +20400,8 @@
         "visit.starts_at.day_month",
         "visit.time_range",
         "visit.purpose",
-        "deal.company.name"
+        "deal.company.name",
+        "visit.rep_id.name"
       ],
       "locales": {
         "en-US": {
@@ -20401,6 +20417,13 @@
               "block": "email.text",
               "data": {
                 "text": "Hello {{recipient.first_name}}, we will visit you on {{visit.starts_at.date}} at {{visit.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Your visit is with {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20445,6 +20468,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "Zu Ihnen kommt {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -20483,6 +20513,13 @@
               "block": "email.text",
               "data": {
                 "text": "Bonjour {{recipient.first_name}}, nous viendrons vous voir le {{visit.starts_at.date}} à {{visit.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Vous recevrez la visite de {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20527,6 +20564,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "Besøget er med {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -20565,6 +20609,13 @@
               "block": "email.text",
               "data": {
                 "text": "Dobrý den, {{recipient.first_name}}, navštívíme vás {{visit.starts_at.date}} v {{visit.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Přijede za vámi {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20609,6 +20660,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "ستكون الزيارة مع {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -20647,6 +20705,13 @@
               "block": "email.text",
               "data": {
                 "text": "{{recipient.first_name}}，您好，我们将于 {{visit.starts_at.date}} {{visit.starts_at.time}} 上门拜访。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "本次拜访由 {{visit.rep_id.name}} 负责。",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20691,6 +20756,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "本次拜訪由 {{visit.rep_id.name}} 負責。",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -20729,7 +20801,8 @@
         "visit.purpose",
         "was.starts_at.date",
         "was.starts_at.time",
-        "deal.company.name"
+        "deal.company.name",
+        "visit.rep_id.name"
       ],
       "locales": {
         "en-US": {
@@ -20745,6 +20818,13 @@
               "block": "email.text",
               "data": {
                 "text": "Hello {{recipient.first_name}}, the visit that was on {{was.starts_at.date}} at {{was.starts_at.time}} has been moved."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Your visit is with {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20793,6 +20873,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "Zu Ihnen kommt {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -20835,6 +20922,13 @@
               "block": "email.text",
               "data": {
                 "text": "Bonjour {{recipient.first_name}}, la visite prévue le {{was.starts_at.date}} à {{was.starts_at.time}} a été déplacée."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Vous recevrez la visite de {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20883,6 +20977,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "Besøget er med {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -20925,6 +21026,13 @@
               "block": "email.text",
               "data": {
                 "text": "Dobrý den, {{recipient.first_name}}, návštěva plánovaná na {{was.starts_at.date}} v {{was.starts_at.time}} byla přesunuta."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Přijede za vámi {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -20973,6 +21081,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "ستكون الزيارة مع {{visit.rep_id.name}}.",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -21015,6 +21130,13 @@
               "block": "email.text",
               "data": {
                 "text": "{{recipient.first_name}}，您好，原定 {{was.starts_at.date}} {{was.starts_at.time}} 的拜访已改期。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "本次拜访由 {{visit.rep_id.name}} 负责。",
+                "onlyWith": "visit.rep_id.name"
               }
             },
             {
@@ -21063,6 +21185,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "本次拜訪由 {{visit.rep_id.name}} 負責。",
+                "onlyWith": "visit.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -21103,7 +21232,8 @@
         "was.starts_at.time",
         "was.starts_at.day_month",
         "was.purpose",
-        "deal.company.name"
+        "deal.company.name",
+        "was.rep_id.name"
       ],
       "locales": {
         "en-US": {
@@ -21119,6 +21249,13 @@
               "block": "email.text",
               "data": {
                 "text": "Hello {{recipient.first_name}}, the visit on {{was.starts_at.date}} at {{was.starts_at.time}} will not take place."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "The visit was to be with {{was.rep_id.name}}.",
+                "onlyWith": "was.rep_id.name"
               }
             },
             {
@@ -21169,6 +21306,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "Der Termin war mit {{was.rep_id.name}} geplant.",
+                "onlyWith": "was.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -21213,6 +21357,13 @@
               "block": "email.text",
               "data": {
                 "text": "Bonjour {{recipient.first_name}}, la visite du {{was.starts_at.date}} à {{was.starts_at.time}} n’aura pas lieu."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "La visite était prévue avec {{was.rep_id.name}}.",
+                "onlyWith": "was.rep_id.name"
               }
             },
             {
@@ -21263,6 +21414,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "Besøget skulle have været med {{was.rep_id.name}}.",
+                "onlyWith": "was.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -21307,6 +21465,13 @@
               "block": "email.text",
               "data": {
                 "text": "Dobrý den, {{recipient.first_name}}, návštěva {{was.starts_at.date}} v {{was.starts_at.time}} se neuskuteční."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Kdo měl přijet: {{was.rep_id.name}}.",
+                "onlyWith": "was.rep_id.name"
               }
             },
             {
@@ -21357,6 +21522,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "كانت الزيارة مع {{was.rep_id.name}}.",
+                "onlyWith": "was.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -21404,6 +21576,13 @@
               }
             },
             {
+              "block": "email.text",
+              "data": {
+                "text": "本次拜访原定由 {{was.rep_id.name}} 负责。",
+                "onlyWith": "was.rep_id.name"
+              }
+            },
+            {
               "block": "email.tax-breakdown",
               "data": {
                 "lines": [
@@ -21448,6 +21627,13 @@
               "block": "email.text",
               "data": {
                 "text": "{{recipient.first_name}}，您好，{{was.starts_at.date}} {{was.starts_at.time}} 的拜訪不再進行。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "本次拜訪原定由 {{was.rep_id.name}} 負責。",
+                "onlyWith": "was.rep_id.name"
               }
             },
             {
@@ -22223,7 +22409,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "module": "inbox"
             },
             {
               "i": "by-stage",
@@ -22466,13 +22653,33 @@
                 "columns": [
                   {
                     "name": "name",
-                    "label": "Rep"
+                    "label": "Rep",
+                    "labels": {
+                      "en-US": "Rep",
+                      "de-DE": "Vertriebsmitarbeiter",
+                      "fr-FR": "Commercial",
+                      "da-DK": "Sælger",
+                      "cs-CZ": "Obchodník",
+                      "ar-EG": "المندوب",
+                      "zh-CN": "销售代表",
+                      "zh-TW": "業務代表"
+                    }
                   },
                   {
                     "name": "open",
                     "label": "Open deals",
                     "logicalType": "integer",
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Open deals",
+                      "de-DE": "Offene Deals",
+                      "fr-FR": "Affaires ouvertes",
+                      "da-DK": "Åbne handler",
+                      "cs-CZ": "Otevřené obchody",
+                      "ar-EG": "الصفقات المفتوحة",
+                      "zh-CN": "进行中的商机",
+                      "zh-TW": "進行中的商機"
+                    }
                   },
                   {
                     "name": "weighted",
@@ -22481,7 +22688,17 @@
                     "display": {
                       "kind": "currency"
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Weighted",
+                      "de-DE": "Gewichtet",
+                      "fr-FR": "Pondéré",
+                      "da-DK": "Vægtet",
+                      "cs-CZ": "Vážená hodnota",
+                      "ar-EG": "القيمة المرجّحة",
+                      "zh-CN": "加权金额",
+                      "zh-TW": "加權金額"
+                    }
                   },
                   {
                     "name": "booked",
@@ -22490,7 +22707,17 @@
                     "display": {
                       "kind": "currency"
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Booked this year",
+                      "de-DE": "Dieses Jahr gebucht",
+                      "fr-FR": "Réservé cette année",
+                      "da-DK": "Booket i år",
+                      "cs-CZ": "Letos zaúčtováno",
+                      "ar-EG": "المحجوز هذا العام",
+                      "zh-CN": "今年已成交",
+                      "zh-TW": "今年已成交"
+                    }
                   },
                   {
                     "name": "target",
@@ -22499,7 +22726,17 @@
                     "display": {
                       "kind": "currency"
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Target",
+                      "de-DE": "Ziel",
+                      "fr-FR": "Objectif",
+                      "da-DK": "Mål",
+                      "cs-CZ": "Cíl",
+                      "ar-EG": "الهدف",
+                      "zh-CN": "目标",
+                      "zh-TW": "目標"
+                    }
                   },
                   {
                     "name": "cover",
@@ -22510,7 +22747,17 @@
                       "percentScale": "fraction",
                       "decimals": 0
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Cover",
+                      "de-DE": "Abdeckung",
+                      "fr-FR": "Couverture",
+                      "da-DK": "Dækning",
+                      "cs-CZ": "Pokrytí",
+                      "ar-EG": "التغطية",
+                      "zh-CN": "覆盖率",
+                      "zh-TW": "覆蓋率"
+                    }
                   }
                 ],
                 "binding": {
@@ -22631,13 +22878,33 @@
                   },
                   {
                     "name": "name",
-                    "label": "Deal"
+                    "label": "Deal",
+                    "labels": {
+                      "en-US": "Deal",
+                      "de-DE": "Deal",
+                      "fr-FR": "Affaire",
+                      "da-DK": "Handel",
+                      "cs-CZ": "Obchod",
+                      "ar-EG": "الصفقة",
+                      "zh-CN": "商机",
+                      "zh-TW": "商機"
+                    }
                   },
                   {
                     "name": "days",
                     "label": "Days in stage",
                     "logicalType": "integer",
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Days in stage",
+                      "de-DE": "Tage in der Phase",
+                      "fr-FR": "Jours dans l’étape",
+                      "da-DK": "Dage i fasen",
+                      "cs-CZ": "Dny ve fázi",
+                      "ar-EG": "الأيام في المرحلة",
+                      "zh-CN": "在该阶段天数",
+                      "zh-TW": "在該階段天數"
+                    }
                   },
                   {
                     "name": "amount",
@@ -22646,7 +22913,17 @@
                     "display": {
                       "kind": "currency"
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Amount",
+                      "de-DE": "Betrag",
+                      "fr-FR": "Montant",
+                      "da-DK": "Beløb",
+                      "cs-CZ": "Částka",
+                      "ar-EG": "المبلغ",
+                      "zh-CN": "金额",
+                      "zh-TW": "金額"
+                    }
                   }
                 ],
                 "secondary": [
@@ -23024,7 +23301,7 @@
                   "zh-CN": "在 Sales CRM 中答复",
                   "zh-TW": "在 Sales CRM 中答覆"
                 },
-                "href": "@staff",
+                "href": "@staff/approvals",
                 "icon": "external-link",
                 "tone": "primary"
               }
@@ -23085,11 +23362,31 @@
                   },
                   {
                     "name": "family_no",
-                    "label": "Quote"
+                    "label": "Quote",
+                    "labels": {
+                      "en-US": "Quote",
+                      "de-DE": "Angebot",
+                      "fr-FR": "Devis",
+                      "da-DK": "Tilbud",
+                      "cs-CZ": "Nabídka",
+                      "ar-EG": "عرض السعر",
+                      "zh-CN": "报价单",
+                      "zh-TW": "報價單"
+                    }
                   },
                   {
                     "name": "deal",
-                    "label": "Deal"
+                    "label": "Deal",
+                    "labels": {
+                      "en-US": "Deal",
+                      "de-DE": "Deal",
+                      "fr-FR": "Affaire",
+                      "da-DK": "Handel",
+                      "cs-CZ": "Obchod",
+                      "ar-EG": "الصفقة",
+                      "zh-CN": "商机",
+                      "zh-TW": "商機"
+                    }
                   },
                   {
                     "name": "under_list_pct",
@@ -23100,13 +23397,33 @@
                       "percentScale": "unit",
                       "decimals": 1
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Off list",
+                      "de-DE": "Unter Listenpreis",
+                      "fr-FR": "Sous le tarif",
+                      "da-DK": "Under listepris",
+                      "cs-CZ": "Pod ceníkem",
+                      "ar-EG": "أقل من القائمة",
+                      "zh-CN": "低于价目",
+                      "zh-TW": "低於價目"
+                    }
                   },
                   {
                     "name": "asked_at",
                     "label": "Asked",
                     "logicalType": "timestamptz",
-                    "hidden": true
+                    "hidden": true,
+                    "labels": {
+                      "en-US": "Asked",
+                      "de-DE": "Angefragt",
+                      "fr-FR": "Demandée",
+                      "da-DK": "Spurgt",
+                      "cs-CZ": "Požádáno",
+                      "ar-EG": "طُلبت",
+                      "zh-CN": "提交时间",
+                      "zh-TW": "提交時間"
+                    }
                   }
                 ],
                 "secondary": [
@@ -23203,12 +23520,32 @@
                   },
                   {
                     "name": "family_no",
-                    "label": "Quote"
+                    "label": "Quote",
+                    "labels": {
+                      "en-US": "Quote",
+                      "de-DE": "Angebot",
+                      "fr-FR": "Devis",
+                      "da-DK": "Tilbud",
+                      "cs-CZ": "Nabídka",
+                      "ar-EG": "عرض السعر",
+                      "zh-CN": "报价单",
+                      "zh-TW": "報價單"
+                    }
                   },
                   {
                     "name": "valid_until",
                     "label": "Valid until",
-                    "logicalType": "date"
+                    "logicalType": "date",
+                    "labels": {
+                      "en-US": "Valid until",
+                      "de-DE": "Gültig bis",
+                      "fr-FR": "Valable jusqu’au",
+                      "da-DK": "Gyldig til",
+                      "cs-CZ": "Platí do",
+                      "ar-EG": "صالح حتى",
+                      "zh-CN": "有效期至",
+                      "zh-TW": "有效期至"
+                    }
                   },
                   {
                     "name": "total",
@@ -23217,7 +23554,17 @@
                     "display": {
                       "kind": "currency"
                     },
-                    "align": "end"
+                    "align": "end",
+                    "labels": {
+                      "en-US": "Total",
+                      "de-DE": "Summe",
+                      "fr-FR": "Total",
+                      "da-DK": "I alt",
+                      "cs-CZ": "Celkem",
+                      "ar-EG": "الإجمالي",
+                      "zh-CN": "总计",
+                      "zh-TW": "總計"
+                    }
                   }
                 ],
                 "binding": {

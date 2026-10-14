@@ -141,8 +141,37 @@ export const manifestTriggerSchema = z.discriminatedUnion('kind', [
 ]);
 export type ManifestTrigger = z.infer<typeof manifestTriggerSchema>;
 
-/** A value a step writes: text, which may carry `{{record.<column>}}`, or the moment it runs. */
-const writeValue = z.union([z.string().max(4000), z.object({ now: z.literal(true) }).strict()]);
+/** A column of the app's settings row: the row of that table with the lowest key. */
+const settingRef = z.object({ table: refSchema, column: refSchema }).strict();
+
+/**
+ * A value a step writes: text, which may carry `{{record.<column>}}`; the
+ * moment it runs; what a column of the app's settings row holds when it runs
+ * (`setting`); or a day so many days after a date of the record, or after
+ * now, on the business's calendar (`daysAfter`), the days read from a
+ * whole-number setting when it holds some.
+ */
+const writeValue = z.union([
+  z.string().max(4000),
+  z.object({ now: z.literal(true) }).strict(),
+  z.object({ setting: settingRef }).strict(),
+  z
+    .object({
+      daysAfter: z
+        .object({
+          column: refSchema.optional(),
+          now: z.literal(true).optional(),
+          days: z.number().int().min(0).max(3650),
+          setting: settingRef.optional(),
+          /** The wall time on that day, for a column that holds a moment. */
+          at: z.string().regex(HHMM, 'a time such as 09:00').optional(),
+        })
+        .strict()
+        .refine((after) => (after.column === undefined) !== (after.now === undefined), { message: 'days after a column of the record ("column") or after now ("now": true): one of the two' }),
+    })
+    .strict(),
+]);
+export type ManifestWriteValue = z.infer<typeof writeValue>;
 const values = z.record(refSchema, writeValue);
 
 const roleKey = z.string().regex(/^[a-z][a-z0-9-]*$/, 'a role key');
@@ -160,9 +189,16 @@ export const manifestActionSchema = z.discriminatedUnion('kind', [
       /**
        * Who it goes to: `field`, the record's column that holds the address;
        * or `staff`, a staff column of the record (or `<link>.<staff column>`
-       * of the row a link of it names), whose person's address Adminium looks up.
+       * of the row a link of it names), whose person's address Adminium looks up;
+       * or `listed`, the people a table that lists people against the record
+       * (one of its `belongs` ways `through`) names for it: one mail each, to
+       * those of them who can open the record when it is sent.
        */
-      to: z.union([z.object({ kind: z.literal('field'), column: refSchema }).strict(), z.object({ kind: z.literal('staff'), column: staffPath }).strict()]),
+      to: z.union([
+        z.object({ kind: z.literal('field'), column: refSchema }).strict(),
+        z.object({ kind: z.literal('staff'), column: staffPath }).strict(),
+        z.object({ kind: z.literal('listed'), table: refSchema }).strict(),
+      ]),
       /**
        * Where a reply goes: to the person a staff column of the record names
        * (or `<link>.<staff column>` of the row a link of it names), by the
@@ -185,10 +221,13 @@ export const manifestActionSchema = z.discriminatedUnion('kind', [
        * that person but whoever leads a team they are in (never the person
        * themselves), and of those only who can open the record. `else`: the
        * roles told when the column, or its lead, names nobody; a lead always
-       * has one.
+       * has one. Or `listed`: the people a table that lists people against the
+       * record (one of its `belongs` ways `through`) names for it, of those
+       * only who can open the record when the step runs.
        */
       to: z.union([
         z.object({ roles: z.array(roleKey).min(1).max(20) }).strict(),
+        z.object({ listed: refSchema }).strict(),
         z
           .object({ column: staffPath, lead: z.literal(true).optional(), else: z.object({ roles: z.array(roleKey).min(1).max(20) }).strict().optional() })
           .strict()
@@ -340,6 +379,10 @@ export interface AutomationTableShape {
     references?: string | undefined;
     rules?: Readonly<Record<string, unknown>> | undefined;
   }[];
+  /** How people belong to its rows: a way `through` names a table that lists people against them. */
+  belongs?: readonly unknown[] | undefined;
+  /** Read by its own people alone: no rule reads a value of it. */
+  private?: boolean | undefined;
 }
 
 /** What the checks read of an email template: its key and, per language, the text it is made of. */
@@ -509,6 +552,16 @@ export function automationIssues(m: {
       }
     };
 
+    /** A table that lists people against the rule's record (a `belongs` way `through` it): who a step to "the people listed" tells. */
+    const listedAt = (ref: string, where: (string | number)[]) => {
+      if (record === undefined) {
+        out.push({ path: where, message: 'this rule runs for no record, so nobody is listed on it to tell' });
+        return;
+      }
+      const lists = (record.belongs ?? []).some((way) => typeof way === 'object' && way !== null && 'through' in way && (way as { through?: { table?: unknown } }).through?.table === ref);
+      if (!lists) out.push({ path: where, message: `"${ref}" lists nobody against "${record.ref}": name a table one of its "belongs" ways reads "through"` });
+    };
+
     /** `{{was.<column>}}`: a column of the record, in a rule run by its change. */
     const changing = trigger.kind === 'record' && trigger.event === 'updated';
     const wasIssue = (ref: string, path: (string | number)[]): void => {
@@ -538,6 +591,49 @@ export function automationIssues(m: {
       }
     };
 
+    /** A setting a value reads: a column of one of the manifest's tables that is neither secret nor personal, of a table that is not private. */
+    const settingAt = (setting: { table: string; column: string }, path: (string | number)[]) => {
+      const held = tableAt(setting.table, [...path, 'table']);
+      if (held?.private === true) out.push({ path: [...path, 'table'], message: `"${setting.table}" is private: no rule reads a value of it` });
+      const found = column(held, setting.column, [...path, 'column']);
+      if (found?.rules?.['secret'] === true || found?.rules?.['personal'] === true) {
+        out.push({ path: [...path, 'column'], message: `"${setting.table}.${setting.column}" is ${found.rules['secret'] === true ? 'a secret' : 'a personal'} column: a rule never writes it into another row` });
+      }
+      return found;
+    };
+    /** One value a step writes into `ref` of `into`: its placeholders, the setting it reads, the date it counts from. */
+    const valueIssues = (into: AutomationTableShape | undefined, ref: string, value: ManifestWriteValue, path: (string | number)[]) => {
+      if (typeof value === 'string') {
+        tokens(value, path);
+        return;
+      }
+      const target = into?.columns.find((candidate) => candidate.ref === ref);
+      if ('setting' in value) {
+        const found = settingAt(value.setting, [...path, 'setting']);
+        if (found === undefined || target === undefined) return;
+        // A person is filled from a column that holds one; any other value from a column of its own kind.
+        if (target.rules?.['staff'] === true && found.rules?.['staff'] !== true) out.push({ path: [...path, 'setting', 'column'], message: `"${into?.ref ?? ''}.${ref}" holds a staff member, and "${value.setting.table}.${value.setting.column}" is not a staff column` });
+        else if (found.type !== target.type || found.references !== target.references) out.push({ path: [...path, 'setting', 'column'], message: `"${value.setting.table}.${value.setting.column}" is ${found.type} and "${into?.ref ?? ''}.${ref}" is ${target.type}: a setting fills a column of its own kind` });
+        return;
+      }
+      if ('daysAfter' in value) {
+        const after = value.daysAfter;
+        const at = [...path, 'daysAfter'];
+        if (target !== undefined && !DATES.includes(target.type)) out.push({ path, message: `"${into?.ref ?? ''}.${ref}" is ${target.type}: a day so many days on is written into a date column` });
+        if (after.at !== undefined && target?.type === 'date') out.push({ path: [...at, 'at'], message: `"${into?.ref ?? ''}.${ref}" holds a day, which has no time of day` });
+        if (after.column !== undefined) {
+          if (record === undefined) out.push({ path: [...at, 'column'], message: 'this rule runs for no record, so there is no date of it to count from' });
+          const from = column(record, after.column, [...at, 'column']);
+          if (from !== undefined && !DATES.includes(from.type)) out.push({ path: [...at, 'column'], message: `"${record?.ref ?? ''}.${after.column}" is ${from.type}: days are counted from a date` });
+          if (from?.rules?.['secret'] === true || from?.rules?.['personal'] === true) out.push({ path: [...at, 'column'], message: `"${record?.ref ?? ''}.${after.column}" is a protected column: a day counted from it would tell it` });
+        }
+        if (after.setting !== undefined) {
+          const found = settingAt(after.setting, [...at, 'setting']);
+          if (found !== undefined && !['int', 'bigint'].includes(found.type)) out.push({ path: [...at, 'setting', 'column'], message: `"${after.setting.table}.${after.setting.column}" is not a whole-number column: it holds a number of days` });
+        }
+      }
+    };
+
     const ids: string[] = [];
     walk(
       rule.graph.nodes,
@@ -554,6 +650,8 @@ export function automationIssues(m: {
             action.to.roles.forEach((role, i) => {
               if (!m.roles.includes(role)) out.push({ path: here('to', 'roles', i), message: `"${role}" is not one of this manifest's roles` });
             });
+          } else if ('listed' in action.to) {
+            listedAt(action.to.listed, here('to', 'listed'));
           } else {
             staffAt(action.to.column, here('to', 'column'));
             (action.to.else?.roles ?? []).forEach((role, i) => {
@@ -568,7 +666,7 @@ export function automationIssues(m: {
           const into = tableAt(action.table, here('table'));
           for (const [ref, value] of Object.entries(action.values)) {
             column(into, ref, here('values', ref));
-            tokens(value, here('values', ref));
+            valueIssues(into, ref, value, here('values', ref));
           }
           // Named after its own values are read: a step does not read the row it is about to make.
           if (action.name !== undefined) {
@@ -674,7 +772,7 @@ export function automationIssues(m: {
           const decided = record === undefined ? new Set<string>() : (m.decided?.(record.ref) ?? new Set<string>());
           for (const [ref, value] of Object.entries(action.values)) {
             const found = column(record, ref, here('values', ref));
-            tokens(value, here('values', ref));
+            valueIssues(record, ref, value, here('values', ref));
             const rule2 = DECIDING.find((name) => found?.rules?.[name] !== undefined);
             if (found !== undefined && (rule2 !== undefined || decided.has(ref))) {
               out.push({ path: here('values', ref), message: `"${record?.ref ?? ''}.${ref}" is decided by Adminium${rule2 === undefined ? '' : ` (its ${rule2} rule)`}: a rule cannot write it` });
@@ -702,6 +800,7 @@ export function automationIssues(m: {
         // An email: one of the manifest's own templates, to a column of the record, and only one a rule can fill.
         if (record === undefined) out.push({ path: here(), message: 'this rule runs for no record, so there is no address to send to' });
         if (action.to.kind === 'staff') staffAt(action.to.column, here('to', 'column'));
+        else if (action.to.kind === 'listed') listedAt(action.to.table, here('to', 'table'));
         else column(record, action.to.column, here('to', 'column'));
         if (action.replyTo !== undefined) staffAt(action.replyTo.staff, here('replyTo', 'staff'));
         const template = templates.get(action.templateKey);
@@ -714,7 +813,8 @@ export function automationIssues(m: {
         const columns = new Set((record?.columns ?? []).map((candidate) => candidate.ref));
         // The name of the person a staff column of the record names; the record's address, in a mail to a person.
         const people = new Set((record?.columns ?? []).filter((candidate) => candidate.rules?.['staff'] === true).flatMap((candidate) => [`${candidate.ref}.name`, `record.${candidate.ref}.name`]));
-        const toPerson = action.to.kind === 'staff';
+        // A mail to a person, or to each of the people listed on the record: each is somebody the address is worked out for.
+        const toPerson = action.to.kind === 'staff' || action.to.kind === 'listed';
         const filled = (name: string): boolean =>
           (RULE_EMAIL_VARS as readonly string[]).includes(name) ||
           Object.hasOwn(vars, name) ||

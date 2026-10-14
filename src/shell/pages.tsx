@@ -116,20 +116,3 @@ export function NothingOn({ who }: { who: { name: string; role: string } }) {
   );
 }
 
-/** While the screens are rebuilt: no screen exists yet for this person's menu. Goes when the first of their screens lands. */
-export function Rebuilding({ who }: { who: { name: string; role: string } }) {
-  const t = useT();
-  return (
-    <Plain icon="layers" code="" heading={t("shell.rebuilding.heading")} home={null} label="rebuilding">
-      <p>{t("shell.rebuilding.body")}</p>
-      <div className="crm-plain-who" data-testid="signed-in-as">
-        {t("shell.signedInAs", who)}
-      </div>
-      <div className="crm-plain-actions">
-        <a className="crm-btn crm-btn-ghost mr-gi" href="/">
-          {t("shell.openAdminium")}
-        </a>
-      </div>
-    </Plain>
-  );
-}

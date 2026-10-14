@@ -85,9 +85,6 @@ export const shell = {
     "shell.notFound.body": "Nothing here. The link may be older than the workspace.",
     "shell.nothingOn.heading": "Nothing is switched on for you yet",
     "shell.nothingOn.body": "The parts of this app your role works in are switched off. Ask the person who runs this install.",
-    "shell.rebuilding.heading": "The screens are being rebuilt",
-    "shell.rebuilding.body": "Each screen appears in this menu as soon as it is ready. Until then, the records are in Adminium.",
-    "shell.openAdminium": "Open Adminium",
     "shell.skip": "Skip to the page",
   },
   "de-DE": {
@@ -166,9 +163,6 @@ export const shell = {
     "shell.notFound.body": "Hier ist nichts. Der Link ist möglicherweise älter als der Arbeitsbereich.",
     "shell.nothingOn.heading": "Für Sie ist noch nichts eingeschaltet",
     "shell.nothingOn.body": "Die Bereiche dieser App, in denen Ihre Rolle arbeitet, sind ausgeschaltet. Fragen Sie die Person, die diese Installation betreibt.",
-    "shell.rebuilding.heading": "Die Ansichten werden neu aufgebaut",
-    "shell.rebuilding.body": "Jede Ansicht erscheint in diesem Menü, sobald sie fertig ist. Bis dahin finden Sie die Datensätze in Adminium.",
-    "shell.openAdminium": "Adminium öffnen",
     "shell.skip": "Zum Seiteninhalt springen",
   },
   "fr-FR": {
@@ -247,9 +241,6 @@ export const shell = {
     "shell.notFound.body": "Il n’y a rien ici. Le lien est peut-être plus ancien que l’espace de travail.",
     "shell.nothingOn.heading": "Rien n’est encore activé pour vous",
     "shell.nothingOn.body": "Les parties de cette application dans lesquelles votre rôle travaille sont désactivées. Demandez à la personne qui gère cette installation.",
-    "shell.rebuilding.heading": "Les écrans sont en cours de reconstruction",
-    "shell.rebuilding.body": "Chaque écran apparaît dans ce menu dès qu’il est prêt. D’ici là, les enregistrements se trouvent dans Adminium.",
-    "shell.openAdminium": "Ouvrir Adminium",
     "shell.skip": "Aller au contenu de la page",
   },
   "da-DK": {
@@ -328,9 +319,6 @@ export const shell = {
     "shell.notFound.body": "Her er ikke noget. Linket er måske ældre end arbejdsområdet.",
     "shell.nothingOn.heading": "Der er ikke slået noget til for dig endnu",
     "shell.nothingOn.body": "De dele af appen, din rolle arbejder i, er slået fra. Spørg den, der driver denne installation.",
-    "shell.rebuilding.heading": "Skærmbillederne bliver bygget om",
-    "shell.rebuilding.body": "Hvert skærmbillede dukker op i denne menu, så snart det er klar. Indtil da ligger posterne i Adminium.",
-    "shell.openAdminium": "Åbn Adminium",
     "shell.skip": "Spring til sidens indhold",
   },
   "cs-CZ": {
@@ -409,9 +397,6 @@ export const shell = {
     "shell.notFound.body": "Nic tu není. Odkaz je možná starší než pracoviště.",
     "shell.nothingOn.heading": "Zatím pro vás není nic zapnuto",
     "shell.nothingOn.body": "Části této aplikace, ve kterých vaše role pracuje, jsou vypnuté. Požádejte osobu, která tuto instalaci spravuje.",
-    "shell.rebuilding.heading": "Obrazovky se přestavují",
-    "shell.rebuilding.body": "Každá obrazovka se v této nabídce objeví, jakmile bude hotová. Do té doby najdete záznamy v Adminiu.",
-    "shell.openAdminium": "Otevřít Adminium",
     "shell.skip": "Přejít na obsah stránky",
   },
   "zh-CN": {
@@ -490,9 +475,6 @@ export const shell = {
     "shell.notFound.body": "这里什么也没有。链接可能比工作区更早。",
     "shell.nothingOn.heading": "还没有为你开启任何内容",
     "shell.nothingOn.body": "你的角色所使用的应用部分已关闭。请联系负责此安装的人。",
-    "shell.rebuilding.heading": "界面正在重建",
-    "shell.rebuilding.body": "每个界面准备好后会出现在此菜单中。在此之前，记录都在 Adminium 中。",
-    "shell.openAdminium": "打开 Adminium",
     "shell.skip": "跳到页面内容",
   },
   "zh-TW": {
@@ -571,9 +553,6 @@ export const shell = {
     "shell.notFound.body": "這裡什麼也沒有。連結可能比工作區更早。",
     "shell.nothingOn.heading": "尚未為你開啟任何內容",
     "shell.nothingOn.body": "你的角色所使用的應用程式部分已關閉。請聯絡負責此安裝的人。",
-    "shell.rebuilding.heading": "畫面正在重建",
-    "shell.rebuilding.body": "每個畫面準備好後會出現在此選單中。在此之前，紀錄都在 Adminium 中。",
-    "shell.openAdminium": "開啟 Adminium",
     "shell.skip": "跳到頁面內容",
   },
   "ar-EG": {
@@ -652,9 +631,6 @@ export const shell = {
     "shell.notFound.body": "لا شيء هنا. قد يكون الرابط أقدم من مساحة العمل.",
     "shell.nothingOn.heading": "لم يُشغَّل لك شيء بعد",
     "shell.nothingOn.body": "أجزاء هذا التطبيق التي يعمل فيها دورك متوقفة. اطلب ذلك ممن يدير هذا التثبيت.",
-    "shell.rebuilding.heading": "يُعاد بناء الشاشات",
-    "shell.rebuilding.body": "تظهر كل شاشة في هذه القائمة فور جاهزيتها. وحتى ذلك الحين، السجلات موجودة في Adminium.",
-    "shell.openAdminium": "افتح Adminium",
     "shell.skip": "انتقل إلى محتوى الصفحة",
   },
 } satisfies Record<LocaleTag, Record<string, string>>;

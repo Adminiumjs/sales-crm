@@ -8,7 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { StaffConfig } from "./staffConnection.ts";
-import { connectStaffSession, LostReply, newClientKey, StaffError } from "./staffSession.ts";
+import { connectStaffSession, LostReply, newClientKey, noValue, StaffError } from "./staffSession.ts";
 
 const CONFIG: StaffConfig = {
   connectionId: "con_1",
@@ -263,6 +263,21 @@ describe("a figure, and the live stream", () => {
   });
 });
 
+describe("listening to a table the install left out", () => {
+  it("passes it over: the other tables are heard, and none at all asks nothing", async () => {
+    // The one stream asked is refused, so the listener stops there (a refused stream is not asked again).
+    const { calls, session } = open([refusal(403, "FORBIDDEN")]);
+    const s = await session;
+    // Quotes without Invoices: `deal_amount_changes` is not a table of this install. Before P18 this threw and took the Activity feed down.
+    expect(() => s.listen(["no_such_table"], () => undefined)()).not.toThrow();
+    expect(calls.length).toBe(0);
+    const stop = s.listen(["deals", "no_such_table"], () => undefined);
+    for (let tries = 0; calls.length === 0 && tries < 100; tries += 1) await new Promise((done) => setTimeout(done, 5));
+    stop();
+    expect(calls[0]!.url).toBe("/api/v1/events?channels=widget-data%3Acon_1%3Apublic.crm_deals");
+  });
+});
+
 describe("a key for a save", () => {
   it("is 32 letters the server takes, and not the same twice", () => {
     const a = newClientKey();
@@ -272,5 +287,12 @@ describe("a key for a save", () => {
 
   it("tells a lost reply from a refusal", () => {
     expect(new LostReply().name).toBe("LostReply");
+  });
+});
+
+describe("a grouped figure's group of rows with no value", () => {
+  it("is the server's `__null` (and an older answer's null, empty or \"null\"), never a group named so", () => {
+    for (const key of ["__null", null, undefined, "", "null"]) expect(noValue(key), String(key)).toBe(true);
+    for (const key of ["0", 0, "won", 12, "__nullish"]) expect(noValue(key), String(key)).toBe(false);
   });
 });

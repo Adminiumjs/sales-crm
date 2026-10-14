@@ -15,6 +15,7 @@
  * tables, and a row whose job cannot be read is still listed, without them.
  */
 import type { Condition, Grouped, Row, Saved, StaffError, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 import { readNames } from "../quotes/data.ts";
 
 export const LISTED = 200;
@@ -42,7 +43,7 @@ async function grouped(session: StaffSession, table: string, column: string, fil
   const out = new Map<string | null, number>();
   for (const item of answer.items) {
     // The server names the group of rows with no value `__null`.
-    const key = item.key === null || item.key === undefined || item.key === "" || item.key === "__null" ? null : String(item.key);
+    const key = noValue(item.key) ? null : String(item.key);
     out.set(key, (out.get(key) ?? 0) + num(item.values?.["n"] ?? item.value));
   }
   return out;

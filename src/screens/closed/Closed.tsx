@@ -20,6 +20,7 @@ import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { firstName, initials } from "../../ui/people.ts";
@@ -64,7 +65,7 @@ async function readSummary(session: StaffSession, scope: Scope, owner: string | 
       ? session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [{ column: "state", op: "in", value: ["won", "lost"] }], groupBy: ["owner_id"], aggregations: [{ fn: "count", alias: "n" }], limit: 50 })
       : Promise.resolve(null),
   ]);
-  const owners = byOwner === null ? [] : byOwner.items.map((item) => String(item.key)).filter((id) => id !== "null" && id !== "");
+  const owners = byOwner === null ? [] : byOwner.items.filter((item) => !noValue(item.key)).map((item) => String(item.key));
   const names: Record<string, string> = me === null ? {} : { [me.id]: me.name };
   if (owners.some((id) => names[id] === undefined)) for (const person of await session.people(undefined, 200).catch(() => [])) names[person.id] = person.name;
   return { all, year, owners, names };

@@ -30,8 +30,8 @@ import type { MessageKey } from "../i18n/messages/index.ts";
 import { useSession } from "../session/session.tsx";
 import { Icon } from "./icons.tsx";
 import { ScreenLink, useNav } from "./nav.tsx";
-import { NothingOn, NotFound, Rebuilding, Refused, Waits, type RefusedWhy, type WayHome } from "./pages.tsx";
-import { canOpen, homeFor, inMenu, LIT_BY, menuFor, MENUS, rolesOf, routeForPath, ROUTES, USER_MENU, waitsFor, WAITS_FOR, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
+import { NothingOn, NotFound, Refused, Waits, type RefusedWhy, type WayHome } from "./pages.tsx";
+import { canOpen, homeFor, inMenu, LIT_BY, menuFor, routeForPath, ROUTES, USER_MENU, waitsFor, WAITS_FOR, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
 import { PageBoundary } from "../ui/boundary.tsx";
 import { LoadFailed } from "../ui/load.tsx";
@@ -197,9 +197,8 @@ export function Shell() {
 
   let page;
   if (nav.path === "") {
-    // No home: a role none of whose screens is built yet, or none of whose parts is on.
-    const anyUnbuilt = rolesOf(facts.roles).some((role) => MENUS[role].some(([, items]) => items.some((item) => !isBuilt(item.route) && canOpen(item.route, { ...facts, built: () => true }))));
-    page = home !== null ? null : anyUnbuilt ? <Rebuilding who={who} /> : <NothingOn who={who} />;
+    // No home: a role none of whose screens is in a part that is on (or a role with no screen at all, the field crew's in stage 1).
+    page = home !== null ? null : <NothingOn who={who} />;
   } else if (here === null || !isBuilt(here.route)) {
     page = <NotFound home={wayHome} />;
   } else {

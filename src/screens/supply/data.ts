@@ -21,6 +21,7 @@
  * the day it was due, and a score for a supplier.
  */
 import type { Condition, Grouped, Row, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 
 /** Inventory's tables, as the session names an add-on's. */
 export const INV = {
@@ -119,7 +120,7 @@ export function shortOf(lines: readonly Line[], asked: Record<string, number>): 
 /** A grouped figure as `key → value`, one aggregation by its alias. */
 export function byKey(answer: Grouped, alias: string): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const item of answer.items) if (item.key !== null) out[String(item.key)] = num(item.values?.[alias] ?? item.value);
+  for (const item of answer.items) if (!noValue(item.key)) out[String(item.key)] = num(item.values?.[alias] ?? item.value);
   return out;
 }
 
@@ -185,7 +186,7 @@ export async function readStock(session: StaffSession): Promise<StockData> {
   const asked: Record<string, number> = {};
   const askedOn: Record<string, number> = {};
   for (const item of askedAnswer.items) {
-    if (item.key === null) continue;
+    if (noValue(item.key)) continue;
     askedOn[String(item.key)] = num(item.values?.["n"]);
     if (item.values?.["q"] !== null && item.values?.["q"] !== undefined) asked[String(item.key)] = num(item.values["q"]);
   }

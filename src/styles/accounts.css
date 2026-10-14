@@ -621,7 +621,8 @@
   font-size: 13.5px;
   background: color-mix(in srgb, var(--tile) 12%, var(--surface));
   border-color: color-mix(in srgb, var(--tile) 22%, transparent);
-  color: var(--tile);
+  /* The tone pulled toward the text colour: the warn, danger and positive tones alone read under 4.5:1 on their own tint. */
+  color: color-mix(in srgb, var(--tile) 85%, var(--fg));
 }
 .crm-acc-contact-who {
   flex: 1;

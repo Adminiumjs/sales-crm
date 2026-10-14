@@ -1052,6 +1052,9 @@
      "stage_id": {
       "@ref": "stage:negotiation"
      },
+     "stage_kept_id": {
+      "@ref": "stage:negotiation"
+     },
      "entered_stage_at": {
       "@day": -14,
       "@time": "11:20",
@@ -1105,6 +1108,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:proposal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:proposal"
      },
      "entered_stage_at": {
@@ -1162,6 +1168,9 @@
      "stage_id": {
       "@ref": "stage:verbal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:verbal"
+     },
      "entered_stage_at": {
       "@day": -4,
       "@time": "09:00",
@@ -1215,6 +1224,9 @@
       "@person": "priya"
      },
      "stage_id": {
+      "@ref": "stage:qualified"
+     },
+     "stage_kept_id": {
       "@ref": "stage:qualified"
      },
      "entered_stage_at": {
@@ -1272,6 +1284,9 @@
      "stage_id": {
       "@ref": "stage:proposal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:proposal"
+     },
      "entered_stage_at": {
       "@day": -32,
       "@time": "09:00",
@@ -1325,6 +1340,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:negotiation"
+     },
+     "stage_kept_id": {
       "@ref": "stage:negotiation"
      },
      "entered_stage_at": {
@@ -1382,6 +1400,9 @@
      "stage_id": {
       "@ref": "stage:discovery"
      },
+     "stage_kept_id": {
+      "@ref": "stage:discovery"
+     },
      "entered_stage_at": {
       "@day": -3,
       "@time": "09:00",
@@ -1435,6 +1456,9 @@
       "@person": "priya"
      },
      "stage_id": {
+      "@ref": "stage:qualified"
+     },
+     "stage_kept_id": {
       "@ref": "stage:qualified"
      },
      "entered_stage_at": {
@@ -1492,6 +1516,9 @@
      "stage_id": {
       "@ref": "stage:proposal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:proposal"
+     },
      "entered_stage_at": {
       "@day": -6,
       "@time": "09:45",
@@ -1545,6 +1572,9 @@
       "@person": "sam"
      },
      "stage_id": {
+      "@ref": "stage:discovery"
+     },
+     "stage_kept_id": {
       "@ref": "stage:discovery"
      },
      "entered_stage_at": {
@@ -1602,6 +1632,9 @@
      "stage_id": {
       "@ref": "stage:verbal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:verbal"
+     },
      "entered_stage_at": {
       "@day": -5,
       "@time": "16:55",
@@ -1655,6 +1688,9 @@
       "@person": "leo"
      },
      "stage_id": {
+      "@ref": "stage:qualified"
+     },
+     "stage_kept_id": {
       "@ref": "stage:qualified"
      },
      "entered_stage_at": {
@@ -1712,6 +1748,9 @@
      "stage_id": {
       "@ref": "stage:discovery"
      },
+     "stage_kept_id": {
+      "@ref": "stage:discovery"
+     },
      "entered_stage_at": {
       "@day": -2,
       "@time": "08:35",
@@ -1767,6 +1806,9 @@
      "stage_id": {
       "@ref": "stage:negotiation"
      },
+     "stage_kept_id": {
+      "@ref": "stage:negotiation"
+     },
      "entered_stage_at": {
       "@day": -9,
       "@time": "11:45",
@@ -1808,6 +1850,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:verbal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:verbal"
      },
      "entered_stage_at": {
@@ -1857,6 +1902,9 @@
      "stage_id": {
       "@ref": "stage:verbal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:verbal"
+     },
      "entered_stage_at": {
       "@day": -157,
       "@time": "09:00",
@@ -1902,6 +1950,9 @@
       "@person": "sam"
      },
      "stage_id": {
+      "@ref": "stage:verbal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:verbal"
      },
      "entered_stage_at": {
@@ -1951,6 +2002,9 @@
      "stage_id": {
       "@ref": "stage:verbal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:verbal"
+     },
      "entered_stage_at": {
       "@day": -87,
       "@time": "09:00",
@@ -1996,6 +2050,9 @@
       "@person": "leo"
      },
      "stage_id": {
+      "@ref": "stage:verbal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:verbal"
      },
      "entered_stage_at": {
@@ -2045,6 +2102,9 @@
      "stage_id": {
       "@ref": "stage:verbal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:verbal"
+     },
      "entered_stage_at": {
       "@day": -323,
       "@time": "09:00",
@@ -2090,6 +2150,9 @@
       "@person": "leo"
      },
      "stage_id": {
+      "@ref": "stage:verbal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:verbal"
      },
      "entered_stage_at": {
@@ -2139,6 +2202,9 @@
      "stage_id": {
       "@ref": "stage:verbal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:verbal"
+     },
      "entered_stage_at": {
       "@day": -295,
       "@time": "09:00",
@@ -2184,6 +2250,9 @@
       "@person": "sam"
      },
      "stage_id": {
+      "@ref": "stage:negotiation"
+     },
+     "stage_kept_id": {
       "@ref": "stage:negotiation"
      },
      "entered_stage_at": {
@@ -2236,6 +2305,9 @@
      "stage_id": {
       "@ref": "stage:proposal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:proposal"
+     },
      "entered_stage_at": {
       "@day": -92,
       "@time": "09:00",
@@ -2284,6 +2356,9 @@
       "@person": "sam"
      },
      "stage_id": {
+      "@ref": "stage:negotiation"
+     },
+     "stage_kept_id": {
       "@ref": "stage:negotiation"
      },
      "entered_stage_at": {
@@ -2336,6 +2411,9 @@
      "stage_id": {
       "@ref": "stage:proposal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:proposal"
+     },
      "entered_stage_at": {
       "@day": -57,
       "@time": "09:00",
@@ -2384,6 +2462,9 @@
       "@person": "leo"
      },
      "stage_id": {
+      "@ref": "stage:qualified"
+     },
+     "stage_kept_id": {
       "@ref": "stage:qualified"
      },
      "entered_stage_at": {
@@ -2436,6 +2517,9 @@
      "stage_id": {
       "@ref": "stage:proposal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:proposal"
+     },
      "entered_stage_at": {
       "@day": -150,
       "@time": "09:00",
@@ -2484,6 +2568,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:discovery"
+     },
+     "stage_kept_id": {
       "@ref": "stage:discovery"
      },
      "entered_stage_at": {
@@ -2536,6 +2623,9 @@
      "stage_id": {
       "@ref": "stage:qualified"
      },
+     "stage_kept_id": {
+      "@ref": "stage:qualified"
+     },
      "entered_stage_at": {
       "@day": -174,
       "@time": "09:00",
@@ -2584,6 +2674,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:proposal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:proposal"
      },
      "entered_stage_at": {
@@ -2636,6 +2729,9 @@
      "stage_id": {
       "@ref": "stage:discovery"
      },
+     "stage_kept_id": {
+      "@ref": "stage:discovery"
+     },
      "entered_stage_at": {
       "@day": -193,
       "@time": "09:00",
@@ -2684,6 +2780,9 @@
       "@person": "sam"
      },
      "stage_id": {
+      "@ref": "stage:qualified"
+     },
+     "stage_kept_id": {
       "@ref": "stage:qualified"
      },
      "entered_stage_at": {
@@ -2736,6 +2835,9 @@
      "stage_id": {
       "@ref": "stage:negotiation"
      },
+     "stage_kept_id": {
+      "@ref": "stage:negotiation"
+     },
      "entered_stage_at": {
       "@day": -256,
       "@time": "09:00",
@@ -2784,6 +2886,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:proposal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:proposal"
      },
      "entered_stage_at": {
@@ -2836,6 +2941,9 @@
      "stage_id": {
       "@ref": "stage:proposal"
      },
+     "stage_kept_id": {
+      "@ref": "stage:proposal"
+     },
      "entered_stage_at": {
       "@day": -291,
       "@time": "09:00",
@@ -2884,6 +2992,9 @@
       "@person": "sam"
      },
      "stage_id": {
+      "@ref": "stage:negotiation"
+     },
+     "stage_kept_id": {
       "@ref": "stage:negotiation"
      },
      "entered_stage_at": {
@@ -2936,6 +3047,9 @@
      "stage_id": {
       "@ref": "stage:qualified"
      },
+     "stage_kept_id": {
+      "@ref": "stage:qualified"
+     },
      "entered_stage_at": {
       "@day": -312,
       "@time": "09:00",
@@ -2986,6 +3100,9 @@
      "stage_id": {
       "@ref": "stage:discovery"
      },
+     "stage_kept_id": {
+      "@ref": "stage:discovery"
+     },
      "entered_stage_at": {
       "@day": -319,
       "@time": "09:00",
@@ -3034,6 +3151,9 @@
       "@person": "dana"
      },
      "stage_id": {
+      "@ref": "stage:proposal"
+     },
+     "stage_kept_id": {
       "@ref": "stage:proposal"
      },
      "entered_stage_at": {

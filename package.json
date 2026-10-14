@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Sales CRM \u2014 an open-source sales-workspace example app for Adminium.",
+  "description": "Sales CRM — an open-source sales-workspace example app for Adminium.",
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
@@ -30,6 +30,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.62.1",
     "@types/node": "^26.1.2",
     "@types/react": "^19.0.0",

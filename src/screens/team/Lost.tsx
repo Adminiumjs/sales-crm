@@ -19,6 +19,7 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import { NoRecord } from "../../shell/pages.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 import { byKey, cellsOf, largest, monthsBack, num, peopleOf, stagesOf, toneOf, useScreen, type Matrix, type People, type Stage } from "./data.ts";
@@ -63,7 +64,7 @@ async function readLost(session: StaffSession, from: string, today: string): Pro
   ]);
   const totals = byKey(whole)["lost"];
   const reasons = byReason.items
-    .map((item) => ({ id: item.key === null || item.key === "" ? NO_REASON : String(item.key), label: item.key === null || item.key === "" ? null : item.label, count: num(item.values?.["n"]), value: num(item.values?.["v"]) }))
+    .map((item) => ({ id: noValue(item.key) ? NO_REASON : String(item.key), label: noValue(item.key) ? null : item.label, count: num(item.values?.["n"]), value: num(item.values?.["v"]) }))
     .sort((a, b) => b.value - a.value || a.id.localeCompare(b.id));
   const cells = cellsOf(atStage);
   return {
@@ -73,7 +74,7 @@ async function readLost(session: StaffSession, from: string, today: string): Pro
     average: totals === undefined ? null : num(totals["a"]),
     won: alongside.won.count,
     reasons,
-    atStage: Object.fromEntries(Object.entries(cells).map(([key, value]) => [key === "null" || key === "" ? NO_REASON : key, value])),
+    atStage: Object.fromEntries(Object.entries(cells).map(([key, value]) => [noValue(key) ? NO_REASON : key, value])),
     byStage: byKey(byStage),
     late: num(late.value),
   };

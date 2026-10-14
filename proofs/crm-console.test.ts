@@ -313,8 +313,9 @@ for (const [dialect, reachable] of LEGS) {
       expect(await rail('dana')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Quotes', 'Enquiries', 'Jobs']]]);
       // The account manager: the won deals' board and list, and the accounts.
       expect(await rail('hugo')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Jobs']]]);
-      // The operations manager reads no deal: no page of the section's first run but Jobs.
-      expect(await rail('ada')).toEqual([['', ['Jobs']]]);
+      // The operations manager: Jobs, and with Jobs on (this proof installs every part) the Deals list, whose won deals her
+      // jobs are made from (P20's grant, `stage.json`; stage 1 has neither: she reads no deal there).
+      expect(await rail('ada')).toEqual([['', ['Deals', 'Jobs']]]);
     });
 
     it('answers the Overview\'s figures to the owner, the CRM admin and Read-only as the ledger has them for the whole team', async () => {
@@ -392,6 +393,33 @@ for (const [dialect, reachable] of LEGS) {
         const day = (value: unknown): string => (value instanceof Date ? value.toISOString() : String(value)).slice(0, 10);
         expect([person, out.rows.slice(0, 3).map((row) => [row.family_no, Number(row.version), day(row.valid_until)])]).toEqual([person, [['Q-1001', 1, '2026-07-26'], ['Q-1002', 1, '2026-07-30'], ['Q-1003', 1, '2026-08-07']]]);
       }
+    });
+
+    it('draws the Unclaimed enquiries card only while the Inbox is on, for everybody, and the Jobs card only while Jobs is on; Approvals opens the app\'s own Approvals screen', async () => {
+      const keys = async (person: string): Promise<string[]> => (await page(person, 'crm-overview')).cards.map((card) => card.i);
+      const flip = async (part: string, on: boolean): Promise<void> => {
+        const res = await s.app.inject({ method: 'PUT', url: `/api/v1/apps/crm/parts/${part}`, headers: { cookie: s.owner }, payload: { on } });
+        expect(res.statusCode, res.body).toBeLessThan(300);
+      };
+      expect((await page('owner', 'crm-overview')).cards.find((card) => card.i === 'unclaimed-enquiries')).toMatchObject({ module: 'inbox' });
+      try {
+        await flip('inbox', false);
+        for (const person of ['owner', 'tessa', 'grace']) {
+          expect([person, (await keys(person)).includes('unclaimed-enquiries')]).toEqual([person, false]);
+          // The rest of the page stays whole.
+          expect([person, (await keys(person)).includes('open-pipeline')]).toEqual([person, true]);
+        }
+        await flip('jobs', false);
+        expect((await keys('owner')).includes('jobs-this-week')).toBe(false);
+      } finally {
+        await flip('inbox', true);
+        await flip('jobs', true);
+      }
+      expect((await keys('grace')).filter((key) => ['unclaimed-enquiries', 'jobs-this-week'].includes(key))).toEqual(['unclaimed-enquiries', 'jobs-this-week']);
+      // Answering stays in the app (decision 159): the toolbar opens the staff side's Approvals screen, not its first page.
+      const approvals = (await page('owner', 'crm-approvals')).config;
+      const toolbar = ((approvals['layout'] ?? (approvals['config'] as Record<string, unknown>)['layout']) as { toolbar: { links: { href: string }[] } }).toolbar;
+      expect(toolbar.links.map((link) => link.href)).toEqual(['@staff/approvals']);
     });
 
     it('refuses the two pages to the roles they are not for, by the server, and keeps the Pipeline page\'s words as the app wrote them', async () => {

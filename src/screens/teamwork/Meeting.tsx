@@ -18,6 +18,7 @@ import { scopeOf } from "../../selling/figures.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink } from "../../shell/nav.tsx";
+import { inMenu } from "../../shell/routes.ts";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
@@ -235,7 +236,7 @@ export function Meeting(_: ScreenProps) {
                     {data.decisions.length === 0 && <p className="crm-cv-none">{t("meeting.last.none")}</p>}
                   </section>
 
-                  {isBuilt("notes") && session.can("one_to_ones", "read") && (
+                  {isBuilt("notes") && session.can("one_to_ones", "read") && inMenu("notes", (session.config.access?.roles ?? []).map((role) => role.slug)) && (
                     <ScreenLink to="notes" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi crm-mt-link">
                       <Icon name="notebook-pen" size={14} />
                       {t("meeting.goNotes")}

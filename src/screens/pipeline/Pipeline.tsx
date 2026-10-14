@@ -30,6 +30,7 @@ import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import { canOpen, type MenuFacts, type PartId } from "../../shell/routes.ts";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { dealConditions } from "../own/data.ts";
 import { useSavedView, ViewBar } from "../own/savedView.tsx";
@@ -131,7 +132,7 @@ async function read(session: StaffSession, mine: boolean, who: string | null, to
     closedFigures(session, { owner, between: yearOf(today) }),
   ]);
   const names: Record<string, string> = me === null ? {} : { [me.id]: me.name };
-  const owners = byOwner === null ? [] : byOwner.items.map((item) => String(item.key)).filter((id) => id !== "null" && id !== "");
+  const owners = byOwner === null ? [] : byOwner.items.filter((item) => !noValue(item.key)).map((item) => String(item.key));
   if ([...owners, ...deals.rows.map((deal) => deal.owner_id)].some((id) => id !== null && names[id] === undefined)) for (const person of await session.people(undefined, 200).catch(() => [])) names[person.id] = person.name;
   return {
     stages: stages.rows,

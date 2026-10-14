@@ -103,3 +103,10 @@ describe("who the reps are", () => {
     expect(await peopleOf(session)).toEqual({ reps: [], names: {} });
   });
 });
+
+describe("byKey leaves out the group of rows with no value", () => {
+  it("drops the server's `__null` group", () => {
+    const answer = { shape: "categorical" as const, total: 3, items: [{ key: "__null", label: "—", value: 1 }, { key: "u1", label: "u1", value: 2 }] };
+    expect(byKey(answer, "n")).toEqual({ u1: { n: 2 } });
+  });
+});

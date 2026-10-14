@@ -16,9 +16,6 @@ import type { LocaleTag } from "../locales.ts";
 
 export const base = {
   "en-US": {
-    "base.rebuilding.heading": "Sales CRM is being rebuilt",
-    "base.rebuilding.body":
-      "There are no screens here yet. The tables, the roles and the sample data come first; the screens follow.",
     "base.outside.heading": "This is the staff side of Sales CRM",
     "base.outside.body": "It runs inside Adminium, which holds its data and signs people in. Install the app in Adminium and open it from there.",
     "base.unreachable.heading": "Adminium could not be reached",
@@ -27,9 +24,6 @@ export const base = {
     "base.signedInAs": "Signed in as {name}",
   },
   "de-DE": {
-    "base.rebuilding.heading": "Sales CRM wird neu aufgebaut",
-    "base.rebuilding.body":
-      "Hier gibt es noch keine Ansichten. Zuerst kommen die Tabellen, die Rollen und die Beispieldaten, danach die Ansichten.",
     "base.outside.heading": "Dies ist die Mitarbeiterseite von Sales CRM",
     "base.outside.body": "Sie läuft in Adminium, das die Daten hält und die Anmeldung übernimmt. Installieren Sie die App in Adminium und öffnen Sie sie von dort.",
     "base.unreachable.heading": "Adminium ist nicht erreichbar",
@@ -38,9 +32,6 @@ export const base = {
     "base.signedInAs": "Angemeldet als {name}",
   },
   "fr-FR": {
-    "base.rebuilding.heading": "Sales CRM est en cours de reconstruction",
-    "base.rebuilding.body":
-      "Il n’y a pas encore d’écran ici. Les tables, les rôles et les données d’exemple viennent d’abord ; les écrans suivront.",
     "base.outside.heading": "Ceci est l’espace équipe de Sales CRM",
     "base.outside.body": "Il fonctionne dans Adminium, qui conserve ses données et gère la connexion. Installez l’application dans Adminium et ouvrez-la depuis celui-ci.",
     "base.unreachable.heading": "Impossible de joindre Adminium",
@@ -49,9 +40,6 @@ export const base = {
     "base.signedInAs": "Connecté en tant que {name}",
   },
   "da-DK": {
-    "base.rebuilding.heading": "Sales CRM bliver bygget om",
-    "base.rebuilding.body":
-      "Der er ingen skærmbilleder her endnu. Tabellerne, rollerne og eksempeldataene kommer først; skærmbillederne følger.",
     "base.outside.heading": "Dette er medarbejdersiden af Sales CRM",
     "base.outside.body": "Den kører i Adminium, som opbevarer dataene og logger folk ind. Installer appen i Adminium, og åbn den derfra.",
     "base.unreachable.heading": "Adminium kunne ikke nås",
@@ -60,9 +48,6 @@ export const base = {
     "base.signedInAs": "Logget ind som {name}",
   },
   "cs-CZ": {
-    "base.rebuilding.heading": "Sales CRM se přestavuje",
-    "base.rebuilding.body":
-      "Zatím tu nejsou žádné obrazovky. Nejdřív přijdou tabulky, role a ukázková data, obrazovky až potom.",
     "base.outside.heading": "Toto je část Sales CRM pro zaměstnance",
     "base.outside.body": "Běží v Adminiu, které uchovává data a přihlašuje uživatele. Nainstalujte aplikaci v Adminiu a otevřete ji odtud.",
     "base.unreachable.heading": "Adminium není dostupné",
@@ -71,8 +56,6 @@ export const base = {
     "base.signedInAs": "Přihlášen(a) jako {name}",
   },
   "zh-CN": {
-    "base.rebuilding.heading": "Sales CRM 正在重建",
-    "base.rebuilding.body": "这里还没有任何界面。先完成数据表、角色和示例数据，界面随后推出。",
     "base.outside.heading": "这是 Sales CRM 的员工端",
     "base.outside.body": "它在 Adminium 中运行，数据和登录都由 Adminium 负责。请在 Adminium 中安装此应用，并从那里打开。",
     "base.unreachable.heading": "无法连接 Adminium",
@@ -81,8 +64,6 @@ export const base = {
     "base.signedInAs": "当前登录：{name}",
   },
   "zh-TW": {
-    "base.rebuilding.heading": "Sales CRM 正在重建",
-    "base.rebuilding.body": "這裡還沒有任何畫面。會先完成資料表、角色和範例資料，畫面隨後推出。",
     "base.outside.heading": "這是 Sales CRM 的員工端",
     "base.outside.body": "它在 Adminium 中執行，資料與登入都由 Adminium 負責。請在 Adminium 中安裝此應用程式，並從那裡開啟。",
     "base.unreachable.heading": "無法連線到 Adminium",
@@ -91,8 +72,6 @@ export const base = {
     "base.signedInAs": "目前登入：{name}",
   },
   "ar-EG": {
-    "base.rebuilding.heading": "يُعاد بناء Sales CRM",
-    "base.rebuilding.body": "لا توجد شاشات هنا بعد. تأتي الجداول والأدوار والبيانات التجريبية أولاً، ثم الشاشات.",
     "base.outside.heading": "هذه واجهة الموظفين في Sales CRM",
     "base.outside.body": "تعمل داخل Adminium الذي يحفظ بياناتها ويتولى تسجيل الدخول. ثبّت التطبيق في Adminium وافتحه من هناك.",
     "base.unreachable.heading": "تعذّر الوصول إلى Adminium",

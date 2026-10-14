@@ -540,7 +540,8 @@
   font-weight: 600;
 }
 .crm-chip-btn[aria-pressed="true"] .crm-chip-count {
-  background: var(--accent-soft);
+  /* On the chip's own tint, a second tint read the accent at 4.36:1 (axe, P18): the count sits on the surface instead. */
+  background: var(--surface);
   color: var(--accent);
 }
 .crm-closed-list {
@@ -692,6 +693,15 @@
   min-inline-size: 0;
   /* The kit's parts read the app's own colours through these names. */
   --adm-kit-radius: 16px;
+}
+/* A card's warning and danger badges ("34 days"): the kit draws each tone on its own tint at 4.34-4.36:1; pulled toward the text colour they
+   read above 4.5:1 in both themes (axe, P18). The kit itself still draws 4.34:1 elsewhere: an engine finding. */
+.crm-board-kit .text-warn[data-tone="warn"] {
+  color: color-mix(in srgb, var(--warn) 85%, var(--fg));
+}
+.crm-board-kit .bg-danger-soft-solid,
+.crm-board-kit .text-danger[data-tone="danger"] {
+  color: color-mix(in srgb, var(--danger) 85%, var(--fg));
 }
 .crm-board-cut {
   padding-block: 14px 0;

@@ -147,6 +147,12 @@ export interface Figure {
   limit?: number;
 }
 
+/**
+ * Whether a group's key is the group of rows with no value. The server names that group `__null` (labelled "—"), in a
+ * `categorical` figure and on both sides of a `matrix`; an older answer may say `null` or nothing.
+ */
+export const noValue = (key: string | number | null | undefined): boolean => key === null || key === undefined || key === "" || key === "__null" || key === "null";
+
 /** A `categorical` figure's answer. */
 export interface Grouped {
   shape: "categorical";
@@ -471,7 +477,10 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     },
 
     listen(refs, on, resync) {
-      const channels = refs.map((ref) => `widget-data:${connectionId}:${tableId(ref)}`);
+      // A table of a part the install left out (Quotes without Invoices) has nothing to hear: it is passed over, never an error.
+      const present = refs.filter((ref) => realName(ref) !== undefined);
+      if (present.length === 0) return () => undefined;
+      const channels = present.map((ref) => `widget-data:${connectionId}:${tableId(ref)}`);
       const url = `${API}/events${query({ channels: channels.join(",") })}`;
       const stop = new AbortController();
       /*

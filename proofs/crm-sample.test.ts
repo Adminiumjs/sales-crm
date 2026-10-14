@@ -95,6 +95,8 @@ for (const [dialect, reachable] of LEGS) {
       // A delivery-note line found its job, and a snag its crew, though the bundle wrote neither.
       expect(await n(`SELECT COUNT(*) AS n FROM ${h.real('delivery_note_lines')} WHERE job_id IS NULL`)).toBe(0);
       expect(await n(`SELECT COUNT(*) AS n FROM ${h.real('snags')} WHERE due_on IS NULL OR due_days IS NULL`)).toBe(0);
+      // Every sample deal keeps the stage it was last written at (P18), so its first move names the stage it left.
+      expect(await n(`SELECT COUNT(*) AS n FROM ${deals} WHERE stage_kept_id IS NULL OR stage_kept_id <> stage_id`)).toBe(0);
     });
 
     it.runIf(process.env.CRM_DIAG === '1')('diagnosis: columns the bundle leaves out and the install leaves empty', async () => {

@@ -25,6 +25,7 @@ interface Card {
   y: number;
   w: number;
   h: number;
+  module?: string;
   config: {
     title?: string;
     titles?: Text;
@@ -34,6 +35,7 @@ interface Card {
     metricLabels?: Text;
     emptyState?: { titleKey: string; titles?: Text };
     series?: { label: string; labels?: Text }[];
+    columns?: { name: string; label: string; labels?: Text; hidden?: boolean }[];
     metricFormat?: string;
     binding: { kind: string; source: { name: string }; shape: string; team?: { owner: string; target?: { table: string }; cover?: string[]; metric?: string }; filters?: unknown[]; window?: unknown };
   };
@@ -59,7 +61,8 @@ interface Doc {
   navGroups: { key: string }[];
   navLinks?: NavLink[];
   roles: { key: string; permissions: string[] }[];
-  requiredSchema: { tables: { ref: string; columns: { ref: string; rules?: { staff?: boolean } }[] }[] };
+  requiredSchema: { tables: { ref: string; module?: string; columns: { ref: string; scale?: string; semantic?: string; rules?: { staff?: boolean } }[] }[] };
+  modules: { id: string; default: string }[];
 }
 
 const whole = readWhole() as Doc;
@@ -114,6 +117,23 @@ describe("the Overview (D10)", () => {
     expect(overview.config!.layout!.toolbar!.links!.map((link) => link.href)).toEqual(["@staff"]);
   });
 
+  it("names the part of every card over a part that can be switched off, so the card goes while the part is off", () => {
+    const partOf = Object.fromEntries(whole.requiredSchema.tables.map((table) => [table.ref, table.module]));
+    const switchable = new Set(whole.modules.filter((part) => part.default !== "always").map((part) => part.id));
+    for (const card of cards) {
+      const part = partOf[card.config.binding.source.name];
+      expect([card.i, card.module], card.i).toEqual([card.i, part !== undefined && switchable.has(part) ? part : undefined]);
+    }
+    expect(byKey["unclaimed-enquiries"]!.module).toBe("inbox");
+  });
+
+  it("writes every money column the engine would not take for money by its name as money, so headings and Show data print the currency", () => {
+    const byName = /(^|_)(amount|price|cost|total|subtotal|balance|fee|mrr|arr|revenue|budget|salary|payout|refund|paid|owed)(_|$)/;
+    const column = (table: string, ref: string) => whole.requiredSchema.tables.find((one) => one.ref === table)!.columns.find((one) => one.ref === ref)!;
+    for (const [table, ref] of [["deals", "weighted_value"], ["deals", "typed_amount"], ["deals", "target_value"], ["deals", "list_value"], ["enquiries", "est_value"]] as const) expect(column(table, ref).semantic, `${table}.${ref}`).toBe("money");
+    for (const table of whole.requiredSchema.tables) for (const one of table.columns) if (one.scale === "currency" && !byName.test(one.ref)) expect(one.semantic, `${table.ref}.${one.ref}`).toBe("money");
+  });
+
   it("asks for the drawn figures, the two whole-team ones as the whole team's or none", () => {
     expect(cards.map((card) => card.i)).toEqual(["open-pipeline", "weighted", "won-this-year", "team-cover", "open-deals", "unclaimed-enquiries", "jobs-this-week", "by-stage", "forecast", "reps", "sitting"]);
     // Ordinary cards answer each reader their own rows; the cover and the reps table are `team-figures`: whole or refused.
@@ -154,7 +174,10 @@ describe("the Overview (D10)", () => {
       if (card.config.metricLabel !== undefined) inEight(card.config.metricLabel, card.config.metricLabels, `${card.i} caption`);
       if (card.config.emptyState !== undefined) inEight(card.config.emptyState.titleKey, card.config.emptyState.titles, `${card.i} empty`);
       for (const one of card.config.series ?? []) inEight(one.label, one.labels, `${card.i} series`);
+      for (const one of (card.config.columns ?? []).filter((column) => column.hidden !== true)) inEight(one.label, one.labels, `${card.i} column ${one.name}`);
     }
+    // The reps card stays a table the engine heads in the reader's language (a `data-grid`), not a list.
+    expect(byKey["reps"]!.widget).toBe("data-grid");
     for (const link of overview.config!.layout!.toolbar!.links!) inEight(link.label, link.labels, "the toolbar's link");
   });
 });
@@ -175,6 +198,9 @@ describe("Approvals (ruling Q4: Quotes waiting)", () => {
       inEight(card.config.title, card.config.titles, `${card.i} title`);
       inEight(card.config.subtitle, card.config.subtitles, `${card.i} subtitle`);
       inEight(card.config.emptyState?.titleKey, card.config.emptyState?.titles, `${card.i} empty`);
+      for (const one of (card.config.columns ?? []).filter((column) => column.hidden !== true)) inEight(one.label, one.labels, `${card.i} column ${one.name}`);
     }
+    // Answering stays in the app: the toolbar opens the app's own Approvals screen, not its first page.
+    expect(approvals.config!.layout!.toolbar!.links!.map((link) => link.href)).toEqual(["@staff/approvals"]);
   });
 });

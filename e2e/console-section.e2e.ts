@@ -50,14 +50,17 @@ test("the owner's console: the section's entries as drawn, and the Overview with
   await expect(sitting.nth(0)).toContainText("34");
   await expect(sitting.nth(1)).toContainText("Showroom refit, phase one");
   await expect(sitting.nth(1)).toContainText("32");
-  // Each chart's figures as a table: Show data on Pipeline by stage gives the five stages, value and weighted (§2; the
-  // table writes them as numbers, without the currency the chart's axis carries).
+  // Each chart's figures as a table: Show data on Pipeline by stage gives the five stages, value and weighted (§2), in the
+  // install's currency: the value is an amount by its name, the weighted value is money because the app says so.
   await card(page, "by-stage").getByRole("button", { name: /show data/i }).click();
-  for (const [stage, value] of [["Discovery", "36,350"], ["Qualified", "32,950"], ["Proposal", "87,000"], ["Negotiation", "105,400"], ["Verbal", "24,600"]] as const) await expect(card(page, "by-stage").getByRole("row").filter({ hasText: stage })).toContainText(value);
-  // The forecast, July to October (§5).
+  for (const [stage, value, weighted] of [["Discovery", "£36,350", "£3,635"], ["Qualified", "£32,950", ""], ["Proposal", "£87,000", ""], ["Negotiation", "£105,400", "£79,050"], ["Verbal", "£24,600", ""]] as const) {
+    await expect(card(page, "by-stage").getByRole("row").filter({ hasText: stage })).toContainText(value);
+    if (weighted !== "") await expect(card(page, "by-stage").getByRole("row").filter({ hasText: stage })).toContainText(weighted);
+  }
+  // The forecast, July to October (§5): weighted value, so money too.
   await card(page, "forecast").getByRole("button", { name: /show data/i }).click();
-  await expect(card(page, "forecast")).toContainText("87,670");
-  await expect(card(page, "forecast")).toContainText("2,340");
+  await expect(card(page, "forecast")).toContainText("£87,670");
+  await expect(card(page, "forecast")).toContainText("£2,340");
   // The toolbar's way into the app's own screens.
   await expect(page.getByTestId("page-dashboard-link")).toHaveText(/Open Sales CRM/);
   await picture(page, "p17-owner-overview");
@@ -74,10 +77,10 @@ test("the console's Pipeline: odds, count and both totals on each heading, the c
   await expect(discovery.locator('[data-part="column-badge"]')).toHaveText("10%");
   await expect(discovery.locator('[data-part="column-count"]')).toHaveText("3");
   await expect(discovery.locator('[data-part="column-total"]')).toContainText("£36,350");
-  // (The weighted value is not drawn as money by the board: Adminium reads only a column it takes for an amount as money.)
-  await expect(discovery.locator('[data-part="column-total"]')).toContainText("3,635");
+  // The weighted value is money too: the app writes `deals.weighted_value` as money, so the heading prints the currency.
+  await expect(discovery.locator('[data-part="column-total"]')).toContainText("£3,635");
   await expect(column(page, "Verbal").locator('[data-part="column-badge"]')).toHaveText("90%");
-  await expect(column(page, "Negotiation").locator('[data-part="column-total"]')).toContainText("79,050");
+  await expect(column(page, "Negotiation").locator('[data-part="column-total"]')).toContainText("£79,050");
   // d12, 34 days in Qualified (§2): its company, its owner by name, its amount and its days, first in its column.
   const depot = column(page, "Qualified").locator('[role="button"]').filter({ hasText: "Depot supervisor stations" });
   await expect(depot).toContainText("34 days");
@@ -132,6 +135,16 @@ test("the sales manager: her figures are her team's, the whole team's two say so
   await expect(quotes("running-out").nth(0)).toContainText("Q-1001");
   await expect(quotes("running-out").nth(1)).toContainText("Q-1002");
   await picture(page, "p17-ivy-approvals");
+  // Answering stays in the app (decision 159): the toolbar's link opens the staff side's own Approvals screen, by its deep
+  // address, and the staff side serves that address.
+  const link = page.getByTestId("page-dashboard-link");
+  await expect(link).toHaveText(/Answer in Sales CRM/);
+  // An address of the side's own opens in a window of its own.
+  const [staff] = await Promise.all([context.waitForEvent("page"), link.click()]);
+  await staff.waitForLoadState();
+  expect(staff.url()).toMatch(/\/apps\/crm\/staff\/approvals$/);
+  await expect(staff.locator(".crm-approval").first()).toBeVisible();
+  await expect(staff.locator(".crm-approval").first()).toContainText("Q-1001");
 });
 
 test("a rep and the operations manager: no Overview and no Approvals on their rail, and the server refuses both pages", async ({ as, api }) => {
@@ -171,6 +184,9 @@ test("the Overview in Arabic, dark, 390 wide: right to left, the cards' words in
       expect(await page.evaluate(() => getComputedStyle(document.body).direction)).toBe("rtl");
       await expect(card(page, "open-pipeline")).toContainText("المسار المفتوح");
       await expect(card(page, "team-cover")).toContainText("تغطية الهدف");
+      // A table card's headings in the reader's language too.
+      await expect(card(page, "reps").getByRole("columnheader").first()).toContainText("المندوب");
+      await expect(card(page, "reps").getByRole("columnheader").filter({ hasText: "التغطية" })).toHaveCount(1);
       // Read-only reads every row: the whole team's cover is hers to see.
       await expect(card(page, "team-cover")).toContainText(/53|52[.,٫]9|٥٣/);
       const sideways = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

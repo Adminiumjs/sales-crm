@@ -16,6 +16,7 @@ import { useSession } from "../../session/session.tsx";
 import { canOpen, type MenuFacts, type PartId, type RouteKey } from "../../shell/routes.ts";
 import { isBuilt } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
+import { noValue } from "../../staffSession.ts";
 
 export const OPEN: Condition = { column: "state", op: "eq", value: "open" };
 /** A stage's dot and bar take their colour from its place in the order, never from its name: stages are the install's to rename. */
@@ -122,7 +123,7 @@ export function quarterOf(dayKey: string): string {
 export function byKey(figure: Grouped, single?: string): Record<string, Record<string, number>> {
   const out: Record<string, Record<string, number>> = {};
   for (const item of figure.items) {
-    if (item.key === null || item.key === "") continue;
+    if (noValue(item.key)) continue;
     const values: Record<string, number> = {};
     for (const [alias, value] of Object.entries(item.values ?? {})) values[alias] = num(value);
     // A figure asked for one number answers it as `value`.
