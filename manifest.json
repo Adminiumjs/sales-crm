@@ -10598,7 +10598,10 @@
               "visit-confirmed",
               "visit-moved",
               "visit-cancelled",
-              "referral-thanks"
+              "referral-thanks",
+              "showroom-confirmed",
+              "showroom-moved",
+              "showroom-cancelled"
             ],
             "rules": {
               "enumLabels": {
@@ -10682,6 +10685,36 @@
                     "ar-EG": "شكر على التعريف",
                     "zh-CN": "感谢引荐",
                     "zh-TW": "感謝引薦"
+                  },
+                  "showroom-confirmed": {
+                    "en-US": "Showroom booking confirmed",
+                    "de-DE": "Showroom-Termin bestätigt",
+                    "fr-FR": "Réservation du showroom confirmée",
+                    "da-DK": "Showroombooking bekræftet",
+                    "cs-CZ": "Rezervace showroomu potvrzena",
+                    "ar-EG": "تأكيد حجز صالة العرض",
+                    "zh-CN": "展厅预约已确认",
+                    "zh-TW": "展示間預約已確認"
+                  },
+                  "showroom-moved": {
+                    "en-US": "Showroom booking moved",
+                    "de-DE": "Showroom-Termin verschoben",
+                    "fr-FR": "Réservation du showroom déplacée",
+                    "da-DK": "Showroombooking flyttet",
+                    "cs-CZ": "Rezervace showroomu přesunuta",
+                    "ar-EG": "تغيير موعد حجز صالة العرض",
+                    "zh-CN": "展厅预约已改期",
+                    "zh-TW": "展示間預約已改期"
+                  },
+                  "showroom-cancelled": {
+                    "en-US": "Showroom booking cancelled",
+                    "de-DE": "Showroom-Termin abgesagt",
+                    "fr-FR": "Réservation du showroom annulée",
+                    "da-DK": "Showroombooking aflyst",
+                    "cs-CZ": "Rezervace showroomu zrušena",
+                    "ar-EG": "إلغاء حجز صالة العرض",
+                    "zh-CN": "展厅预约已取消",
+                    "zh-TW": "展示間預約已取消"
                   }
                 }
               }
@@ -11172,6 +11205,21 @@
             }
           },
           {
+            "ref": "showroom_emails",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Tell visitors about showroom bookings by e-mail",
+              "de-DE": "Besucher per E-Mail über Showroom-Termine informieren",
+              "fr-FR": "Prévenir les visiteurs de leurs réservations du showroom par e-mail",
+              "da-DK": "Giv besøgende besked om showroombookinger på e-mail",
+              "cs-CZ": "Informovat návštěvníky o rezervacích showroomu e-mailem",
+              "ar-EG": "إبلاغ الزوار بحجوزات صالة العرض بالبريد",
+              "zh-CN": "通过邮件告知访客展厅预约",
+              "zh-TW": "以電子郵件告知訪客展示間預約"
+            }
+          },
+          {
             "ref": "sitting_warm_days",
             "type": "int",
             "default": 14,
@@ -11501,6 +11549,69 @@
               "ar-EG": "ينتهي يوم العمل",
               "zh-CN": "工作日结束",
               "zh-TW": "工作日結束"
+            }
+          },
+          {
+            "ref": "showroom_opens",
+            "type": "text",
+            "maxLength": 5,
+            "default": "09:00",
+            "rules": {
+              "validation": {
+                "minLength": 5,
+                "maxLength": 5
+              }
+            },
+            "label": {
+              "en-US": "Showroom opens",
+              "de-DE": "Showroom öffnet",
+              "fr-FR": "Ouverture du showroom",
+              "da-DK": "Showroom åbner",
+              "cs-CZ": "Showroom otevírá",
+              "ar-EG": "تفتح صالة العرض",
+              "zh-CN": "展厅开门时间",
+              "zh-TW": "展示間開門時間"
+            }
+          },
+          {
+            "ref": "showroom_closes",
+            "type": "text",
+            "maxLength": 5,
+            "default": "17:30",
+            "rules": {
+              "validation": {
+                "minLength": 5,
+                "maxLength": 5
+              }
+            },
+            "label": {
+              "en-US": "Showroom closes",
+              "de-DE": "Showroom schließt",
+              "fr-FR": "Fermeture du showroom",
+              "da-DK": "Showroom lukker",
+              "cs-CZ": "Showroom zavírá",
+              "ar-EG": "تغلق صالة العرض",
+              "zh-CN": "展厅关门时间",
+              "zh-TW": "展示間關門時間"
+            }
+          },
+          {
+            "ref": "showroom_address",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "rules": {
+              "personal": false
+            },
+            "label": {
+              "en-US": "Showroom address",
+              "de-DE": "Adresse des Showrooms",
+              "fr-FR": "Adresse du showroom",
+              "da-DK": "Showroommets adresse",
+              "cs-CZ": "Adresa showroomu",
+              "ar-EG": "عنوان صالة العرض",
+              "zh-CN": "展厅地址",
+              "zh-TW": "展示間地址"
             }
           },
           {
@@ -16699,7 +16810,10 @@
           "staff": "thanked_by_id"
         }
       }
-    ]
+    ],
+    "settings": {
+      "table": "settings"
+    }
   },
   "emailTemplates": [
     {

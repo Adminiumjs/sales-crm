@@ -10506,44 +10506,10 @@
           "moves": {
             "tentative": [
               "confirmed",
-              {
-                "to": "cancelled",
-                "requires": {
-                  "where": [
-                    {
-                      "column": "cancel_reason",
-                      "isNull": false
-                    }
-                  ]
-                }
-              }
+              "done"
             ],
             "confirmed": [
-              "done",
-              {
-                "to": "cancelled",
-                "requires": {
-                  "where": [
-                    {
-                      "column": "cancel_reason",
-                      "isNull": false
-                    }
-                  ]
-                }
-              }
-            ],
-            "done": [
-              {
-                "to": "cancelled",
-                "requires": {
-                  "where": [
-                    {
-                      "column": "cancel_reason",
-                      "isNull": false
-                    }
-                  ]
-                }
-              }
+              "done"
             ]
           },
           "actions": [
@@ -10580,28 +10546,13 @@
                 "to": "done"
               },
               "tone": "primary"
-            },
-            {
-              "id": "cancel",
-              "label": {
-                "en-US": "Cancel",
-                "de-DE": "Absagen",
-                "fr-FR": "Annuler",
-                "da-DK": "Aflys",
-                "cs-CZ": "Zrušit",
-                "ar-EG": "ألغِ",
-                "zh-CN": "取消预约",
-                "zh-TW": "取消預約"
-              },
-              "move": {
-                "to": "cancelled"
-              },
-              "tone": "danger",
-              "ask": [
-                "cancel_reason"
-              ]
             }
-          ]
+          ],
+          "noDelete": {
+            "when": [
+              "done"
+            ]
+          }
         },
         "columns": [
           {
@@ -10676,14 +10627,21 @@
             "ref": "party",
             "type": "int",
             "label": {
-              "en-US": "Party size",
-              "de-DE": "Personenzahl",
-              "fr-FR": "Nombre de personnes",
-              "da-DK": "Antal personer",
-              "cs-CZ": "Počet osob",
-              "ar-EG": "عدد الأشخاص",
+              "en-US": "How many",
+              "de-DE": "Wie viele",
+              "fr-FR": "Combien",
+              "da-DK": "Hvor mange",
+              "cs-CZ": "Kolik osob",
+              "ar-EG": "كم شخصًا",
               "zh-CN": "人数",
               "zh-TW": "人數"
+            },
+            "default": 1,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 50
+              }
             }
           },
           {
@@ -10739,8 +10697,7 @@
             "enum": [
               "tentative",
               "confirmed",
-              "done",
-              "cancelled"
+              "done"
             ],
             "default": "tentative",
             "rules": {
@@ -10775,16 +10732,6 @@
                     "ar-EG": "تم",
                     "zh-CN": "已完成",
                     "zh-TW": "已完成"
-                  },
-                  "cancelled": {
-                    "en-US": "Cancelled",
-                    "de-DE": "Abgesagt",
-                    "fr-FR": "Annulée",
-                    "da-DK": "Aflyst",
-                    "cs-CZ": "Zrušená",
-                    "ar-EG": "ملغى",
-                    "zh-CN": "已取消",
-                    "zh-TW": "已取消"
                   }
                 }
               }
@@ -10877,6 +10824,43 @@
               "ar-EG": "الصفقة",
               "zh-CN": "商机",
               "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "note",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "rules": {
+              "plainText": {
+                "digits": 12,
+                "max": 400
+              }
+            },
+            "label": {
+              "en-US": "What they come to see",
+              "de-DE": "Was sie sehen möchten",
+              "fr-FR": "Ce qu’ils viennent voir",
+              "da-DK": "Hvad de kommer for at se",
+              "cs-CZ": "Co si přijdou prohlédnout",
+              "ar-EG": "ما يأتون لرؤيته",
+              "zh-CN": "来访想看的内容",
+              "zh-TW": "來訪想看的內容"
+            }
+          },
+          {
+            "ref": "next_step_done_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Next step done on",
+              "de-DE": "Nächster Schritt erledigt am",
+              "fr-FR": "Prochaine étape faite le",
+              "da-DK": "Næste skridt gjort den",
+              "cs-CZ": "Další krok hotov dne",
+              "ar-EG": "نُفِّذت الخطوة التالية في",
+              "zh-CN": "下一步完成日期",
+              "zh-TW": "下一步完成日期"
             }
           },
           {
@@ -10974,6 +10958,12 @@
               "ar-EG": "العدد المتوفر",
               "zh-CN": "持有数量",
               "zh-TW": "持有數量"
+            },
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 999
+              }
             }
           },
           {
@@ -10995,6 +10985,49 @@
               "ar-EG": "صنف المخزون",
               "zh-CN": "库存物料",
               "zh-TW": "庫存品項"
+            }
+          },
+          {
+            "ref": "out",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "sample_loans",
+                "via": "sample_id",
+                "sum": "pieces",
+                "unlessSet": "returned_on",
+                "balance": {
+                  "column": "on_shelf",
+                  "of": "held"
+                },
+                "cap": true
+              }
+            },
+            "label": {
+              "en-US": "Out on loan",
+              "de-DE": "Ausgeliehen",
+              "fr-FR": "Prêtés",
+              "da-DK": "Udlånt",
+              "cs-CZ": "Zapůjčeno",
+              "ar-EG": "مُعارة",
+              "zh-CN": "借出中",
+              "zh-TW": "借出中"
+            }
+          },
+          {
+            "ref": "on_shelf",
+            "type": "int",
+            "default": 0,
+            "label": {
+              "en-US": "On the shelf",
+              "de-DE": "Im Regal",
+              "fr-FR": "En rayon",
+              "da-DK": "På hylden",
+              "cs-CZ": "Na polici",
+              "ar-EG": "على الرف",
+              "zh-CN": "在架上",
+              "zh-TW": "在架上"
             }
           },
           {
@@ -11111,6 +11144,27 @@
             }
           },
           {
+            "ref": "pieces",
+            "type": "int",
+            "default": 1,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 99
+              }
+            },
+            "label": {
+              "en-US": "Pieces",
+              "de-DE": "Stück",
+              "fr-FR": "Pièces",
+              "da-DK": "Stk.",
+              "cs-CZ": "Kusy",
+              "ar-EG": "القطع",
+              "zh-CN": "件数",
+              "zh-TW": "件數"
+            }
+          },
+          {
             "ref": "out_on",
             "type": "date",
             "label": {
@@ -11151,6 +11205,28 @@
               "ar-EG": "تاريخ الإرجاع",
               "zh-CN": "归还日期",
               "zh-TW": "歸還日期"
+            }
+          },
+          {
+            "ref": "chases",
+            "type": "int",
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "sample_chases",
+                "via": "loan_id",
+                "count": true
+              }
+            },
+            "label": {
+              "en-US": "Times chased",
+              "de-DE": "Erinnerungen",
+              "fr-FR": "Relances",
+              "da-DK": "Rykkere",
+              "cs-CZ": "Urgence",
+              "ar-EG": "مرات المتابعة",
+              "zh-CN": "催还次数",
+              "zh-TW": "催還次數"
             }
           },
           {
@@ -17616,7 +17692,10 @@
               "visit-confirmed",
               "visit-moved",
               "visit-cancelled",
-              "referral-thanks"
+              "referral-thanks",
+              "showroom-confirmed",
+              "showroom-moved",
+              "showroom-cancelled"
             ],
             "rules": {
               "enumLabels": {
@@ -17700,6 +17779,36 @@
                     "ar-EG": "شكر على التعريف",
                     "zh-CN": "感谢引荐",
                     "zh-TW": "感謝引薦"
+                  },
+                  "showroom-confirmed": {
+                    "en-US": "Showroom booking confirmed",
+                    "de-DE": "Showroom-Termin bestätigt",
+                    "fr-FR": "Réservation du showroom confirmée",
+                    "da-DK": "Showroombooking bekræftet",
+                    "cs-CZ": "Rezervace showroomu potvrzena",
+                    "ar-EG": "تأكيد حجز صالة العرض",
+                    "zh-CN": "展厅预约已确认",
+                    "zh-TW": "展示間預約已確認"
+                  },
+                  "showroom-moved": {
+                    "en-US": "Showroom booking moved",
+                    "de-DE": "Showroom-Termin verschoben",
+                    "fr-FR": "Réservation du showroom déplacée",
+                    "da-DK": "Showroombooking flyttet",
+                    "cs-CZ": "Rezervace showroomu přesunuta",
+                    "ar-EG": "تغيير موعد حجز صالة العرض",
+                    "zh-CN": "展厅预约已改期",
+                    "zh-TW": "展示間預約已改期"
+                  },
+                  "showroom-cancelled": {
+                    "en-US": "Showroom booking cancelled",
+                    "de-DE": "Showroom-Termin abgesagt",
+                    "fr-FR": "Réservation du showroom annulée",
+                    "da-DK": "Showroombooking aflyst",
+                    "cs-CZ": "Rezervace showroomu zrušena",
+                    "ar-EG": "إلغاء حجز صالة العرض",
+                    "zh-CN": "展厅预约已取消",
+                    "zh-TW": "展示間預約已取消"
                   }
                 }
               }
@@ -17924,6 +18033,22 @@
               "ar-EG": "تعريف",
               "zh-CN": "引荐",
               "zh-TW": "引薦"
+            }
+          },
+          {
+            "ref": "booking_id",
+            "type": "fk",
+            "references": "showroom_bookings",
+            "nullable": true,
+            "label": {
+              "en-US": "Showroom booking",
+              "de-DE": "Showroom-Termin",
+              "fr-FR": "Réservation du showroom",
+              "da-DK": "Showroombooking",
+              "cs-CZ": "Rezervace showroomu",
+              "ar-EG": "حجز صالة العرض",
+              "zh-CN": "展厅预约",
+              "zh-TW": "展示間預約"
             }
           },
           {
@@ -18187,6 +18312,21 @@
               "ar-EG": "إبلاغ العملاء بزيارات الموقع بالبريد",
               "zh-CN": "通过邮件告知客户现场拜访安排",
               "zh-TW": "以電子郵件告知客戶現場拜訪安排"
+            }
+          },
+          {
+            "ref": "showroom_emails",
+            "type": "bool",
+            "default": true,
+            "label": {
+              "en-US": "Tell visitors about showroom bookings by e-mail",
+              "de-DE": "Besucher per E-Mail über Showroom-Termine informieren",
+              "fr-FR": "Prévenir les visiteurs de leurs réservations du showroom par e-mail",
+              "da-DK": "Giv besøgende besked om showroombookinger på e-mail",
+              "cs-CZ": "Informovat návštěvníky o rezervacích showroomu e-mailem",
+              "ar-EG": "إبلاغ الزوار بحجوزات صالة العرض بالبريد",
+              "zh-CN": "通过邮件告知访客展厅预约",
+              "zh-TW": "以電子郵件告知訪客展示間預約"
             }
           },
           {
@@ -18519,6 +18659,69 @@
               "ar-EG": "ينتهي يوم العمل",
               "zh-CN": "工作日结束",
               "zh-TW": "工作日結束"
+            }
+          },
+          {
+            "ref": "showroom_opens",
+            "type": "text",
+            "maxLength": 5,
+            "default": "09:00",
+            "rules": {
+              "validation": {
+                "minLength": 5,
+                "maxLength": 5
+              }
+            },
+            "label": {
+              "en-US": "Showroom opens",
+              "de-DE": "Showroom öffnet",
+              "fr-FR": "Ouverture du showroom",
+              "da-DK": "Showroom åbner",
+              "cs-CZ": "Showroom otevírá",
+              "ar-EG": "تفتح صالة العرض",
+              "zh-CN": "展厅开门时间",
+              "zh-TW": "展示間開門時間"
+            }
+          },
+          {
+            "ref": "showroom_closes",
+            "type": "text",
+            "maxLength": 5,
+            "default": "17:30",
+            "rules": {
+              "validation": {
+                "minLength": 5,
+                "maxLength": 5
+              }
+            },
+            "label": {
+              "en-US": "Showroom closes",
+              "de-DE": "Showroom schließt",
+              "fr-FR": "Fermeture du showroom",
+              "da-DK": "Showroom lukker",
+              "cs-CZ": "Showroom zavírá",
+              "ar-EG": "تغلق صالة العرض",
+              "zh-CN": "展厅关门时间",
+              "zh-TW": "展示間關門時間"
+            }
+          },
+          {
+            "ref": "showroom_address",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "rules": {
+              "personal": false
+            },
+            "label": {
+              "en-US": "Showroom address",
+              "de-DE": "Adresse des Showrooms",
+              "fr-FR": "Adresse du showroom",
+              "da-DK": "Showroommets adresse",
+              "cs-CZ": "Adresa showroomu",
+              "ar-EG": "عنوان صالة العرض",
+              "zh-CN": "展厅地址",
+              "zh-TW": "展示間地址"
             }
           },
           {
@@ -21119,6 +21322,26 @@
             "access_note",
             "ask_for_contact_id"
           ]
+        },
+        "sample_loans": {
+          "writable": [
+            "sample_id",
+            "company_id",
+            "contact_id",
+            "pieces",
+            "out_on",
+            "due_back",
+            "returned_on"
+          ],
+          "creatable": [
+            "sample_id",
+            "company_id",
+            "contact_id",
+            "pieces",
+            "out_on",
+            "due_back",
+            "returned_on"
+          ]
         }
       }
     },
@@ -21628,7 +21851,9 @@
             "cancel_reason",
             "outcome",
             "next_step",
-            "next_step_by"
+            "next_step_by",
+            "note",
+            "next_step_done_on"
           ],
           "creatable": [
             "space_id",
@@ -21643,13 +21868,49 @@
             "cancel_reason",
             "outcome",
             "next_step",
-            "next_step_by"
+            "next_step_by",
+            "note",
+            "next_step_done_on"
           ]
         },
         "sample_chases": {
           "writable": [
             "loan_id",
             "chased_on"
+          ]
+        },
+        "samples": {
+          "writable": [
+            "name",
+            "kind",
+            "held",
+            "item"
+          ],
+          "creatable": [
+            "name",
+            "kind",
+            "held",
+            "item"
+          ]
+        },
+        "sample_loans": {
+          "writable": [
+            "sample_id",
+            "company_id",
+            "contact_id",
+            "pieces",
+            "out_on",
+            "due_back",
+            "returned_on"
+          ],
+          "creatable": [
+            "sample_id",
+            "company_id",
+            "contact_id",
+            "pieces",
+            "out_on",
+            "due_back",
+            "returned_on"
           ]
         }
       }
@@ -24699,7 +24960,8 @@
       "quote": "quote_id",
       "deal": "deal_id",
       "visit": "visit_id",
-      "referral": "referral_id"
+      "referral": "referral_id",
+      "booking": "booking_id"
     },
     "recipient": {
       "via": "contact_id",
@@ -24715,7 +24977,10 @@
       "visit-confirmed": "crm-visit-confirmed",
       "visit-moved": "crm-visit-moved",
       "visit-cancelled": "crm-visit-cancelled",
-      "referral-thanks": "crm-referral-thanks"
+      "referral-thanks": "crm-referral-thanks",
+      "showroom-confirmed": "crm-showroom-confirmed",
+      "showroom-moved": "crm-showroom-moved",
+      "showroom-cancelled": "crm-showroom-cancelled"
     },
     "producers": [
       {
@@ -24839,8 +25104,81 @@
         "replyTo": {
           "staff": "thanked_by_id"
         }
+      },
+      {
+        "kind": "showroom-confirmed",
+        "module": "showroom",
+        "link": "booking_id",
+        "gate": {
+          "setting": {
+            "table": "settings",
+            "column": "showroom_emails"
+          }
+        },
+        "onChange": {
+          "table": "showroom_bookings",
+          "column": "state",
+          "to": "confirmed"
+        },
+        "replyTo": {
+          "staff": "rep_id"
+        }
+      },
+      {
+        "kind": "showroom-moved",
+        "module": "showroom",
+        "link": "booking_id",
+        "gate": {
+          "setting": {
+            "table": "settings",
+            "column": "showroom_emails"
+          }
+        },
+        "onChange": {
+          "table": "showroom_bookings",
+          "columns": [
+            "starts_at"
+          ],
+          "changed": true,
+          "where": {
+            "column": "state",
+            "eq": "confirmed"
+          }
+        },
+        "was": [
+          "starts_at"
+        ],
+        "replyTo": {
+          "staff": "rep_id"
+        },
+        "batchMinutes": 15
+      },
+      {
+        "kind": "showroom-cancelled",
+        "module": "showroom",
+        "link": "booking_id",
+        "gate": {
+          "setting": {
+            "table": "settings",
+            "column": "showroom_emails"
+          }
+        },
+        "onDelete": {
+          "table": "showroom_bookings",
+          "where": {
+            "column": "state",
+            "eq": "confirmed"
+          }
+        },
+        "was": [
+          "starts_at",
+          "minutes"
+        ]
       }
-    ]
+    ],
+    "settings": {
+      "table": "settings"
+    }
   },
   "emailTemplates": [
     {
@@ -29851,6 +30189,1235 @@
             }
           ],
           "footer": "您收到此郵件，是因為您曾為我們引薦。"
+        }
+      }
+    },
+    {
+      "key": "crm-showroom-confirmed",
+      "name": "Showroom booking confirmed",
+      "vars": [
+        "recipient.first_name",
+        "booking.starts_at.date",
+        "booking.starts_at.time",
+        "booking.starts_at.day_month",
+        "booking.time_range",
+        "booking.space.name",
+        "booking.party",
+        "booking.note",
+        "practice.showroom_address"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your showroom visit on {{booking.starts_at.day_month}} is confirmed",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "See you in the showroom"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, your visit to our showroom is confirmed for {{booking.starts_at.date}} at {{booking.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Day",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Time",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Space",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "How many",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "You will see: {{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Where: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "You got this because a visit to our showroom was booked with you. To change it, reply to this email."
+        },
+        "de-DE": {
+          "subject": "Ihr Showroom-Besuch am {{booking.starts_at.day_month}} ist bestätigt",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Bis bald im Showroom"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, Ihr Besuch in unserem Showroom ist für den {{booking.starts_at.date}} um {{booking.starts_at.time}} bestätigt."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Tag",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Uhrzeit",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Bereich",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "Personen",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Sie sehen: {{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Wo: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil ein Besuch in unserem Showroom mit Ihnen vereinbart wurde. Um ihn zu ändern, antworten Sie auf diese E-Mail."
+        },
+        "fr-FR": {
+          "subject": "Votre visite du showroom le {{booking.starts_at.day_month}} est confirmée",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "À bientôt au showroom"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, votre visite de notre showroom est confirmée pour le {{booking.starts_at.date}} à {{booking.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Jour",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Heure",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Espace",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "Nombre de personnes",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Vous verrez : {{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Adresse : {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce qu’une visite de notre showroom a été convenue avec vous. Pour la modifier, répondez à cet e-mail."
+        },
+        "da-DK": {
+          "subject": "Dit besøg i showroommet den {{booking.starts_at.day_month}} er bekræftet",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vi ses i showroommet"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, dit besøg i vores showroom er bekræftet {{booking.starts_at.date}} kl. {{booking.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dag",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Tid",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Område",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "Antal",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Du får at se: {{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hvor: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi der er aftalt et besøg i vores showroom med dig. Svar på denne e-mail for at ændre det."
+        },
+        "cs-CZ": {
+          "subject": "Vaše návštěva showroomu {{booking.starts_at.day_month}} je potvrzena",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Na shledanou v showroomu"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, vaše návštěva našeho showroomu je potvrzena na {{booking.starts_at.date}} v {{booking.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Den",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Čas",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Prostor",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "Počet osob",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Uvidíte: {{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Kde: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože s vámi byla domluvena návštěva našeho showroomu. Chcete-li ji změnit, odpovězte na tento e-mail."
+        },
+        "ar-EG": {
+          "subject": "تم تأكيد زيارتك لصالة العرض يوم {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "نراك في صالة العرض"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، تم تأكيد زيارتك لصالة العرض يوم {{booking.starts_at.date}} الساعة {{booking.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "اليوم",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "الوقت",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "المساحة",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "عدد الأشخاص",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "سترى: {{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "المكان: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأن زيارة إلى صالة العرض لدينا حُجزت معك. لتغييرها، رُدّ على هذه الرسالة."
+        },
+        "zh-CN": {
+          "subject": "您 {{booking.starts_at.day_month}} 的展厅参观已确认",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "展厅见"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！您参观我们展厅的时间已确认：{{booking.starts_at.date}} {{booking.starts_at.time}}。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "时间",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "空间",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "人数",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "您将看到：{{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "地点：{{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "您收到这封邮件，是因为已为您预约了我们展厅的参观。如需更改，请回复此邮件。"
+        },
+        "zh-TW": {
+          "subject": "您 {{booking.starts_at.day_month}} 的展示間參觀已確認",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "展示間見"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！您參觀我們展示間的時間已確認：{{booking.starts_at.date}} {{booking.starts_at.time}}。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "時間",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "空間",
+                    "amount": "{{booking.space.name}}"
+                  },
+                  {
+                    "label": "人數",
+                    "amount": "{{booking.party}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "您將看到：{{booking.note}}"
+              },
+              "showWhen": {
+                "var": "booking.note"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "地點：{{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "您收到這封郵件，是因為已為您預約了我們展示間的參觀。如需更改，請回覆此郵件。"
+        }
+      }
+    },
+    {
+      "key": "crm-showroom-moved",
+      "name": "Showroom booking moved",
+      "vars": [
+        "recipient.first_name",
+        "booking.starts_at.date",
+        "booking.starts_at.day_month",
+        "booking.time_range",
+        "booking.space.name",
+        "was.starts_at.date",
+        "was.starts_at.time",
+        "practice.showroom_address"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your showroom visit has moved to {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Your showroom visit has a new time"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, the visit to our showroom that was on {{was.starts_at.date}} at {{was.starts_at.time}} has been moved."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "New day",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "New time",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "It was",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "Space",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Where: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "You got this because a visit to our showroom was booked with you. If the new time does not suit you, reply to this email."
+        },
+        "de-DE": {
+          "subject": "Ihr Showroom-Besuch wurde auf den {{booking.starts_at.day_month}} verlegt",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ihr Showroom-Besuch hat eine neue Zeit"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, der Besuch in unserem Showroom vom {{was.starts_at.date}} um {{was.starts_at.time}} wurde verlegt."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Neuer Tag",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Neue Uhrzeit",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Bisher",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "Bereich",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Wo: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil ein Besuch in unserem Showroom mit Ihnen vereinbart wurde. Passt Ihnen die neue Zeit nicht, antworten Sie auf diese E-Mail."
+        },
+        "fr-FR": {
+          "subject": "Votre visite du showroom est reportée au {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Votre visite du showroom a un nouvel horaire"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, la visite de notre showroom prévue le {{was.starts_at.date}} à {{was.starts_at.time}} a été déplacée."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Nouveau jour",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Nouvel horaire",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "C’était",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "Espace",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Adresse : {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce qu’une visite de notre showroom a été convenue avec vous. Si le nouvel horaire ne vous convient pas, répondez à cet e-mail."
+        },
+        "da-DK": {
+          "subject": "Dit besøg i showroommet er flyttet til den {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Dit besøg i showroommet har fået et nyt tidspunkt"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, besøget i vores showroom {{was.starts_at.date}} kl. {{was.starts_at.time}} er blevet flyttet."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Ny dag",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Nyt tidspunkt",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Det var",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "Område",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hvor: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi der er aftalt et besøg i vores showroom med dig. Svar på denne e-mail, hvis det nye tidspunkt ikke passer dig."
+        },
+        "cs-CZ": {
+          "subject": "Vaše návštěva showroomu se přesouvá na {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vaše návštěva showroomu má nový čas"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, návštěva našeho showroomu plánovaná na {{was.starts_at.date}} v {{was.starts_at.time}} byla přesunuta."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Nový den",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "Nový čas",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "Původně",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "Prostor",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Kde: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože s vámi byla domluvena návštěva našeho showroomu. Pokud vám nový čas nevyhovuje, odpovězte na tento e-mail."
+        },
+        "ar-EG": {
+          "subject": "تغيّر موعد زيارتك لصالة العرض إلى {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "لزيارتك لصالة العرض موعد جديد"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، تغيّر موعد زيارة صالة العرض التي كانت يوم {{was.starts_at.date}} الساعة {{was.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "اليوم الجديد",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "الوقت الجديد",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "كان الموعد",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "المساحة",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "المكان: {{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأن زيارة إلى صالة العرض لدينا حُجزت معك. إن لم يناسبك الموعد الجديد، رُدّ على هذه الرسالة."
+        },
+        "zh-CN": {
+          "subject": "您的展厅参观已改到 {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的展厅参观有了新时间"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！原定于 {{was.starts_at.date}} {{was.starts_at.time}} 的展厅参观已改期。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "新日期",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "新时间",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "原时间",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "空间",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "地点：{{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "您收到这封邮件，是因为已为您预约了我们展厅的参观。如新时间不合适，请回复此邮件。"
+        },
+        "zh-TW": {
+          "subject": "您的展示間參觀已改到 {{booking.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的展示間參觀有了新時間"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！原定於 {{was.starts_at.date}} {{was.starts_at.time}} 的展示間參觀已改期。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "新日期",
+                    "amount": "{{booking.starts_at.date}}"
+                  },
+                  {
+                    "label": "新時間",
+                    "amount": "{{booking.time_range}}"
+                  },
+                  {
+                    "label": "原時間",
+                    "amount": "{{was.starts_at.date}}, {{was.starts_at.time}}"
+                  },
+                  {
+                    "label": "空間",
+                    "amount": "{{booking.space.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "地點：{{practice.showroom_address}}"
+              },
+              "showWhen": {
+                "var": "practice.showroom_address"
+              }
+            }
+          ],
+          "footer": "您收到這封郵件，是因為已為您預約了我們展示間的參觀。如新時間不合適，請回覆此郵件。"
+        }
+      }
+    },
+    {
+      "key": "crm-showroom-cancelled",
+      "name": "Showroom booking cancelled",
+      "vars": [
+        "recipient.first_name",
+        "was.starts_at.date",
+        "was.starts_at.time",
+        "was.starts_at.day_month"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your showroom visit on {{was.starts_at.day_month}} is cancelled",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Your showroom visit is cancelled"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, the visit to our showroom on {{was.starts_at.date}} at {{was.starts_at.time}} will not take place."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Day",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "Time",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "To book another time, get in touch with us."
+              }
+            }
+          ],
+          "footer": "You got this because a visit to our showroom was booked with you."
+        },
+        "de-DE": {
+          "subject": "Ihr Showroom-Besuch am {{was.starts_at.day_month}} ist abgesagt",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ihr Showroom-Besuch ist abgesagt"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, der Besuch in unserem Showroom am {{was.starts_at.date}} um {{was.starts_at.time}} findet nicht statt."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Tag",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "Uhrzeit",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Für einen neuen Termin melden Sie sich bitte bei uns."
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil ein Besuch in unserem Showroom mit Ihnen vereinbart war."
+        },
+        "fr-FR": {
+          "subject": "Votre visite du showroom du {{was.starts_at.day_month}} est annulée",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Votre visite du showroom est annulée"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, la visite de notre showroom du {{was.starts_at.date}} à {{was.starts_at.time}} n’aura pas lieu."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Jour",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "Heure",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pour convenir d’un autre horaire, contactez-nous."
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce qu’une visite de notre showroom avait été convenue avec vous."
+        },
+        "da-DK": {
+          "subject": "Dit besøg i showroommet den {{was.starts_at.day_month}} er aflyst",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Dit besøg i showroommet er aflyst"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, besøget i vores showroom {{was.starts_at.date}} kl. {{was.starts_at.time}} bliver ikke til noget."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dag",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "Tid",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Kontakt os for at aftale et nyt tidspunkt."
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi der var aftalt et besøg i vores showroom med dig."
+        },
+        "cs-CZ": {
+          "subject": "Vaše návštěva showroomu {{was.starts_at.day_month}} je zrušena",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vaše návštěva showroomu je zrušena"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, návštěva našeho showroomu {{was.starts_at.date}} v {{was.starts_at.time}} se neuskuteční."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Den",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "Čas",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Chcete-li domluvit jiný termín, ozvěte se nám."
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože s vámi byla domluvena návštěva našeho showroomu."
+        },
+        "ar-EG": {
+          "subject": "أُلغيت زيارتك لصالة العرض يوم {{was.starts_at.day_month}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "أُلغيت زيارتك لصالة العرض"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، لن تتم زيارة صالة العرض يوم {{was.starts_at.date}} الساعة {{was.starts_at.time}}."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "اليوم",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "الوقت",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "لحجز موعد آخر، تواصل معنا."
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأن زيارة إلى صالة العرض لدينا كانت محجوزة معك."
+        },
+        "zh-CN": {
+          "subject": "您 {{was.starts_at.day_month}} 的展厅参观已取消",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的展厅参观已取消"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！{{was.starts_at.date}} {{was.starts_at.time}} 的展厅参观将不再进行。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "时间",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需另约时间，请与我们联系。"
+              }
+            }
+          ],
+          "footer": "您收到这封邮件，是因为曾为您预约了我们展厅的参观。"
+        },
+        "zh-TW": {
+          "subject": "您 {{was.starts_at.day_month}} 的展示間參觀已取消",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的展示間參觀已取消"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！{{was.starts_at.date}} {{was.starts_at.time}} 的展示間參觀將不再進行。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "日期",
+                    "amount": "{{was.starts_at.date}}"
+                  },
+                  {
+                    "label": "時間",
+                    "amount": "{{was.starts_at.time}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需另約時間，請與我們聯絡。"
+              }
+            }
+          ],
+          "footer": "您收到這封郵件，是因為曾為您預約了我們展示間的參觀。"
         }
       }
     }

@@ -319,11 +319,11 @@ describe("a comment on a deal may mention a colleague", () => {
 });
 
 describe("the e-mails the app ships", () => {
-  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"];
+  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled"];
   const shape = (key: string, locale = "en-US") => m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks.map((block) => block.block);
 
-  it("are ten: eight to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks"]);
+  it("are thirteen: eleven to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled"]);
     for (const template of m.emailTemplates) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
@@ -349,6 +349,11 @@ describe("the e-mails the app ships", () => {
     expect(shape("crm-visit-confirmed")).toEqual(["email.heading", "email.text", "email.tax-breakdown"]);
     expect(shape("crm-visit-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown"]);
     expect(shape("crm-visit-cancelled")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
+    // A showroom booking (P19): day, time, space, how many; what they come to see and where the showroom is, each only when it is known.
+    expect(shape("crm-showroom-confirmed")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.text"]);
+    expect(shape("crm-showroom-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
+    expect(shape("crm-showroom-cancelled")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
+    for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-showroom-confirmed")!.locales[locale]!.blocks.slice(3).map((block) => block.showWhen), locale).toEqual([{ var: "booking.note" }, { var: "practice.showroom_address" }]);
     // The thank-you: its sentence, and the code only when the referral holds one.
     expect(shape("crm-referral-thanks")).toEqual(["email.heading", "email.text", "email.text", "email.box"]);
     for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-referral-thanks")!.locales[locale]!.blocks.slice(2).map((block) => block.showWhen), locale).toEqual([{ var: "referral.reward" }, { var: "referral.reward" }]);
@@ -400,6 +405,9 @@ describe("the outbox", () => {
       "visit-moved": "crm-visit-moved",
       "visit-cancelled": "crm-visit-cancelled",
       "referral-thanks": "crm-referral-thanks",
+      "showroom-confirmed": "crm-showroom-confirmed",
+      "showroom-moved": "crm-showroom-moved",
+      "showroom-cancelled": "crm-showroom-cancelled",
     });
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });

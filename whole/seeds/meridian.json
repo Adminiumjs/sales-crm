@@ -11022,6 +11022,18 @@
       "@person": "dana"
      },
      "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Analyst pod mock-up with the acoustic panels",
+       "de-DE": "Musteraufbau des Analysten-Pods mit den Akustikpaneelen",
+       "fr-FR": "Maquette du pod analyste avec les panneaux acoustiques",
+       "cs-CZ": "Ukázka analytického boxu s akustickými panely",
+       "da-DK": "Prøveopstilling af analytikerboksen med akustikpanelerne",
+       "zh-CN": "分析师工作舱样板，带吸音板",
+       "zh-TW": "分析師工作艙樣品，附吸音板",
+       "ar-EG": "نموذج كبينة المحللين مع الألواح الصوتية"
+      }
+     },
      "deal_id": {
       "@ref": "deal:d6"
      }
@@ -11047,7 +11059,19 @@
      "rep_id": {
       "@person": "sam"
      },
-     "state": "tentative"
+     "state": "tentative",
+     "note": {
+      "@t": {
+       "en-US": "Task chairs, three fabrics side by side",
+       "de-DE": "Bürostühle, drei Stoffe nebeneinander",
+       "fr-FR": "Chaises de bureau, trois tissus côte à côte",
+       "cs-CZ": "Kancelářské židle, tři látky vedle sebe",
+       "da-DK": "Kontorstole, tre stoffer side om side",
+       "zh-CN": "办公椅，三种面料并排比较",
+       "zh-TW": "辦公椅，三種布料並排比較",
+       "ar-EG": "كراسي مكتب، ثلاثة أقمشة جنبًا إلى جنب"
+      }
+     }
     },
     {
      "@label": "booking:w3",
@@ -11070,7 +11094,19 @@
      "rep_id": {
       "@person": "leo"
      },
-     "state": "confirmed"
+     "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Hot-desk bench and the locker wall",
+       "de-DE": "Hot-Desk-Bank und die Schließfachwand",
+       "fr-FR": "Bench de bureaux partagés et le mur de casiers",
+       "cs-CZ": "Sdílený lavicový stůl a stěna skříněk",
+       "da-DK": "Hot-desk-bænk og skabsvæggen",
+       "zh-CN": "共享办公长桌和储物柜墙",
+       "zh-TW": "共享辦公長桌和置物櫃牆",
+       "ar-EG": "مكتب مشترك طويل وجدار الخزائن"
+      }
+     }
     },
     {
      "@label": "booking:w4",
@@ -11094,6 +11130,18 @@
       "@person": "dana"
      },
      "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Records-room lockers, finish choices",
+       "de-DE": "Schließfächer für den Aktenraum, Oberflächenauswahl",
+       "fr-FR": "Casiers de la salle des archives, choix des finitions",
+       "cs-CZ": "Skříňky do archivu, výběr povrchů",
+       "da-DK": "Skabe til arkivrummet, valg af overflader",
+       "zh-CN": "档案室储物柜，饰面选择",
+       "zh-TW": "檔案室置物櫃，飾面選擇",
+       "ar-EG": "خزائن غرفة السجلات، اختيار التشطيبات"
+      }
+     },
      "deal_id": {
       "@ref": "deal:d3"
      }
@@ -11119,7 +11167,19 @@
      "rep_id": {
       "@person": "priya"
      },
-     "state": "tentative"
+     "state": "tentative",
+     "note": {
+      "@t": {
+       "en-US": "Acoustic booth, sound test",
+       "de-DE": "Akustikkabine, Schalltest",
+       "fr-FR": "Cabine acoustique, test sonore",
+       "cs-CZ": "Akustická budka, zkouška zvuku",
+       "da-DK": "Akustikboks, lydtest",
+       "zh-CN": "隔音间，声音测试",
+       "zh-TW": "隔音間，聲音測試",
+       "ar-EG": "كابينة صوتية، اختبار الصوت"
+      }
+     }
     },
     {
      "@label": "booking:w6",
@@ -11142,7 +11202,19 @@
      "rep_id": {
       "@person": "priya"
      },
-     "state": "confirmed"
+     "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Corridor seating, wipe-clean fabrics",
+       "de-DE": "Sitzbänke für den Flur, abwischbare Stoffe",
+       "fr-FR": "Sièges de couloir, tissus lavables",
+       "cs-CZ": "Sezení do chodby, omyvatelné látky",
+       "da-DK": "Gangsiddepladser, aftørrelige stoffer",
+       "zh-CN": "走廊座椅，可擦洗面料",
+       "zh-TW": "走廊座椅，可擦洗布料",
+       "ar-EG": "مقاعد الممر، أقمشة قابلة للمسح"
+      }
+     }
     },
     {
      "@label": "booking:w7",
@@ -11166,6 +11238,42 @@
       "@person": "sam"
      },
      "state": "done",
+     "note": {
+      "@t": {
+       "en-US": "Desk rows and the standing-desk swap",
+       "de-DE": "Schreibtischreihen und der Tausch gegen Stehpulte",
+       "fr-FR": "Rangées de bureaux et le remplacement par des bureaux debout",
+       "cs-CZ": "Řady stolů a výměna za stoly na stání",
+       "da-DK": "Skrivebordsrækker og byttet til hæve-sænkeborde",
+       "zh-CN": "办公桌排和换成站立式办公桌",
+       "zh-TW": "辦公桌排和換成站立式辦公桌",
+       "ar-EG": "صفوف المكاتب واستبدالها بمكاتب الوقوف"
+      }
+     },
+     "outcome": {
+      "@t": {
+       "en-US": "Petra liked the standing-desk swap and asked for it on the layout. Wants the desk rows on site the first week of August.",
+       "de-DE": "Petra gefiel der Tausch gegen Stehpulte, sie will ihn im Plan haben. Die Schreibtischreihen sollen in der ersten Augustwoche vor Ort sein.",
+       "fr-FR": "Petra a aimé le remplacement par des bureaux debout et l’a demandé sur le plan. Elle veut les rangées de bureaux sur place la première semaine d’août.",
+       "cs-CZ": "Petře se výměna za stoly na stání líbila a chce ji mít v rozvržení. Řady stolů chce mít na místě první týden v srpnu.",
+       "da-DK": "Petra kunne lide byttet til hæve-sænkeborde og bad om det på tegningen. Hun vil have skrivebordsrækkerne på stedet i første uge af august.",
+       "zh-CN": "Petra 喜欢换成站立式办公桌，要求在布局图上加上。希望八月第一周把办公桌排送到现场。",
+       "zh-TW": "Petra 喜歡換成站立式辦公桌，要求在佈局圖上加上。希望八月第一週把辦公桌排送到現場。",
+       "ar-EG": "أعجب Petra استبدال المكاتب بمكاتب الوقوف وطلبته في المخطط. تريد صفوف المكاتب في الموقع في الأسبوع الأول من أغسطس."
+      }
+     },
+     "next_step": {
+      "@t": {
+       "en-US": "Send the revised layout with the swap priced in",
+       "de-DE": "Den überarbeiteten Plan mit dem eingepreisten Tausch schicken",
+       "fr-FR": "Envoyer le plan révisé avec le remplacement chiffré",
+       "cs-CZ": "Poslat upravené rozvržení s naceněnou výměnou",
+       "da-DK": "Send den reviderede tegning med byttet prissat",
+       "zh-CN": "发送修改后的布局图，附上更换的报价",
+       "zh-TW": "寄送修改後的佈局圖，附上更換的報價",
+       "ar-EG": "إرسال المخطط المعدَّل مع تسعير الاستبدال"
+      }
+     },
      "next_step_by": {
       "@day": -1,
       "@week": true
@@ -11196,6 +11304,42 @@
       "@person": "leo"
      },
      "state": "done",
+     "note": {
+      "@t": {
+       "en-US": "Workbench heights and the tool rail",
+       "de-DE": "Werkbankhöhen und die Werkzeugschiene",
+       "fr-FR": "Hauteurs des établis et le rail à outils",
+       "cs-CZ": "Výšky ponků a lišta na nářadí",
+       "da-DK": "Arbejdsbænkenes højde og værktøjsskinnen",
+       "zh-CN": "工作台高度和工具导轨",
+       "zh-TW": "工作台高度和工具導軌",
+       "ar-EG": "ارتفاعات طاولات العمل وسكة الأدوات"
+      }
+     },
+     "outcome": {
+      "@t": {
+       "en-US": "Yusuf measured the bench heights himself. Happy at 900mm. The tool rail is a maybe.",
+       "de-DE": "Yusuf hat die Werkbankhöhen selbst gemessen. Zufrieden mit 900mm. Die Werkzeugschiene ist noch offen.",
+       "fr-FR": "Yusuf a mesuré lui-même les hauteurs des établis. Satisfait à 900mm. Le rail à outils reste à voir.",
+       "cs-CZ": "Yusuf si výšky ponků změřil sám. Spokojený s 900mm. Lišta na nářadí je zatím nejistá.",
+       "da-DK": "Yusuf målte selv bænkhøjderne. Tilfreds med 900mm. Værktøjsskinnen er et måske.",
+       "zh-CN": "Yusuf 亲自量了工作台高度，900mm 他满意。工具导轨还没定。",
+       "zh-TW": "Yusuf 親自量了工作台高度，900mm 他滿意。工具導軌還沒定。",
+       "ar-EG": "قاس Yusuf ارتفاعات الطاولات بنفسه. راضٍ عن 900mm. سكة الأدوات لم تُحسم بعد."
+      }
+     },
+     "next_step": {
+      "@t": {
+       "en-US": "Confirm the bench height on the order and drop the rail",
+       "de-DE": "Die Werkbankhöhe in der Bestellung bestätigen und die Schiene streichen",
+       "fr-FR": "Confirmer la hauteur des établis sur la commande et retirer le rail",
+       "cs-CZ": "Potvrdit výšku ponků v objednávce a lištu vypustit",
+       "da-DK": "Bekræft bænkhøjden på ordren og drop skinnen",
+       "zh-CN": "在订单上确认工作台高度，去掉导轨",
+       "zh-TW": "在訂單上確認工作台高度，拿掉導軌",
+       "ar-EG": "تأكيد ارتفاع الطاولة في الطلب واستبعاد السكة"
+      }
+     },
      "next_step_by": {
       "@day": 2,
       "@week": true
@@ -11225,7 +11369,19 @@
      "rep_id": {
       "@person": "dana"
      },
-     "state": "done"
+     "state": "done",
+     "note": {
+      "@t": {
+       "en-US": "Archive shelving, the taller bay",
+       "de-DE": "Archivregale, das höhere Feld",
+       "fr-FR": "Rayonnages d’archives, la travée plus haute",
+       "cs-CZ": "Archivní regály, vyšší sekce",
+       "da-DK": "Arkivreoler, den høje sektion",
+       "zh-CN": "档案架，较高的那一组",
+       "zh-TW": "檔案架，較高的那一組",
+       "ar-EG": "رفوف الأرشيف، الوحدة الأطول"
+      }
+     }
     }
    ]
   },

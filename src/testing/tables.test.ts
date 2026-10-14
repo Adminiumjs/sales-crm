@@ -200,6 +200,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "next_step",
       "next_step_by",
       "deal_id",
+      "note",
+      "next_step_done_on",
     ],
   },
   samples: { nullable: ["kind", "item"] },
@@ -274,6 +276,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "quote_id",
       "visit_id",
       "referral_id",
+      "booking_id",
       "was",
       "deal_id",
       "due_at",
@@ -284,7 +287,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   settings: {
-    nullable: ["depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "depot_lat", "depot_lng", "aftercare_owner_id"],
+    nullable: ["showroom_address", "depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "depot_lat", "depot_lng", "aftercare_owner_id"],
   },
 };
 
@@ -323,8 +326,10 @@ const OUTBOX_WORD = {
     // What a moved or a removed visit was, for its e-mail.
     was: "was",
   },
-  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id" },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id" },
   recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
+  // The settings row, read by a template as `practice.*` (where the showroom is).
+  settings: { table: "settings" },
   kinds: {},
 };
 
@@ -732,17 +737,16 @@ describe("the moves of this batch's three state columns", () => {
     expect(claimedBy.rules?.stamp).toEqual({ set: "user-id", on: { column: "state", values: ["claimed"] } });
   });
 
-  it("cancels a showroom booking from any live state, and only with a reason", () => {
+  it("cancels a showroom booking by removing it, never by a mark, and keeps one that has been (F17, P19)", () => {
     const bookings = byRef.get("showroom_bookings") as Table;
-    expect(bookings.states).toMatchObject({ column: "state", initial: "tentative" });
-    expect(movesFrom(bookings, "tentative").map((move) => move.to)).toEqual(["confirmed", "cancelled"]);
-    expect(movesFrom(bookings, "confirmed").map((move) => move.to)).toEqual(["done", "cancelled"]);
-    expect(movesFrom(bookings, "done").map((move) => move.to)).toEqual(["cancelled"]);
-    for (const from of ["tentative", "confirmed", "done"]) {
-      const cancel = movesFrom(bookings, from).find((move) => move.to === "cancelled");
-      expect(cancel?.requires?.where, from).toEqual([{ column: "cancel_reason", isNull: false }]);
-    }
-    expect(bookings.states?.actions?.find((action) => action.id === "cancel")).toMatchObject({ ask: ["cancel_reason"] });
+    expect(bookings.states).toMatchObject({ column: "state", initial: "tentative", noDelete: { when: ["done"] } });
+    expect(movesFrom(bookings, "tentative").map((move) => move.to)).toEqual(["confirmed", "done"]);
+    expect(movesFrom(bookings, "confirmed").map((move) => move.to)).toEqual(["done"]);
+    expect(movesFrom(bookings, "done")).toEqual([]);
+    expect(bookings.columns.find((c) => c.ref === "state")?.enum).toEqual(["tentative", "confirmed", "done"]);
+    expect(bookings.states?.actions?.map((action) => action.id)).toEqual(["confirm", "done"]);
+    // The why is written a moment before the removal, so it is in the removal's audit entry.
+    expect(bookings.columns.find((c) => c.ref === "cancel_reason")).toMatchObject({ type: "text", nullable: true });
   });
 
   it("closes a meeting's decision as done or carried", () => {
@@ -1042,8 +1046,8 @@ describe("the outbox table is the shape the outbox word asks for", () => {
 
   it("keeps every link of it empty-able, since not every email is about one", () => {
     const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
-    // A message is about a contact, a quote, a deal, a site visit or a referral.
-    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id"]);
+    // A message is about a contact, a quote, a deal, a site visit, a referral or a showroom booking.
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id"]);
     for (const link of links) expect(link.nullable, link.ref).toBe(true);
   });
 

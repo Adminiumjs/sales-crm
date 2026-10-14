@@ -21,6 +21,7 @@ import { kitCommon, type KitMissing } from "../../kitParts.ts";
 import { Loaded, LoadFailed, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { DAYS, hoursBetween, isTime, placeOf, readSettings, weekFrom, workDaysOf, type Day, type SettingsRow } from "./data.ts";
 import { AskLine, Card, Chips, NumField, useSaveSettings, type Rights } from "./parts.tsx";
+import { ShowroomSettings } from "../showroom/SettingsCard.tsx";
 
 function useSettings(session: StaffSession): { load: ReturnType<typeof useLoad<SettingsRow | null>>["load"]; reload: () => void; soon: () => void } {
   const { load, reload } = useLoad(() => readSettings(session), [session]);
@@ -123,6 +124,8 @@ export function WorkingTime({ session, f, rights }: { session: StaffSession; f: 
                   </div>
                 </Card>
               )}
+              {/* The showroom's spaces, hours, address and e-mails: once Showroom and samples is on (P19). */}
+              {session.config.modules?.["showroom"] === true && <ShowroomSettings session={session} can={can} />}
               {!rights.all && <AskLine>{t("aset.ask.admin")}</AskLine>}
             </>
           );

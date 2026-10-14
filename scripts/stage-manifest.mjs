@@ -113,6 +113,20 @@ export function stageManifest(whole, stages, stage) {
 
   if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id));
   if (doc.outbox?.producers !== undefined) doc.outbox.producers = doc.outbox.producers.filter((producer) => partOf(producer) && !goneTables.has(producer.onChange?.table));
+  // A link of the outbox whose column went (a mail about a showroom booking) goes with it.
+  const goneOutbox = goneColumns[doc.outbox?.table] ?? [];
+  if (doc.outbox?.links !== undefined) doc.outbox.links = Object.fromEntries(Object.entries(doc.outbox.links).filter(([, column]) => !goneOutbox.includes(column)));
+  // …and the e-mails of a later part: a kind every producer of which went with its part (a showroom booking's), and its template.
+  // The kind's value stays on the outbox's column: a stage is a subset of the next, column by column.
+  const sentBy = (producers) => new Set((producers ?? []).map((producer) => producer.kind));
+  const before = sentBy(whole.outbox?.producers);
+  const after = sentBy(doc.outbox?.producers);
+  const goneKinds = [...before].filter((kind) => !after.has(kind));
+  if (goneKinds.length > 0 && doc.outbox?.kinds !== undefined) {
+    const goneTemplates = new Set(goneKinds.map((kind) => doc.outbox.kinds[kind]).filter((key) => key !== undefined));
+    for (const kind of goneKinds) delete doc.outbox.kinds[kind];
+    if (doc.emailTemplates !== undefined) doc.emailTemplates = doc.emailTemplates.filter((template) => !goneTemplates.has(template.key) || Object.values(doc.outbox.kinds).includes(template.key));
+  }
 
   // Roles: what each still holds. One left with no part is not offered.
   const goneRoles = new Set();

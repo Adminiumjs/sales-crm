@@ -133,8 +133,13 @@ describe("stage 1, the first release", () => {
       expect(text.includes(`"table":"${ref}"`), `a mention of ${ref}`).toBe(false);
       expect(text.includes(`"from":"${ref}"`), `a figure from ${ref}`).toBe(false);
     }
-    // The one column of a kept table that pointed into a later part: a follow-up's job.
-    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"] });
+    // The columns of kept tables that pointed into a later part: a follow-up's job, and an e-mail's showroom booking (with its link).
+    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], outbox: ["booking_id"] });
+    expect(Object.values((doc as unknown as { outbox: { links: Record<string, string> } }).outbox.links)).not.toContain("booking_id");
+    // …and the showroom's three e-mails: no kind, no template (the kind's value stays on the column, as in every stage).
+    const mails = doc as unknown as { outbox: { kinds: Record<string, string> }; emailTemplates: { key: string }[] };
+    expect(Object.keys(mails.outbox.kinds).filter((kind) => kind.startsWith("showroom-"))).toEqual([]);
+    expect(mails.emailTemplates.map((template) => template.key).filter((key) => key.startsWith("crm-showroom-"))).toEqual([]);
     const followUps = doc.requiredSchema.tables.find((table) => table.ref === "follow_ups")!;
     expect(followUps.columns.map((column) => column.ref)).not.toContain("job_id");
     expect((followUps.indexes ?? []).flat()).not.toContain("job_id");

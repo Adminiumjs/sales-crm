@@ -39,6 +39,8 @@ export type RouteKey =
   | "amhome" | "mkhome"
   | "stock" | "suppliers"
   | "aftercare" | "feedback" | "complaints" | "claims"
+  /** Showroom and samples (stage 2, P19): the front desk's home and the five screens of the part. */
+  | "deskhome" | "showroom" | "showfollow" | "samples" | "returns" | "floor"
   /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
   | "deal"
   /** A person's own: reached from their name at the top, whatever their role. */
@@ -100,6 +102,12 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   feedback: { path: "what-customers-said", part: "aftercare", reads: ["feedback"], icon: "star" },
   complaints: { path: "complaints", part: "aftercare", reads: ["complaints"], icon: "frown" },
   claims: { path: "warranty-claims", part: "aftercare", reads: ["warranty_claims"], icon: "shield-check" },
+  deskhome: { path: "home", part: "showroom", reads: ["showroom_bookings", "sample_loans"], icon: "house" },
+  showroom: { path: "showroom", part: "showroom", reads: ["showroom_bookings", "showroom_spaces"], icon: "store" },
+  showfollow: { path: "showroom-follow-ups", part: "showroom", reads: ["showroom_bookings"], icon: "corner-down-right" },
+  samples: { path: "samples", part: "showroom", reads: ["samples", "sample_loans"], icon: "layers" },
+  returns: { path: "sample-returns", part: "showroom", reads: ["sample_loans"], icon: "phone" },
+  floor: { path: "display-stock", part: "showroom", reads: ["display_pieces", "showroom_spaces"], icon: "armchair" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
   me: { path: "me", part: null, reads: [], icon: "user-round" },
   mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
@@ -120,7 +128,7 @@ export const USER_MENU: readonly RouteKey[] = ["me", "mydetails", "notifs"];
 export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"] };
 
 /** The groups of a menu, in the design's words. `top` has no heading. */
-export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "supply" | "team" | "settings" | "aftercare";
+export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "showroom" | "supply" | "team" | "settings" | "aftercare";
 
 /** One line of a menu: the screen, and the words it goes by in THIS role's menu ("My targets" for a rep, "Team targets" for her manager). */
 export interface MenuItem {
@@ -138,6 +146,7 @@ const ACCOUNTS_FULL: MenuGroup = ["accounts", [it("companies"), it("contacts"), 
 const INBOX_FULL: MenuGroup = ["inbox", [it("inbox"), it("leads")]];
 const SUPPLY: MenuGroup = ["supply", [it("stock"), it("suppliers")]];
 const AFTER_THE_JOB: MenuGroup = ["aftercare", [it("aftercare"), it("feedback"), it("complaints"), it("claims")]];
+const SHOWROOM: MenuGroup = ["showroom", [it("showroom"), it("showfollow"), it("samples"), it("returns"), it("floor")]];
 const without = (group: MenuGroup, routes: readonly RouteKey[]): MenuGroup => [group[0], group[1].filter((item) => !routes.includes(item.route))];
 
 /**
@@ -167,6 +176,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     SELL_TEAM,
     without(ACCOUNTS_FULL, ["import"]),
     INBOX_FULL,
+    SHOWROOM,
     AFTER_THE_JOB,
     SUPPLY,
     ["team", [it("messages"), it("targets", "teamTargets"), it("meeting")]],
@@ -185,7 +195,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     ["inbox", [it("leads")]],
     ["accounts", [it("companies"), it("contacts")]],
   ],
-  "front-desk": [["inbox", [it("inbox")]]],
+  "front-desk": [["top", [it("deskhome", "home")]], SHOWROOM, ["inbox", [it("inbox")]]],
   "ops-manager": [SUPPLY],
   crew: [],
   "read-only": [
@@ -193,6 +203,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     without(SELL_TEAM, ["handover"]),
     without(ACCOUNTS_FULL, ["import"]),
     INBOX_FULL,
+    SHOWROOM,
     AFTER_THE_JOB,
     SUPPLY,
     ["team", [it("targets", "teamTargets"), it("meeting")]],
@@ -208,7 +219,7 @@ export const HOMES: Record<RoleKey, RouteKey | null> = {
   rep: "today",
   "account-manager": "amhome",
   marketer: "mkhome",
-  "front-desk": null,
+  "front-desk": "deskhome",
   "ops-manager": null,
   crew: null,
   "read-only": "team",

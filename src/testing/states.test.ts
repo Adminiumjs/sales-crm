@@ -56,11 +56,8 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
   renewals: { column: "state", initial: "open", moves: ["open → done", "open → dropped"] },
   meeting_decisions: { column: "state", initial: "open", moves: ["open → done", "open → carried"] },
   enquiries: { column: "state", initial: "open", moves: ["open → claimed", "open → passed: passed_to_id filled", "open → dropped", "passed → claimed", "passed → dropped"] },
-  showroom_bookings: {
-    column: "state",
-    initial: "tentative",
-    moves: ["tentative → confirmed", "tentative → cancelled: cancel_reason filled", "confirmed → done", "confirmed → cancelled: cancel_reason filled", "done → cancelled: cancel_reason filled"],
-  },
+  // A cancelled showroom booking is removed, never marked (F17, P19); one somebody came in for without a confirmation is still "been in".
+  showroom_bookings: { column: "state", initial: "tentative", moves: ["tentative → confirmed", "tentative → done", "confirmed → done"] },
   jobs: { column: "state", initial: "open", moves: ["open → installed", "installed → signed-off: blocking_snags = 0; 1 sign_offs"] },
   job_visits: { column: "state", initial: "waiting", moves: ["waiting → booked: day filled; crew_id filled", "booked → done", "booked → waiting", "booked → cancelled: cancel_reason filled"] },
   snags: { column: "state", initial: "open", moves: ["open → waiting-part", "open → put-right: put_right_note filled", "waiting-part → open", "waiting-part → put-right: put_right_note filled"] },
@@ -190,8 +187,9 @@ describe("every button", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("there are thirty-five", () => {
-    expect(buttons).toHaveLength(35);
+  it("there are thirty-four", () => {
+    // The showroom's "Cancel" went with its state (P19): a cancel removes the booking.
+    expect(buttons).toHaveLength(34);
   });
 });
 

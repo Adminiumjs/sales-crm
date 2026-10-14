@@ -81,8 +81,21 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
 
   it("keeps the marketer and the front desk to their few lines", () => {
     expect(routesOf(facts(["marketer"]))).toEqual(["mkhome", "leads", "companies", "contacts"]);
-    expect(routesOf(facts(["front-desk"]))).toEqual(["inbox"]);
+    // With every part on, the front desk has her home and the showroom's five (P19); at the first release, the Inbox alone.
+    expect(routesOf(facts(["front-desk"]))).toEqual(["deskhome", "showroom", "showfollow", "samples", "returns", "floor", "inbox"]);
+    expect(routesOf(facts(["front-desk"], { part: (id: PartId) => id !== "showroom" }))).toEqual(["inbox"]);
     expect(routesOf(facts(["crew"]))).toEqual([]);
+  });
+
+  it("gives the showroom's five to the front desk, the CRM admin and Read-only, and to nobody else (P19)", () => {
+    const showroom = ["showroom", "showfollow", "samples", "returns", "floor"] as const;
+    for (const role of ["front-desk", "admin", "read-only"] as const) {
+      const group = menuFor(facts([role])).find((one) => one.group === "showroom");
+      expect([role, group?.items.map((item) => item.route)]).toEqual([role, [...showroom]]);
+    }
+    for (const role of ["rep", "sales-manager", "account-manager", "marketer", "ops-manager", "crew"] as const) for (const route of showroom) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
+    // The admin's groups: Inbox, then the showroom, After the job, then Supply.
+    expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "aftercare", "supply", "team", "settings"]);
   });
 });
 
@@ -152,8 +165,8 @@ describe("where a person lands", () => {
   it("is the first line they can open when the home's part is off or the home is not built", () => {
     expect(homeFor(facts(["marketer"], { part: (id: PartId) => id !== "inbox" }))).toBe("companies");
     expect(homeFor(facts(["rep"], { built: (route) => route !== "today" }))).toBe("week");
-    // The front desk on the default install: the Inbox and nothing else.
-    expect(homeFor(facts(["front-desk"]))).toBe("inbox");
+    // The front desk on the default install (no showroom yet): the Inbox and nothing else.
+    expect(homeFor(facts(["front-desk"], { part: (id: PartId) => id !== "showroom" }))).toBe("inbox");
   });
 
   it("is nowhere for somebody with nothing switched on", () => {
@@ -204,12 +217,16 @@ describe("a person's own screens", () => {
     expect(routesOf(facts(["rep"]))).toContain("digest");
   });
 
-  it("leaves the front desk on the Inbox at the first release, and the marketer on her home", () => {
-    expect(homeFor(facts(["front-desk"]))).toBe("inbox");
+  it("leaves the front desk on the Inbox at the first release, on her own home once the showroom is on, and the marketer on her home", () => {
+    expect(homeFor(facts(["front-desk"], { part: (id) => id !== "showroom" }))).toBe("inbox");
+    expect(homeFor(facts(["front-desk"]))).toBe("deskhome");
+    expect(routeForPath("home", facts(["front-desk"]))?.route).toBe("deskhome");
     expect(homeFor(facts(["marketer"]))).toBe("mkhome");
-    // With the Inbox off the marketer is left with Accounts, and the front desk with nothing.
+    // With the Inbox off the marketer is left with Accounts, and the front desk (her showroom off too) with nothing.
     expect(homeFor(facts(["marketer"], { part: (id) => id !== "inbox" }))).toBe("companies");
-    expect(homeFor(facts(["front-desk"], { part: (id) => id !== "inbox" }))).toBeNull();
+    expect(homeFor(facts(["front-desk"], { part: (id) => id !== "inbox" && id !== "showroom" }))).toBeNull();
+    // With the Inbox off and the showroom on, she still has her home.
+    expect(homeFor(facts(["front-desk"], { part: (id) => id !== "inbox" }))).toBe("deskhome");
   });
 });
 

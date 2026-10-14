@@ -1,0 +1,707 @@
+/*
+ * Showroom and samples (P19): Showroom bookings (50), Showroom follow-ups
+ * (55), the Sample library (45), Sample returns (54), Display stock (61), the
+ * front desk's home and the showroom's card in Settings. The booking dialog
+ * is the site visits' (`crm-bk-*`, visits.css). Logical properties only, so
+ * Arabic mirrors without a second sheet; every grid folds to one column at
+ * 390 px.
+ */
+
+/* A space's colour, by its place in the list: a space has none of its own. */
+.crm-sh [data-tint="0"] {
+  --sh-tint: var(--accent);
+  --sh-tint-soft: var(--accent-soft);
+}
+.crm-sh [data-tint="1"] {
+  --sh-tint: var(--pos);
+  --sh-tint-soft: var(--pos-soft);
+}
+.crm-sh [data-tint="2"] {
+  --sh-tint: var(--warn);
+  --sh-tint-soft: var(--warn-soft);
+}
+.crm-sh [data-tint="3"] {
+  --sh-tint: var(--info);
+  --sh-tint-soft: var(--info-soft);
+}
+.crm-sh [data-tint="4"] {
+  --sh-tint: var(--danger);
+  --sh-tint-soft: var(--danger-soft);
+}
+
+/* A small primary button keeps its own colour (`.crm-btn-32` sets the muted one for the ghost kind). */
+.crm-sh .crm-btn-primary {
+  color: var(--accent-fg);
+}
+
+.crm-sh-note {
+  margin-block-start: 7px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+
+/* ── the spaces, as three tiles ─────────────────────────────────────────── */
+.crm-sh-spaces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-block-start: 16px;
+}
+.crm-sh-space {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 36px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  min-inline-size: 0;
+}
+.crm-sh-dot {
+  inline-size: 9px;
+  block-size: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--sh-tint, var(--accent));
+}
+.crm-sh-space-name {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-sh-space-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-sh .crm-chips {
+  margin-block-start: 16px;
+}
+
+/* ── a day's bookings ───────────────────────────────────────────────────── */
+.crm-sh-days {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-block-start: 16px;
+}
+.crm-sh-day-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block-end: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-sh-day-head .crm-mono {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.crm-sh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-sh-days .crm-sh-list {
+  margin-block-start: 0;
+}
+.crm-sh-card {
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--sh-tint, var(--border-strong));
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-sh-card[data-tone="warn"] {
+  border-inline-start-color: var(--warn);
+}
+.crm-sh-card[data-tone="danger"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-sh-card[data-tone="pos"] {
+  border-inline-start-color: var(--pos);
+}
+.crm-sh-card[data-tone="accent"] {
+  border-inline-start-color: var(--accent);
+}
+.crm-sh-card[data-tone="info"] {
+  border-inline-start-color: var(--info);
+}
+.crm-sh-card[data-state="done"] {
+  background: var(--surface-2);
+  box-shadow: none;
+}
+.crm-sh-card-top {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 11px;
+}
+.crm-sh-time {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-inline-size: 64px;
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+}
+.crm-sh-time .crm-mono:first-child {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-sh-tile {
+  inline-size: 34px;
+  block-size: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.crm-sh-main {
+  flex: 1 1 200px;
+  min-inline-size: 0;
+}
+.crm-sh-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--fg);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+a.crm-sh-name:hover,
+a.crm-sh-name:focus-visible {
+  text-decoration: underline;
+}
+.crm-sh-who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-block-start: 4px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  overflow-wrap: anywhere;
+}
+.crm-sh-co {
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+.crm-sh-see {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.crm-sh-set {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-block-start: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.crm-sh-set svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--fg-subtle);
+}
+.crm-sh-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  margin-inline-start: auto;
+}
+.crm-sh-space-pill {
+  background: var(--sh-tint-soft, var(--surface-3));
+  color: var(--sh-tint, var(--fg-muted));
+}
+.crm-sh-party {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-sh-rep {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+.crm-sh-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-sh-push {
+  flex: 1;
+}
+
+/* ── tiles of figures ───────────────────────────────────────────────────── */
+.crm-sh-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(152px, 1fr));
+  gap: 8px;
+  margin-block-start: 14px;
+}
+.crm-sh-stat {
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-sh-value {
+  margin-block-start: 6px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.crm-sh-stat[data-tone="warn"] .crm-sh-value {
+  color: var(--warn);
+}
+.crm-sh-stat[data-tone="pos"] .crm-sh-value {
+  color: var(--pos);
+}
+.crm-sh-stat[data-tone="danger"] .crm-sh-value {
+  color: var(--danger);
+}
+.crm-sh-stat[data-tone="info"] .crm-sh-value {
+  color: var(--info);
+}
+.crm-sh-stat-note {
+  margin-block-start: 3px;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+.crm-sh-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block-start: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.crm-sh-banner > span {
+  flex: 1;
+  min-inline-size: 180px;
+}
+
+/* ── follow-ups ─────────────────────────────────────────────────────────── */
+.crm-sh-fu-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.crm-sh-ago,
+.crm-sh-age,
+.crm-sh-agreed {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-sh-agreed[data-late="1"],
+.crm-sh-age[data-tired="1"] {
+  color: var(--danger);
+}
+.crm-sh-age[data-tired="1"] {
+  color: var(--warn);
+}
+.crm-sh-next {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block-start: 11px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.crm-sh-next > span:first-of-type {
+  flex: 1 1 180px;
+  min-inline-size: 0;
+}
+.crm-sh-deal {
+  max-inline-size: 100%;
+  overflow: hidden;
+}
+.crm-sh-deal .crm-mono {
+  font-weight: 700;
+}
+.crm-sh-write {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-block-start: 10px;
+}
+
+/* ── the sample library ─────────────────────────────────────────────────── */
+.crm-sh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-block-start: 16px;
+}
+.crm-sh-sample {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-sh-sample-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 70px;
+  border-radius: 11px;
+  background: var(--sh-tint-soft, var(--surface-3));
+  color: var(--sh-tint, var(--fg-muted));
+}
+.crm-sh-sample-tile .crm-pill {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  font-size: 10px;
+}
+.crm-sh-kind {
+  position: absolute;
+  inset-block-end: 8px;
+  inset-inline-start: 8px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+.crm-sh-sample-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.32;
+  overflow-wrap: anywhere;
+}
+.crm-sh-loan {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-block-start: 6px;
+  border-block-start: 1px dashed var(--border);
+}
+.crm-sh-loan-who {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-inline-size: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+.crm-sh-loan-due {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-sh-loan-due[data-late="1"] {
+  color: var(--danger);
+}
+.crm-sh-held {
+  margin-block-start: auto;
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+}
+.crm-sh-sample .crm-btn {
+  justify-content: center;
+  inline-size: 100%;
+}
+.crm-sh-lend {
+  margin-block-start: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-sh-lend-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crm-sh-lend-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.crm-sh-lend p {
+  margin: 8px 0 10px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+/* ── returns, display stock ─────────────────────────────────────────────── */
+.crm-sh-ret-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 36px;
+  block-size: 36px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-sh-phone {
+  margin-block-start: 5px;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+.crm-sh-chases {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 11px 0 0;
+  padding: 10px 12px;
+  list-style: none;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-sh-chases li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-sh-chases .crm-mono {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-sh-flag {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.crm-sh-flag[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-sh-flag[data-tone="info"] {
+  color: var(--info);
+}
+.crm-sh-wanted {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ── the front desk's home ──────────────────────────────────────────────── */
+.crm-sh-queue {
+  margin-block-start: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-sh-queue h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-sh-none {
+  margin: 6px 0 2px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-sh-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-sh-rows > li + li {
+  border-block-start: 1px solid var(--border);
+}
+.crm-sh-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 4px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 9px;
+}
+.crm-sh-row-main {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: 3px;
+  min-inline-size: 0;
+}
+.crm-sh-row-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 9px;
+  font-size: 13px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.crm-sh-row-co {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.crm-sh-row-sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+.crm-sh-row-when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+.crm-sh-row-when[data-late="1"] {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ── the dialog's showroom bits, and the settings card ──────────────────── */
+.crm-sh-mode {
+  margin-block: 2px 4px;
+}
+.crm-sh-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.crm-sh-refusal {
+  flex-wrap: wrap;
+}
+.crm-sh-refusal > span {
+  flex: 1 1 180px;
+}
+.crm-sh-refusal em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-sh-hours {
+  margin-block-start: 8px;
+}
+.crm-sh-set-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.crm-sh-set-spaces {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-sh-set-spaces li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.crm-sh-set-spaces .crm-ast-input {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-sh-set-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 8px;
+}
+.crm-sh-set-add .crm-ast-input {
+  flex: 1 1 180px;
+}
+.crm-sh-set-mails {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-start: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .crm-sh-side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-inline-start: 0;
+    inline-size: 100%;
+  }
+  .crm-sh-time {
+    min-inline-size: 52px;
+  }
+}

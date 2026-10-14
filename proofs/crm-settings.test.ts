@@ -43,6 +43,8 @@ const LEGAL: Record<string, unknown> = {
   depot_name: 'North depot', depot_address: 'Unit 9\nCanal Road', depot_town: 'Bradford', depot_region: 'West Yorkshire', depot_postal_code: 'BD1 4SJ', depot_country: 'GB', depot_lat: 53.79, depot_lng: -1.75,
   depot_place: { lat: 53.79, lng: -1.75 }, distance_unit: 'miles', loan_days: 10, aftercare_days: 21, complaint_answer_days: 2, snag_days: 4, lead_cold_days: 10, certificate_warn_days: 30,
   display_tired_months: 8, claim_red_days: 14, inspection_warn_days: 21,
+  // The showroom's (P19): its hours, its address and its e-mails' switch, the CRM admin's alone.
+  showroom_emails: false, showroom_opens: '10:00', showroom_closes: '18:00', showroom_address: 'Unit 2, Aire Works, Leeds',
 };
 /** Outside each number's bounds, below and above. */
 const OUT: Record<string, [unknown, unknown]> = {

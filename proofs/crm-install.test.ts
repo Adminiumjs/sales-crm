@@ -239,9 +239,10 @@ for (const [dialect, reachable] of LEGS) {
       const inside = { space_id: space['id'], party: 2, starts_at: '2026-07-29T10:30:00Z', minutes: 30 };
       await expect(w.create('showroom_bookings', inside)).rejects.toMatchObject({ code: 'BOOKING_TAKEN' });
       await w.create('showroom_bookings', { ...inside, starts_at: '2026-07-29T11:00:00Z' });
-      await expect(w.update('showroom_bookings', booking['id'], { state: 'cancelled' })).rejects.toThrow();
-      await w.update('showroom_bookings', booking['id'], { state: 'cancelled', cancel_reason: 'They moved the day' });
-      // Cancelled, it takes nothing: the half hour is free, and the cancelled one cannot come back over it.
+      // A cancel removes a booking (P19): there is no cancelled state to move to.
+      await expect(w.update('showroom_bookings', booking['id'], { state: 'cancelled', cancel_reason: 'They moved the day' })).rejects.toThrow();
+      // Been in, it takes nothing: the half hour is free again.
+      await w.update('showroom_bookings', booking['id'], { state: 'done' });
       await w.create('showroom_bookings', inside);
       const sample = await w.create('samples', { name: 'Fabric book', held: 2 });
       const loan = await w.create('sample_loans', { sample_id: sample['id'], out_on: '2026-07-17', due_back: '2026-07-31' });
