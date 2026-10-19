@@ -16,6 +16,9 @@
  *  - A sign-off stays as it was made: nobody changes or removes it; a
  *    correction is a new row naming it, with the next version; one sign-off
  *    a job and version, one correction a sign-off.
+ *  - Its signature and photos are files (F19): a sign-off names only its
+ *    writer's own fresh upload, the record then holds them; a correction
+ *    names a sign-off of its own job.
  *  - A visit called off is REMOVED, with the why in the removal's audit
  *    entry; a visit that was made (done) stays.
  *  - A delivery note's totals and whether it needs sorting are the server's;
@@ -33,6 +36,7 @@ import { readFileSync } from 'node:fs';
 import { jobsRepo } from '@adminium/meta';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { png } from './picture-images.js';
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
 vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.28' }));
@@ -235,7 +239,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('keeps a sign-off as it was made: nobody changes or removes it, and a correction is a new row with the next version', async () => {
       const { job } = await wonJob('Library shelving');
-      const first = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, check_2: true, signer_name: 'Ana Belova', signature: 'file_pending' }));
+      const first = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, check_2: true, signer_name: 'Ana Belova' }));
       expect(Number((await row('ada', 'sign_offs', first))?.['version'])).toBe(1);
       // Nobody changes it or takes it away: not the operations manager, not the CRM admin, not the crew.
       for (const who of ['ada', 'tessa', 'yusuf', 'grace']) {
@@ -244,17 +248,47 @@ for (const [dialect, reachable] of LEGS) {
       }
       expect((await row('tessa', 'sign_offs', first))?.['signer_name']).toBe('Ana Belova');
       // A second sign-off of the job that names none: refused (one a job and version).
-      expect((await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', signature: 'file_pending' })).statusCode).toBe(409);
+      expect((await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova' })).statusCode).toBe(409);
       // A correction names the one it corrects: the next version, worked out by the server whatever is typed.
-      const second = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, check_2: true, check_3: true, signer_name: 'Ana Belova', signature: 'file_pending', corrects_id: first }));
+      const second = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, check_2: true, check_3: true, signer_name: 'Ana Belova', corrects_id: first }));
       expect(Number((await row('ada', 'sign_offs', second))?.['version'])).toBe(2);
       // One correction a sign-off; the correction is corrected in its turn.
-      expect((await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', signature: 'file_pending', corrects_id: first })).statusCode).toBe(409);
-      const third = made(await s.make('tessa', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', signature: 'file_pending', corrects_id: second }));
+      expect((await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: first })).statusCode).toBe(409);
+      const third = made(await s.make('tessa', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: second }));
       expect(Number((await row('ada', 'sign_offs', third))?.['version'])).toBe(3);
       // Read-only and a rep make none.
-      expect((await s.make('grace', 'sign_offs', { job_id: job, signer_name: 'G', signature: 'file_pending' })).statusCode).toBe(403);
-      expect((await s.make('dana', 'sign_offs', { job_id: job, signer_name: 'D', signature: 'file_pending' })).statusCode).toBe(403);
+      expect((await s.make('grace', 'sign_offs', { job_id: job, signer_name: 'G' })).statusCode).toBe(403);
+      expect((await s.make('dana', 'sign_offs', { job_id: job, signer_name: 'D' })).statusCode).toBe(403);
+    });
+
+    it('keeps the signature and photos as files (F19): only the writer\'s own fresh upload, never another\'s; a correction names a sign-off of its own job', async () => {
+      const { job } = await wonJob('Files sign-off');
+      const { job: other } = await wonJob('Another job');
+      const upload = async (who: string, column: 'signature' | 'photos'): Promise<string> => {
+        const query = new URLSearchParams({ connectionId: s.connectionId, table: s.t('sign_offs'), column, filename: `${column}.png` });
+        const res = await s.app.inject({ method: 'POST', url: `/api/v1/files?${query.toString()}`, headers: { cookie: s.cookie[who]!, 'content-type': 'image/png' }, payload: png().bytes });
+        expect(res.statusCode, res.body).toBe(201);
+        return (res.json() as { data: { id: string } }).data.id;
+      };
+      const code = (res: Reply): string => JSON.stringify(res.json());
+      const signature = await upload('ada', 'signature');
+      const photos = [await upload('ada', 'photos'), await upload('ada', 'photos')];
+      const first = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, signer_name: 'Ana Belova', signature, photos }));
+      const kept = await row('tessa', 'sign_offs', first);
+      expect([kept?.['signature'], kept?.['photos']]).toEqual([signature, photos]);
+      // The record holds them: nobody takes them off by the file routes, the uploader neither.
+      expect((await s.send('ada', 'DELETE', `/api/v1/files/${signature}`)).statusCode).toBe(409);
+      // Another's upload, a file already held, one that was never uploaded: all the same refusal.
+      const tessas = await upload('tessa', 'signature');
+      for (const [who, value] of [['ada', tessas], ['tessa', signature], ['ada', 'file_01ZZZZZZZZZZZZZZZZZZZZZZZZ']] as const) {
+        const res = await s.make(who, 'sign_offs', { job_id: other, signer_name: 'X', signature: value });
+        expect(res.statusCode, `${who} naming ${value}`).toBe(422);
+        expect(code(res)).toContain('file-not-here');
+      }
+      // A correction names a sign-off of its own job, never another job's.
+      const others = made(await s.make('ada', 'sign_offs', { job_id: other, signer_name: 'Ben Ode' }));
+      expect((await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: others })).statusCode).toBe(422);
+      expect(Number((await row('ada', 'sign_offs', made(await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: first }))))?.['version'])).toBe(2);
     });
 
     it('removes a visit called off, with the why in the removal\'s audit entry, and keeps a visit that was made', async () => {

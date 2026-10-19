@@ -14,3 +14,4 @@ dist-surface
 # The stand a browser run leaves behind: its state, its cookies, its results.
 e2e/.stand
 e2e/.results
+e2e/.logs

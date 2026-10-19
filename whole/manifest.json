@@ -13423,7 +13423,7 @@
           {
             "ref": "signature",
             "type": "text",
-            "maxLength": 200,
+            "maxLength": 64,
             "label": {
               "en-US": "Signature",
               "de-DE": "Unterschrift",
@@ -13433,7 +13433,16 @@
               "ar-EG": "التوقيع",
               "zh-CN": "签名",
               "zh-TW": "簽名"
-            }
+            },
+            "rules": {
+              "file": {
+                "accept": [
+                  "png"
+                ],
+                "maxBytes": 524288
+              }
+            },
+            "nullable": true
           },
           {
             "ref": "photos",
@@ -13448,6 +13457,17 @@
               "ar-EG": "الصور",
               "zh-CN": "照片",
               "zh-TW": "照片"
+            },
+            "rules": {
+              "file": {
+                "accept": [
+                  "jpeg",
+                  "png",
+                  "webp"
+                ],
+                "maxBytes": 8388608,
+                "maxCount": 6
+              }
             }
           },
           {
@@ -13501,6 +13521,16 @@
               "ar-EG": "يصحح",
               "zh-CN": "更正",
               "zh-TW": "更正"
+            },
+            "rules": {
+              "linkable": {
+                "same": [
+                  {
+                    "column": "job_id",
+                    "as": "job_id"
+                  }
+                ]
+              }
             }
           },
           {
@@ -14069,7 +14099,7 @@
           {
             "ref": "photo",
             "type": "text",
-            "maxLength": 200,
+            "maxLength": 64,
             "nullable": true,
             "label": {
               "en-US": "Photo",
@@ -14080,12 +14110,22 @@
               "ar-EG": "الصورة",
               "zh-CN": "照片",
               "zh-TW": "照片"
+            },
+            "rules": {
+              "file": {
+                "accept": [
+                  "jpeg",
+                  "png",
+                  "webp"
+                ],
+                "maxBytes": 8388608
+              }
             }
           },
           {
             "ref": "put_right_photo",
             "type": "text",
-            "maxLength": 200,
+            "maxLength": 64,
             "nullable": true,
             "label": {
               "en-US": "Photo once put right",
@@ -14096,6 +14136,16 @@
               "ar-EG": "صورة بعد المعالجة",
               "zh-CN": "整改后照片",
               "zh-TW": "改善後照片"
+            },
+            "rules": {
+              "file": {
+                "accept": [
+                  "jpeg",
+                  "png",
+                  "webp"
+                ],
+                "maxBytes": 8388608
+              }
             }
           },
           {

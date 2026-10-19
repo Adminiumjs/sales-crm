@@ -2,12 +2,6 @@
  "format": "adminium.sample/1",
  "app": "crm",
  "weekAnchor": "tue",
- "assets": {
-  "signature": {
-   "file": "seeds/assets/signature.png",
-   "sha256": "23fcbba2d21d3354f235ce393af44ea24c31862cf201cec3dbd68c6e7b9157c7"
-  }
- },
  "tables": [
   {
    "ref": "settings",
@@ -13339,9 +13333,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Tomas Reidy",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -252,
       "@time": "16:00",
@@ -13361,9 +13352,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Sadie Moore",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -195,
       "@time": "16:00",
@@ -13383,9 +13371,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Owen Marsh",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -139,
       "@time": "16:00",
@@ -13405,9 +13390,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Petra Lindqvist",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -104,
       "@time": "16:00",
@@ -13427,9 +13409,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Ana Belova",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -97,
       "@time": "16:00",
@@ -13449,9 +13428,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Ines Vaughan",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -83,
       "@time": "16:00",
@@ -13471,9 +13447,6 @@
      "check_4": true,
      "check_5": true,
      "signer_name": "Marta Kovac",
-     "signature": {
-      "@asset": "signature"
-     },
      "signed_at": {
       "@day": -3,
       "@time": "16:00",

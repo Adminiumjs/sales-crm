@@ -235,7 +235,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   // A correction names the sign-off it corrects; its version is one more (F19).
-  sign_offs: { nullable: ["visit_id", "crew_id", "photos", "copy_sent_to", "corrects_id", "corrects_version", "version"] },
+  sign_offs: { nullable: ["visit_id", "crew_id", "signature", "photos", "copy_sent_to", "corrects_id", "corrects_version", "version"] },
   snags: {
     nullable: [
       "visit_id",

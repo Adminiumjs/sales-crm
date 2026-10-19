@@ -52,7 +52,7 @@ for (const [dialect, reachable] of LEGS) {
       // The harness packs text only: the picture's bytes do not matter here, its place in the package does.
       const packed = JSON.parse(read('whole/seeds/meridian.json')) as { assets?: Record<string, { file: string; sha256: string }> };
       for (const asset of Object.values(packed.assets ?? {})) asset.sha256 = createHash('sha256').update('png').digest('hex');
-      await h.stageApp(manifest(), { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/assets/signature.png': 'png', 'seeds/meridian.inventory.json': read('whole/seeds/meridian.inventory.json') });
+      await h.stageApp(manifest(), { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/meridian.inventory.json': read('whole/seeds/meridian.inventory.json') });
       const installed = await h.install('crm', manifest().version, { addOns: [{ key: 'invoices', version: invoices!.version }, { key: 'inventory', version: inventory!.version }] });
       expect(installed.statusCode, installed.body).toBe(200);
       const as: Installed = { h, addOn: inventory!, reply: installed.json() as Record<string, unknown>, real: inv, rowsOf: (ref, where) => h.rows(`select * from ${inv(ref)}${where === undefined ? '' : ` where ${where}`}`), hosts: [] };

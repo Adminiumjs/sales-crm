@@ -299,7 +299,7 @@ for (const [dialect, reachable] of LEGS) {
       // Signing off: not without a sign-off, and not while the snag stands.
       await w.update('jobs', job['id'], { state: 'installed' });
       await expect(w.update('jobs', job['id'], { state: 'signed-off' })).rejects.toThrow();
-      await w.create('sign_offs', { job_id: job['id'], visit_id: visit['id'], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Yusuf Demir', signature: 'file_x' });
+      await w.create('sign_offs', { job_id: job['id'], visit_id: visit['id'], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Yusuf Demir' });
       await expect(w.update('jobs', job['id'], { state: 'signed-off' })).rejects.toThrow();
       await expect(w.update('snags', snag['id'], { state: 'put-right' })).rejects.toThrow();
       await w.update('snags', snag['id'], { state: 'put-right', put_right_note: 'Two more metres fitted' });

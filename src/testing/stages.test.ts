@@ -199,7 +199,7 @@ describe("stage 1, the first release", () => {
     // The ledger's selling figures do not move: 14 open deals, 26 closed.
     const deals = sample.tables.find((table) => table.ref === "deals")!.rows;
     expect([deals.filter((deal) => deal["state"] === "open").length, deals.filter((deal) => deal["state"] !== "open").length]).toEqual([14, 26]);
-    // Supply's stock comes with it (the Inventory add-on's sample file); the crew's signature picture does not.
+    // Supply's stock comes with it (the Inventory add-on's sample file); no file does (a sample row names none).
     expect(doc.sampleData.addOns).toEqual({ inventory: { file: "seeds/meridian.inventory.json" } });
     expect(sample.assets).toBeUndefined();
   });

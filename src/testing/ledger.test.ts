@@ -16,8 +16,7 @@
  * on three engines in the engine's repo; this suite fails first, and here.
  */
 
-import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -85,13 +84,11 @@ describe("the sample is the one the manifest names", () => {
     expect((bundle as { format: string; app: string }).app).toBe((manifest as { key: string }).key);
   });
 
-  it("ships every picture it names, byte for byte", () => {
-    const assets = (bundle as unknown as { assets: Record<string, { file: string; sha256: string }> }).assets;
-    expect(Object.keys(assets)).toEqual(["signature"]);
-    for (const asset of Object.values(assets)) {
-      expect(existsSync(join(ROOT, asset.file)), asset.file).toBe(true);
-      expect(createHash("sha256").update(readFileSync(join(ROOT, asset.file))).digest("hex"), asset.file).toBe(asset.sha256);
-    }
+  it("brings no file: a sign-off's signature is a file column, and only a signed-in person uploads one", () => {
+    expect((bundle as { assets?: unknown }).assets).toBeUndefined();
+    const signOffs = (bundle as unknown as { tables: { ref: string; rows: Record<string, unknown>[] }[] }).tables.find((table) => table.ref === "sign_offs")!.rows;
+    expect(signOffs.length).toBeGreaterThan(0);
+    expect(signOffs.filter((row) => "signature" in row || "photos" in row)).toEqual([]);
   });
 
   it("writes only tables and columns the app declares, and no number of a series that is not the sample's to take", () => {

@@ -39,7 +39,7 @@ for (const [dialect, reachable] of LEGS) {
       // The harness packs text only: the picture's bytes do not matter to this proof, its place in the package does.
       const packed = JSON.parse(readFileSync(`${SEEDS}/meridian.json`, 'utf8')) as { assets?: Record<string, { file: string; sha256: string }> };
       for (const asset of Object.values(packed.assets ?? {})) asset.sha256 = createHash('sha256').update('png').digest('hex');
-      const files: Record<string, string> = { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/assets/signature.png': 'png' };
+      const files: Record<string, string> = { 'seeds/meridian.json': JSON.stringify(packed) };
       h = await installInvoicing(dialect, manifest(), invoices, files, WITH_EVERY_PART);
       service = createSampleDataService({ meta: h.meta, manager: h.manager, store: createAppStore({ dataDir: h.dataDir }), files: memoryFiles });
     }, 240_000);

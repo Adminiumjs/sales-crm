@@ -171,7 +171,6 @@ async function stack(dialect: Dialect): Promise<Stack> {
     'manifest.json': JSON.stringify(document),
     'staff/index.html': '<!doctype html><html><body></body></html>',
     'seeds/meridian.json': JSON.stringify(packed),
-    'seeds/assets/signature.png': 'png',
   });
   const staged = await app.inject({ method: 'POST', url: `/api/v1/apps/upload?expectedSha512=${encodeURIComponent(sha512Integrity(tarball))}`, headers: { cookie: owner, 'content-type': 'application/octet-stream' }, payload: Buffer.from(tarball) });
   expect(staged.statusCode, staged.body).toBe(200);
