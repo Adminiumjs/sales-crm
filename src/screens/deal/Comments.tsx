@@ -131,7 +131,10 @@ export function Comments({ id }: { id: string }) {
     return made;
   };
 
-  const canWrite = session.can("comments", "create");
+  // Who may change the deal comments on any deal they read; somebody who reads it only as a won deal (the account
+  // manager) comments only while he is on it: the server refuses him the rest (parent-not-theirs).
+  const onDeal = load.state === "ready" && load.data !== null && (load.data.deal.owner_id === me || load.data.members.some((member) => member.user_id === me));
+  const canWrite = session.can("comments", "create") && (session.can("deals", "update") || onDeal);
   const said = (saved: Saved<Comment>): Promise<Comment | null> => {
     // A name Adminium does not know as somebody who signs in: said in those words.
     if (saved.state === "refused" && saved.error.fields["text"] === "mention-unknown") {
