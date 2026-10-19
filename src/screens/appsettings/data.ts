@@ -33,6 +33,13 @@ export const BOUNDS: Record<string, readonly [number, number]> = {
   nudge_soon_days: [3, 30],
   working_day_hours: [4, 12],
   lead_cold_days: [1, 365],
+  // Stage 2's (P24): a sample's loan, a tired display piece, a snag, an aftercare call, a complaint's answer, a claim gone red.
+  loan_days: [1, 90],
+  display_tired_months: [1, 60],
+  snag_days: [1, 90],
+  aftercare_days: [1, 365],
+  complaint_answer_days: [1, 30],
+  claim_red_days: [1, 180],
 };
 
 export interface Place {

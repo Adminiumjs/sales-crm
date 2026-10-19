@@ -22,6 +22,7 @@ import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { DAYS, type Day } from "../appsettings/data.ts";
 import { Card } from "../appsettings/parts.tsx";
 import { crewPeople, dayHoursOf, num, readCrewFacts, truthy, type Crew, type CrewFacts, type Member } from "./data.ts";
+import { SettingNumbers } from "../appsettings/Numbers.tsx";
 import { hoursOf, useJobsScreen } from "./parts.tsx";
 
 /** A day's name from the reader's language: 2024-01-01 was a Monday. */
@@ -54,6 +55,7 @@ export function CrewsTab({ session }: { session: StaffSession }) {
             )}
             {canAdd && <NewCrew onDone={again} />}
             <MailsCard facts={facts} onDone={again} />
+            {session.part("jobs") && <SnagDays />}
             {!canCrews && <p className="crm-jb-quiet">{t("jb.set.ask")}</p>}
           </>
         )}
@@ -286,6 +288,15 @@ function NewCrew({ onDone }: { onDone: () => void }) {
       </div>
     </Card>
   );
+}
+
+/** How long a snag has to be put right (P24): the CRM admin's to set, read by the snag list's due days. */
+function SnagDays() {
+  const t = useT();
+  const { session, f } = useJobsScreen();
+  const slugs = (session.config.access?.roles ?? []).map((role) => role.slug).filter((slug) => slug.startsWith("crm-"));
+  const can = session.can("settings", "update") && (slugs.length === 0 || slugs.includes("crm-admin"));
+  return <SettingNumbers session={session} f={f} can={can} name="snag-days" title={t("jb.set.snags")} sub={t("jb.set.snags.sub")} fields={[{ column: "snag_days", label: t("jb.set.snag.days"), unit: (n) => t("aset.unit.days", undefined, n) }]} />;
 }
 
 /** What a delivery's e-mail says, and whether it goes: the CRM admin's two settings. */

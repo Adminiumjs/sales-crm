@@ -25,6 +25,7 @@ import { rightsOf } from "./parts.tsx";
 import { Selling } from "./Selling.tsx";
 import { Maps, Parts, Places, WorkingTime } from "./Tabs.tsx";
 import { CrewsTab } from "../jobs/CrewsTab.tsx";
+import { AftercareSettings } from "../aftercare/SettingsTab.tsx";
 
 const TABS = [
   { id: "selling", path: "", icon: "columns-3", label: "aset.tab.selling" },
@@ -34,6 +35,8 @@ const TABS = [
   { id: "parts", path: "parts", icon: "blocks", label: "aset.tab.parts" },
   // The crews, their people and days (F20): with Jobs on site or Vehicles and crew, a later stage's parts.
   { id: "crews", path: "crews", icon: "users", label: "jb.tab.crews" },
+  // Who makes the aftercare calls, and how soon each thing of the part is due (P24): with After the job.
+  { id: "aftercare", path: "after-the-job", icon: "heart-handshake", label: "nav.group.aftercare" },
 ] as const satisfies readonly { id: string; path: string; icon: string; label: MessageKey }[];
 type TabId = (typeof TABS)[number]["id"];
 
@@ -43,7 +46,8 @@ export function Settings({ rest }: ScreenProps) {
   const { session, f } = useScreen();
   const rights = rightsOf(session);
   const crewsOn = (session.part("jobs") || session.part("fleet")) && session.can("crews", "read");
-  const tabs = TABS.filter((one) => one.id !== "crews" || crewsOn);
+  const aftercareOn = session.part("aftercare") && session.can("settings", "read");
+  const tabs = TABS.filter((one) => (one.id !== "crews" || crewsOn) && (one.id !== "aftercare" || aftercareOn));
   const asked = tabs.find((tab) => tab.path === (rest[0] ?? ""))?.id ?? "selling";
   // The sales manager has one tab, whatever address she types; the operations manager, who keeps the crews and writes no setting, the crews'.
   const tab: TabId = rights.readsAll ? asked : !session.can("settings", "update") && crewsOn ? "crews" : "selling";
@@ -82,6 +86,7 @@ export function Settings({ rest }: ScreenProps) {
       {tab === "maps" && <Maps session={session} />}
       {tab === "parts" && <Parts session={session} f={f} />}
       {tab === "crews" && <CrewsTab session={session} />}
+      {tab === "aftercare" && <AftercareSettings session={session} f={f} rights={rights} />}
     </div>
   );
 }

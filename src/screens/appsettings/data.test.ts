@@ -49,10 +49,12 @@ describe("what the screen keeps that the manifest decides", () => {
     expect([column("work_from"), column("work_to")]).toEqual(["08:30", "17:30"]);
   });
 
-  it("names the roles each released part brings as the manifest does", () => {
-    expect(PARTS.map((part) => part.id)).toEqual(released.modules.map((part) => part.id));
+  it("names the roles each part of the first two stages brings as the manifest does", () => {
+    // In the manifest's order; the released file's six among them, and stage 3's Vehicles and crew with no line yet.
+    expect(PARTS.map((part) => part.id).filter((id) => released.modules.some((part) => part.id === id))).toEqual(released.modules.map((part) => part.id));
+    expect(PARTS.map((part) => part.id)).toEqual(whole.modules.map((part) => part.id).filter((id) => id !== "fleet"));
     for (const part of PARTS) {
-      const brings = released.roles.filter((role) => role.modules.includes(part.id)).map((role) => role.key);
+      const brings = whole.roles.filter((role) => role.modules.includes(part.id)).map((role) => role.key);
       expect([...part.roles].sort(), part.id).toEqual(brings.sort());
     }
   });

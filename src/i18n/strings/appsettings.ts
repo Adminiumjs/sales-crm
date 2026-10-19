@@ -26,6 +26,10 @@ const enUS = {
   "aset.open": "{count} open deal|{count} open deals",
   "aset.lost": "{count} lost deal|{count} lost deals",
   "aset.unit.days": "day|days",
+  "aset.unit.months": "month|months",
+  "aset.part.showroom": "Showroom bookings, samples on loan and the display stock.",
+  "aset.part.jobs": "Visits to a job, day sheets, routes, sign-off, snags and waste.",
+  "aset.part.aftercare": "Aftercare calls, what customers said, complaints and warranty claims.",
   "aset.unit.hours": "h",
   "aset.unit.underList": "% under list",
   "aset.ask.admin": "Only the CRM admin changes these.",
@@ -192,6 +196,7 @@ const enUS = {
   "aset.role.marketer": "Marketer",
   "aset.role.front-desk": "Front desk",
   "aset.role.ops-manager": "Operations manager",
+  "aset.role.crew": "Field crew",
   "aset.role.read-only": "Read-only",
 } as const;
 
@@ -218,6 +223,10 @@ const deDE: Table = {
   "aset.open": "{count} offener Deal|{count} offene Deals",
   "aset.lost": "{count} verlorener Deal|{count} verlorene Deals",
   "aset.unit.days": "Tag|Tage",
+  "aset.unit.months": "Monat|Monate",
+  "aset.part.showroom": "Showroom-Termine, verliehene Muster und die Ausstellungsstücke.",
+  "aset.part.jobs": "Einsätze, Tagespläne, Routen, Abnahme, Mängel und Entsorgung.",
+  "aset.part.aftercare": "Nachbetreuungsanrufe, Kundenstimmen, Beschwerden und Garantiefälle.",
   "aset.unit.hours": "Std.",
   "aset.unit.underList": "% unter Liste",
   "aset.ask.admin": "Nur der CRM-Admin ändert diese Einstellungen.",
@@ -384,6 +393,7 @@ const deDE: Table = {
   "aset.role.marketer": "Marketing",
   "aset.role.front-desk": "Empfang",
   "aset.role.ops-manager": "Betriebsleitung",
+  "aset.role.crew": "Montageteam",
   "aset.role.read-only": "Nur lesen",
 };
 
@@ -408,6 +418,10 @@ const frFR: Table = {
   "aset.open": "{count} affaire ouverte|{count} affaires ouvertes",
   "aset.lost": "{count} affaire perdue|{count} affaires perdues",
   "aset.unit.days": "jour|jours",
+  "aset.unit.months": "mois|mois",
+  "aset.part.showroom": "Rendez-vous au showroom, échantillons prêtés et pièces d’exposition.",
+  "aset.part.jobs": "Interventions, feuilles du jour, tournées, réception, réserves et déchets.",
+  "aset.part.aftercare": "Appels de suivi, avis des clients, réclamations et demandes de garantie.",
   "aset.unit.hours": "h",
   "aset.unit.underList": "% sous le tarif",
   "aset.ask.admin": "Seul l’administrateur CRM modifie ces paramètres.",
@@ -574,6 +588,7 @@ const frFR: Table = {
   "aset.role.marketer": "Marketing",
   "aset.role.front-desk": "Accueil",
   "aset.role.ops-manager": "Responsable des opérations",
+  "aset.role.crew": "Équipe de terrain",
   "aset.role.read-only": "Lecture seule",
 };
 
@@ -598,6 +613,10 @@ const daDK: Table = {
   "aset.open": "{count} åben handel|{count} åbne handler",
   "aset.lost": "{count} tabt handel|{count} tabte handler",
   "aset.unit.days": "dag|dage",
+  "aset.unit.months": "måned|måneder",
+  "aset.part.showroom": "Showroom-bookinger, udlånte prøver og udstillingsvarer.",
+  "aset.part.jobs": "Montagebesøg, dagsplaner, ruter, godkendelse, mangler og affald.",
+  "aset.part.aftercare": "Opfølgningsopkald, kundernes svar, klager og garantisager.",
   "aset.unit.hours": "t",
   "aset.unit.underList": "% under liste",
   "aset.ask.admin": "Kun CRM-administratoren ændrer disse.",
@@ -764,6 +783,7 @@ const daDK: Table = {
   "aset.role.marketer": "Marketingmedarbejder",
   "aset.role.front-desk": "Reception",
   "aset.role.ops-manager": "Driftschef",
+  "aset.role.crew": "Montører",
   "aset.role.read-only": "Skrivebeskyttet",
 };
 
@@ -788,6 +808,10 @@ const csCZ: Table = {
   "aset.open": "{count} otevřený obchod|{count} otevřené obchody|{count} otevřených obchodů",
   "aset.lost": "{count} ztracený obchod|{count} ztracené obchody|{count} ztracených obchodů",
   "aset.unit.days": "den|dny|dní",
+  "aset.unit.months": "měsíc|měsíce|měsíců",
+  "aset.part.showroom": "Rezervace showroomu, zapůjčené vzorky a vystavené kusy.",
+  "aset.part.jobs": "Výjezdy, denní plány, trasy, převzetí, nedodělky a odpad.",
+  "aset.part.aftercare": "Hovory po realizaci, co řekli zákazníci, stížnosti a reklamace.",
   "aset.unit.hours": "h",
   "aset.unit.underList": "% pod ceníkem",
   "aset.ask.admin": "Tato nastavení mění jen správce CRM.",
@@ -954,6 +978,7 @@ const csCZ: Table = {
   "aset.role.marketer": "Marketér",
   "aset.role.front-desk": "Recepce",
   "aset.role.ops-manager": "Provozní manažer",
+  "aset.role.crew": "Terénní tým",
   "aset.role.read-only": "Jen pro čtení",
 };
 
@@ -978,6 +1003,10 @@ const zhCN: Table = {
   "aset.open": "{count} 个进行中的商机",
   "aset.lost": "{count} 个已丢失的商机",
   "aset.unit.days": "天",
+  "aset.unit.months": "个月",
+  "aset.part.showroom": "展厅预约、外借样品和展品。",
+  "aset.part.jobs": "上门作业、日程单、路线、验收、整改项和废料处理。",
+  "aset.part.aftercare": "售后回访、客户反馈、投诉和保修申请。",
   "aset.unit.hours": "小时",
   "aset.unit.underList": "% 低于标价",
   "aset.ask.admin": "只有 CRM 管理员可以更改这些设置。",
@@ -1144,6 +1173,7 @@ const zhCN: Table = {
   "aset.role.marketer": "市场专员",
   "aset.role.front-desk": "前台",
   "aset.role.ops-manager": "运营经理",
+  "aset.role.crew": "现场人员",
   "aset.role.read-only": "只读",
 };
 
@@ -1168,6 +1198,10 @@ const zhTW: Table = {
   "aset.open": "{count} 個進行中的商機",
   "aset.lost": "{count} 個已失去的商機",
   "aset.unit.days": "天",
+  "aset.unit.months": "個月",
+  "aset.part.showroom": "展間預約、外借樣品與展示品。",
+  "aset.part.jobs": "到場作業、日程單、路線、驗收、缺失項目與廢料處理。",
+  "aset.part.aftercare": "售後回訪、客戶回饋、客訴與保固申請。",
   "aset.unit.hours": "小時",
   "aset.unit.underList": "% 低於定價",
   "aset.ask.admin": "只有 CRM 管理員可以變更這些設定。",
@@ -1334,6 +1368,7 @@ const zhTW: Table = {
   "aset.role.marketer": "行銷專員",
   "aset.role.front-desk": "櫃台",
   "aset.role.ops-manager": "營運經理",
+  "aset.role.crew": "現場人員",
   "aset.role.read-only": "唯讀",
 };
 
@@ -1358,6 +1393,10 @@ const arEG: Table = {
   "aset.open": "لا صفقات مفتوحة|صفقة مفتوحة واحدة|صفقتان مفتوحتان|{count} صفقات مفتوحة|{count} صفقة مفتوحة|{count} صفقة مفتوحة",
   "aset.lost": "لا صفقات خاسرة|صفقة خاسرة واحدة|صفقتان خاسرتان|{count} صفقات خاسرة|{count} صفقة خاسرة|{count} صفقة خاسرة",
   "aset.unit.days": "يوم|يوم|يومان|أيام|يوماً|يوم",
+  "aset.unit.months": "شهر|شهر|شهران|أشهر|شهرًا|شهر",
+  "aset.part.showroom": "حجوزات صالة العرض والعينات المُعارة وقطع العرض.",
+  "aset.part.jobs": "زيارات التنفيذ وجداول اليوم والمسارات والاستلام والملاحظات والمخلفات.",
+  "aset.part.aftercare": "مكالمات المتابعة وآراء العملاء والشكاوى ومطالبات الضمان.",
   "aset.unit.hours": "س",
   "aset.unit.underList": "% تحت سعر القائمة",
   "aset.ask.admin": "مسؤول CRM وحده يغيّر هذه الإعدادات.",
@@ -1524,6 +1563,7 @@ const arEG: Table = {
   "aset.role.marketer": "مسوّق",
   "aset.role.front-desk": "الاستقبال",
   "aset.role.ops-manager": "مدير العمليات",
+  "aset.role.crew": "فريق الموقع",
   "aset.role.read-only": "للقراءة فقط",
 };
 

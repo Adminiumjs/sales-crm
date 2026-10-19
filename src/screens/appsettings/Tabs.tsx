@@ -22,6 +22,7 @@ import { Loaded, LoadFailed, Skeleton, useCoalesced, useLive, useLoad } from "..
 import { DAYS, hoursBetween, isTime, placeOf, readSettings, weekFrom, workDaysOf, type Day, type SettingsRow } from "./data.ts";
 import { AskLine, Card, Chips, NumField, useSaveSettings, type Rights } from "./parts.tsx";
 import { ShowroomSettings } from "../showroom/SettingsCard.tsx";
+import { SettingNumbers } from "./Numbers.tsx";
 
 function useSettings(session: StaffSession): { load: ReturnType<typeof useLoad<SettingsRow | null>>["load"]; reload: () => void; soon: () => void } {
   const { load, reload } = useLoad(() => readSettings(session), [session]);
@@ -126,6 +127,20 @@ export function WorkingTime({ session, f, rights }: { session: StaffSession; f: 
               )}
               {/* The showroom's spaces, hours, address and e-mails: once Showroom and samples is on (P19). */}
               {session.config.modules?.["showroom"] === true && <ShowroomSettings session={session} can={can} />}
+              {session.config.modules?.["showroom"] === true && (
+                <SettingNumbers
+                  session={session}
+                  f={f}
+                  can={rights.all}
+                  name="showroom-numbers"
+                  title={t("sh.set.numbers")}
+                  sub={t("sh.set.numbers.sub")}
+                  fields={[
+                    { column: "loan_days", label: t("sh.set.loan"), unit: (n) => t("aset.unit.days", undefined, n) },
+                    { column: "display_tired_months", label: t("sh.set.tired"), unit: (n) => t("aset.unit.months", undefined, n) },
+                  ]}
+                />
+              )}
               {!rights.all && <AskLine>{t("aset.ask.admin")}</AskLine>}
             </>
           );
@@ -355,10 +370,14 @@ export const PARTS: readonly { id: PartId; name: MessageKey; line: MessageKey; r
   { id: "accounts", name: "nav.group.accounts", line: "aset.part.accounts", roles: ["admin", "sales-manager", "rep", "account-manager", "marketer", "read-only"] },
   { id: "team", name: "nav.group.team", line: "aset.part.team", roles: ["admin", "sales-manager", "rep", "read-only"] },
   { id: "inbox", name: "nav.group.inbox", line: "aset.part.inbox", roles: ["admin", "sales-manager", "rep", "marketer", "front-desk", "read-only"] },
+  // Stage 2's three are listed once the install has them (the manifest's order: Supply comes after them).
+  { id: "showroom", name: "nav.group.showroom", line: "aset.part.showroom", roles: ["admin", "front-desk", "read-only"] },
+  { id: "jobs", name: "nav.group.jobs", line: "aset.part.jobs", roles: ["admin", "ops-manager", "crew", "read-only"] },
+  { id: "aftercare", name: "nav.group.aftercare", line: "aset.part.aftercare", roles: ["admin", "account-manager", "read-only"] },
   { id: "supply", name: "nav.group.supply", line: "aset.part.supply", roles: ["admin", "ops-manager", "read-only"], needs: "aset.part.supply.needs" },
 ];
 const ALWAYS: readonly PartId[] = ["selling", "accounts", "team"];
-const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package" };
+const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package", showroom: "store", jobs: "truck", aftercare: "heart-handshake" };
 
 export function Parts({ session, f }: { session: StaffSession; f: Formatters }) {
   const t = useT();
