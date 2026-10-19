@@ -320,14 +320,16 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   await retire(api, data, "Room spec: work");
 });
 
-test("also on this deal: the owner adds a colleague, who then opens it and may add nobody; she takes them off again", async ({ as, api, data }) => {
+test("also on this deal: the owner adds a colleague, who then opens it and may add nobody; she takes them off again", async ({ as, api, data, stand }) => {
   const context = await as("dana");
   const dana = context.request;
   const headers = await csrf(dana);
   const deal = await makeDeal(dana, data, "Room spec: people");
   const priya = await api("priya");
   const priyaId = await userId(priya);
-  const adaId = await userId(await api("ada"));
+  // Somebody whose role opens no deal: the marketer, at every stage; the operations manager too at stage 1 (from stage 2 she
+  // reads a won deal, the jobs' own, so her role does open deals).
+  const noDeal = await Promise.all((stand.parts.includes("jobs") ? ["lena"] : ["ada", "lena"]).map(async (who) => [who, await userId(await api(who))] as const));
   const samId = await userId(await api("sam"));
   expect((await priya.get(data("deals", `/${String(deal.id)}`))).status()).toBe(404);
 
@@ -365,10 +367,12 @@ test("also on this deal: the owner adds a colleague, who then opens it and may a
   const refused = await priya.post(data("deal_members"), { data: { values: { deal_id: deal.id, user_id: samId } }, headers: priyaHeaders });
   expect(refused.status(), await refused.text()).toBe(403);
   expect((await priya.delete(data("deal_members", `/${String(listed[0]!.id)}?confirm=true`), { headers: priyaHeaders })).status()).toBe(404);
-  // And nobody is listed whose role opens no deal, whoever asks: the operations manager is refused by name of the column.
-  const cannot = await dana.post(data("deal_members"), { data: { values: { deal_id: deal.id, user_id: adaId } }, headers });
-  expect(cannot.status()).toBe(422);
-  expect(((await cannot.json()) as { error: { details: { fields: Record<string, { code: string }> } } }).error.details.fields["user_id"]?.code).toBe("cannot-open");
+  // And nobody is listed whose role opens no deal, whoever asks: refused by name of the column.
+  for (const [who, id] of noDeal) {
+    const cannot = await dana.post(data("deal_members"), { data: { values: { deal_id: deal.id, user_id: id } }, headers });
+    expect(cannot.status(), who).toBe(422);
+    expect(((await cannot.json()) as { error: { details: { fields: Record<string, { code: string }> } } }).error.details.fields["user_id"]?.code, who).toBe("cannot-open");
+  }
   // Another rep adds nobody to a deal that is not theirs.
   const sam = await api("sam");
   expect((await sam.post(data("deal_members"), { data: { values: { deal_id: deal.id, user_id: samId } }, headers: await csrf(sam) })).status()).toBe(409);
@@ -455,11 +459,16 @@ test("a closed deal is the same page, read-only; whoever may reopens it; the acc
   await picture(his, "4-hugo-won-deal");
   const h4 = (await rows<{ id: number }>(hugo, data, "deals", { column: "name", op: "eq", value: "Studio meeting tables" }))[0]!;
   const hugoHeaders = await csrf(hugo);
-  // The server's own refusals: he reopens nothing, reads nothing that was logged or said, and an open deal is not there for him.
+  // The server's own refusals: he reopens nothing, reads nothing that was logged or said on a deal he is not on (he reads it
+  // only on a deal he is on, P23), and an open deal is not there for him.
   expect((await hugo.post(data("deals", `/${String(h4.id)}/actions/reopen`), { data: { from: "won" }, headers: hugoHeaders })).status()).toBe(403);
-  expect((await hugo.get(data("activities", "?limit=1"))).status()).toBe(403);
-  expect((await hugo.get(data("comments", "?limit=1"))).status()).toBe(403);
-  expect((await hugo.get(data("deal_stage_changes", "?limit=1"))).status()).toBe(403);
+  const tessa = await api("tessa");
+  let there = 0;
+  for (const table of ["activities", "comments", "deal_stage_changes"]) {
+    expect(await rows(hugo, data, table, { column: "deal_id", op: "eq", value: h4.id }), `hugo reads ${table} of a deal he is not on`).toEqual([]);
+    there += (await rows(tessa, data, table, { column: "deal_id", op: "eq", value: h4.id })).length;
+  }
+  expect(there, "the won deal has a history to keep from him").toBeGreaterThan(0);
   expect((await hugo.get(data("deals", `/${String(deal.id)}`))).status()).toBe(404);
   await his.goto(`${STAFF}deals/${String(deal.id)}`);
   await expect(his.getByTestId("no-deal")).toContainText("No deal to open");
@@ -672,6 +681,10 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
 });
 
 test("hand a deal over: a rep hands on her own with a note; whoever leads the team moves the follow-ups too; the room shows whose it was", async ({ as, api, data }) => {
+  // The tests before this one work Dana's screens hard, and the server counts her requests by the minute (300): on a stage-2
+  // stand her minute ran out during this test (429s on the hand-over dialog). She starts it with her whole minute.
+  test.setTimeout(240_000);
+  await minuteOut();
   const context = await as("dana");
   const dana = context.request;
   const headers = await csrf(dana);

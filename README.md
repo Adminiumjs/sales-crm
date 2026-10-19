@@ -146,7 +146,7 @@ Invoices and Inventory; `CRM_STAND_STAGE=3` installs a later stage.
 
 | | |
 | --- | --- |
-| `npm run e2e` | The staff side in a real browser on a fresh stand, signed in as the sample's people: every screen, its figures against what the server answers that person, the server's refusals, live updates between two people, Arabic, 390 wide, dark. `e2e/x-stage1-walk.e2e.ts` walks every menu line of every role, follows every link and runs axe. Add `-- e2e/<file>.e2e.ts` for one file. |
+| `npm run e2e` | The staff side in a real browser on a fresh stand, signed in as the sample's people: every screen, its figures against what the server answers that person, the server's refusals, live updates between two people, Arabic, 390 wide, dark. `e2e/x-walk.e2e.ts` walks every menu line of every role the stand's stage offers (from stage 2 the field crew too), follows every link, asks the server to refuse each screen to somebody it is not for, and runs axe. Add `-- e2e/<file>.e2e.ts` for one file. |
 | `npm run proofs` | The app installed on a whole Adminium server on SQLite, Postgres and MySQL, tried as each sample person: roles, rules, e-mails, the sample, the console. They run inside the Adminium checkout; see `proofs/README.md`. |
 | `node scripts/untranslated.mjs --check` | No string waits for a translation. |
 

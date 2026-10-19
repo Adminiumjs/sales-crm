@@ -700,3 +700,15 @@ a.crm-sh-name:focus-visible {
     min-inline-size: 52px;
   }
 }
+
+/* A state pill on a sample's tinted tile: its tone pulled 15 % toward the text colour (both themes), as decision 203 does,
+   so it keeps 4.5:1 on whichever of the five tints the tile has. */
+.crm-sh-sample-tile .crm-pill[data-tone="danger"] {
+  color: color-mix(in srgb, var(--danger) 85%, var(--fg));
+}
+.crm-sh-sample-tile .crm-pill[data-tone="pos"] {
+  color: color-mix(in srgb, var(--pos) 85%, var(--fg));
+}
+.crm-sh-sample-tile .crm-pill[data-tone="info"] {
+  color: color-mix(in srgb, var(--info) 85%, var(--fg));
+}

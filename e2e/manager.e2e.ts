@@ -176,12 +176,15 @@ test("a rep, the account manager, the marketer and the front desk have no Team v
       expect((await figure(direct, stand, table, { shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] })).status, `${person}'s figure over ${table}`).toBe(403);
     }
   }
-  // The account manager reads a deal once it is won (ruling R6): no open deal, no lost one, and none of the feed's tables.
+  // The account manager reads a deal once it is won (ruling R6), and an open one only while he is listed on it (P23): on the
+  // sample he is on none, so no open deal, no lost one, and none of the feed's rows; the nudges' table is never his.
   const hugo = await api("hugo");
-  for (const table of ["activities", "deal_stage_changes", "deal_amount_changes", "nudge_snoozes"]) {
-    expect((await hugo.get(data(table, "?limit=1"))).status(), `hugo reads ${table}`).toBe(403);
-    expect((await figure(hugo, stand, table, { shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] })).status, `hugo's figure over ${table}`).toBe(403);
+  for (const table of ["activities", "deal_stage_changes", "deal_amount_changes"]) {
+    expect(await rows(hugo, data, table), `hugo reads ${table} of no deal he is on`).toEqual([]);
+    expect((await figure<{ value: number }>(hugo, stand, table, { shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] })).result.value, `hugo's figure over ${table}`).toBe(0);
   }
+  expect((await hugo.get(data("nudge_snoozes", "?limit=1"))).status(), "hugo reads nudge_snoozes").toBe(403);
+  expect((await figure(hugo, stand, "nudge_snoozes", { shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] })).status, "hugo's figure over nudge_snoozes").toBe(403);
   for (const state of ["open", "lost"]) {
     expect(await rows(hugo, data, "deals", { column: "state", op: "eq", value: state }), `hugo's ${state} deals`).toEqual([]);
     expect((await figure<{ value: number }>(hugo, stand, "deals", { shape: "single-metric", filters: [{ column: "state", op: "eq", value: state }], aggregations: [{ fn: "sum", column: "weighted_value", alias: "w" }] })).result.value, `hugo's sum over ${state} deals`).toBe(0);

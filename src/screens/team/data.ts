@@ -13,7 +13,7 @@ import { useMemo } from "react";
 import { useI18n } from "../../i18n/index.tsx";
 import { addDays, formatters, type Formatters } from "../../lib/format.ts";
 import { useSession } from "../../session/session.tsx";
-import { canOpen, type MenuFacts, type PartId, type RouteKey } from "../../shell/routes.ts";
+import { canOpen, inMenu, type MenuFacts, type PartId, type RouteKey } from "../../shell/routes.ts";
 import { isBuilt } from "../../shell/screens.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { noValue } from "../../staffSession.ts";
@@ -178,7 +178,9 @@ export function useScreen(): { session: StaffSession; f: Formatters; opens: (rou
     () => ({ roles: (config.access?.roles ?? []).map((role) => role.slug), part: (id: PartId) => session.part(id), reads: (table) => session.can(table, "read"), built: isBuilt }),
     [config, session],
   );
-  const opens = useMemo(() => (route: RouteKey) => canOpen(route, facts), [facts]);
+  // A link to a screen is drawn only when the person's menu holds that screen (decision 205): the front desk reads a company
+  // to name it on a booking, and Accounts is still not a screen of hers.
+  const opens = useMemo(() => (route: RouteKey) => canOpen(route, facts) && inMenu(route, facts.roles), [facts]);
   // Read-only reads these screens and is offered none of their buttons.
   return { session, f, opens, writes: session.can("deals", "update") };
 }

@@ -10,9 +10,16 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { inArabic, rows, STAFF, unfoldMenu, watch, type Data } from "./helpers.ts";
+import { inArabic, minuteOut, rows, STAFF, unfoldMenu, watch, type Data } from "./helpers.ts";
 
 test.skip(Number(process.env.CRM_STAND_STAGE ?? "1") < 2, "the showroom arrives with stage 2: run with CRM_STAND_STAGE=2");
+
+// The two files before this one (bookings, samples) work the front desk's screens hard, and the server counts her requests by
+// the minute (300): this file starts with her whole minute, as the walk does, rather than meet a 429 on its first read.
+test.beforeAll(async () => {
+  test.setTimeout(90_000);
+  await minuteOut();
+});
 
 const chip = (page: Page, filter: string) => page.locator(`.crm-chip-btn[data-filter="${filter}"] .crm-chip-count`);
 const stat = (page: Page, name: string) => page.locator(`.crm-sh-stat[data-stat="${name}"]`);

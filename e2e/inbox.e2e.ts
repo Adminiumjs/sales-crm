@@ -120,14 +120,24 @@ test("a rep's inbox is the unclaimed ones and her own, show leads passed to her 
   expect((await context.request.get(data("enquiries", `/${String(others[0]!.id)}`))).status()).toBe(404);
 });
 
-test("the front desk lands on the Inbox, passes and adds, and is offered no claim", async ({ as, api, data }) => {
+test("the front desk lands on the Inbox, passes and adds, and is offered no claim", async ({ as, api, data, stand }) => {
   const context = await as("corin");
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(STAFF);
-  // Decision 48: at stage 1 the front desk is left with the Inbox, and that is where she lands.
+  const menu = page.getByRole("navigation", { name: "Menu" }).getByRole("link");
+  if (stand.parts.includes("showroom")) {
+    // From stage 2 she lands on her own home, the showroom's day; the Team inbox is the last line of her menu.
+    await expect(page).toHaveURL(/\/home$/);
+    await expect(page.locator('[data-screen="deskhome"]')).toBeVisible();
+    await unfoldMenu(page);
+    await expect(menu).toHaveText(["Home", "Showroom bookings", "Showroom follow-ups", "Sample library", "Sample returns chase", "Display stock", "Team inbox"]);
+    await menu.filter({ hasText: "Team inbox" }).click();
+  } else {
+    // Decision 48: at stage 1 the front desk is left with the Inbox, and that is where she lands.
+    await expect(menu).toHaveText(["Team inbox"]);
+  }
   await expect(page).toHaveURL(/\/inbox$/);
-  await expect(page.getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(["Team inbox"]);
   await expect(count(page, "open")).toHaveText("4");
   await expect(count(page, "all")).toHaveText(String(await total(context.request, data)));
   await expect(count(page, "all")).toHaveText("5");

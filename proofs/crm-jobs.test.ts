@@ -362,7 +362,10 @@ for (const [dialect, reachable] of LEGS) {
       // Sorted by the office: no longer to sort, and the day it was is the server's.
       expect(said(await s.change('ada', 'delivery_notes', note, { sorted: true }))).toBe('ok');
       expect(await read()).toEqual([10, 10, 0, 0]);
-      expect(String((await row('ada', 'delivery_notes', note))?.['sorted_on']).slice(0, 10)).toBe(new Date().toISOString().slice(0, 10));
+      // The business's calendar day (its connection's zone), not the test's UTC one: they differ just after midnight.
+      const zone = (await s.meta.db.selectFrom('adminium_connections').select('timezone').where('id', '=', s.connectionId).executeTakeFirst())?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: String(zone), year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      expect(String((await row('ada', 'delivery_notes', note))?.['sorted_on']).slice(0, 10)).toBe(today);
       // Nobody types a total.
       await s.change('ada', 'delivery_notes', note, { ordered: 99, short: 5 });
       expect((await read()).slice(0, 3)).toEqual([10, 10, 0]);

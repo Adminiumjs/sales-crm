@@ -193,14 +193,22 @@ test("Read-only reads both screens, 390 wide and dark, presses nothing, and the 
   expect(Object.keys(item.data)).not.toContain("value");
 });
 
-test("the operations manager lands on Stock, reads no deal, and is told how many needs wait", async ({ as, api, stand }) => {
+test("the operations manager lands on Stock, reads no open deal, and is told how many needs wait", async ({ as, api, stand }) => {
   const page = await (await as("ada")).newPage();
   const problems = watch(page);
   await page.goto(STAFF);
-  // Her menu is Supply, and her first page is Stock (her home's part is a later stage's).
-  await expect(page).toHaveURL(/\/stock$/);
   const menu = page.getByRole("navigation", { name: "Menu" });
-  await expect(menu.getByRole("link")).toHaveText(["Stock and lead times", "Supplier scorecard"]);
+  if (stand.parts.includes("jobs")) {
+    // From stage 2 her home is Jobs on site's; Supply follows the jobs' seven lines, and Settings (her crews) closes the menu.
+    await expect(page).toHaveURL(/\/home$/);
+    await unfoldMenu(page);
+    await expect(menu.getByRole("link")).toHaveText(["Home", "Deliveries", "Day sheet", "Route", "Sign-off", "Delivery notes", "Job snag list", "Recycling and disposal", "Stock and lead times", "Supplier scorecard", "Settings"]);
+    await menu.getByRole("link", { name: "Stock and lead times" }).click();
+  } else {
+    // At stage 1 her menu is Supply, and her first page is Stock (her home's part is a later stage's).
+    await expect(menu.getByRole("link")).toHaveText(["Stock and lead times", "Supplier scorecard"]);
+  }
+  await expect(page).toHaveURL(/\/stock$/);
   const ada = await api("ada");
   const server = await served(ada, stand, false);
   // Three needs of open deals wait on an empty line (d2's rooms, d5's fittings, d8's stools): counted by the server for her.
@@ -214,8 +222,16 @@ test("the operations manager lands on Stock, reads no deal, and is told how many
   await page.goto(`${STAFF}suppliers`);
   await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
   expect(problems).toEqual([]);
-  // The server: no deal for her, and Inventory read only.
-  expect((await ada.get(`/api/v1/data/${stand.connectionId}/${encodeURIComponent(stand.tables["crm_deals"]!)}?limit=1`)).status()).toBe(403);
+  // The server: no open deal for her (at stage 1 no deal at all; from stage 2 a won deal, the jobs' own), and Inventory read only.
+  const deals = await ada.get(`/api/v1/data/${stand.connectionId}/${encodeURIComponent(stand.tables["crm_deals"]!)}?limit=200`);
+  if (!stand.parts.includes("jobs")) expect(deals.status()).toBe(403);
+  else {
+    expect(deals.status(), await deals.text()).toBe(200);
+    const read = ((await deals.json()) as { data: { state: string; amount?: unknown }[] }).data;
+    expect(read.length).toBeGreaterThan(0);
+    expect(new Set(read.map((deal) => deal.state))).toEqual(new Set(["won"]));
+    expect(read.some((deal) => "amount" in deal), "she reads no deal's amount").toBe(false);
+  }
   expect((await ada.post(inv(stand, "items"), { data: { values: { name: "P16 Ada" } }, headers: await csrf(ada) })).status()).toBe(403);
 });
 

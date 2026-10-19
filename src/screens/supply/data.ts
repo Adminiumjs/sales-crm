@@ -22,6 +22,7 @@
  */
 import type { Condition, Grouped, Row, StaffSession } from "../../staffSession.ts";
 import { noValue } from "../../staffSession.ts";
+import { rolesOf, type RoleKey } from "../../shell/routes.ts";
 
 /** Inventory's tables, as the session names an add-on's. */
 export const INV = {
@@ -158,9 +159,16 @@ export interface StockData {
   longest: Supplier | null;
 }
 
+/**
+ * The roles of Supply's readers that are answered open deals, their names and amounts. The operations manager reads a won
+ * deal only, and none of its amount (the jobs' own, from stage 2): she is told how many needs wait, as at stage 1.
+ */
+const READS_OPEN_DEALS: readonly RoleKey[] = ["admin", "sales-manager", "rep", "read-only"];
+export const readsOpenDeals = (session: StaffSession): boolean => session.can("deals", "read") && rolesOf((session.config?.access?.roles ?? []).map((role) => role.slug)).some((role) => READS_OPEN_DEALS.includes(role));
+
 /** Everything the Stock screen shows, as the person reads it. */
 export async function readStock(session: StaffSession): Promise<StockData> {
-  const readsDeals = session.can("deals", "read");
+  const readsDeals = readsOpenDeals(session);
   const ACTIVE: Condition = { column: "active", op: "eq", value: true };
   const openNeed: Condition = { column: "deal_state", op: "eq", value: "open" };
   const [lines, suppliers, offers, orderLines, all, inStock, empty, lowAnswer, levelsSet, onOrder, askedAnswer, needs] = await Promise.all([

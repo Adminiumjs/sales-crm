@@ -18,6 +18,7 @@ import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, unfoldMenu, watch, type Data } from "./helpers.ts";
+import type { StandState } from "./stand.mjs";
 
 const SAMPLE = {
   approval_threshold_pct: 5, quote_valid_days: 30, quote_warn_days: 3, sitting_warm_days: 14, sitting_stale_days: 30, nudge_quiet_days: 7, nudge_stuck_days: 21, nudge_soon_days: 7,
@@ -62,6 +63,15 @@ async function openSettings(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Settings");
 }
 
+/**
+ * The tabs a person who reads every setting is offered, in the stand's stage: stage 1's five, and from stage 2 Crews
+ * (with Jobs on site) and After the job (with its part). The parts the Parts tab lists, the same way.
+ */
+const TABS: readonly (readonly [string, string, string?])[] = [["Selling", "المبيعات"], ["Working time", "وقت العمل"], ["Places", "الأماكن"], ["Maps", "الخرائط"], ["Parts", "الأجزاء"], ["Crews", "الفرق", "jobs"], ["After the job", "بعد التنفيذ", "aftercare"]];
+const tabsOf = (stand: StandState, arabic = false): string[] => TABS.filter(([, , part]) => part === undefined || stand.parts.includes(part)).map(([en, ar]) => (arabic ? ar : en));
+const STAGE_PARTS: Record<number, string[]> = { 1: ["accounts", "inbox", "quotes", "selling", "supply", "team"], 2: ["accounts", "aftercare", "inbox", "jobs", "quotes", "selling", "showroom", "supply", "team"] };
+const partsOf = (stand: StandState): string[] => STAGE_PARTS[stand.stage] ?? [...stand.parts].sort();
+
 /** Type a number into a setting and leave the field by Enter. */
 async function type(page: Page, column: string, value: string): Promise<void> {
   const field = setting(page, column).locator("input");
@@ -69,14 +79,14 @@ async function type(page: Page, column: string, value: string): Promise<void> {
   await field.press("Enter");
 }
 
-test("the CRM admin reaches all five tabs from her menu, with the ledger's figures on Selling", async ({ as, api, data, stand }) => {
+test("the CRM admin reaches every tab of her stage from her menu, with the ledger's figures on Selling", async ({ as, api, data, stand }) => {
   const direct = await api("tessa");
   await restore(direct, data);
   const page = await (await as("tessa")).newPage();
   const problems = watch(page);
   await openSettings(page);
   await expect(page.locator('[data-screen="appsettings"]')).toHaveAttribute("data-writes", "all");
-  await expect(page.getByRole("tab")).toHaveText(["Selling", "Working time", "Places", "Maps", "Parts"]);
+  await expect(page.getByRole("tab")).toHaveText(tabsOf(stand));
   await expect(tab(page, "Selling")).toHaveAttribute("aria-selected", "true");
 
   // Stages: the ledger's 14 open deals at £156,562.50 weighted, five stages, each with the count the server answers her.
@@ -144,8 +154,9 @@ test("the CRM admin reaches all five tabs from her menu, with the ledger's figur
   await expect(page.getByLabel("The day ends")).toHaveValue("17:30");
   await expect(page.getByRole("group", { name: "The week starts on" }).locator('[aria-pressed="true"]')).toHaveText("Monday");
   await expect(page.locator('[data-figure="week"]')).toHaveText("5 days · 08:30 to 17:30 · 45 h a week");
-  // No crew, no job: the crew's day is a later stage's.
-  await expect(card(page, "crew")).toHaveCount(0);
+  // No crew, no job at stage 1: the crew's day comes with Jobs on site (stage 2), the sample's 8 hours.
+  if (stand.parts.includes("jobs")) await expect(setting(page, "working_day_hours").locator("input")).toHaveValue(String(Number((await settingsRow(direct, data))["working_day_hours"])));
+  else await expect(card(page, "crew")).toHaveCount(0);
 
   // Places: the depot's address in parts, and its place by town.
   await tab(page, "Places").click();
@@ -168,10 +179,10 @@ test("the CRM admin reaches all five tabs from her menu, with the ledger's figur
   await expect(page.locator('[data-panel="maps"]').locator("button, input, a")).toHaveCount(0);
   await tab(page, "Parts").click();
   const parts = Object.keys(told2.modules);
-  expect(parts.sort()).toEqual(["accounts", "inbox", "quotes", "selling", "supply", "team"]);
-  await expect(page.locator(".crm-ast-part")).toHaveCount(6);
+  expect(parts.sort()).toEqual(partsOf(stand));
+  await expect(page.locator(".crm-ast-part")).toHaveCount(parts.length);
   for (const id of parts) await expect(page.locator(`.crm-ast-part[data-part="${id}"]`)).toHaveAttribute("data-on", told2.modules[id] === true ? "1" : "0");
-  await expect(page.locator('[data-figure="parts"]')).toHaveText(`${String(parts.filter((id) => told2.modules[id]).length)} of 6 on`);
+  await expect(page.locator('[data-figure="parts"]')).toHaveText(`${String(parts.filter((id) => told2.modules[id]).length)} of ${String(parts.length)} on`);
   await expect(page.locator('.crm-ast-part[data-part="inbox"] .crm-ast-roles')).toHaveText("RolesCRM adminSales managerSales repMarketerFront deskRead-only");
   await expect(page.locator('[data-panel="parts"]')).toContainText("Ask the person who runs this install.");
   await expect(page.locator('[data-panel="parts"]').locator("button, input, a")).toHaveCount(0);
@@ -224,7 +235,8 @@ test("the sales manager has Selling and nothing else: she writes her eight setti
     await expect(setting(page, "sitting_warm_days").locator("input")).toHaveValue("10");
     await type(page, "sitting_warm_days", "14");
     await expect(setting(page, "sitting_warm_days")).toContainText("3 open deals warm now");
-    expect((await settingsRow(direct, data))["sitting_warm_days"]).toBe(14);
+    // The count follows the field at once; the save may still be on its way (the toast says the same words as the last one).
+    await expect.poll(async () => (await settingsRow(direct, data))["sitting_warm_days"]).toBe(14);
 
     // Stages: she adds one, names it, gives it odds and moves it; she is offered no bin.
     const stages = card(page, "stages");
@@ -472,13 +484,13 @@ test("the CRM admin writes Working time and Places, makes and removes a rep's pr
   }
 });
 
-test("Read-only reads every tab with nothing to press, and the server refuses her writes", async ({ as, api, data }) => {
+test("Read-only reads every tab with nothing to press, and the server refuses her writes", async ({ as, api, data, stand }) => {
   await restore(await api("tessa"), data);
   const page = await (await as("grace")).newPage();
   await openSettings(page);
   await expect(page.locator('[data-screen="appsettings"]')).toHaveAttribute("data-writes", "none");
   await expect(page.locator(".crm-ast-intro")).toContainText("You can read every setting and change none.");
-  await expect(page.getByRole("tab")).toHaveCount(5);
+  await expect(page.getByRole("tab")).toHaveText(tabsOf(stand));
   // Selling: the figures are hers to read; no field, no button, no switch.
   const selling = page.locator('[data-panel="selling"]');
   await expect(card(page, "stages").locator('[data-figure="open"]')).toHaveText("14 open deals");
@@ -500,7 +512,7 @@ test("Read-only reads every tab with nothing to press, and the server refuses he
   await tab(page, "Maps").click();
   await expect(page.locator('[data-panel="maps"]')).toContainText("Ask the person who runs this install.");
   await tab(page, "Parts").click();
-  await expect(page.locator(".crm-ast-part")).toHaveCount(6);
+  await expect(page.locator(".crm-ast-part")).toHaveCount(partsOf(stand).length);
 
   // By a direct call, each write she might try.
   const direct = await api("grace");
@@ -548,11 +560,11 @@ test("a rep, the account manager, the marketer and the front desk have no Settin
   expect((await dana.delete(data("reps", `/${String(mine.id)}?confirm=true`), { headers })).status()).toBe(403);
 });
 
-test("the install's owner is told where each switch is, and what the quote's e-mail link has", async ({ as, api }) => {
+test("the install's owner is told where each switch is, and what the quote's e-mail link has", async ({ as, api, stand }) => {
   const direct = await api("owner");
   const page = await (await as("owner")).newPage();
   await openSettings(page);
-  await expect(page.getByRole("tab")).toHaveCount(5);
+  await expect(page.getByRole("tab")).toHaveText(tabsOf(stand));
   // "Address in email links", as Adminium answers the person who runs it: the page says that and no more.
   const email = (await (await direct.get("/api/v1/settings/email")).json()) as { data?: { publicOrigin?: string | null }; publicOrigin?: string | null };
   const origin = email.data?.publicOrigin ?? email.publicOrigin ?? null;
@@ -565,7 +577,7 @@ test("the install's owner is told where each switch is, and what the quote's e-m
   await expect(page.locator('[data-panel="parts"]')).toContainText("You switch a part on or off in Adminium, under Installed apps, on this app’s page.");
 });
 
-test("Settings at 390 wide in the dark, and in Arabic from the right", async ({ as, api, data }) => {
+test("Settings at 390 wide in the dark, and in Arabic from the right", async ({ as, api, data, stand }) => {
   await restore(await api("tessa"), data);
   const narrow = await (await as("tessa", { viewport: { width: 390, height: 844 }, colorScheme: "dark" })).newPage();
   for (const [address, panel] of [["settings", "selling"], ["settings/working-time", "work"], ["settings/places", "places"], ["settings/maps", "maps"], ["settings/parts", "parts"]] as const) {
@@ -583,7 +595,7 @@ test("Settings at 390 wide in the dark, and in Arabic from the right", async ({ 
     await page.goto(`${STAFF}settings`);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("الإعدادات");
-    await expect(page.getByRole("tab")).toHaveText(["المبيعات", "وقت العمل", "الأماكن", "الخرائط", "الأجزاء"]);
+    await expect(page.getByRole("tab")).toHaveText(tabsOf(stand, true));
     await expect(card(page, "stages").getByRole("heading", { level: 2 })).toHaveText("المراحل");
     // The figure is the same figure, read from the right.
     await expect(card(page, "stages").locator('[data-figure="open"]')).toContainText("صفقة مفتوحة");

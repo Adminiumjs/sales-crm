@@ -28,7 +28,7 @@ import { scopeOf } from "../../selling/figures.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
-import { canOpen, type MenuFacts, type PartId } from "../../shell/routes.ts";
+import { canOpen, rolesOf, type MenuFacts, type PartId, type RoleKey } from "../../shell/routes.ts";
 import { isBuilt } from "../../shell/screens.tsx";
 import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
@@ -59,6 +59,9 @@ export function NoDeal() {
     </div>
   );
 }
+
+/** The roles that read what was logged on every deal they open. The account manager reads it only on a deal he is on. */
+const READS_EVERY_HISTORY: readonly RoleKey[] = ["admin", "sales-manager", "rep", "read-only"];
 
 export function Room({ id }: { id: string }) {
   const t = useT();
@@ -217,13 +220,20 @@ export function Room({ id }: { id: string }) {
     const open = deal.state === "open";
     const owner = nameOf(deal.owner_id);
     const mine = deal.owner_id !== null && deal.owner_id === me;
+    // What was logged and said on a deal: every deal's for the roles that read every deal they open; the account manager's only
+    // on a deal he is on (P23). On a won deal he only reads, neither is his: an empty list must not say "nothing", and the
+    // comments are not offered.
+    const onDeal = mine || members.some((member) => member.user_id === me);
+    const readsAll = onDeal || rolesOf((config.access?.roles ?? []).map((role) => role.slug)).some((role) => READS_EVERY_HISTORY.includes(role));
+    const readsLines = session.can("activities", "read") && readsAll;
     const canWork = open && session.can("deals", "update");
     const canLog = open && session.can("activities", "create");
     // Somebody is added by the deal's owner or by who leads her; a helper and a covering rep add nobody (the server holds it).
     const canList = open && (mine || team);
     const canAdd = canList && session.can("deal_members", "create");
     const canRemove = canList && session.can("deal_members", "delete");
-    const quotesOn = session.part("quotes") && session.can("quotes", "read");
+    // The account manager reads a deal's quotes only while he is on it: on a won deal he only reads, no quote card says "none".
+    const quotesOn = session.part("quotes") && session.can("quotes", "read") && readsAll;
     const family = families(data.quotes).sort((a, b) => newest(b).id - newest(a).id)[0] ?? null;
     const sent = data.quotes.find((quote) => quote.id === deal.quote_id) ?? null;
     const fromQuote = deal.quoted_amount !== null;
@@ -487,7 +497,7 @@ export function Room({ id }: { id: string }) {
               </span>
             )}
             <div className="crm-room-bar-end">
-              {session.can("comments", "read") && (
+              {session.can("comments", "read") && readsAll && (
                 <ScreenLink to="deal" rest={[deal.id, "comments"]} className="crm-btn crm-btn-ghost crm-btn-32 mr-gi">
                   <Icon name="message-square" size={14} />
                   {t("room.comments")}
@@ -548,7 +558,7 @@ export function Room({ id }: { id: string }) {
                 )
               ) : lines.length === 0 ? (
                 <p className="crm-room-quiet" data-testid="room-no-lines">
-                  {t(session.can("activities", "read") ? "room.activity.none" : "room.activity.notYours")}
+                  {t(readsLines ? "room.activity.none" : "room.activity.notYours")}
                 </p>
               ) : (
                 <ol className="crm-room-lines">

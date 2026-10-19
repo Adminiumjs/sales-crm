@@ -281,10 +281,11 @@ test("what Quotes shows and does is the server's to refuse: Read-only, another r
   await danaPage.goto(`${STAFF}approvals`);
   await expect(danaPage.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Approvals" })).toHaveCount(0);
 
-  // The marketer and the account manager read no quote at all.
+  // The marketer reads no quote at all; the account manager only the quotes of a deal he is on (P23), and on the sample he
+  // is on none: the server answers him none. Neither has Quotes.
+  expect((await (await api("lena")).get(data("quotes", "?limit=5"))).status(), "lena").toBe(403);
+  expect(await rows(await api("hugo"), data, "quotes"), "hugo").toEqual([]);
   for (const person of ["lena", "hugo"]) {
-    const one = await api(person);
-    expect((await one.get(data("quotes", "?limit=5"))).status(), person).toBe(403);
     const theirs = await (await as(person)).newPage();
     await theirs.goto(`${STAFF}quotes`);
     await expect(theirs.getByRole("heading", { level: 1 }), person).toHaveText("This page is not part of your role");

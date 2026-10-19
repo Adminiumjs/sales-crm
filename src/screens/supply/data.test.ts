@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Figure, Grouped, ListQuery, Page, Row, StaffSession } from "../../staffSession.ts";
-import { leadOf, readStock, readSuppliers, shortOf, stateOf, supplierOfLine, type Line } from "./data.ts";
+import { leadOf, readsOpenDeals, readStock, readSuppliers, shortOf, stateOf, supplierOfLine, type Line } from "./data.ts";
 
 const LINES: Line[] = [
   { id: 1, name: "Bench desk runs", sku: "MER-001", note: "desks", on_hand: 120 },
@@ -150,5 +150,17 @@ describe("the Supplier scorecard's read", () => {
     expect(data.next).toEqual({ "3": { number: "PO-1001", expected: null }, "5": { number: "PO-1003", expected: "2026-08-20" } });
     expect(data.longest?.name).toBe("Marchmont Joinery");
     expect(data.suppliers.map((supplier) => supplier.name)).toEqual(["Fenlow Acoustics", "Halvard Werke", "Marchmont Joinery", "Ostrom Seating"]);
+  });
+});
+
+describe("who is answered open deals on Stock", () => {
+  const reader = (slugs: string[], deals: boolean): StaffSession => ({ can: (table: string) => table !== "deals" || deals, config: { access: { tables: {}, roles: slugs.map((slug) => ({ slug, name: slug })) } } }) as unknown as StaffSession;
+  it("the CRM admin, Read-only and the install's owner are; the operations manager is not, though from stage 2 she reads a won deal", () => {
+    expect(readsOpenDeals(reader(["crm-admin"], true))).toBe(true);
+    expect(readsOpenDeals(reader(["crm-read-only"], true))).toBe(true);
+    expect(readsOpenDeals(reader([], true))).toBe(true);
+    expect(readsOpenDeals(reader(["crm-ops-manager"], true))).toBe(false);
+    expect(readsOpenDeals(reader(["crm-ops-manager"], false))).toBe(false);
+    expect(readsOpenDeals(reader(["crm-admin"], false))).toBe(false);
   });
 });

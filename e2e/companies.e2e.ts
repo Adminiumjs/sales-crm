@@ -306,10 +306,14 @@ test("the account manager reads what was won and a count; the marketer a count a
   const wonHere = page.getByRole("region", { name: "Won here" });
   await expect(wonHere.locator("li")).toHaveCount(1);
   await expect(wonHere.locator("li")).toContainText("Warehouse office desks");
-  // He logs nothing on a deal and reads none of what is logged: no timeline for him.
-  await expect(page.getByRole("link", { name: "Full timeline" })).toHaveCount(0);
+  // He reads what is logged on a deal he is on (P23, the account manager on an open deal), and he is on none here: the
+  // panel says nothing is logged for him, and the server answers him none of the history of this company's deals.
+  await expect(page.locator(".crm-acc-quiet-none").filter({ hasText: "Nothing logged on an open deal here yet." })).toHaveCount(1);
   expect(await rows(hugo.request, data, "deals", { and: [{ column: "company_id", op: "eq", value: id }, { column: "state", op: "eq", value: "open" }] })).toEqual([]);
-  expect((await hugo.request.get(data("activities", "?limit=5"))).status()).toBe(403);
+  const allHere = (await rows<{ id: number }>(await api("tessa"), data, "deals", { column: "company_id", op: "eq", value: id })).map((deal) => deal.id);
+  expect(allHere.length).toBeGreaterThan(0);
+  expect(await rows(hugo.request, data, "activities", { column: "deal_id", op: "in", value: allHere })).toEqual([]);
+  expect((await rows(await api("tessa"), data, "activities", { column: "deal_id", op: "in", value: allHere })).length, "the company's deals do have history").toBeGreaterThan(0);
   await picture(page, "5-hugo-nordwind");
 
   const lena = await as("lena");

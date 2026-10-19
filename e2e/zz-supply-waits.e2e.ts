@@ -66,14 +66,26 @@ test("with Inventory not connected, Supply says what it waits for: the owner is 
     await dana.goto(`${STAFF}stock`);
     await expect(dana.getByRole("heading", { level: 1 })).toHaveText("This page is not part of your role");
 
-    // The operations manager's only part waits: the server itself refuses her the app's screens (Adminium's page, not the app's).
     const ada = await api("ada");
     const refused = await ada.get(`${STAFF}surface-config.json`);
-    expect(refused.status()).toBe(403);
-    expect(((await refused.json()) as { error: { details: { reason: string } } }).error.details.reason).toBe("NO_STAFF_ACCESS");
-    const adaPage = await (await as("ada")).newPage();
-    await adaPage.goto(STAFF);
-    await picture(adaPage, "p16-10-ada-supply-waits");
+    if (stand.parts.includes("jobs")) {
+      // From stage 2 she has Jobs on site as well: the staff side is still hers, the add-on's table is not (the server's
+      // refusal), and her Supply lines say what they wait for, with whom to ask.
+      expect(refused.status()).toBe(200);
+      expect((await ada.get(items)).status()).toBe(403);
+      const adaPage = await (await as("ada")).newPage();
+      await adaPage.goto(`${STAFF}stock`);
+      await expect(adaPage.getByRole("heading", { level: 1 })).toHaveText("Supply is waiting for the Inventory add-on");
+      await expect(adaPage.locator(".crm-plain")).toContainText("If you need it, ask the person who runs this install to connect it.");
+      await picture(adaPage, "p16-10-ada-supply-waits");
+    } else {
+      // At stage 1 the operations manager's only part waits: the server itself refuses her the app's screens (Adminium's page, not the app's).
+      expect(refused.status()).toBe(403);
+      expect(((await refused.json()) as { error: { details: { reason: string } } }).error.details.reason).toBe("NO_STAFF_ACCESS");
+      const adaPage = await (await as("ada")).newPage();
+      await adaPage.goto(STAFF);
+      await picture(adaPage, "p16-10-ada-supply-waits");
+    }
   } finally {
     await inventoryFor(owner, true);
   }

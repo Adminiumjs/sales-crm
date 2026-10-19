@@ -10,21 +10,24 @@ import type { Locator, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, watch } from "./helpers.ts";
+import type { StandState } from "./stand.mjs";
 
 const section = (page: Page): Locator => page.locator('[data-part="nav-app-section"]').filter({ hasText: "Sales CRM" });
 const card = (page: Page, key: string): Locator => page.locator(`[data-grid-item="${key}"]`);
 /** The entries of the section's rail, in order, as a person reads them. */
 const entries = async (page: Page): Promise<string[]> => (await section(page).locator("a").allInnerTexts()).map((text) => text.trim()).filter((text) => text !== "");
+/** Stage 2 brings Jobs on site, whose console page is listed after Enquiries for every role that reads jobs. */
+const withJobs = (stand: StandState, rail: readonly string[]): string[] => (stand.parts.includes("jobs") ? rail.flatMap((entry) => (entry === "Enquiries" ? [entry, "Jobs"] : [entry])) : [...rail]);
 const column = (page: Page, label: string): Locator => page.locator("[data-board-column]").filter({ has: page.getByText(label, { exact: true }) });
 
-test("the owner's console: the section's entries as drawn, and the Overview with the whole team's figures", async ({ as }) => {
+test("the owner's console: the section's entries as drawn, and the Overview with the whole team's figures", async ({ as, api, stand }) => {
   const context = await as("owner");
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto("/");
-  // Stage 1: the twelve drawn but Jobs, whose part comes with stage 2; then the app's own screens.
+  // Stage 1: the twelve drawn but Jobs, whose part comes with stage 2; then the app's own screens. Stage 2: all twelve.
   await expect(section(page).locator("a").first()).toBeVisible();
-  expect(await entries(page)).toEqual(["Overview", "Pipeline", "Deals", "Companies", "Contacts", "Quotes", "Approvals", "Enquiries", "Rules", "Emails", "Sample data", "Open the staff screens"]);
+  expect(await entries(page)).toEqual(withJobs(stand, ["Overview", "Pipeline", "Deals", "Companies", "Contacts", "Quotes", "Approvals", "Enquiries", "Rules", "Emails", "Sample data", "Open the staff screens"]));
   await expect(section(page).getByText("Setup", { exact: true })).toBeVisible();
   // A page kept off the rail is not listed (Stages, Follow-ups, the outbox …), and still opens by its address below.
   for (const name of ["Stages", "Follow-ups", "Settings"]) await expect(section(page).getByRole("link", { name, exact: true })).toHaveCount(0);
@@ -38,8 +41,22 @@ test("the owner's console: the section's entries as drawn, and the Overview with
   await expect(card(page, "team-cover")).toContainText(/53\s?%|52\.9\s?%/);
   await expect(card(page, "open-deals")).toContainText("14");
   await expect(card(page, "unclaimed-enquiries")).toContainText("4");
-  // Stage 1 has no Jobs: no card of it.
-  await expect(card(page, "jobs-this-week")).toHaveCount(0);
+  // Stage 1 has no Jobs: no card of it. Stage 2: the week's job visits, the figure the server answers the owner for that card.
+  if (!stand.parts.includes("jobs")) await expect(card(page, "jobs-this-week")).toHaveCount(0);
+  else {
+    const owner = await api("owner");
+    const pages = ((await (await owner.get("/api/v1/pages")).json()) as { data: { id: string; slug: string }[] }).data;
+    const overview = ((await (await owner.get(`/api/v1/pages/${pages.find((one) => one.slug === "crm-overview")!.id}`)).json()) as { data: { config: Record<string, unknown> } }).data.config;
+    const items = ((overview["layout"] ?? (overview["config"] as Record<string, unknown>)["layout"]) as { items: { i: string; config: { binding: Record<string, unknown> } }[] }).items;
+    const binding = items.find((item) => item.i === "jobs-this-week")!.config.binding;
+    const asked = await owner.post("/api/v1/widget-data/query", { data: { descriptor: { connectionId: stand.connectionId, ...binding } }, headers: await csrf(owner) });
+    expect(asked.status(), await asked.text()).toBe(200);
+    const result = ((await asked.json()) as { result: { value?: number; current?: number; values?: Record<string, number> } }).result;
+    const visits = Number(result.value ?? result.current ?? result.values?.["visits"] ?? NaN);
+    expect(Number.isFinite(visits), JSON.stringify(result)).toBe(true);
+    await expect(card(page, "jobs-this-week")).toContainText("Job visits this week");
+    await expect(card(page, "jobs-this-week")).toContainText(String(visits));
+  }
   // The reps (§14), each with the year's cover.
   for (const [rep, cover] of [["Dana", "89"], ["Priya", "24"], ["Sam", "55"], ["Leo", "24"]] as const) await expect(card(page, "reps").getByRole("row").filter({ hasText: rep })).toContainText(cover);
   await expect(card(page, "reps")).toContainText("£140,000");
@@ -107,7 +124,7 @@ test("the sales manager: her figures are her team's, the whole team's two say so
   await page.goto("/");
   await expect(section(page).locator("a").first()).toBeVisible();
   // Her role's pages; the console's own screens (Rules, Emails, Sample data) are the install owner's.
-  expect(await entries(page)).toEqual(["Overview", "Pipeline", "Deals", "Companies", "Contacts", "Quotes", "Approvals", "Enquiries", "Open the staff screens"]);
+  expect(await entries(page)).toEqual(withJobs(stand, ["Overview", "Pipeline", "Deals", "Companies", "Contacts", "Quotes", "Approvals", "Enquiries", "Open the staff screens"]));
   await section(page).getByRole("link", { name: "Overview", exact: true }).click();
   // Ivy leads all four reps: her open pipeline is the team's.
   await expect(card(page, "open-pipeline")).toContainText("£286.3K");
@@ -147,10 +164,11 @@ test("the sales manager: her figures are her team's, the whole team's two say so
   await expect(staff.locator(".crm-approval").first()).toContainText("Q-1001");
 });
 
-test("a rep and the operations manager: no Overview and no Approvals on their rail, and the server refuses both pages", async ({ as, api }) => {
+test("a rep and the operations manager: no Overview and no Approvals on their rail, and the server refuses both pages", async ({ as, api, stand }) => {
+  // From stage 2 the operations manager reads a won deal (the jobs' own) and the jobs: Deals and Jobs join her rail.
   for (const [person, rail] of [
-    ["dana", ["Pipeline", "Deals", "Companies", "Contacts", "Quotes", "Enquiries", "Open the staff screens"]],
-    ["ada", ["Open the staff screens"]],
+    ["dana", withJobs(stand, ["Pipeline", "Deals", "Companies", "Contacts", "Quotes", "Enquiries", "Open the staff screens"])],
+    ["ada", stand.parts.includes("jobs") ? ["Deals", "Jobs", "Open the staff screens"] : ["Open the staff screens"]],
   ] as const) {
     const context = await as(person);
     const page = await context.newPage();

@@ -51,7 +51,7 @@ async function mention(ivy: APIRequestContext, data: Data, dealId: number, text:
   expect(posted.status(), await posted.text()).toBe(201);
 }
 
-test("a mention reaches Dana's open bell live; it names the deal and opens its room; Ada's has no way in", async ({ as, api, data }) => {
+test("a mention reaches Dana's open bell live; it names the deal and opens its room; Ada's has no way in", async ({ as, api, data, stand }) => {
   // Two waits of up to a minute each for the bell to ask again.
   test.setTimeout(300_000);
   const context = await as("dana");
@@ -118,8 +118,9 @@ test("a mention reaches Dana's open bell live; it names the deal and opens its r
     await expect(adaItem).not.toContainText(name);
     await expect(adaItem.getByRole("link")).toHaveCount(0);
     await expect(adaItem.locator('[data-link="0"]')).toHaveCount(1);
-    // And the deal is not hers by any door.
-    expect((await ada.get(data("deals", `/${String(dealId)}`))).status()).toBe(403);
+    // And the deal is not hers by any door: at stage 1 she reads no deal at all (403); from stage 2 she reads a won deal, the
+    // jobs' own, and an open one is not there for her (404).
+    expect((await ada.get(data("deals", `/${String(dealId)}`))).status()).toBe(stand.parts.includes("jobs") ? 404 : 403);
     await picture(adaPage, "bell-2-ada");
     // "Mark all read": her badge goes, as the server's count does.
     await adaPage.getByRole("button", { name: "Mark all read" }).click();

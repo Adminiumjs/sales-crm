@@ -295,7 +295,8 @@ function Week({
     if (visit !== undefined) onDrop(visit, day);
   };
   return (
-    <div className="crm-jb-week mr-board" data-testid="jb-week-days">
+    // The days scroll inside themselves on a narrow screen: the strip takes the focus, so the keyboard scrolls it too.
+    <div className="crm-jb-week mr-board" data-testid="jb-week-days" role="region" tabIndex={0} aria-label={t("jb.home.week", { day: dayWords(f, monday) })}>
       {days.map((day) => {
         const booked = ofDay(visits.filter((visit) => visit.state === "booked"), day);
         // What the crews that work this weekday may do in a day, together: the day's capacity.
