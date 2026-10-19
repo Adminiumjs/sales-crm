@@ -134,7 +134,10 @@ export function Comments({ id }: { id: string }) {
   // Who may change the deal comments on any deal they read; somebody who reads it only as a won deal (the account
   // manager) comments only while he is on it: the server refuses him the rest (parent-not-theirs).
   const onDeal = load.state === "ready" && load.data !== null && (load.data.deal.owner_id === me || load.data.members.some((member) => member.user_id === me));
-  const canWrite = session.can("comments", "create") && (session.can("deals", "update") || onDeal);
+  // Who works the deal reads what is said on it as it is; somebody who only reads it (the account manager on a won deal he
+  // is not on) is told it is not his, never "no comments yet".
+  const works = session.can("deals", "update") || onDeal;
+  const canWrite = session.can("comments", "create") && works;
   const said = (saved: Saved<Comment>): Promise<Comment | null> => {
     // A name Adminium does not know as somebody who signs in: said in those words.
     if (saved.state === "refused" && saved.error.fields["text"] === "mention-unknown") {
@@ -273,8 +276,8 @@ export function Comments({ id }: { id: string }) {
                     <span className="crm-empty-icon">
                       <Icon name="message-square" size={21} />
                     </span>
-                    <div className="crm-empty-title">{t(threads.length === 0 ? "cmt.empty" : "cmt.empty.settled")}</div>
-                    <p>{t(canWrite ? "cmt.empty.body" : "cmt.empty.body.read")}</p>
+                    <div className="crm-empty-title">{t(!works ? "cmt.notYours" : threads.length === 0 ? "cmt.empty" : "cmt.empty.settled")}</div>
+                    {works && <p>{t(canWrite ? "cmt.empty.body" : "cmt.empty.body.read")}</p>}
                   </li>
                 )}
               </ul>

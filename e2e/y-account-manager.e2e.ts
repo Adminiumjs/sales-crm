@@ -66,6 +66,7 @@ test("the account manager on an open deal: listed, he reads it and its quote and
   const won = (await rows<{ id: number }>(hugo, data, "deals", { column: "state", op: "eq", value: "won" }, "&order=id"))[0]!;
   await page.goto(`${STAFF}deals/${String(won.id)}/comments`);
   await expect(page.locator(".crm-cmt-threads")).toBeVisible();
+  await expect(page.locator(".crm-cmt-threads .crm-empty-title")).toHaveText("What is said on a deal is for the people working it.");
   await expect(page.locator('[data-box="new"]')).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Post it" })).toHaveCount(0);
   expect((await hugo.post(data("comments"), { data: { values: { deal_id: won.id, text: "not mine" } }, headers: hugoHeaders })).status()).toBe(403);
