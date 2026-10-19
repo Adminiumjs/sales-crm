@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.28 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.29 or newer.
 
 ## What installs
 
@@ -126,11 +126,12 @@ npm run build       # the staff side, to dist/
 ### The stand: a real Adminium with the app and its sample
 
 The browser specs and the proofs need a **built** Adminium checkout (`ADMINIUM_REPO`) and the
-add-ons' checkout with Invoices & Receipts and Inventory built (`ADD_ONS_REPO`). Until Adminium
-0.3.28 is on npm, also set `CRM_STAND_VERSION=0.3.28`.
+add-ons' checkout with Invoices & Receipts and Inventory built (`ADD_ONS_REPO`). When the checkout's
+own version is older than the app's floor (a lane ahead of a release), stand it in with
+`CRM_STAND_VERSION=0.3.29`.
 
 ```bash
-ADD_ONS_REPO=~/path/to/add-ons CRM_STAND_VERSION=0.3.28 npm run stand:up   # leave one running
+ADD_ONS_REPO=~/path/to/add-ons npm run stand:up   # leave one running
 npm run stand:down
 ```
 
