@@ -120,9 +120,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-results
-          path: |
-            e2e/.results
-            e2e/.stand/server.log
-          # Both folders' names begin with a dot, which upload-artifact v4 leaves out unless told.
+          # The stand's teardown copies the server's log in here.
+          path: e2e/.results
+          # The folder's name begins with a dot, which upload-artifact v4 leaves out unless told.
           include-hidden-files: true
           if-no-files-found: ignore

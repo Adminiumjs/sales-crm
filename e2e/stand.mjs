@@ -29,7 +29,7 @@
  */
 import { execFileSync, spawn } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -210,6 +210,12 @@ export async function standDown() {
     }
   }
   if (state.work) rmSync(state.work, { recursive: true, force: true });
+  // The server's log outlives the stand, beside the browser run's results: a failed CI run uploads that folder.
+  const logFile = join(STAND_DIR, "server.log");
+  if (existsSync(logFile)) {
+    mkdirSync(join(here, ".results"), { recursive: true });
+    copyFileSync(logFile, join(here, ".results", "server.log"));
+  }
   rmSync(STAND_DIR, { recursive: true, force: true });
 }
 
