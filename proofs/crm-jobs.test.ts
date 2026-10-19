@@ -16,6 +16,8 @@
  *  - A sign-off stays as it was made: nobody changes or removes it; a
  *    correction is a new row naming it, with the next version; one sign-off
  *    a job and version, one correction a sign-off.
+ *  - A sign-off mails its copy (e-mail 17) to the job's contact, or to the
+ *    address typed on it, with what is still to put right.
  *  - Its signature and photos are files (F19): a sign-off names only its
  *    writer's own fresh upload, the record then holds them; a correction
  *    names a sign-off of its own job.
@@ -289,6 +291,28 @@ for (const [dialect, reachable] of LEGS) {
       const others = made(await s.make('ada', 'sign_offs', { job_id: other, signer_name: 'Ben Ode' }));
       expect((await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: others })).statusCode).toBe(422);
       expect(Number((await row('ada', 'sign_offs', made(await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: first }))))?.['version'])).toBe(2);
+    });
+
+    it('mails the customer their signed copy (e-mail 17): to the job\'s contact, or to the address typed on the sign-off, with what is still to put right', async () => {
+      await s.emails();
+      const { job } = await wonJob('Clinic reception desk');
+      made(await s.make('ada', 'snags', { job_id: job, text: 'Edge trim lifting on the small table', stops_sign_off: false }));
+      const first = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, signer_name: 'Ana Belova' }));
+      // A correction, signed by somebody who wants the copy at another address.
+      const second = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, signer_name: 'Ana Belova', corrects_id: first, copy_sent_to: 'reception@fernway-clinics.com' }));
+      await jobs();
+      const box = await s.rows(`select kind, ${dialect === 'mysql' ? '`to`' : '"to"'} as address, sign_off_id, status, error from crm_outbox where sign_off_id in (${String(first)}, ${String(second)}) order by id`);
+      expect(box.map((one) => [one['kind'], one['address'], Number(one['sign_off_id'])])).toEqual([['signed-copy', ANA, first], ['signed-copy-to', 'reception@fernway-clinics.com', second]]);
+      for (const one of box) expect(['sent', 'queued'], `${String(one['kind'])}: ${String(one['error'])}`).toContain(one['status']);
+      const mails = (await s.emails()).filter((mail) => mail.templateKey === 'crm-signed-copy' && mail.subject.endsWith('Clinic reception desk'));
+      expect(mails.map((mail) => mail.to)).toEqual([ANA, 'reception@fernway-clinics.com']);
+      for (const mail of mails) {
+        expect(mail.subject).toBe('Your signed copy: Clinic reception desk');
+        expect(mail.text).toContain('Ana Belova');
+        expect(mail.text).toContain('Edge trim lifting on the small table');
+        expect(mail.text).toContain(OFFICE);
+        expect(`${mail.subject} ${mail.text}`).not.toMatch(/\{\{/);
+      }
     });
 
     it('removes a visit called off, with the why in the removal\'s audit entry, and keeps a visit that was made', async () => {

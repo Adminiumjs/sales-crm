@@ -18128,7 +18128,9 @@
               "showroom-cancelled",
               "delivery-booked",
               "delivery-moved",
-              "delivery-cancelled"
+              "delivery-cancelled",
+              "signed-copy",
+              "signed-copy-to"
             ],
             "rules": {
               "enumLabels": {
@@ -18272,6 +18274,26 @@
                     "ar-EG": "إلغاء توصيل",
                     "zh-CN": "送货已取消",
                     "zh-TW": "送貨已取消"
+                  },
+                  "signed-copy": {
+                    "en-US": "Signed copy",
+                    "de-DE": "Abnahmekopie",
+                    "fr-FR": "Copie signée",
+                    "da-DK": "Underskrevet kopi",
+                    "cs-CZ": "Podepsaná kopie",
+                    "ar-EG": "نسخة الاستلام الموقّعة",
+                    "zh-CN": "验收签字副本",
+                    "zh-TW": "驗收簽名副本"
+                  },
+                  "signed-copy-to": {
+                    "en-US": "Signed copy to another address",
+                    "de-DE": "Abnahmekopie an eine andere Adresse",
+                    "fr-FR": "Copie signée à une autre adresse",
+                    "da-DK": "Underskrevet kopi til en anden adresse",
+                    "cs-CZ": "Podepsaná kopie na jinou adresu",
+                    "ar-EG": "نسخة الاستلام الموقّعة إلى عنوان آخر",
+                    "zh-CN": "验收签字副本（发往其他地址）",
+                    "zh-TW": "驗收簽名副本（寄往其他地址）"
                   }
                 }
               }
@@ -18698,6 +18720,22 @@
               "ar-EG": "أمر العمل",
               "zh-CN": "工单",
               "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "sign_off_id",
+            "type": "fk",
+            "references": "sign_offs",
+            "nullable": true,
+            "label": {
+              "en-US": "Sign-off",
+              "de-DE": "Abnahme",
+              "fr-FR": "Réception",
+              "da-DK": "Godkendelse",
+              "cs-CZ": "Převzetí",
+              "ar-EG": "الاستلام",
+              "zh-CN": "验收",
+              "zh-TW": "驗收"
             }
           }
         ]
@@ -25959,7 +25997,8 @@
       "referral": "referral_id",
       "booking": "booking_id",
       "job_visit": "job_visit_id",
-      "job": "job_id"
+      "job": "job_id",
+      "sign_off": "sign_off_id"
     },
     "recipient": {
       "via": "contact_id",
@@ -25981,7 +26020,9 @@
       "showroom-cancelled": "crm-showroom-cancelled",
       "delivery-booked": "crm-delivery-booked",
       "delivery-moved": "crm-delivery-moved",
-      "delivery-cancelled": "crm-delivery-cancelled"
+      "delivery-cancelled": "crm-delivery-cancelled",
+      "signed-copy": "crm-signed-copy",
+      "signed-copy-to": "crm-signed-copy"
     },
     "producers": [
       {
@@ -26244,6 +26285,33 @@
           "start_time",
           "what"
         ]
+      },
+      {
+        "kind": "signed-copy",
+        "module": "jobs",
+        "link": "sign_off_id",
+        "onCreate": {
+          "table": "sign_offs",
+          "where": {
+            "column": "copy_sent_to",
+            "isNull": true
+          }
+        }
+      },
+      {
+        "kind": "signed-copy-to",
+        "module": "jobs",
+        "link": "sign_off_id",
+        "onCreate": {
+          "table": "sign_offs",
+          "where": {
+            "column": "copy_sent_to",
+            "isNull": false
+          }
+        },
+        "recipient": {
+          "column": "copy_sent_to"
+        }
       }
     ],
     "settings": {
@@ -34002,6 +34070,678 @@
             }
           ],
           "footer": "您收到此郵件，是因為已與您約定向 {{job.site_name}} 送貨。"
+        }
+      }
+    },
+    {
+      "key": "crm-signed-copy",
+      "name": {
+        "en-US": "Signed copy",
+        "de-DE": "Abnahmekopie",
+        "fr-FR": "Copie signée",
+        "da-DK": "Underskrevet kopi",
+        "cs-CZ": "Podepsaná kopie",
+        "ar-EG": "نسخة الاستلام الموقّعة",
+        "zh-CN": "验收签字副本",
+        "zh-TW": "驗收簽名副本"
+      },
+      "vars": [
+        "recipient.first_name",
+        "job.title",
+        "job.code",
+        "job.site_name",
+        "sign_off.signer_name",
+        "sign_off.signed_at.date",
+        "practice.office_phone"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your signed copy: {{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Your signed copy"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, thank you for signing off {{job.title}}. This is your copy of what was signed."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Job",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "Signed by",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "Signed",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "Where",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Still to put right"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "Nothing is left to put right."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Something not right? Call us on {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "You got this because you signed off the work at {{job.site_name}}."
+        },
+        "de-DE": {
+          "subject": "Ihre unterschriebene Abnahme: {{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ihre unterschriebene Abnahme"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hallo {{recipient.first_name}}, vielen Dank, dass Sie {{job.title}} abgenommen haben. Dies ist Ihre Kopie dessen, was unterschrieben wurde."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Auftrag",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "Unterschrieben von",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "Unterschrieben am",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "Ort",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Noch zu beheben"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "Es ist nichts mehr zu beheben."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Stimmt etwas nicht? Rufen Sie uns an: {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil Sie die Arbeiten in {{job.site_name}} abgenommen haben."
+        },
+        "fr-FR": {
+          "subject": "Votre copie signée : {{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Votre copie signée"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, merci d’avoir réceptionné {{job.title}}. Voici votre copie de ce qui a été signé."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Chantier",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "Signé par",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "Signé le",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "Lieu",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Reste à reprendre"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "Plus rien à reprendre."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Un souci ? Appelez-nous au {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce que vous avez réceptionné les travaux à {{job.site_name}}."
+        },
+        "da-DK": {
+          "subject": "Din underskrevne kopi: {{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Din underskrevne kopi"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, tak fordi du godkendte {{job.title}}. Her er din kopi af det, der blev underskrevet."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Opgave",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "Underskrevet af",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "Underskrevet",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "Sted",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Mangler stadig at blive udbedret"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "Der er intet tilbage at udbedre."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Er der noget galt? Ring til os på {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Du får denne mail, fordi du godkendte arbejdet på {{job.site_name}}."
+        },
+        "cs-CZ": {
+          "subject": "Vaše podepsaná kopie: {{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vaše podepsaná kopie"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, děkujeme za převzetí zakázky {{job.title}}. Toto je vaše kopie toho, co bylo podepsáno."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Zakázka",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "Podepisující",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "Podepsáno",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "Místo",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Zbývá odstranit"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "Nic dalšího k odstranění nezbývá."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Něco není v pořádku? Zavolejte nám na {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "Tento e-mail dostáváte, protože jste převzali práce na místě {{job.site_name}}."
+        },
+        "ar-EG": {
+          "subject": "نسختك الموقّعة: {{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "نسختك الموقّعة"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، شكرًا لاعتمادك استلام {{job.title}}. هذه نسختك مما تم توقيعه."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "أمر العمل",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "الموقِّع",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "تاريخ التوقيع",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "المكان",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "ما زال بحاجة إلى معالجة"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "لم يتبقَّ شيء لمعالجته."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "هل هناك مشكلة؟ اتصل بنا على {{practice.office_phone}}."
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأنك اعتمدت استلام العمل في {{job.site_name}}."
+        },
+        "zh-CN": {
+          "subject": "您的验收签字副本：{{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的验收签字副本"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！感谢您对 {{job.title}} 进行验收。这是您签字内容的副本。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "工单",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "签字人",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "签字时间",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "地点",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "仍待整改"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "已无待整改项。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "有问题？请致电 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到此邮件，是因为您在 {{job.site_name}} 完成了验收。"
+        },
+        "zh-TW": {
+          "subject": "您的驗收簽名副本：{{job.title}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您的驗收簽名副本"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好！感謝您對 {{job.title}} 進行驗收。這是您簽名內容的副本。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "工單",
+                    "amount": "{{job.code|}}"
+                  },
+                  {
+                    "label": "簽名人",
+                    "amount": "{{sign_off.signer_name}}"
+                  },
+                  {
+                    "label": "簽名時間",
+                    "amount": "{{sign_off.signed_at.date}}"
+                  },
+                  {
+                    "label": "地點",
+                    "amount": "{{job.site_name|}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "仍待改善"
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "rows-snags",
+              "data": {
+                "from": {
+                  "link": "job",
+                  "table": "snags",
+                  "via": "job_id",
+                  "orderBy": "due_on",
+                  "where": {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  },
+                  "limit": 50
+                },
+                "row": {
+                  "title": "{{row.text}}",
+                  "meta": "{{row.due_on.day_month|}}"
+                },
+                "empty": "已無待改善項目。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "有問題嗎？請致電 {{practice.office_phone}}。"
+              },
+              "showWhen": {
+                "var": "practice.office_phone"
+              }
+            }
+          ],
+          "footer": "您收到這封郵件，是因為您在 {{job.site_name}} 完成了驗收。"
         }
       }
     }

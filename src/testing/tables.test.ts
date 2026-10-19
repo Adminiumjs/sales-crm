@@ -284,6 +284,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "booking_id",
       "job_visit_id",
       "job_id",
+      "sign_off_id",
       "was",
       "deal_id",
       "due_at",
@@ -333,7 +334,7 @@ const OUTBOX_WORD = {
     // What a moved or a removed visit was, for its e-mail.
     was: "was",
   },
-  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id" },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id", sign_off: "sign_off_id" },
   recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
   // The settings row, read by a template as `practice.*` (where the showroom is).
   // …and the office's phone, for "call us" in a delivery's e-mail.
@@ -1064,7 +1065,7 @@ describe("the outbox table is the shape the outbox word asks for", () => {
   it("keeps every link of it empty-able, since not every email is about one", () => {
     const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
     // A message is about a contact, a quote, a deal, a site visit, a referral or a showroom booking.
-    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id"]);
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id", "sign_off_id"]);
     for (const link of links) expect(link.nullable, link.ref).toBe(true);
   });
 
