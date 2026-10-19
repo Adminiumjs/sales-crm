@@ -211,7 +211,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   display_pieces: { nullable: ["promised_booking_id", "lent_company_id", "lent_until", "item"] },
   // Jobs on site. A job's number and the count behind it are empty on a sample
   // row, which brings its own text.
-  jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "place", "access_note", "ask_for", "site_phone"] },
+  jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "place", "access_note", "ask_for", "site_phone", "signed_off_at"] },
   crews: { nullable: ["vehicle_id", "day_hours"] },
   crew_members: { nullable: ["since", "phone"] },
   // The weekdays a crew works: a visit is not booked on a day it has no row for.

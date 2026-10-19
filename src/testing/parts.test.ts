@@ -146,6 +146,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["day-sheet-changed", "jobs"],
       ["day-sheet-crew", "jobs"],
       ["day-sheet-moved", "jobs"],
+      ["aftercare-call", "aftercare"],
     ]);
   });
 
@@ -194,7 +195,7 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))).toHaveLength(7);
     for (const template of templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
-    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved"]);
+    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "aftercare-call"]);
     // Every role is still there, without a grant, a limit or a part that names quotes.
     const leftRoles = left.roles as unknown as Role[];
     expect(leftRoles.map((role) => role.key)).toEqual(roles.map((role) => role.key));

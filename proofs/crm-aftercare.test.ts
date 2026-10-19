@@ -15,7 +15,10 @@
  *     by the account manager and the CRM admin only; a thank-you is kept once.
  *  4. An aftercare call is made once, done with what came of it, stamped by
  *     the server with who and when.
- *  5. While After the job is off, its roles hold nothing on its tables and
+ *  5. A job signed off books its aftercare call (rule 16): for the person
+ *     Settings names, else the rep who sold the job, the days Settings
+ *     holds (28 if none) after the sign-off, at 09:00.
+ *  6. While After the job is off, its roles hold nothing on its tables and
  *     nobody writes them; a rep (of another part) still reads her own.
  *
  * What these people are then shown is proved on the browser stand:
@@ -30,7 +33,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.28' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.29' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
@@ -157,6 +160,34 @@ for (const [dialect, reachable] of LEGS) {
       expect(done?.['done_at']).not.toBeNull();
       expect((await once('hugo', 'follow_ups', call, { done: true, outcome: 'none' }, { done: false })).statusCode).toBe(409);
       expect(said(await s.send('tessa', 'DELETE', url('follow_ups', `/${String(call)}?confirm=true`)))).toBe('ok');
+    });
+
+    it('books the aftercare call when a job is signed off (rule 16): for whom Settings names, else the rep who sold it, so many days on at 09:00', async () => {
+      // The business's clock is UTC here, so the day and the hour can be written out.
+      await s.meta.db.updateTable('adminium_connections').set({ timezone: 'UTC' } as never).where('id', '=', s.connectionId).execute();
+      const settings = Number((await s.rows('select id from crm_settings'))[0]!['id']);
+      const signOff = async (job: number): Promise<{ owner: unknown; due: string; signed: string }> => {
+        expect(said(await act('tessa', 'jobs', job, 'installed', 'open'))).toBe('ok');
+        made(await s.make('tessa', 'sign_offs', { job_id: job, check_1: true, signer_name: 'Marta Kovac' }));
+        expect(said(await act('tessa', 'jobs', job, 'sign-off', 'installed'))).toBe('ok');
+        await s.jobs();
+        const calls = await s.rows(`select owner_id, due_at, kind, call_no, deal_id, text from crm_follow_ups where job_id = ${String(job)}`);
+        expect(calls, `job ${String(job)}: one aftercare call`).toHaveLength(1);
+        expect([calls[0]!['kind'], Number(calls[0]!['call_no']), calls[0]!['text']]).toEqual(['aftercare', 1, (await row('tessa', 'jobs', job))?.['title']]);
+        const signed = new Date(String((await row('tessa', 'jobs', job))?.['signed_off_at']));
+        return { owner: calls[0]!['owner_id'], due: new Date(String(calls[0]!['due_at'])).toISOString(), signed: signed.toISOString() };
+      };
+      const dayOn = (from: string, days: number): string => `${new Date(Date.parse(from.slice(0, 10)) + days * 86_400_000).toISOString().slice(0, 10)}T09:00:00.000Z`;
+      // Hugo named for aftercare, 14 days.
+      expect(said(await s.change('tessa', 'settings', settings, { aftercare_owner_id: s.ids['hugo'], aftercare_days: 14 }))).toBe('ok');
+      const named = await signOff(id['job2']!);
+      expect(named.owner).toBe(s.ids['hugo']);
+      expect(named.due).toBe(dayOn(named.signed, 14));
+      // Nobody named: the rep who sold the job; 28 days on.
+      expect(said(await s.change('tessa', 'settings', settings, { aftercare_owner_id: null, aftercare_days: 28 }))).toBe('ok');
+      const sold = await signOff(id['job3']!);
+      expect(sold.owner).toBe(s.ids['dana']);
+      expect(sold.due).toBe(dayOn(sold.signed, 28));
     });
 
     it('while After the job is off: its roles hold nothing on its tables, nobody writes them, a rep still reads her own', async () => {

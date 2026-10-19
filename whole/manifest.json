@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.28",
+    "minAdminiumVersion": "0.3.29",
     "engines": [
       "postgres",
       "mysql",
@@ -12087,6 +12087,32 @@
               "ar-EG": "ملاحظات مفتوحة تمنع الاستلام",
               "zh-CN": "阻碍验收的未整改项",
               "zh-TW": "阻礙驗收的未改善缺失"
+            }
+          },
+          {
+            "ref": "signed_off_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "signed-off"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Signed off at",
+              "de-DE": "Abgenommen am",
+              "fr-FR": "Réceptionné le",
+              "da-DK": "Godkendt den",
+              "cs-CZ": "Převzato dne",
+              "ar-EG": "وقت اعتماد الاستلام",
+              "zh-CN": "验收时间",
+              "zh-TW": "驗收時間"
             }
           },
           {
@@ -25707,6 +25733,108 @@
                 "ar-EG": "{{record.site_name}}، {{record.site_town}}: الآن يوم {{record.day}}. التفاصيل في يومي.",
                 "zh-CN": "{{record.site_name}}，{{record.site_town}}：现改为 {{record.day}}。其余见“我的一天”。",
                 "zh-TW": "{{record.site_name}}，{{record.site_town}}：現改為 {{record.day}}。其餘見「我的一天」。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "aftercare-call",
+      "name": {
+        "en-US": "A job is signed off: an aftercare call 28 days on",
+        "de-DE": "Ein Auftrag wird abgenommen: ein Nachbetreuungsanruf nach 28 Tagen",
+        "fr-FR": "Un chantier est réceptionné : un appel de suivi 28 jours plus tard",
+        "da-DK": "En opgave godkendes: et opfølgningsopkald 28 dage efter",
+        "cs-CZ": "Zakázka je převzata: hovor po realizaci za 28 dní",
+        "ar-EG": "يُعتمد استلام أمر عمل: مكالمة متابعة بعد 28 يومًا",
+        "zh-CN": "工单验收后：28 天后的售后回访",
+        "zh-TW": "工單驗收後：28 天後的售後回訪"
+      },
+      "description": {
+        "en-US": "When a job is signed off, books an aftercare call with the job's customer for the number of days set in Settings (28 if none), at 09:00, for the person Settings names for aftercare, or for the rep who sold the job when nobody is named.",
+        "de-DE": "Wenn ein Auftrag abgenommen wird, plant er einen Nachbetreuungsanruf beim Kunden des Auftrags nach der in den Einstellungen festgelegten Zahl von Tagen (28, wenn keine), um 09:00, für die Person, die die Einstellungen für die Nachbetreuung nennen, oder für den Vertriebsmitarbeiter, der den Auftrag verkauft hat, wenn niemand genannt ist.",
+        "fr-FR": "Quand un chantier est réceptionné, planifie un appel de suivi auprès du client du chantier après le nombre de jours fixé dans les Réglages (28 à défaut), à 09:00, pour la personne que les Réglages désignent pour le suivi, ou pour le commercial qui a vendu le chantier si personne n’est désigné.",
+        "da-DK": "Når en opgave godkendes, planlægges et opfølgningsopkald til opgavens kunde efter det antal dage, der er sat under Indstillinger (28, hvis intet er sat), kl. 09:00, til den person, Indstillinger udpeger til opfølgning, eller til den sælger, der solgte opgaven, hvis ingen er udpeget.",
+        "cs-CZ": "Když je zakázka převzata, naplánuje hovor po realizaci se zákazníkem zakázky za počet dní nastavený v Nastavení (28, pokud není nastaven), v 09:00, pro osobu, kterou Nastavení určuje pro péči po realizaci, nebo pro obchodníka, který zakázku prodal, pokud nikdo určen není.",
+        "ar-EG": "عند اعتماد استلام أمر عمل، تُحدِّد مكالمة متابعة مع عميل أمر العمل بعد عدد الأيام المحدد في الإعدادات (28 إن لم يُحدَّد)، في الساعة 09:00، للشخص الذي تسمّيه الإعدادات للمتابعة، أو لمندوب المبيعات الذي باع أمر العمل إن لم يُسمَّ أحد.",
+        "zh-CN": "工单验收后，按“设置”中的天数（未设置时为 28 天）在 09:00 为该工单的客户安排一次售后回访，由“设置”中指定的售后负责人跟进；若未指定，则由售出该工单的销售跟进。",
+        "zh-TW": "工單驗收後，依「設定」中的天數（未設定時為 28 天）於 09:00 為該工單的客戶安排一次售後回訪，由「設定」中指定的售後負責人跟進；若未指定，則由售出該工單的業務跟進。"
+      },
+      "enabled": true,
+      "module": "aftercare",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "jobs",
+        "changedColumn": "state",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "signed-off"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A job is signed off"
+          },
+          {
+            "id": "none-yet",
+            "kind": "condition",
+            "title": "No aftercare call is booked for it yet",
+            "condition": {
+              "left": {
+                "count": {
+                  "table": "follow_ups",
+                  "matchColumn": "job_id",
+                  "equalsField": "id"
+                }
+              },
+              "op": "is",
+              "right": 0
+            }
+          },
+          {
+            "id": "call",
+            "kind": "action",
+            "title": "Book the aftercare call",
+            "action": {
+              "kind": "record.create",
+              "table": "follow_ups",
+              "values": {
+                "job_id": "{{record.id}}",
+                "deal_id": "{{record.deal_id}}",
+                "owner_id": {
+                  "setting": {
+                    "table": "settings",
+                    "column": "aftercare_owner_id"
+                  },
+                  "else": {
+                    "staff": "deal_id.owner_id"
+                  }
+                },
+                "due_at": {
+                  "daysAfter": {
+                    "column": "signed_off_at",
+                    "days": 28,
+                    "setting": {
+                      "table": "settings",
+                      "column": "aftercare_days"
+                    },
+                    "at": "09:00"
+                  }
+                },
+                "kind": "aftercare",
+                "call_no": "1",
+                "text": "{{record.title}}"
               }
             }
           }

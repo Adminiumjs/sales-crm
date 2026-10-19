@@ -161,7 +161,7 @@ describe("stage 1, the first release", () => {
     for (const role of doc.roles) for (const permission of role.permissions) if (permission.startsWith("page:@")) expect(pages.has(permission.split(":")[1]!.slice(1)), `${role.key}: ${permission}`).toBe(true);
     // The rules of Jobs on site (a won deal makes its job; a crew is told its day sheet changed) are not here to run.
     expect(doc.automations.map((rule) => rule.key)).not.toContain("deal-won-job");
-    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved"]);
+    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "aftercare-call"]);
     // Nor are the delivery e-mails, their templates, or the operations manager's read of won deals.
     expect(Object.keys((doc as unknown as { outbox: { kinds: Record<string, string> } }).outbox.kinds).filter((kind) => kind.startsWith("delivery-"))).toEqual([]);
     expect(JSON.stringify(doc).includes("crm-delivery-")).toBe(false);
