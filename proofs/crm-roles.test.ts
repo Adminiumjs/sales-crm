@@ -713,11 +713,11 @@ for (const [dialect, reachable] of LEGS) {
       await del('dana', 'deal_members', made(hugo));
       await gone('hugo', 'deals', danas);
       await del('tessa', 'comments', made(remark));
-      // So may the operations manager, who reads the won deals (stage 2): listed, she reads no open deal for it (R6, until T37).
+      // Not the operations manager, who reads every won deal (stage 2) and no open one, listed or not: she would be named
+      // on a deal she cannot open (P24's finding; the engine refuses it since 0.3.30).
       const ada = await post('dana', 'deal_members', { deal_id: danas, user_id: s.id['ada'] });
-      t('6 the operations manager may be listed', said(ada), 'ok');
+      t('6 the operations manager is not listed on an open deal', [refused(ada), (reason(ada) as { fields?: Record<string, { code?: unknown }> }).fields?.['user_id']?.code], ['422', 'cannot-open']);
       await gone('ada', 'deals', danas);
-      await del('dana', 'deal_members', made(ada));
       await del('dana', 'deal_members', made(helper));
       t('7 the listing is as it was', await count('deal_members'), before);
 
