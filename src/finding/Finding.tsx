@@ -62,7 +62,9 @@ export function FindingProvider({ groups, home, current, facts, onTheme, onSignO
       canReadComments: canOpen("deal", facts) && session.can("comments", "read"),
     };
   }, [groups, home, deals.canStart, facts, session]);
-  const screens = useMemo(() => screenLines(groups, (route) => USER_MENU.includes(route) && canOpen(route, facts)), [groups, facts]);
+  // The field crew's Jump is his own screens and nothing else, with no actions (ruling 15, as drawn).
+  const crewOnly = useMemo(() => facts.roles.length > 0 && facts.roles.every((slug) => slug === "crm-crew"), [facts]);
+  const screens = useMemo(() => screenLines(groups, (route) => !crewOnly && USER_MENU.includes(route) && canOpen(route, facts)), [groups, facts, crewOnly]);
   const searches = useMemo(() => kindsFor(session).length > 0, [session]);
 
   const jump = useCallback((typed = "") => {
@@ -77,6 +79,7 @@ export function FindingProvider({ groups, home, current, facts, onTheme, onSignO
   const room = roomOf(nav.path);
   const actions = useMemo<JumpAction[]>(() => {
     const out: JumpAction[] = [];
+    if (crewOnly) return out;
     if (deals.canStart) out.push({ id: "new-deal", label: "keys.newDeal", icon: "plus", hint: "N", run: () => deals.start() });
     if (room !== null && keyFacts.canReadComments) out.push({ id: "comments", label: "keys.dealComments", icon: "message-square", hint: "C", run: () => nav.go("deal", room, "comments") });
     if (room !== null && session.can("activities", "create")) out.push({ id: "call", label: "jump.call", icon: "phone", run: () => nav.go("deal", room, "call") });
@@ -84,7 +87,7 @@ export function FindingProvider({ groups, home, current, facts, onTheme, onSignO
     out.push({ id: "keys", label: "keys.title", icon: "keyboard", hint: "?", run: help });
     out.push({ id: "sign-out", label: "shell.signOut", icon: "log-out", run: onSignOut });
     return out;
-  }, [deals, room, keyFacts.canReadComments, session, nav, onTheme, help, onSignOut]);
+  }, [crewOnly, deals, room, keyFacts.canReadComments, session, nav, onTheme, help, onSignOut]);
 
   // The keys, once for the app.
   useEffect(() => {

@@ -40,6 +40,12 @@ describe("what can reach a person, cut to her roles and parts (P26)", () => {
   it("adds the approval asked for the sales manager", () => {
     expect(reasonsFor(person(MANAGER), ["crm-sales-manager"])).toContain("approvalAsked");
   });
+  it("lists for the field crew the change of a visit of his, while Jobs on site is on, and nothing else (P22)", () => {
+    const CREW = { job_visits: ["read", "update"], snags: ["read", "create", "update"], sign_offs: ["read", "create"] };
+    expect(reasonsFor(person(CREW), ["crm-crew"])).toEqual(["visitChanged"]);
+    expect(kindsFor(person(CREW), ["crm-crew"])).toEqual(["mention", "automation.notice"]);
+    expect(reasonsFor(person(CREW, { jobs: false }), ["crm-crew"])).toEqual([]);
+  });
   it("lists a follow-up falling due for the account manager, who owns no deal", () => {
     expect(reasonsFor(person(ACCOUNT), ["crm-account-manager"])).toEqual(["followUp"]);
   });

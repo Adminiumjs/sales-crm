@@ -1,0 +1,812 @@
+/*
+ * The field crew's phone (P22): one column, the design's measures (640 px at
+ * most, 16 px at the sides on a phone), big targets (44 px and more), logical
+ * properties only, so Arabic reads right to left with nothing to undo.
+ */
+.crm-cw {
+  max-inline-size: 640px;
+  margin-inline: auto;
+  padding: 18px 16px 26px;
+}
+.crm-cw h1,
+.crm-cw-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.crm-cw-h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-cw-quiet {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.crm-cw-quiet[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-cw-flip {
+  flex-shrink: 0;
+}
+[dir="rtl"] .crm-cw-flip {
+  transform: scaleX(-1);
+}
+
+/* ── the day ─────────────────────────────────────────────────────────────── */
+.crm-cw-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crm-cw-crew {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-cw-mates {
+  margin-block-start: 4px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-cw-daybar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 16px;
+}
+.crm-cw-arrow {
+  inline-size: 44px;
+  block-size: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.crm-cw-dayname {
+  flex: 1;
+  min-inline-size: 0;
+  text-align: center;
+}
+.crm-cw-dayname-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-cw-today {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-cw-date {
+  margin-block-start: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-cw-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin-block-start: 10px;
+}
+.crm-cw-weekday {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-inline-size: 0;
+  block-size: 58px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  cursor: pointer;
+  padding: 0;
+}
+.crm-cw-weekday[aria-current="date"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+.crm-cw-weekday-dow {
+  font-size: 11px;
+  font-weight: 700;
+}
+.crm-cw-weekday-num {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-cw-weekday-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+.crm-cw-weekday-dot[data-on="1"] {
+  background: var(--accent);
+}
+.crm-cw-back {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  block-size: 44px;
+  margin-block-start: 8px;
+  margin-inline: auto;
+  padding-inline: 14px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crm-cw-summary {
+  margin-block-start: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-cw-visits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-block-start: 9px;
+}
+.crm-cw-empty {
+  margin-block-start: 16px;
+}
+
+/* ── no connection ───────────────────────────────────────────────────────── */
+.crm-cw-offline {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-block-start: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+}
+.crm-cw-offline-icon {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--fg-muted);
+}
+.crm-cw-offline-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-cw-offline-line {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.crm-cw-offline-tried {
+  margin-block-start: 4px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-cw-offline .crm-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+@media (max-width: 420px) {
+  .crm-cw-offline {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── a visit ─────────────────────────────────────────────────────────────── */
+.crm-cw-visit {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-cw-visit-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.crm-cw-visit-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-cw-visit-when {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-cw-visit-time {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.crm-cw-visit-span {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-cw-visit-hours {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-cw-visit h2 {
+  margin: 7px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.crm-cw-visit-what {
+  margin-block-start: 3px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+.crm-cw-changed {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-block-start: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--info-soft);
+  color: var(--fg);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.crm-cw-changed svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--info);
+}
+.crm-cw-sec {
+  margin-block-start: 14px;
+  padding-block-start: 13px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-cw-sec h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.crm-cw-sec p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.crm-cw-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crm-cw-sec-head > :last-child {
+  margin-inline-start: auto;
+}
+.crm-cw-address {
+  margin-block-start: 6px;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.crm-cw-address span {
+  display: block;
+}
+.crm-cw-bigbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  block-size: 46px;
+  margin-block-start: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  inline-size: 100%;
+}
+.crm-cw-ask {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-start: 6px;
+}
+.crm-cw-ask-who {
+  flex: 1;
+  min-inline-size: 150px;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-cw-call {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  block-size: 46px;
+  padding-inline: 15px;
+  border-radius: 12px;
+  background: var(--pos-soft);
+  color: var(--fg);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.crm-cw-call svg {
+  color: var(--pos);
+}
+.crm-cw-load,
+.crm-cw-snaglist,
+.crm-cw-checked,
+.crm-cw-alerts {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-cw-load li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.crm-cw-load li .crm-mono {
+  min-inline-size: 28px;
+  font-weight: 700;
+}
+.crm-cw-snaglist li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.crm-cw-snaglist li[data-stops="1"] {
+  border-color: var(--danger);
+}
+.crm-cw-ticks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+  margin-block-start: 9px;
+}
+.crm-cw-tick,
+.crm-cw-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 50px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+  inline-size: 100%;
+}
+.crm-cw-tick[aria-pressed="true"],
+.crm-cw-check[aria-checked="true"] {
+  border-color: var(--pos);
+  background: var(--pos-soft);
+}
+.crm-cw-tick:disabled,
+.crm-cw-check:disabled {
+  cursor: default;
+}
+.crm-cw-tick-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.crm-cw-box {
+  inline-size: 22px;
+  block-size: 22px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--pos);
+}
+[aria-pressed="true"] > .crm-cw-box,
+[aria-checked="true"] > .crm-cw-box,
+li[data-on="1"] > .crm-cw-box {
+  border-color: var(--pos);
+}
+.crm-cw-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-block-start: 9px;
+}
+.crm-cw-signed {
+  margin-block-start: 16px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-cw-signed-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.crm-cw-signed-line svg {
+  flex-shrink: 0;
+  color: var(--pos);
+}
+.crm-cw-signbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  inline-size: 100%;
+  block-size: 52px;
+  margin-block-start: 16px;
+  border-radius: 14px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.crm-cw-signbtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ── adding a snag ───────────────────────────────────────────────────────── */
+.crm-cw-add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+.crm-cw-add-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+.crm-cw-kit {
+  min-inline-size: 0;
+}
+.crm-cw-nokit {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px dashed var(--border-strong);
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* ── signing off ─────────────────────────────────────────────────────────── */
+.crm-cw-backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 44px;
+  padding-inline: 4px;
+  color: var(--fg-muted);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.crm-cw-sohead {
+  margin-block-start: 10px;
+}
+.crm-cw-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.crm-cw-sohead h1 {
+  margin-block-start: 4px;
+}
+.crm-cw-suggest {
+  align-self: flex-start;
+  margin-block: 8px;
+}
+.crm-cw-refused {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-block-start: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--fg);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.crm-cw-refused svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--danger);
+}
+.crm-cw-signfoot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-block-start: 6px;
+}
+.crm-cw-hint {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.crm-cw-done {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-cw-done-mark {
+  inline-size: 46px;
+  block-size: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pos-soft);
+  color: var(--pos);
+  margin-block-start: 12px;
+}
+.crm-cw-done-line {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-cw-done .crm-cw-h2 {
+  margin-block-start: 12px;
+}
+/* Paper in both themes: a signature is ink on white, as it is printed. */
+.crm-cw-sigimg {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 420px;
+  block-size: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+.crm-cw-checked li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.crm-cw-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+.crm-cw-photos img {
+  inline-size: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+}
+
+/* ── snags ───────────────────────────────────────────────────────────────── */
+.crm-cw-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-block-start: 14px;
+}
+.crm-cw-count {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-cw-count-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+.crm-cw-count-label {
+  margin-block-start: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  line-height: 1.35;
+}
+.crm-cw-snags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-block-start: 14px;
+}
+.crm-cw-snag {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-cw-snag-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.crm-cw-thumb {
+  inline-size: 64px;
+  block-size: 64px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+.crm-cw-thumb-none {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+.crm-cw-snag-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-cw-snag-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.crm-cw-snag h2 {
+  margin: 6px 0 2px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-cw-joblink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.crm-cw-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.crm-cw-fixbtn {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+.crm-cw-textarea {
+  block-size: auto;
+  min-block-size: 84px;
+  padding-block: 10px;
+  resize: vertical;
+}
+
+/* ── my profile ──────────────────────────────────────────────────────────── */
+.crm-cw-me-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.crm-cw-me-avatar {
+  inline-size: 56px;
+  block-size: 56px;
+  font-size: 18px;
+}
+.crm-cw-me-card {
+  margin-block-start: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-cw-me-dl {
+  margin: 10px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crm-cw-me-dl dt {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.crm-cw-me-dl dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.crm-cw-alerts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-block-end: 1px solid var(--border);
+}
+.crm-cw-alerts li:last-child {
+  border-block-end: none;
+}
+.crm-cw-alerts svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--fg-muted);
+}
+.crm-cw-alert-words {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 700;
+}

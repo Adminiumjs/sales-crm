@@ -296,14 +296,16 @@ for (const [dialect, reachable] of LEGS) {
       await w.update('job_visits', visit['id'], { state: 'waiting' });
       await w.update('job_visits', visit['id'], { crew_id: red['id'] });
       expect(Number((await one('snags', 'crew_id', snag['id']))['crew_id'])).toBe(Number(red['id']));
-      // Signing off: not without a sign-off, and not while the snag stands.
+      // Signing off: not without a sign-off, and no sign-off while the snag stands (P22: the sign-off's link names only a job no
+      // stopping snag holds, so the sign-off itself is refused, as the job's move is).
       await w.update('jobs', job['id'], { state: 'installed' });
       await expect(w.update('jobs', job['id'], { state: 'signed-off' })).rejects.toThrow();
-      await w.create('sign_offs', { job_id: job['id'], visit_id: visit['id'], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Yusuf Demir' });
-      await expect(w.update('jobs', job['id'], { state: 'signed-off' })).rejects.toThrow();
+      const signOff = { job_id: job['id'], visit_id: visit['id'], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Yusuf Demir' };
+      await expect(w.create('sign_offs', signOff)).rejects.toThrow();
       await expect(w.update('snags', snag['id'], { state: 'put-right' })).rejects.toThrow();
       await w.update('snags', snag['id'], { state: 'put-right', put_right_note: 'Two more metres fitted' });
       expect(Number((await one('jobs', 'blocking_snags', job['id']))['blocking_snags'])).toBe(0);
+      await w.create('sign_offs', signOff);
       await w.update('jobs', job['id'], { state: 'signed-off' });
       expect((await one('jobs', 'state', job['id']))['state']).toBe('signed-off');
       // A delivery note and a line three links from the job; a time sheet, sent, then locked.

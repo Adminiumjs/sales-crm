@@ -62,6 +62,9 @@ import { RouteScreen } from "./jobs/Route.tsx";
 import { SignOffScreen } from "./jobs/SignOff.tsx";
 import { Snags } from "./jobs/Snags.tsx";
 import { Week } from "./week/Week.tsx";
+import { MyDay } from "./crew/MyDay.tsx";
+import { MySnags } from "./crew/MySnags.tsx";
+import { SignOffJob } from "./crew/SignOffJob.tsx";
 
 register("today", Today);
 register("week", Week);
@@ -123,3 +126,6 @@ register("dnotes", DeliveryNotes);
 register("snags", Snags);
 register("waste", Recycling);
 register("crews", Settings);
+register("myday", MyDay);
+register("crewsign", SignOffJob);
+register("mysnags", MySnags);

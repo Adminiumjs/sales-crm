@@ -1,0 +1,286 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+/**
+ * Plan 67, stage 2: THE FIELD CREW'S PHONE (P22), against the whole server on
+ * SQLite, Postgres and MySQL, with the app's own manifest and Jobs on site
+ * switched on, each try made signed in as the person it is about.
+ *
+ * Signed in as a crew member (Yusuf, Blue crew, with Cal; Rina is Red crew):
+ *
+ *  - he reads his crew's visits, snags and sign-offs, and another crew's are
+ *    not there by any door: a record, a list, a figure, its history, search;
+ *    he reads no job at all, and exports nothing;
+ *  - he reads no amount of a deal, a quote or a job by any door: the tables
+ *    refuse him, a lookup through his visit to the job's deal comes back
+ *    masked, a figure over them is refused, search finds no deal;
+ *  - he signs off only his crew's job, and not while a snag that stops it is
+ *    open (the sign-off's link to its job names only a job no such snag
+ *    holds); one create with a retry key is one sign-off, sent twice; he may
+ *    not change or remove a sign-off;
+ *  - he names only his own fresh upload: a crew-mate's file, or a file a
+ *    record already holds, is refused; a file a record holds cannot be thrown
+ *    away (`FILE_HELD`); his own that no record holds can;
+ *  - he ticks only his crew's visits, and nothing of a visit but its ticks;
+ *  - he raises and puts right snags of his crew's visits only.
+ *
+ * The screens, as he is answered, are on the browser stand: `e2e/crew-*.e2e.ts`.
+ *
+ * To run: `npm run proofs -- crew` (copies itself into the engine lane's test folder, runs, removes itself).
+ */
+import { readFileSync } from 'node:fs';
+
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { png } from './picture-images.js';
+import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
+
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.29' }));
+
+const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
+const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
+const DAY = 86_400_000;
+const WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const CHECKS = { check_1: true, check_2: true, check_3: true, check_4: true, check_5: true };
+
+for (const [dialect, reachable] of LEGS) {
+  describe.skipIf(!reachable)(`the CRM's field crew on his phone, on ${dialect}`, () => {
+    let s: WholeServer;
+    let stage = 0;
+    let company = 0;
+    let contact = 0;
+    const crew: Record<string, number> = {};
+    /** Blue's job and visit, Red's job and visit, a snag on each, and Red's job signed off by the office. */
+    const at = { blueJob: 0, blueVisit: 0, redJob: 0, redVisit: 0, blueSnag: 0, redSnag: 0, redSignOff: 0, deal: 0 };
+
+    const made = (res: Reply): number => {
+      expect(res.statusCode, res.body).toBe(201);
+      return Number((res.json() as { data: { id: number } }).data.id);
+    };
+    const url = (ref: string, rest = ''): string => `/api/v1/data/${s.connectionId}/${s.t(ref)}${rest}`;
+    const ids = async (who: string, ref: string): Promise<number[]> => {
+      const res = await s.get(who, url(ref, '?limit=200'));
+      expect(res.statusCode, res.body).toBe(200);
+      return (res.json() as { data: { id: number }[] }).data.map((row) => Number(row.id));
+    };
+    const one = (who: string, ref: string, id: number): Promise<Reply> => s.get(who, url(ref, `/${String(id)}`));
+    const figure = (who: string, ref: string, aggregations: unknown[] = [{ fn: 'count', alias: 'n' }]): Promise<Reply> =>
+      s.send(who, 'POST', '/api/v1/widget-data/query', { descriptor: { connectionId: s.connectionId, source: { name: s.t(ref) }, shape: 'single-metric', aggregations } });
+    const valueOf = (res: Reply): number => {
+      expect(res.statusCode, res.body).toBe(200);
+      return Number((res.json() as { result: { value?: number } }).result.value ?? 0);
+    };
+    const act = (who: string, ref: string, id: number, action: string, from: string, values?: Record<string, unknown>): Promise<Reply> =>
+      s.send(who, 'POST', url(ref, `/${String(id)}/actions/${action}`), { from, ...(values === undefined ? {} : { values }) });
+    const upload = async (who: string, ref: string, column: string): Promise<string> => {
+      const query = new URLSearchParams({ connectionId: s.connectionId, table: s.t(ref), column, filename: `${column}.png` });
+      const res = await s.app.inject({ method: 'POST', url: `/api/v1/files?${query.toString()}`, headers: { cookie: s.cookie[who]!, 'content-type': 'image/png' }, payload: png().bytes });
+      expect(res.statusCode, res.body).toBe(201);
+      return (res.json() as { data: { id: string } }).data.id;
+    };
+    const day = (days: number): string => new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
+    const jobs = (): Promise<void> => s.jobs({ except: ['digest.send'] });
+    /** A deal of Dana's, won: the app's rule makes its job. */
+    const wonJob = async (name: string): Promise<{ deal: number; job: number }> => {
+      const deal = made(await s.make('dana', 'deals', { name, company_id: company, contact_id: contact, owner_id: s.ids['dana'], stage_id: stage, typed_amount: 48_000 }));
+      expect(said(await act('dana', 'deals', deal, 'mark-won', 'open'))).toBe('ok');
+      await jobs();
+      const found = await s.rows(`select id from crm_jobs where deal_id = ${String(deal)}`);
+      expect(found, `the rule makes the job of "${name}"`).toHaveLength(1);
+      return { deal, job: Number(found[0]!['id']) };
+    };
+    /** A visit of a crew to a job, booked by the operations manager. */
+    const visit = async (job: number, what: string, crewName: string, kind = 'install'): Promise<number> => {
+      const id = made(await s.make('ada', 'job_visits', { job_id: job, kind, what, hours: 3, crew_size: 2 }));
+      expect(said(await s.change('ada', 'job_visits', id, { day: day(1), start_time: '08:00', crew_id: crew[crewName] }))).toBe('ok');
+      expect(said(await act('ada', 'job_visits', id, 'book', 'waiting'))).toBe('ok');
+      return id;
+    };
+
+    beforeAll(async () => {
+      s = await wholeServer(dialect, manifest(), {
+        people: { dana: ['rep'], tessa: ['admin'], ada: ['ops-manager'], yusuf: ['crew'], cal: ['crew'], rina: ['crew'] },
+        install: { modules: { jobs: true } },
+      });
+      stage = made(await s.make('owner', 'stages', { label: 'Proposal', odds: 0.5, position: 3 }));
+      company = made(await s.make('owner', 'companies', { name: 'Tandem Robotics' }));
+      contact = made(await s.make('owner', 'contacts', { company_id: company, name: 'Yusuf Demir', email: 'yusuf.demir@tandem.example', may_email: true }));
+      for (const [name, people] of [['blue', ['yusuf', 'cal']], ['red', ['rina']]] as const) {
+        crew[name] = made(await s.make('ada', 'crews', { name: `${name} crew` }));
+        for (const [i, person] of people.entries()) made(await s.make('ada', 'crew_members', { crew_id: crew[name], user_id: s.ids[person], lead: i === 0 }));
+        for (const weekday of WEEK) made(await s.make('ada', 'crew_days', { crew_id: crew[name], weekday }));
+      }
+      const blue = await wonJob('Test-floor workbenches');
+      const red = await wonJob('Warehouse desks');
+      at.deal = blue.deal;
+      at.blueJob = blue.job;
+      at.redJob = red.job;
+      expect(said(await s.change('ada', 'jobs', at.blueJob, { site_name: 'Tandem Robotics', ask_for: 'Yusuf Demir', site_phone: '01223 47 1108', access_note: 'Sign in at reception.' }))).toBe('ok');
+      at.blueVisit = await visit(at.blueJob, 'Test-floor workbenches', 'blue');
+      at.redVisit = await visit(at.redJob, 'Warehouse desks', 'red');
+      at.blueSnag = made(await s.make('ada', 'snags', { visit_id: at.blueVisit, text: 'Cable trays short by two metres', stops_sign_off: true }));
+      at.redSnag = made(await s.make('ada', 'snags', { visit_id: at.redVisit, text: 'A screen marked in transit', stops_sign_off: false }));
+      at.redSignOff = made(await s.make('ada', 'sign_offs', { visit_id: at.redVisit, ...CHECKS, signer_name: 'Petra Lindqvist' }));
+    }, 300_000);
+    afterAll(async () => {
+      await s?.close();
+    });
+
+    it("lets him read his crew's visits, snags and sign-offs, and no other crew's by any door; no job at all, and no export", async () => {
+      // Lists: his crew's rows only. Records of Red's: not there, as a row that does not exist.
+      expect(await ids('yusuf', 'job_visits')).toEqual([at.blueVisit]);
+      expect(await ids('yusuf', 'snags')).toEqual([at.blueSnag]);
+      expect(await ids('yusuf', 'sign_offs')).toEqual([]);
+      for (const [ref, id] of [['job_visits', at.redVisit], ['snags', at.redSnag], ['sign_offs', at.redSignOff]] as const) {
+        const theirs = await one('yusuf', ref, id);
+        expect(theirs.statusCode, `${ref} ${String(id)}`).toBe(404);
+        expect((await one('yusuf', ref, 999_999)).statusCode).toBe(404);
+        expect((await s.get('yusuf', url(ref, `/${String(id)}/history`))).statusCode, `${ref} history`).toBe(404);
+      }
+      // Red crew reads Red's and not Blue's: the same rule the other way.
+      expect(await ids('rina', 'job_visits')).toEqual([at.redVisit]);
+      expect(await ids('rina', 'sign_offs')).toEqual([at.redSignOff]);
+      // Figures are his rows' only.
+      expect(valueOf(await figure('yusuf', 'job_visits'))).toBe(1);
+      expect(valueOf(await figure('yusuf', 'job_visits', [{ fn: 'sum', column: 'hours', alias: 'h' }]))).toBe(3);
+      expect(valueOf(await figure('yusuf', 'snags'))).toBe(1);
+      expect(valueOf(await figure('yusuf', 'sign_offs'))).toBe(0);
+      // Search finds his visit, and nothing of Red's.
+      const found = await s.get('yusuf', `/api/v1/search?q=${encodeURIComponent('Warehouse')}`);
+      expect(found.statusCode, found.body).toBe(200);
+      expect(JSON.stringify(found.json())).not.toContain('Warehouse');
+      // The jobs table is not his by any door.
+      expect((await s.get('yusuf', url('jobs', '?limit=5'))).statusCode).toBe(403);
+      expect((await one('yusuf', 'jobs', at.blueJob)).statusCode).toBe(403);
+      expect((await figure('yusuf', 'jobs')).statusCode).toBe(403);
+      // He exports nothing, not even his own visits.
+      for (const ref of ['job_visits', 'sign_offs', 'snags', 'jobs']) {
+        const asked = await s.send('yusuf', 'POST', '/api/v1/exports', { connectionId: s.connectionId, source: { kind: 'table', table: s.t(ref) }, format: 'csv' });
+        expect(asked.statusCode, `${ref} export: ${asked.body}`).toBe(403);
+      }
+    });
+
+    it('lets him read no amount of a deal, a quote or a job, by any door', async () => {
+      // Quotes' tables are there only with the Invoices add-on, which this server does not have: `crm-roles` reads them as the
+      // crew, with Invoices attached, and he reads none (its matrix's `-`).
+      const present = (ref: string): boolean => {
+        try {
+          return s.t(ref) !== '';
+        } catch {
+          return false;
+        }
+      };
+      for (const ref of ['deals', 'quotes', 'quote_lines', 'jobs', 'deal_amount_changes', 'price_list'].filter(present)) {
+        expect((await s.get('yusuf', url(ref, '?limit=5'))).statusCode, ref).toBe(403);
+        expect((await figure('yusuf', ref)).statusCode, `${ref} figure`).toBe(403);
+      }
+      expect((await one('yusuf', 'deals', at.deal)).statusCode).toBe(403);
+      // Through his own visit, a lookup to the job's deal and its amount comes back masked.
+      const looked = await s.get('yusuf', url('job_visits', `/${String(at.blueVisit)}?lookup=amount:job_id.deal_id.amount&lookup=typed:job_id.deal_id.typed_amount&lookup=code:job_id.code`));
+      expect(looked.statusCode, looked.body).toBe(200);
+      const row = (looked.json() as { data: Record<string, unknown> }).data;
+      expect([row['amount'] ?? null, row['typed'] ?? null, row['code'] ?? null]).toEqual([null, null, null]);
+      expect(row['_masked']).toEqual(expect.arrayContaining(['amount', 'typed', 'code']));
+      // A figure on his visits grouped by the deal's amount through the job: refused or no amount in it.
+      const grouped = await s.send('yusuf', 'POST', '/api/v1/widget-data/query', { descriptor: { connectionId: s.connectionId, source: { name: s.t('job_visits') }, shape: 'categorical', groupBy: ['job_id'], groupLabel: 'job_id.deal_id.amount', aggregations: [{ fn: 'count', alias: 'n' }] } });
+      expect(grouped.body).not.toContain('48000');
+      // Search names no deal of his crew's job.
+      const found = await s.get('yusuf', `/api/v1/search?q=${encodeURIComponent('Test-floor')}`);
+      expect(found.statusCode).toBe(200);
+      expect(JSON.stringify(found.json())).not.toContain(s.t('deals'));
+      expect(JSON.stringify(found.json())).not.toContain('48000');
+      // Nothing he reads holds an amount: not his visit, its history, his snag.
+      expect(JSON.stringify((await one('yusuf', 'job_visits', at.blueVisit)).json())).not.toContain('48000');
+      expect((await s.get('yusuf', url('job_visits', `/${String(at.blueVisit)}/history`))).body).not.toContain('48000');
+    });
+
+    it("lets him sign off his crew's job only, not while a snag stops it, once for one key; and change or remove no sign-off", async () => {
+      const key = 'CrewProofSignOffKey000000000000001';
+      const signature = await upload('yusuf', 'sign_offs', 'signature');
+      const photo = await upload('yusuf', 'sign_offs', 'photos');
+      const body = { values: { visit_id: at.blueVisit, ...CHECKS, signer_name: 'Yusuf Demir', signature, photos: [photo] }, clientKey: key };
+      // While "Cable trays short" stops it: refused, as the link to a job no stopping snag holds; nothing is made.
+      const stopped = await s.send('yusuf', 'POST', url('sign_offs'), body);
+      expect(stopped.statusCode, stopped.body).toBe(422);
+      expect((stopped.json() as { error: { details: { fields: Record<string, { code: string }> } } }).error.details.fields['job_id']?.code).toBe('not-allowed');
+      expect(await s.rows(`select id from crm_sign_offs where job_id = ${String(at.blueJob)}`)).toHaveLength(0);
+      // The office's own sign-off is held to the same: the server's rule, not the phone's.
+      expect((await s.make('ada', 'sign_offs', { job_id: at.blueJob, ...CHECKS, signer_name: 'Office' })).statusCode).toBe(422);
+      // Red's visit is not his to sign off; a job he names himself is not his to write.
+      expect((await s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: at.redVisit, ...CHECKS, signer_name: 'X' } })).statusCode).toBe(409);
+      expect((await s.make('yusuf', 'sign_offs', { job_id: at.redJob, ...CHECKS, signer_name: 'X' })).statusCode).toBe(403);
+      // Put right, the same create goes through, once: sent again with the same key, it answers the same row.
+      expect(said(await act('ada', 'snags', at.blueSnag, 'put-right', 'open', { put_right_note: 'Two more metres fitted' }))).toBe('ok');
+      const first = made(await s.send('yusuf', 'POST', url('sign_offs'), body));
+      const again = await s.send('yusuf', 'POST', url('sign_offs'), body);
+      expect(again.statusCode, again.body).toBeLessThan(300);
+      expect([Number((again.json() as { data: { id: number } }).data.id), (again.json() as { replayed?: boolean }).replayed]).toEqual([first, true]);
+      expect(await s.rows(`select id from crm_sign_offs where job_id = ${String(at.blueJob)}`)).toHaveLength(1);
+      const kept = (await one('yusuf', 'sign_offs', first)).json() as { data: Record<string, unknown> };
+      expect([kept.data['signature'], kept.data['job_id']]).toEqual([signature, at.blueJob]);
+      const photos = typeof kept.data['photos'] === 'string' ? (JSON.parse(kept.data['photos']) as unknown) : kept.data['photos'];
+      expect(photos).toEqual([photo]);
+      // Nobody of the crew changes it or takes it away; nor does Cal, his crew-mate.
+      for (const who of ['yusuf', 'cal']) {
+        expect((await s.change(who, 'sign_offs', first, { signer_name: 'Somebody else' })).statusCode, who).toBeGreaterThanOrEqual(403);
+        expect((await s.send(who, 'DELETE', url('sign_offs', `/${String(first)}?confirm=true`))).statusCode, who).toBeGreaterThanOrEqual(403);
+      }
+      // A second sign-off of the same job (a new key): refused, one a job.
+      expect((await s.send('cal', 'POST', url('sign_offs'), { values: { visit_id: at.blueVisit, ...CHECKS, signer_name: 'Yusuf Demir' }, clientKey: 'CrewProofSignOffKey000000000000002' })).statusCode).toBe(409);
+      // Cal reads the sign-off his crew made; Rina does not.
+      expect((await one('cal', 'sign_offs', first)).statusCode).toBe(200);
+      expect((await one('rina', 'sign_offs', first)).statusCode).toBe(404);
+    });
+
+    it("lets him name only his own fresh upload: never a crew-mate's, never one a record holds; a held file cannot be thrown away", async () => {
+      const { job } = await wonJob('Studio meeting tables');
+      const visitId = await visit(job, 'Studio meeting tables', 'blue');
+      const cals = await upload('cal', 'sign_offs', 'signature');
+      const refused = await s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: visitId, ...CHECKS, signer_name: 'Marta Kovac', signature: cals }, clientKey: 'CrewProofFilesKey00000000000000001' });
+      expect(refused.statusCode, refused.body).toBe(422);
+      expect(refused.body).toContain('file-not-here');
+      // Nor may he throw Cal's away; Cal may, since no record holds it.
+      expect((await s.send('yusuf', 'DELETE', `/api/v1/files/${cals}`)).statusCode).toBeGreaterThanOrEqual(403);
+      expect((await s.send('cal', 'DELETE', `/api/v1/files/${cals}`)).statusCode).toBeLessThan(300);
+      // A file the first sign-off holds: refused to his second, and kept from the file routes (FILE_HELD).
+      const held = (await s.rows(`select signature from crm_sign_offs where job_id = ${String(at.blueJob)}`))[0]!['signature'] as string;
+      const named = await s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: visitId, ...CHECKS, signer_name: 'Marta Kovac', signature: held }, clientKey: 'CrewProofFilesKey00000000000000002' });
+      expect(named.statusCode).toBe(422);
+      expect(named.body).toContain('file-not-here');
+      const gone = await s.send('yusuf', 'DELETE', `/api/v1/files/${held}`);
+      expect([gone.statusCode, (gone.json() as { error?: { code?: string } }).error?.code]).toEqual([409, 'FILE_HELD']);
+      // His own fresh upload that no record holds: thrown away by him, as the phone does after a refusal.
+      const mine = await upload('yusuf', 'sign_offs', 'photos');
+      expect((await s.send('yusuf', 'DELETE', `/api/v1/files/${mine}`)).statusCode).toBeLessThan(300);
+      expect((await s.get('yusuf', `/api/v1/files/${mine}/content`)).statusCode).toBe(404);
+    });
+
+    it("lets him tick his crew's visits only, and change nothing of a visit but its ticks", async () => {
+      expect(said(await s.change('yusuf', 'job_visits', at.blueVisit, { tick_loaded: true }))).toBe('ok');
+      expect(said(await s.change('cal', 'job_visits', at.blueVisit, { tick_arrived: true }))).toBe('ok');
+      expect((await s.rows(`select tick_loaded, tick_arrived from crm_job_visits where id = ${String(at.blueVisit)}`)).map((row) => [Boolean(Number(row['tick_loaded'])) || row['tick_loaded'] === true, Boolean(Number(row['tick_arrived'])) || row['tick_arrived'] === true])).toEqual([[true, true]]);
+      expect((await s.change('yusuf', 'job_visits', at.redVisit, { tick_loaded: true })).statusCode).toBe(404);
+      for (const values of [{ day: day(3) }, { start_time: '06:00' }, { crew_id: crew['red'] }, { state: 'done' }, { note: 'mine now' }]) {
+        expect((await s.change('yusuf', 'job_visits', at.blueVisit, values)).statusCode, JSON.stringify(values)).toBe(403);
+      }
+      expect((await s.send('yusuf', 'DELETE', url('job_visits', `/${String(at.blueVisit)}?confirm=true`))).statusCode).toBe(403);
+      expect((await s.make('yusuf', 'job_visits', { job_id: at.blueJob, kind: 'drop', what: 'More', hours: 1, crew_size: 1 })).statusCode).toBe(403);
+    });
+
+    it("lets him raise and put right his crew's snags only, with the photo of it put right", async () => {
+      const photo = await upload('yusuf', 'snags', 'photo');
+      const snag = made(await s.send('yusuf', 'POST', url('snags'), { values: { visit_id: at.blueVisit, text: 'A scuffed panel', stops_sign_off: false, raised_by_id: s.ids['yusuf'], photo }, clientKey: 'CrewProofSnagKey000000000000000001' }));
+      expect((await s.rows(`select job_id, photo from crm_snags where id = ${String(snag)}`)).map((row) => [Number(row['job_id']), row['photo']])).toEqual([[at.blueJob, photo]]);
+      // Not on Red's visit, and Red's snag is not his to put right.
+      expect((await s.make('yusuf', 'snags', { visit_id: at.redVisit, text: 'Made up', stops_sign_off: true })).statusCode).toBe(409);
+      expect((await s.change('yusuf', 'snags', at.redSnag, { state: 'put-right', put_right_note: 'Not mine' })).statusCode).toBe(404);
+      // Put right: the line is asked by the move; the phone sends the photo with it.
+      expect((await s.change('yusuf', 'snags', snag, { state: 'put-right' })).statusCode).toBe(409);
+      const fixed = await upload('yusuf', 'snags', 'put_right_photo');
+      expect(said(await s.send('yusuf', 'PATCH', url('snags', `/${String(snag)}`), { values: { state: 'put-right', put_right_note: 'Panel cleaned', put_right_photo: fixed }, seen: { state: 'open' } }))).toBe('ok');
+      const row = (await s.rows(`select state, put_right_note, put_right_photo, put_right_on from crm_snags where id = ${String(snag)}`))[0]!;
+      expect([row['state'], row['put_right_note'], row['put_right_photo'], row['put_right_on'] !== null]).toEqual(['put-right', 'Panel cleaned', fixed, true]);
+      // He does not change whether a snag stops the sign-off, nor remove one.
+      expect((await s.change('yusuf', 'snags', snag, { stops_sign_off: true })).statusCode).toBe(403);
+      expect((await s.send('yusuf', 'DELETE', url('snags', `/${String(snag)}?confirm=true`))).statusCode).toBe(403);
+    });
+  });
+}

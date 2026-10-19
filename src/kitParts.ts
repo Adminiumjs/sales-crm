@@ -1,6 +1,7 @@
 /**
  * ADMINIUM'S OWN LARGER PARTS on an app's screen: the board, the map, the
- * import, the text box that mentions people.
+ * import, the text box that mentions people, the signature pad and the photo
+ * field (each sends its file as soon as it is kept, and hands back its id).
  *
  * They are too large to write again in every app and should behave the same
  * everywhere, so Adminium serves them itself and a screen asks for one: "draw
@@ -25,7 +26,7 @@ import type { StaffConfig } from "./staffConnection.ts";
 /** The contract this file was written for. */
 export const KIT_CONTRACT = 1;
 
-export type KitPartName = "mentions" | "board" | "map" | "import";
+export type KitPartName = "mentions" | "board" | "map" | "import" | "signature" | "photos";
 
 export interface KitMounted<Props> {
   /** Changes the props named; the others stay as they were. */

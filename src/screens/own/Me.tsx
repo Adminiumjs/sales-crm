@@ -10,7 +10,9 @@
  * still to find); it adds up no rows.
  *
  * Somebody who owns no deals (every role but the rep) gets who they are and
- * the way to "How I am told", and none of the selling blocks.
+ * the way to "How I am told", and none of the selling blocks. A field crew
+ * member gets his own (`../crew/Profile.tsx`, N2): his crew, his language, the
+ * alerts that reach him.
  */
 import { useMemo, useState } from "react";
 
@@ -23,9 +25,15 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import { Loaded, Skeleton, useLoad } from "../../ui/load.tsx";
 import { initials } from "../../ui/people.ts";
+import { CrewProfile, crewOnly } from "../crew/Profile.tsx";
 import { readDetails, readProfile } from "./data.ts";
 
-export function Me(_props: ScreenProps) {
+export function Me(props: ScreenProps) {
+  const session = useSession();
+  return crewOnly(session.config.access?.roles ?? []) ? <CrewProfile /> : <SalesMe {...props} />;
+}
+
+function SalesMe(_props: ScreenProps) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();

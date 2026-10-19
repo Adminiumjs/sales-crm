@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 // After the job.
 import { CircleOff, Frown, MessageSquareOff, PackageX, PhoneCall, PhoneOff, ShieldCheck, Star, Wrench } from "lucide-react";
+// The crew's phone.
+import { Camera, Navigation, RefreshCw, WifiOff } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   activity: Activity, "alarm-clock": AlarmClock, "calendar-plus": CalendarPlus, "calendar-sync": CalendarSync, "calendar-x": CalendarX, "clock-alert": ClockAlert, "calendar-arrow-up": CalendarArrowUp, "calendar-days": CalendarDays, check: Check, "check-check": CheckCheck,
@@ -24,6 +26,8 @@ const ICONS: Record<string, LucideIcon> = {
   // After the job.
   "phone-call": PhoneCall, "phone-off": PhoneOff, star: Star, frown: Frown, wrench: Wrench, "shield-check": ShieldCheck, "package-x": PackageX, "circle-off": CircleOff, "message-square-off": MessageSquareOff,
   "message-square": MessageSquare, "message-square-plus": MessageSquarePlus, pencil: Pencil, phone: Phone, "sticky-note": StickyNote, "move-right": MoveRight, "file-plus": FilePlus, "panel-right-open": PanelRightOpen, "rotate-ccw": RotateCcw, "eye-off": EyeOff, "corner-down-right": CornerDownRight, gavel: Gavel, hand: Hand, "octagon-alert": OctagonAlert, "user-round": UserRound, "arrow-left-right": ArrowLeftRight, "calendar-check": CalendarCheck, eye: Eye, footprints: Footprints, gauge: Gauge, "user-round-check": UserRoundCheck, flame: Flame, globe: Globe, languages: Languages, link: Link2, pin: Pin, "pin-off": PinOff, "arrow-up": ArrowUp, "arrow-down": ArrowDown, blocks: Blocks, command: Command, compass: Compass, keyboard: Keyboard, "search-x": SearchX, "sun-moon": SunMoon, zap: Zap, truck: Truck, store: Store, armchair: Armchair,
+  // The crew's phone.
+  camera: Camera, navigation: Navigation, "refresh-cw": RefreshCw, "wifi-off": WifiOff,
   "notebook-tabs": NotebookTabs, route: Route, "clipboard-check": ClipboardCheck, recycle: Recycle, printer: Printer, "file-check": FileCheck, "file-x": FileX, "file-warning": FileWarning, "pen-line": PenLine, "hard-hat": HardHat,
 };
 

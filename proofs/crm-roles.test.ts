@@ -1120,6 +1120,7 @@ for (const [dialect, reachable] of LEGS) {
         await gone('f_yusuf', 'job_visits', made(redVisit));
         const blocking = async (job: number) => Number((await one(`SELECT blocking_snags FROM ${s.real('jobs')} WHERE id = ${String(job)}`))['blocking_snags']);
         const before = await blocking(other);
+        // No signature: since F19 it is a file column, and a made-up id is refused as a file not here (it is nullable).
         const ticks = { check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Somebody' };
         // A fitter of Blue names no job himself (he reads none), and no visit of Red's: neither a sign-off nor a snag lands on Red's job.
         expect((await post('f_yusuf', 'sign_offs', { job_id: other, ...ticks })).statusCode).toBe(403);
@@ -1134,6 +1135,16 @@ for (const [dialect, reachable] of LEGS) {
         const snag = await post('f_yusuf', 'snags', { visit_id: made(blueVisit), text: 'A scuffed panel', stops_sign_off: false });
         expect(said(snag), snag.body).toBe('ok');
         expect(Number((await one(`SELECT job_id FROM ${s.real('snags')} WHERE id = ${String(made(snag))}`))['job_id'])).toBe(unsigned);
+        // The job not signed off yet is J-07, which the sample holds a snag that stops its sign-off on: refused while it is open
+        // (P22: the sign-off's link names only a job no stopping snag holds), and taken once the office has put it right.
+        const stopping = await ids(`SELECT id FROM ${s.real('snags')} WHERE job_id = ${String(unsigned)} AND stops_sign_off = ${yes(true)} AND state <> 'put-right'`);
+        expect(stopping.length, 'the sample\'s J-07 has a snag that stops its sign-off').toBeGreaterThan(0);
+        const stopped = await post('f_yusuf', 'sign_offs', { visit_id: made(blueVisit), ...ticks });
+        expect([stopped.statusCode, (stopped.json() as { error: { details: { fields?: Record<string, { code: string }> } } }).error.details.fields?.['job_id']?.code]).toEqual([422, 'not-allowed']);
+        for (const id of stopping) {
+          const state = String((await one(`SELECT state FROM ${s.real('snags')} WHERE id = ${String(id)}`))['state']);
+          expect(said(await s.app.inject({ method: 'POST', url: url('snags', `/${String(id)}/actions/put-right`), headers: { cookie: who('ada') }, payload: { from: state, values: { put_right_note: 'Put right for the test' } } }))).toBe('ok');
+        }
         const signOff = await post('f_yusuf', 'sign_offs', { visit_id: made(blueVisit), ...ticks });
         expect(said(signOff), signOff.body).toBe('ok');
         expect(Number((await one(`SELECT job_id FROM ${s.real('sign_offs')} WHERE id = ${String(made(signOff))}`))['job_id'])).toBe(unsigned);

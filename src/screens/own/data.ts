@@ -212,7 +212,7 @@ export const DEFAULT_CHANNELS: Channels = { inApp: true, email: true, push: fals
 export const channelsOf = (told: Told, kind: Kind): Channels => told.events.find((event) => event.key === kind)?.channels ?? DEFAULT_CHANNELS;
 
 /** What one of the app's rules can tell a person, by what she must be able to do for it to name her. */
-export type Reason = "followUp" | "nudge" | "handedOver" | "quoteRunsOut" | "approvalAsked" | "approvalAnswered";
+export type Reason = "followUp" | "nudge" | "handedOver" | "quoteRunsOut" | "approvalAsked" | "approvalAnswered" | "visitChanged";
 export function reasonsFor(session: Pick<StaffSession, "can" | "part">, slugs: readonly string[]): Reason[] {
   const selling = session.part("selling");
   const quotes = session.part("quotes");
@@ -225,6 +225,8 @@ export function reasonsFor(session: Pick<StaffSession, "can" | "part">, slugs: r
   if (ownsDeals && quotes && session.can("quotes", "read")) out.push("quoteRunsOut");
   if (quotes && slugs.includes("crm-sales-manager")) out.push("approvalAsked");
   if (quotes && session.can("quotes", "create")) out.push("approvalAnswered");
+  // The field crew: a visit of today or tomorrow that starts at another time, moves onto those days or comes to his crew (P22).
+  if (session.part("jobs") && slugs.includes("crm-crew")) out.push("visitChanged");
   return out;
 }
 

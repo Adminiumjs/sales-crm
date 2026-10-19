@@ -45,6 +45,8 @@ export type RouteKey =
   | "ophome" | "deliveries" | "daysheet" | "route" | "signoff" | "dnotes" | "snags" | "waste"
   /** Settings for the operations manager, who keeps the crews and writes no setting: the Settings screen, its Crews tab alone. */
   | "crews"
+  /** The field crew's phone (P22): his day, a job signed off from one of its visits, and his crew's snags. */
+  | "myday" | "crewsign" | "mysnags"
   /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
   | "deal"
   /** A person's own: reached from their name at the top, whatever their role. */
@@ -121,6 +123,9 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   snags: { path: "snags", part: "jobs", reads: ["snags", "jobs"], icon: "wrench" },
   waste: { path: "recycling", part: "jobs", reads: ["waste_removals"], icon: "recycle" },
   crews: { path: "settings", part: "jobs", reads: ["crews"], icon: "settings" },
+  myday: { path: "my-day", part: "jobs", reads: ["job_visits", "crews", "crew_members"], icon: "sun" },
+  crewsign: { path: "sign-off-the-job", part: "jobs", reads: ["job_visits", "sign_offs", "snags"], icon: "clipboard-check" },
+  mysnags: { path: "my-snags", part: "jobs", reads: ["snags"], icon: "wrench" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
   me: { path: "me", part: null, reads: [], icon: "user-round" },
   mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
@@ -138,7 +143,7 @@ export const OWN: readonly RouteKey[] = ["me", "mydetails", "notifs", "digest"];
 export const USER_MENU: readonly RouteKey[] = ["me", "mydetails", "notifs"];
 
 /** A record page lights the menu line it was reached from: the first of these the person's menu holds. */
-export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"] };
+export const LIT_BY: Partial<Record<RouteKey, readonly RouteKey[]>> = { deal: ["pipeline", "archive"], crewsign: ["myday", "mysnags"] };
 
 /** The groups of a menu, in the design's words. `top` has no heading. */
 export type GroupKey = "top" | "selling" | "accounts" | "customers" | "wonWork" | "inbox" | "showroom" | "jobs" | "supply" | "team" | "settings" | "aftercare";
@@ -164,10 +169,11 @@ const JOBS: MenuGroup = ["jobs", [it("deliveries"), it("daysheet"), it("route"),
 const without = (group: MenuGroup, routes: readonly RouteKey[]): MenuGroup => [group[0], group[1].filter((item) => !routes.includes(item.route))];
 
 /**
- * The nine menus of stage 1. The groups a later stage brings (Showroom and
- * samples, Jobs on site, After the job, Vehicles and crew) are added to these
- * with that stage's screens; the operations manager, the front desk and the
- * field crew have nothing but Supply or the Inbox until then.
+ * The nine menus. The groups a later stage brings (Showroom and samples, Jobs
+ * on site, After the job, Vehicles and crew) are in them with that stage's
+ * screens, and a line shows only while its part is on: at stage 1 the
+ * operations manager and the front desk have nothing but Supply or the Inbox,
+ * and the field crew nothing at all.
  */
 export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
   rep: [
@@ -214,7 +220,8 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
   // The design's sixteen, less what a later stage brings (Vehicles and crew), and a Settings line for the crews, their people
   // and their days (P3): a crew is set up there, by her.
   "ops-manager": [["top", [it("ophome", "home")]], JOBS, SUPPLY, ["settings", [it("crews", "appsettings")]]],
-  crew: [],
+  // The design's four, less what stage 3 brings (My hours, My certificates: Vehicles and crew).
+  crew: [["top", [it("myday"), it("mysnags")]]],
   "read-only": [
     without(TOP_TEAM, ["nudges"]),
     without(SELL_TEAM, ["handover"]),
@@ -239,7 +246,7 @@ export const HOMES: Record<RoleKey, RouteKey | null> = {
   marketer: "mkhome",
   "front-desk": "deskhome",
   "ops-manager": "ophome",
-  crew: null,
+  crew: "myday",
   "read-only": "team",
 };
 

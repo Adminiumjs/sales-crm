@@ -13304,6 +13304,14 @@
                 "via": "visit_id",
                 "from": "job_id",
                 "mode": "default"
+              },
+              "linkable": {
+                "where": [
+                  {
+                    "column": "blocking_snags",
+                    "eq": 0
+                  }
+                ]
               }
             },
             "label": {

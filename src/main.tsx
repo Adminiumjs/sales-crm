@@ -55,6 +55,7 @@ if (SURFACE_SIDE === "customer") {
     import("./styles/aftercare.css"),
     import("./styles/showroom.css"),
     import("./styles/jobs.css"),
+    import("./styles/crew.css"),
   ]).then(([{ default: App }]) => {
     root.render(
       <StrictMode>
