@@ -910,7 +910,7 @@ describe("what Adminium copies, numbers and stamps on the jobs tables", () => {
 describe("the moves of the jobs, aftercare and crew tables", () => {
   /** Every move of each table, from each state, in order. */
   const MOVES: Record<string, { initial: string; moves: Record<string, string[]> }> = {
-    jobs: { initial: "open", moves: { open: ["installed"], installed: ["signed-off"] } },
+    jobs: { initial: "open", moves: { open: ["installed", "signed-off"], installed: ["signed-off"] } },
     // Called off is removed, never kept "cancelled" (F17).
     job_visits: { initial: "waiting", moves: { waiting: ["booked"], booked: ["done", "waiting"] } },
     snags: { initial: "open", moves: { open: ["waiting-part", "put-right"], "waiting-part": ["open", "put-right"] } },
@@ -961,7 +961,7 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
     const jobs = byRef.get("jobs") as Table;
     expect(needs("jobs", "installed", "signed-off")).toEqual({ children: { sign_offs: 1 }, where: [{ column: "blocking_snags", eq: 0 }] });
     // A signed-off job still takes a sign-off: the correction of the one it holds, never a change of it (F19).
-    expect((jobs.states as unknown as { children?: unknown }).children).toEqual({ sign_offs: { via: "job_id", createIn: ["open", "installed", "signed-off"] } });
+    expect((jobs.states as unknown as { children?: unknown }).children).toEqual({ sign_offs: { via: "job_id", createIn: ["open", "installed", "signed-off"], moveOnCreate: "signed-off" } });
     // The count Adminium keeps: snags of the job that stop sign-off and are not put right.
     expect(rulesOf("jobs", "blocking_snags").rollup).toEqual({
       from: "snags",

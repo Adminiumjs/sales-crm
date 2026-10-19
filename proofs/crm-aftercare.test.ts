@@ -33,7 +33,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.29' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.30' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
@@ -168,8 +168,9 @@ for (const [dialect, reachable] of LEGS) {
       const settings = Number((await s.rows('select id from crm_settings'))[0]!['id']);
       const signOff = async (job: number): Promise<{ owner: unknown; due: string; signed: string }> => {
         expect(said(await act('tessa', 'jobs', job, 'installed', 'open'))).toBe('ok');
+        // The sign-off moves its job to signed off by itself (moveOnCreate), which sets the rule off.
         made(await s.make('tessa', 'sign_offs', { job_id: job, check_1: true, signer_name: 'Marta Kovac' }));
-        expect(said(await act('tessa', 'jobs', job, 'sign-off', 'installed'))).toBe('ok');
+        expect(String((await row('tessa', 'jobs', job))?.['state'])).toBe('signed-off');
         await s.jobs();
         const calls = await s.rows(`select owner_id, due_at, kind, call_no, deal_id, text from crm_follow_ups where job_id = ${String(job)}`);
         expect(calls, `job ${String(job)}: one aftercare call`).toHaveLength(1);

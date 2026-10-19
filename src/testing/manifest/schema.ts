@@ -2838,6 +2838,7 @@ export function appReferenceIssues(
             bookedOf: (ref) => tables.get(ref)?.booking !== undefined || tables.get(ref)?.occupies !== undefined,
             lineOf: (ref) => [...tables.values()].find((other) => other.states?.children?.[ref] !== undefined)?.ref,
             outboxTable: m.outbox?.table,
+            limitedOf: (ref) => tables.get(ref)?.capacity !== undefined,
             pages: new Set((m.pages ?? []).flatMap((page) => ('ref' in page && typeof page.ref === 'string' ? [page.ref] : []))),
             codePages: new Set(m.codePages ?? []),
           },
@@ -3140,7 +3141,7 @@ function slotPartyIssues(m: { requiredSchema: { tables: readonly RequiredTableSh
     if (table.columns.find((column) => column.ref === amount)?.rules?.validation?.max !== undefined) return;
     out.push({
       path: ['publicAccess', e],
-      message: `"${table.ref}.${amount}" is the party a guest asks about: give it a largest value (validation.max), or a page asking ever larger parties learns how full each time is`,
+      message: `"${table.ref}.${amount}" is the party a guest asks about: give it a largest value (rules.validation.max), or a page asking ever larger parties learns how full each time is`,
     });
   });
   return out;

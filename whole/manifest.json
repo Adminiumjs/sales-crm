@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.29",
+    "minAdminiumVersion": "0.3.30",
     "engines": [
       "postgres",
       "mysql",
@@ -11656,7 +11656,21 @@
           "initial": "open",
           "moves": {
             "open": [
-              "installed"
+              "installed",
+              {
+                "to": "signed-off",
+                "requires": {
+                  "children": {
+                    "sign_offs": 1
+                  },
+                  "where": [
+                    {
+                      "column": "blocking_snags",
+                      "eq": 0
+                    }
+                  ]
+                }
+              }
             ],
             "installed": [
               {
@@ -11682,7 +11696,8 @@
                 "open",
                 "installed",
                 "signed-off"
-              ]
+              ],
+              "moveOnCreate": "signed-off"
             }
           },
           "actions": [

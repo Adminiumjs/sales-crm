@@ -58,7 +58,7 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
   enquiries: { column: "state", initial: "open", moves: ["open → claimed", "open → passed: passed_to_id filled", "open → dropped", "passed → claimed", "passed → dropped"] },
   // A cancelled showroom booking is removed, never marked (F17, P19); one somebody came in for without a confirmation is still "been in".
   showroom_bookings: { column: "state", initial: "tentative", moves: ["tentative → confirmed", "tentative → done", "confirmed → done"] },
-  jobs: { column: "state", initial: "open", moves: ["open → installed", "installed → signed-off: blocking_snags = 0; 1 sign_offs"] },
+  jobs: { column: "state", initial: "open", moves: ["open → installed", "open → signed-off: blocking_snags = 0; 1 sign_offs", "installed → signed-off: blocking_snags = 0; 1 sign_offs"] },
   // A visit to a job that is called off is removed (F17), the why written to it first so the removal's own entry keeps it: no "cancelled" state.
   job_visits: { column: "state", initial: "waiting", moves: ["waiting → booked: day filled; crew_id filled", "booked → done", "booked → waiting"] },
   snags: { column: "state", initial: "open", moves: ["open → waiting-part", "open → put-right: put_right_note filled", "waiting-part → open", "waiting-part → put-right: put_right_note filled"] },
