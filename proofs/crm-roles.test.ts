@@ -299,7 +299,7 @@ for (const [dialect, reachable] of LEGS) {
       // A records page per table the role reads, the Pipeline board for the five roles that open the deals list, and the
       // console's Overview and Approvals for the CRM admin, the sales manager and Read-only (P17). A page kept off the
       // rail is still one of the role's pages: it is listed with the section, and only not drawn.
-      expect(counts).toEqual({ admin: 74, 'sales-manager': 62, rep: 60, 'account-manager': 30, marketer: 8, 'front-desk': 11, 'ops-manager': 25, crew: 16, 'read-only': 68 });
+      expect(counts).toEqual({ admin: 74, 'sales-manager': 62, rep: 60, 'account-manager': 36, marketer: 8, 'front-desk': 11, 'ops-manager': 25, crew: 16, 'read-only': 68 });
     });
 
     it('nobody reads a private table but the two people of a row: not the CRM admin, not Read-only, not the Super Admin', async () => {
@@ -326,19 +326,20 @@ for (const [dialect, reachable] of LEGS) {
       // WHO READS WHAT: typed here from the plan's matrix (Part 2, section 7), not read from the manifest's roles.
       // Columns: CRM admin, Sales manager, rep, account manager, marketer, front desk, operations manager, crew, Read-only.
       // `-` no grant · `all` every row · `own` the rows that are theirs · `team` theirs and those of people they lead ·
-      // `+free` and the rows that are nobody's · `won` every row while its state is "won".
+      // `+free` and the rows that are nobody's · `won` every row while its state is "won" · `won+own` those and the rows that are theirs.
       const ROLES = ['admin', 'sales-manager', 'rep', 'account-manager', 'marketer', 'front-desk', 'ops-manager', 'crew', 'read-only'] as const;
       const MATRIX: [string, string][] = [
         ['stages lost_reasons', 'all all all all - - - - all'],
         ['price_list', 'all all all - - - - - all'],
         // The operations manager reads the won deals, to make the jobs still to make (P15; stage 2).
-        ['deals', 'all team own won - - won - all'],
-        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all team own - - - - - all'],
+        // The account manager also reads an open deal he is listed on, its notes, history and quotes (R6, T37).
+        ['deals', 'all team own won+own - - won - all'],
+        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all team own own - - - - all'],
         ['follow_ups', 'all team own own - - - - all'],
         ['saved_views saved_searches', 'own+free own+free own+free own+free - - - - own+free'],
         ['nudge_snoozes', 'own own own - - - - - -'],
         // F14: who is on a deal is read by whoever is on it (and by who leads its owner).
-        ['deal_members', 'all team own all - - - - all'],
+        ['deal_members', 'all team own own - - - - all'],
         // F14: the marketer reads a deal's mark (which company, open or closed) and nothing else of a deal.
         ['deal_marks', 'all all all all all - - - all'],
         ['site_visits visit_notes visit_agreed', 'all team own - - - - - all'],
@@ -382,7 +383,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
       const opened = Object.fromEntries(ROLES.map((role) => [role, Object.values(reads).filter((row) => row[role] !== '-').length]));
-      expect(opened).toEqual({ admin: 70, 'sales-manager': 59, rep: 59, 'account-manager': 29, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 64 });
+      expect(opened).toEqual({ admin: 70, 'sales-manager': 59, rep: 59, 'account-manager': 35, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 64 });
 
       // Every row of every table, read as nobody (SQL).
       const raw: Record<string, Record<string, unknown>[]> = {};
@@ -438,7 +439,7 @@ for (const [dialect, reachable] of LEGS) {
           const want = raw[table.ref]!
             .filter((row) => {
               if (reach === 'all') return true;
-              if (reach === 'won') return row['state'] === 'won';
+              if (reach === 'won') return row['state'] === 'won' || (plus === 'own' && reaches(table.ref, row, me, false));
               return reaches(table.ref, row, me, reach === 'team') || (plus === 'free' && free(table.ref, row));
             })
             .map((row) => Number(row['id']))
@@ -553,7 +554,7 @@ for (const [dialect, reachable] of LEGS) {
       // ── Account manager (Hugo) ───────────────────────────────────────────────
       t('28 the account manager reads deals only once they are won', await keys('hugo', 'deals'), won);
       await gone('hugo', 'deals', danaOpen);
-      t('29 the account manager reads no activity and no quote', [String(await keys('hugo', 'activities')).slice(0, 3), String(await keys('hugo', 'quotes')).slice(0, 3)], ['403', '403']);
+      t('29 the account manager reads the notes and quotes of deals he is on, and he is on none', [await keys('hugo', 'activities'), await keys('hugo', 'quotes')], [[], []]);
       t('30 the account manager writes a renewal', said(await post('hugo', 'renewals', { company_id: company, kind: 'reorder', title: 'Service plan', due_on: '2027-03-01' })), 'ok');
 
       // ── Marketer (Lena) ──────────────────────────────────────────────────────
@@ -698,11 +699,20 @@ for (const [dialect, reachable] of LEGS) {
       // The same for cover: whoever covers reads deals.
       const badCover = await post('tessa', 'covers', { owner_id: s.id['sam'], cover_id: s.id['corin'], starts_on: '2027-02-01', ends_on: '2027-02-05' });
       t('5 the front desk covers for nobody', [refused(badCover), (reason(badCover) as { fields?: Record<string, { code?: unknown }> }).fields?.['cover_id']?.code], ['422', 'cannot-open']);
-      // The account manager reads deals (the won ones): he may be listed, and reads no open deal for it (R6, until T37).
+      // The account manager reads the won deals, and an open one while he is listed on it (R6, T37): it, its notes and its
+      // comments, and he comments on it; taken off, it is gone for him again.
       const hugo = await post('dana', 'deal_members', { deal_id: danas, user_id: s.id['hugo'] });
       t('6 the account manager may be listed', said(hugo), 'ok');
-      await gone('hugo', 'deals', danas);
+      t('6 listed, he reads the open deal', (await get('hugo', 'deals', `/${String(danas)}`)).statusCode, 200);
+      const remark = await post('hugo', 'comments', { deal_id: danas, text: 'Their facilities lead is an old customer of ours.' });
+      t('6 listed, he comments on it', said(remark), 'ok');
+      t('6 a deal of Dana\'s he is not on: no comment', refused(await post('hugo', 'comments', { deal_id: (await ids(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' AND id <> ${String(danas)}`))[0], text: 'not mine' })), '409');
+      // A won deal he reads and is not on: he reads it, and comments on none of it.
+      const wonDeal = (await ids(`SELECT id FROM ${s.real('deals')} WHERE state = 'won'`))[0];
+      t('6 a won deal he is not on: read, no comment', [(await get('hugo', 'deals', `/${String(wonDeal)}`)).statusCode, refused(await post('hugo', 'comments', { deal_id: wonDeal, text: 'not mine either' }))], [200, '403']);
       await del('dana', 'deal_members', made(hugo));
+      await gone('hugo', 'deals', danas);
+      await del('tessa', 'comments', made(remark));
       // So may the operations manager, who reads the won deals (stage 2): listed, she reads no open deal for it (R6, until T37).
       const ada = await post('dana', 'deal_members', { deal_id: danas, user_id: s.id['ada'] });
       t('6 the operations manager may be listed', said(ada), 'ok');
@@ -1110,7 +1120,7 @@ for (const [dialect, reachable] of LEGS) {
         await gone('f_yusuf', 'job_visits', made(redVisit));
         const blocking = async (job: number) => Number((await one(`SELECT blocking_snags FROM ${s.real('jobs')} WHERE id = ${String(job)}`))['blocking_snags']);
         const before = await blocking(other);
-        const ticks = { check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Somebody', signature: 'file_x' };
+        const ticks = { check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Somebody' };
         // A fitter of Blue names no job himself (he reads none), and no visit of Red's: neither a sign-off nor a snag lands on Red's job.
         expect((await post('f_yusuf', 'sign_offs', { job_id: other, ...ticks })).statusCode).toBe(403);
         expect((await post('f_yusuf', 'snags', { job_id: other, text: 'Made up', stops_sign_off: true })).statusCode).toBe(403);

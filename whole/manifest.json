@@ -21947,6 +21947,14 @@
         "table:@saved_searches:create",
         "table:@saved_searches:update",
         "table:@saved_searches:delete",
+        "table:@quotes:read",
+        "table:@quote_lines:read",
+        "table:@comments:read",
+        "table:@comments:create",
+        "table:@comments:update",
+        "table:@activities:read",
+        "table:@deal_stage_changes:read",
+        "table:@deal_amount_changes:read",
         "table:@deal_members:read",
         "table:@deal_marks:read",
         "table:@companies:read",
@@ -22024,20 +22032,31 @@
         "page:@crm-feedback:view",
         "page:@crm-complaints:view",
         "page:@crm-warranty-claims:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "page:@crm-activities:view",
+        "page:@crm-quotes:view",
+        "page:@crm-quote-lines:view",
+        "page:@crm-comments:view",
+        "page:@crm-deal-stage-changes:view",
+        "page:@crm-deal-amount-changes:view"
       ],
       "limits": {
         "deals": {
           "rows": {
-            "read": {
-              "reach": "all",
-              "while": {
-                "column": "state",
-                "in": [
-                  "won"
-                ]
+            "read": [
+              {
+                "reach": "all",
+                "while": {
+                  "column": "state",
+                  "in": [
+                    "won"
+                  ]
+                }
+              },
+              {
+                "reach": "own"
               }
-            }
+            ]
           }
         },
         "follow_ups": {
@@ -22221,6 +22240,115 @@
             "thanked_at",
             "reward"
           ]
+        },
+        "quotes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          },
+          "readable": [
+            "number_seq",
+            "number",
+            "status",
+            "valid_until",
+            "currency",
+            "tax_name",
+            "tax_rate",
+            "subtotal",
+            "tax",
+            "total",
+            "sent_at",
+            "decided_at",
+            "withdraw_reason",
+            "deal_id",
+            "version",
+            "family_no",
+            "replaces_id",
+            "deal_no",
+            "replaces_deal_id",
+            "replaces_ok",
+            "list_value",
+            "under_list_pct",
+            "unlisted_lines",
+            "unlisted_value",
+            "threshold_pct",
+            "needs_approval",
+            "approval",
+            "approved_pct",
+            "approved_unlisted_lines",
+            "approved_unlisted_value",
+            "may_send",
+            "asked_by_id",
+            "asked_at",
+            "ask_reason",
+            "decided_by_id",
+            "approval_decided_at",
+            "decision_note",
+            "sent_to_contact_id",
+            "to_email",
+            "to_name",
+            "sent_to_email",
+            "sent_to_name",
+            "notes",
+            "accepted_name",
+            "accepted_via",
+            "answered_by_id",
+            "withdrawn_at"
+          ]
+        },
+        "quote_lines": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "activities": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_stage_changes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_amount_changes": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_members": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "comments": {
+          "writable": [
+            "text"
+          ],
+          "creatable": [
+            "deal_id",
+            "text"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "author_id"
+            }
+          }
         }
       }
     },

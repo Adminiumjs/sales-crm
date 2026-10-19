@@ -64,21 +64,24 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["stages", "lost_reasons"], "RCUD", "RCU", "R", "R", "-", "-", "-", "-", "R"],
   // The operations manager reads a won deal (five columns: its name, state, close day and how many jobs it has) to make
   // the job of one won before Jobs on site was switched on ("jobs still to make", P15); nothing of an open deal.
-  [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won", "-", "-", "R:won", "-", "RX"],
-  [["deal_stage_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
-  [["deal_amount_changes"], "R", "R:team", "R:own", "-", "-", "-", "-", "-", "R"],
+  // The account manager reads every won deal, and an open one only while he is listed on it (R6, T37): its quote, its
+  // notes and its history, and he comments on it.
+  [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
+  [["deal_stage_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
+  [["deal_amount_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
-  [["activities", "comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "-", "-", "-", "-", "-", "R"],
+  [["activities"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
+  [["comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
-  [["quotes"], "RCUDX", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "RX"],
+  [["quotes"], "RCUDX", "RCU:team", "RCU:own", "R:own", "-", "-", "-", "-", "RX"],
   // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
-  [["quote_lines"], "RCUDX", "RCUD:team", "RCUD:own", "-", "-", "-", "-", "-", "RX"],
+  [["quote_lines"], "RCUDX", "RCUD:team", "RCUD:own", "R:own", "-", "-", "-", "-", "RX"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   [["saved_views", "saved_searches"], "RCUD:own+free", "RCUD:own+free", SAVED, SAVED, "-", "-", "-", "-", "R:own+free"],
   [["nudge_snoozes"], "RCD:own", "RCD:own", "RCD:own", "-", "-", "-", "-", "-", "-"],
   // Who is on a deal is read by whoever is on it, and written by its owner (or who leads her): `owner's` below.
-  [["deal_members"], "RCUD", "RCUD;r=team;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R", "-", "-", "-", "-", "R"],
+  [["deal_members"], "RCUD", "RCUD;r=team;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R:own", "-", "-", "-", "-", "R"],
   // The marketer counts a company's open deals from the mark, and reads nothing else of a deal.
   [["deal_marks"], "R", "R", "R", "R", "R", "-", "-", "-", "R"],
   // A visit is read by whoever reaches its deal; it is moved and cancelled by the rep it names (a manager, those of her people).
@@ -211,6 +214,8 @@ const REACHES: Record<string, Reach> = {
   "own+free": { reach: "own", unowned: true },
   "team+free": { reach: "team", unowned: true },
   won: { reach: "all", while: { column: "state", in: ["won"] } },
+  // Several reaches, any one enough: every won deal, and the deals the reader is on.
+  "won+own": [{ reach: "all", while: { column: "state", in: ["won"] } }, { reach: "own" }] as unknown as Reach,
   // Of the rows they reach, only the ones the row's own author column names them in.
   "own-written": { reach: "own", by: "author_id" },
   "team-written": { reach: "team", by: "author_id" },
@@ -686,7 +691,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 74, "sales-manager": 62, rep: 60, "account-manager": 30, marketer: 8, "front-desk": 11, "ops-manager": 25, crew: 16, "read-only": 68 });
+    expect(menu).toEqual({ admin: 74, "sales-manager": 62, rep: 60, "account-manager": 36, marketer: 8, "front-desk": 11, "ops-manager": 25, crew: 16, "read-only": 68 });
   });
 });
 
@@ -1056,7 +1061,7 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "read-only: quotes", "read-only: covers"]);
+    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "account-manager: quotes", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "read-only: quotes", "read-only: covers"]);
     // A crew member reads the notes of his crew's visits, not the totals Adminium keeps of every line (a line is reached by
     // its own crew, so a total over another crew's lines would show through): he counts his lines himself.
     expect(limitOf("crew", "delivery_notes")?.readable).not.toContain("ordered");
