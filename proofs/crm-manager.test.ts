@@ -414,7 +414,14 @@ for (const [dialect, reachable] of LEGS) {
         if (read.statusCode !== 403 || fig.statusCode !== 403) refused.push(`${person} ${table}: list ${String(read.statusCode)}, figure ${String(fig.statusCode)}`);
       };
       for (const person of ['lena', 'corin']) for (const table of TABLES) await tried(person, table);
-      for (const table of ['activities', 'deal_stage_changes', 'deal_amount_changes', 'nudge_snoozes']) await tried('hugo', table);
+      await tried('hugo', 'nudge_snoozes');
+      // The account manager reads the notes and history of a deal he is on (R6, T37), and he is on none: nothing, by a list and by a figure.
+      for (const table of ['activities', 'deal_stage_changes', 'deal_amount_changes']) {
+        const read = await get('hugo', url(table, '?limit=1'));
+        const fig = await asked('hugo', table, { shape: 'single-metric', aggregations: [{ fn: 'count', alias: 'n' }] });
+        const n = Number((fig.json() as { result?: { value?: unknown } }).result?.value ?? -1);
+        if (read.statusCode !== 200 || (read.json() as { data: unknown[] }).data.length !== 0 || fig.statusCode !== 200 || n !== 0) refused.push(`hugo ${table}: list ${String(read.statusCode)} ${read.body.slice(0, 60)}, figure ${String(fig.statusCode)} ${fig.body.slice(0, 80)}`);
+      }
       await tried('grace', 'nudge_snoozes');
       expect(refused).toEqual([]);
     });

@@ -310,8 +310,8 @@ for (const [dialect, reachable] of LEGS) {
       for (const person of ['tessa', 'ivy', 'grace']) expect([person, await rail(person)]).toEqual([person, [['', app]]]);
       // A rep: no Overview and no Approvals (she asks; she does not answer).
       expect(await rail('dana')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Quotes', 'Enquiries', 'Jobs']]]);
-      // The account manager: the won deals' board and list, and the accounts.
-      expect(await rail('hugo')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Jobs']]]);
+      // The account manager: the won deals' board and list, the accounts, and the quotes of a deal he is on (R6, T37).
+      expect(await rail('hugo')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Quotes', 'Jobs']]]);
       // The operations manager: Jobs, and with Jobs on (this proof installs every part) the Deals list, whose won deals her
       // jobs are made from (P20's grant, `stage.json`; stage 1 has neither: she reads no deal there).
       expect(await rail('ada')).toEqual([['', ['Deals', 'Jobs']]]);
