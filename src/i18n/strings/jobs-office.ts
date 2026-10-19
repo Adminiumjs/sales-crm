@@ -390,7 +390,7 @@ export const jobsOffice = {
   "jb.ds.print": ["Print this sheet", "Diesen Plan drucken", "Imprimer cette feuille", "Print denne plan", "Vytisknout tento list", "打印此工单", "列印此工單", "اطبع هذه الورقة"],
   "jb.ds.print.title": ["Day sheet · {day}", "Tagesplan · {day}", "Feuille de journée · {day}", "Dagsplan · {day}", "Denní list · {day}", "当日工单 · {day}", "當日工單 · {day}", "ورقة اليوم · {day}"],
   "jb.ds.print.sub": ["As it prints: the crew ticks the boxes by hand.", "So wird gedruckt: Das Team hakt die Kästchen von Hand ab.", "Tel qu’imprimé : l’équipe coche les cases à la main.", "Som den printes: holdet sætter krydserne i hånden.", "Tak se vytiskne: četa odškrtává políčka ručně.", "打印效果：班组手动勾选方框。", "列印效果：班組手動勾選方框。", "كما تُطبع: يؤشر الفريق المربعات بيده."],
-  "jb.ds.print.go": ["Print", "Drucken", "Imprimer", "Print", "Tisknout", "打印", "列印", "اطبع"],
+  "jb.ds.print.go": ["Print", "Drucken", "Imprimer", "Udskriv", "Tisknout", "打印", "列印", "اطبع"],
   "jb.ds.print.empty": ["Nothing booked for this crew on this day.", "Für dieses Team ist an diesem Tag nichts eingeplant.", "Rien de planifié pour cette équipe ce jour-là.", "Intet booket til dette hold denne dag.", "Pro tuto četu není v tento den nic naplánováno.", "这个班组当天没有排期。", "這個班組當天沒有排程。", "لا حجوزات لهذا الفريق في هذا اليوم."],
   "jb.ds.print.ask": ["Ask for {who}", "Nach {who} fragen", "Demander {who}", "Spørg efter {who}", "Ptát se na {who}", "找 {who}", "找 {who}", "اسأل عن {who}"],
 
