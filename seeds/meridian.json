@@ -29,6 +29,7 @@
      "depot_place": {
       "placeId": 2644688
      },
+     "office_phone": "0113 496 0100",
      "distance_unit": "km",
      "loan_days": 14,
      "aftercare_days": 28,
@@ -8188,6 +8189,7 @@
    "ref": "one_to_one_sessions",
    "rows": [
     {
+     "@label": "oosess:dana:2026-07-16",
      "one_to_one_id": {
       "@ref": "oo:dana"
      },
@@ -8215,6 +8217,7 @@
      }
     },
     {
+     "@label": "oosess:dana:2026-07-02",
      "one_to_one_id": {
       "@ref": "oo:dana"
      },
@@ -8242,6 +8245,7 @@
      }
     },
     {
+     "@label": "oosess:dana:2026-06-18",
      "one_to_one_id": {
       "@ref": "oo:dana"
      },
@@ -8269,6 +8273,7 @@
      }
     },
     {
+     "@label": "oosess:priya:2026-07-16",
      "one_to_one_id": {
       "@ref": "oo:priya"
      },
@@ -8296,6 +8301,7 @@
      }
     },
     {
+     "@label": "oosess:priya:2026-07-02",
      "one_to_one_id": {
       "@ref": "oo:priya"
      },
@@ -8323,6 +8329,7 @@
      }
     },
     {
+     "@label": "oosess:sam:2026-07-17",
      "one_to_one_id": {
       "@ref": "oo:sam"
      },
@@ -8350,6 +8357,7 @@
      }
     },
     {
+     "@label": "oosess:sam:2026-07-03",
      "one_to_one_id": {
       "@ref": "oo:sam"
      },
@@ -8377,6 +8385,7 @@
      }
     },
     {
+     "@label": "oosess:leo:2026-07-17",
      "one_to_one_id": {
       "@ref": "oo:leo"
      },
@@ -8404,6 +8413,7 @@
      }
     },
     {
+     "@label": "oosess:leo:2026-07-03",
      "one_to_one_id": {
       "@ref": "oo:leo"
      },
@@ -8911,6 +8921,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-16"
      }
     },
     {
@@ -8936,6 +8949,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-16"
      }
     },
     {
@@ -8961,6 +8977,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-02"
      }
     },
     {
@@ -8986,6 +9005,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:dana"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-07-02"
      }
     },
     {
@@ -9014,6 +9036,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:dana:0"
+     },
+     "session_id": {
+      "@ref": "oosess:dana:2026-06-18"
      }
     },
     {
@@ -9045,6 +9070,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:priya:0"
+     },
+     "session_id": {
+      "@ref": "oosess:priya:2026-07-16"
      }
     },
     {
@@ -9070,6 +9098,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:priya"
+     },
+     "session_id": {
+      "@ref": "oosess:priya:2026-07-02"
      }
     },
     {
@@ -9095,6 +9126,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:sam"
+     },
+     "session_id": {
+      "@ref": "oosess:sam:2026-07-17"
      }
     },
     {
@@ -9120,6 +9154,9 @@
      "source": "one-to-one",
      "one_to_one_id": {
       "@ref": "oo:sam"
+     },
+     "session_id": {
+      "@ref": "oosess:sam:2026-07-03"
      }
     },
     {
@@ -9148,6 +9185,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:leo:0"
+     },
+     "session_id": {
+      "@ref": "oosess:leo:2026-07-17"
      }
     },
     {
@@ -9176,6 +9216,9 @@
      },
      "coaching_area_id": {
       "@ref": "area:leo:0"
+     },
+     "session_id": {
+      "@ref": "oosess:leo:2026-07-03"
      }
     },
     {
@@ -11062,6 +11105,3837 @@
    ]
   },
   {
+   "ref": "showroom_spaces",
+   "rows": [
+    {
+     "@label": "space:main",
+     "name": {
+      "@t": {
+       "en-US": "Main floor",
+       "de-DE": "Hauptfläche",
+       "fr-FR": "Plateau principal",
+       "cs-CZ": "Hlavní hala",
+       "da-DK": "Hovedetagen",
+       "zh-CN": "主区域",
+       "zh-TW": "主要樓層",
+       "ar-EG": "القاعة الرئيسية"
+      }
+     }
+    },
+    {
+     "@label": "space:booth",
+     "name": {
+      "@t": {
+       "en-US": "Booth corner",
+       "de-DE": "Boxenecke",
+       "fr-FR": "Coin cabines",
+       "cs-CZ": "Kout s kabinami",
+       "da-DK": "Boksehjørne",
+       "zh-CN": "隔音舱角",
+       "zh-TW": "隔音間角落",
+       "ar-EG": "ركن الكبائن"
+      }
+     }
+    },
+    {
+     "@label": "space:meet",
+     "name": {
+      "@t": {
+       "en-US": "Meeting room",
+       "de-DE": "Besprechungsraum",
+       "fr-FR": "Salle de réunion",
+       "cs-CZ": "Zasedačka",
+       "da-DK": "Mødelokale",
+       "zh-CN": "会议室",
+       "zh-TW": "會議室",
+       "ar-EG": "غرفة الاجتماعات"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "ref": "showroom_bookings",
+   "rows": [
+    {
+     "@label": "booking:w1",
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "company_id": {
+      "@ref": "co:juno"
+     },
+     "contact_id": {
+      "@ref": "ct:owen"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": 1,
+      "@time": "10:00",
+      "@week": true
+     },
+     "minutes": 60,
+     "rep_id": {
+      "@person": "dana"
+     },
+     "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Analyst pod mock-up with the acoustic panels",
+       "de-DE": "Musteraufbau des Analysten-Pods mit den Akustikpaneelen",
+       "fr-FR": "Maquette du pod analyste avec les panneaux acoustiques",
+       "cs-CZ": "Ukázka analytického boxu s akustickými panely",
+       "da-DK": "Prøveopstilling af analytikerboksen med akustikpanelerne",
+       "zh-CN": "分析师工作舱样板，带吸音板",
+       "zh-TW": "分析師工作艙樣品，附吸音板",
+       "ar-EG": "نموذج كبينة المحللين مع الألواح الصوتية"
+      }
+     },
+     "deal_id": {
+      "@ref": "deal:d6"
+     }
+    },
+    {
+     "@label": "booking:w2",
+     "space_id": {
+      "@ref": "space:booth"
+     },
+     "company_id": {
+      "@ref": "co:brightloom"
+     },
+     "contact_id": {
+      "@ref": "ct:ruth"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": 1,
+      "@time": "14:00",
+      "@week": true
+     },
+     "minutes": 45,
+     "rep_id": {
+      "@person": "sam"
+     },
+     "state": "tentative",
+     "note": {
+      "@t": {
+       "en-US": "Task chairs, three fabrics side by side",
+       "de-DE": "Bürostühle, drei Stoffe nebeneinander",
+       "fr-FR": "Chaises de bureau, trois tissus côte à côte",
+       "cs-CZ": "Kancelářské židle, tři látky vedle sebe",
+       "da-DK": "Kontorstole, tre stoffer side om side",
+       "zh-CN": "办公椅，三种面料并排比较",
+       "zh-TW": "辦公椅，三種布料並排比較",
+       "ar-EG": "كراسي مكتب، ثلاثة أقمشة جنبًا إلى جنب"
+      }
+     }
+    },
+    {
+     "@label": "booking:w3",
+     "space_id": {
+      "@ref": "space:meet"
+     },
+     "company_id": {
+      "@ref": "co:loworbit"
+     },
+     "contact_id": {
+      "@ref": "ct:bea"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": 2,
+      "@time": "11:30",
+      "@week": true
+     },
+     "minutes": 45,
+     "rep_id": {
+      "@person": "leo"
+     },
+     "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Hot-desk bench and the locker wall",
+       "de-DE": "Hot-Desk-Bank und die Schließfachwand",
+       "fr-FR": "Bench de bureaux partagés et le mur de casiers",
+       "cs-CZ": "Sdílený lavicový stůl a stěna skříněk",
+       "da-DK": "Hot-desk-bænk og skabsvæggen",
+       "zh-CN": "共享办公长桌和储物柜墙",
+       "zh-TW": "共享辦公長桌和置物櫃牆",
+       "ar-EG": "مكتب مشترك طويل وجدار الخزائن"
+      }
+     }
+    },
+    {
+     "@label": "booking:w4",
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "company_id": {
+      "@ref": "co:cobalt"
+     },
+     "contact_id": {
+      "@ref": "ct:ines"
+     },
+     "party": 3,
+     "starts_at": {
+      "@day": 3,
+      "@time": "09:30",
+      "@week": true
+     },
+     "minutes": 90,
+     "rep_id": {
+      "@person": "dana"
+     },
+     "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Records-room lockers, finish choices",
+       "de-DE": "Schließfächer für den Aktenraum, Oberflächenauswahl",
+       "fr-FR": "Casiers de la salle des archives, choix des finitions",
+       "cs-CZ": "Skříňky do archivu, výběr povrchů",
+       "da-DK": "Skabe til arkivrummet, valg af overflader",
+       "zh-CN": "档案室储物柜，饰面选择",
+       "zh-TW": "檔案室置物櫃，飾面選擇",
+       "ar-EG": "خزائن غرفة السجلات، اختيار التشطيبات"
+      }
+     },
+     "deal_id": {
+      "@ref": "deal:d3"
+     }
+    },
+    {
+     "@label": "booking:w5",
+     "space_id": {
+      "@ref": "space:booth"
+     },
+     "company_id": {
+      "@ref": "co:veldt"
+     },
+     "contact_id": {
+      "@ref": "ct:marta"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": 3,
+      "@time": "10:00",
+      "@week": true
+     },
+     "minutes": 60,
+     "rep_id": {
+      "@person": "priya"
+     },
+     "state": "tentative",
+     "note": {
+      "@t": {
+       "en-US": "Acoustic booth, sound test",
+       "de-DE": "Akustikkabine, Schalltest",
+       "fr-FR": "Cabine acoustique, test sonore",
+       "cs-CZ": "Akustická budka, zkouška zvuku",
+       "da-DK": "Akustikboks, lydtest",
+       "zh-CN": "隔音间，声音测试",
+       "zh-TW": "隔音間，聲音測試",
+       "ar-EG": "كابينة صوتية، اختبار الصوت"
+      }
+     }
+    },
+    {
+     "@label": "booking:w6",
+     "space_id": {
+      "@ref": "space:booth"
+     },
+     "company_id": {
+      "@ref": "co:fernway"
+     },
+     "contact_id": {
+      "@ref": "ct:ana"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": 7,
+      "@time": "13:00",
+      "@week": true
+     },
+     "minutes": 60,
+     "rep_id": {
+      "@person": "priya"
+     },
+     "state": "confirmed",
+     "note": {
+      "@t": {
+       "en-US": "Corridor seating, wipe-clean fabrics",
+       "de-DE": "Sitzbänke für den Flur, abwischbare Stoffe",
+       "fr-FR": "Sièges de couloir, tissus lavables",
+       "cs-CZ": "Sezení do chodby, omyvatelné látky",
+       "da-DK": "Gangsiddepladser, aftørrelige stoffer",
+       "zh-CN": "走廊座椅，可擦洗面料",
+       "zh-TW": "走廊座椅，可擦洗布料",
+       "ar-EG": "مقاعد الممر، أقمشة قابلة للمسح"
+      }
+     }
+    },
+    {
+     "@label": "booking:w7",
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "company_id": {
+      "@ref": "co:nordwind"
+     },
+     "contact_id": {
+      "@ref": "ct:petra"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": -4,
+      "@time": "11:00",
+      "@week": true
+     },
+     "minutes": 60,
+     "rep_id": {
+      "@person": "sam"
+     },
+     "state": "done",
+     "note": {
+      "@t": {
+       "en-US": "Desk rows and the standing-desk swap",
+       "de-DE": "Schreibtischreihen und der Tausch gegen Stehpulte",
+       "fr-FR": "Rangées de bureaux et le remplacement par des bureaux debout",
+       "cs-CZ": "Řady stolů a výměna za stoly na stání",
+       "da-DK": "Skrivebordsrækker og byttet til hæve-sænkeborde",
+       "zh-CN": "办公桌排和换成站立式办公桌",
+       "zh-TW": "辦公桌排和換成站立式辦公桌",
+       "ar-EG": "صفوف المكاتب واستبدالها بمكاتب الوقوف"
+      }
+     },
+     "outcome": {
+      "@t": {
+       "en-US": "Petra liked the standing-desk swap and asked for it on the layout. Wants the desk rows on site the first week of August.",
+       "de-DE": "Petra gefiel der Tausch gegen Stehpulte, sie will ihn im Plan haben. Die Schreibtischreihen sollen in der ersten Augustwoche vor Ort sein.",
+       "fr-FR": "Petra a aimé le remplacement par des bureaux debout et l’a demandé sur le plan. Elle veut les rangées de bureaux sur place la première semaine d’août.",
+       "cs-CZ": "Petře se výměna za stoly na stání líbila a chce ji mít v rozvržení. Řady stolů chce mít na místě první týden v srpnu.",
+       "da-DK": "Petra kunne lide byttet til hæve-sænkeborde og bad om det på tegningen. Hun vil have skrivebordsrækkerne på stedet i første uge af august.",
+       "zh-CN": "Petra 喜欢换成站立式办公桌，要求在布局图上加上。希望八月第一周把办公桌排送到现场。",
+       "zh-TW": "Petra 喜歡換成站立式辦公桌，要求在佈局圖上加上。希望八月第一週把辦公桌排送到現場。",
+       "ar-EG": "أعجب Petra استبدال المكاتب بمكاتب الوقوف وطلبته في المخطط. تريد صفوف المكاتب في الموقع في الأسبوع الأول من أغسطس."
+      }
+     },
+     "next_step": {
+      "@t": {
+       "en-US": "Send the revised layout with the swap priced in",
+       "de-DE": "Den überarbeiteten Plan mit dem eingepreisten Tausch schicken",
+       "fr-FR": "Envoyer le plan révisé avec le remplacement chiffré",
+       "cs-CZ": "Poslat upravené rozvržení s naceněnou výměnou",
+       "da-DK": "Send den reviderede tegning med byttet prissat",
+       "zh-CN": "发送修改后的布局图，附上更换的报价",
+       "zh-TW": "寄送修改後的佈局圖，附上更換的報價",
+       "ar-EG": "إرسال المخطط المعدَّل مع تسعير الاستبدال"
+      }
+     },
+     "next_step_by": {
+      "@day": -1,
+      "@week": true
+     },
+     "deal_id": {
+      "@ref": "deal:d1"
+     }
+    },
+    {
+     "@label": "booking:w8",
+     "space_id": {
+      "@ref": "space:meet"
+     },
+     "company_id": {
+      "@ref": "co:tandem"
+     },
+     "contact_id": {
+      "@ref": "ct:yusuf"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": -6,
+      "@time": "15:00",
+      "@week": true
+     },
+     "minutes": 45,
+     "rep_id": {
+      "@person": "leo"
+     },
+     "state": "done",
+     "note": {
+      "@t": {
+       "en-US": "Workbench heights and the tool rail",
+       "de-DE": "Werkbankhöhen und die Werkzeugschiene",
+       "fr-FR": "Hauteurs des établis et le rail à outils",
+       "cs-CZ": "Výšky ponků a lišta na nářadí",
+       "da-DK": "Arbejdsbænkenes højde og værktøjsskinnen",
+       "zh-CN": "工作台高度和工具导轨",
+       "zh-TW": "工作台高度和工具導軌",
+       "ar-EG": "ارتفاعات طاولات العمل وسكة الأدوات"
+      }
+     },
+     "outcome": {
+      "@t": {
+       "en-US": "Yusuf measured the bench heights himself. Happy at 900mm. The tool rail is a maybe.",
+       "de-DE": "Yusuf hat die Werkbankhöhen selbst gemessen. Zufrieden mit 900mm. Die Werkzeugschiene ist noch offen.",
+       "fr-FR": "Yusuf a mesuré lui-même les hauteurs des établis. Satisfait à 900mm. Le rail à outils reste à voir.",
+       "cs-CZ": "Yusuf si výšky ponků změřil sám. Spokojený s 900mm. Lišta na nářadí je zatím nejistá.",
+       "da-DK": "Yusuf målte selv bænkhøjderne. Tilfreds med 900mm. Værktøjsskinnen er et måske.",
+       "zh-CN": "Yusuf 亲自量了工作台高度，900mm 他满意。工具导轨还没定。",
+       "zh-TW": "Yusuf 親自量了工作台高度，900mm 他滿意。工具導軌還沒定。",
+       "ar-EG": "قاس Yusuf ارتفاعات الطاولات بنفسه. راضٍ عن 900mm. سكة الأدوات لم تُحسم بعد."
+      }
+     },
+     "next_step": {
+      "@t": {
+       "en-US": "Confirm the bench height on the order and drop the rail",
+       "de-DE": "Die Werkbankhöhe in der Bestellung bestätigen und die Schiene streichen",
+       "fr-FR": "Confirmer la hauteur des établis sur la commande et retirer le rail",
+       "cs-CZ": "Potvrdit výšku ponků v objednávce a lištu vypustit",
+       "da-DK": "Bekræft bænkhøjden på ordren og drop skinnen",
+       "zh-CN": "在订单上确认工作台高度，去掉导轨",
+       "zh-TW": "在訂單上確認工作台高度，拿掉導軌",
+       "ar-EG": "تأكيد ارتفاع الطاولة في الطلب واستبعاد السكة"
+      }
+     },
+     "next_step_by": {
+      "@day": 2,
+      "@week": true
+     },
+     "deal_id": {
+      "@ref": "deal:d8"
+     }
+    },
+    {
+     "@label": "booking:w9",
+     "space_id": {
+      "@ref": "space:booth"
+     },
+     "company_id": {
+      "@ref": "co:harbor"
+     },
+     "contact_id": {
+      "@ref": "ct:sadie"
+     },
+     "party": 1,
+     "starts_at": {
+      "@day": -5,
+      "@time": "14:30",
+      "@week": true
+     },
+     "minutes": 45,
+     "rep_id": {
+      "@person": "dana"
+     },
+     "state": "done",
+     "note": {
+      "@t": {
+       "en-US": "Archive shelving, the taller bay",
+       "de-DE": "Archivregale, das höhere Feld",
+       "fr-FR": "Rayonnages d’archives, la travée plus haute",
+       "cs-CZ": "Archivní regály, vyšší sekce",
+       "da-DK": "Arkivreoler, den høje sektion",
+       "zh-CN": "档案架，较高的那一组",
+       "zh-TW": "檔案架，較高的那一組",
+       "ar-EG": "رفوف الأرشيف، الوحدة الأطول"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "ref": "samples",
+   "rows": [
+    {
+     "@label": "sample:sm1",
+     "name": {
+      "@t": {
+       "en-US": "Mesh task chair, mid grey",
+       "de-DE": "Arbeitsstuhl Netz, mittelgrau",
+       "fr-FR": "Siège de travail résille, gris moyen",
+       "cs-CZ": "Pracovní židle, síťovaná, středně šedá",
+       "da-DK": "Mesh-kontorstol, mellemgrå",
+       "zh-CN": "网布办公椅，中灰",
+       "zh-TW": "網背辦公椅，中灰色",
+       "ar-EG": "كرسي عمل شبكي، رمادي متوسط"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Chair",
+       "de-DE": "Stuhl",
+       "fr-FR": "Siège",
+       "cs-CZ": "Židle",
+       "da-DK": "Stol",
+       "zh-CN": "椅子",
+       "zh-TW": "椅子",
+       "ar-EG": "كرسي"
+      }
+     },
+     "held": 3
+    },
+    {
+     "@label": "sample:sm2",
+     "name": {
+      "@t": {
+       "en-US": "Fabric book, wool blends",
+       "de-DE": "Stoffmusterbuch, Wollmischungen",
+       "fr-FR": "Nuancier de tissus, mélanges laine",
+       "cs-CZ": "Vzorník látek, vlněné směsi",
+       "da-DK": "Stofbog, uldblandinger",
+       "zh-CN": "面料册，羊毛混纺",
+       "zh-TW": "布料樣本冊，羊毛混紡",
+       "ar-EG": "كتالوج أقمشة، خلطات صوف"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Fabric",
+       "de-DE": "Stoff",
+       "fr-FR": "Tissu",
+       "cs-CZ": "Látka",
+       "da-DK": "Stof",
+       "zh-CN": "面料",
+       "zh-TW": "布料",
+       "ar-EG": "قماش"
+      }
+     },
+     "held": 2
+    },
+    {
+     "@label": "sample:sm3",
+     "name": {
+      "@t": {
+       "en-US": "Fabric book, wipe-clean",
+       "de-DE": "Stoffmusterbuch, abwischbar",
+       "fr-FR": "Nuancier de tissus, lessivable",
+       "cs-CZ": "Vzorník látek, omyvatelné",
+       "da-DK": "Stofbog, aftørbar",
+       "zh-CN": "面料册，可擦洗",
+       "zh-TW": "布料樣本冊，易擦拭款",
+       "ar-EG": "كتالوج أقمشة، قابلة للمسح"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Fabric",
+       "de-DE": "Stoff",
+       "fr-FR": "Tissu",
+       "cs-CZ": "Látka",
+       "da-DK": "Stof",
+       "zh-CN": "面料",
+       "zh-TW": "布料",
+       "ar-EG": "قماش"
+      }
+     },
+     "held": 2
+    },
+    {
+     "@label": "sample:sm4",
+     "name": {
+      "@t": {
+       "en-US": "Acoustic panel set",
+       "de-DE": "Akustikpaneel-Set",
+       "fr-FR": "Jeu de panneaux acoustiques",
+       "cs-CZ": "Sada akustických panelů",
+       "da-DK": "Sæt akustikpaneler",
+       "zh-CN": "隔音板套件",
+       "zh-TW": "吸音板組",
+       "ar-EG": "طقم ألواح عزل صوتي"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Panel",
+       "de-DE": "Paneel",
+       "fr-FR": "Panneau",
+       "cs-CZ": "Panel",
+       "da-DK": "Panel",
+       "zh-CN": "面板",
+       "zh-TW": "板材",
+       "ar-EG": "لوح"
+      }
+     },
+     "held": 1
+    },
+    {
+     "@label": "sample:sm5",
+     "name": {
+      "@t": {
+       "en-US": "Desk finish boards, oak and ash",
+       "de-DE": "Oberflächenmuster für Tische, Eiche und Esche",
+       "fr-FR": "Planches de finitions de bureau, chêne et frêne",
+       "cs-CZ": "Vzorky dekorů stolů, dub a jasan",
+       "da-DK": "Finishprøveplader til borde, eg og ask",
+       "zh-CN": "桌面饰面样板，橡木和白蜡木",
+       "zh-TW": "桌面飾面樣板，橡木與白蠟木",
+       "ar-EG": "عينات تشطيب المكاتب، بلوط وأش"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Finish",
+       "de-DE": "Oberfläche",
+       "fr-FR": "Finition",
+       "cs-CZ": "Dekor",
+       "da-DK": "Finish",
+       "zh-CN": "饰面",
+       "zh-TW": "飾面",
+       "ar-EG": "تشطيب"
+      }
+     },
+     "held": 4
+    },
+    {
+     "@label": "sample:sm6",
+     "name": {
+      "@t": {
+       "en-US": "Locker door samples",
+       "de-DE": "Spindtürmuster",
+       "fr-FR": "Échantillons de portes de casiers",
+       "cs-CZ": "Vzorky dvířek skříněk",
+       "da-DK": "Prøver af lockerdøre",
+       "zh-CN": "柜门样板",
+       "zh-TW": "置物櫃門樣品",
+       "ar-EG": "عينات أبواب الخزائن"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Finish",
+       "de-DE": "Oberfläche",
+       "fr-FR": "Finition",
+       "cs-CZ": "Dekor",
+       "da-DK": "Finish",
+       "zh-CN": "饰面",
+       "zh-TW": "飾面",
+       "ar-EG": "تشطيب"
+      }
+     },
+     "held": 2
+    },
+    {
+     "@label": "sample:sm7",
+     "name": {
+      "@t": {
+       "en-US": "Bench leg finishes",
+       "de-DE": "Oberflächen für Bankbeine",
+       "fr-FR": "Finitions de pieds de bench",
+       "cs-CZ": "Vzorky povrchů noh lavic",
+       "da-DK": "Finishprøver til bænkben",
+       "zh-CN": "排桌腿饰面",
+       "zh-TW": "排桌桌腳飾面",
+       "ar-EG": "تشطيبات أرجل المقاعد"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Finish",
+       "de-DE": "Oberfläche",
+       "fr-FR": "Finition",
+       "cs-CZ": "Dekor",
+       "da-DK": "Finish",
+       "zh-CN": "饰面",
+       "zh-TW": "飾面",
+       "ar-EG": "تشطيب"
+      }
+     },
+     "held": 3
+    },
+    {
+     "@label": "sample:sm8",
+     "name": {
+      "@t": {
+       "en-US": "Canteen bench top offcuts",
+       "de-DE": "Zuschnittreste Kantinenbankplatten",
+       "fr-FR": "Chutes de plateau de banc de cantine",
+       "cs-CZ": "Zbytky desek lavic do jídelny",
+       "da-DK": "Afskæringer af kantinebænkplade",
+       "zh-CN": "食堂长凳台面边角料",
+       "zh-TW": "員工餐廳長椅桌面裁切餘料",
+       "ar-EG": "قصاصات أسطح مقاعد الكافيتريا"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "Finish",
+       "de-DE": "Oberfläche",
+       "fr-FR": "Finition",
+       "cs-CZ": "Dekor",
+       "da-DK": "Finish",
+       "zh-CN": "饰面",
+       "zh-TW": "飾面",
+       "ar-EG": "تشطيب"
+      }
+     },
+     "held": 5
+    }
+   ]
+  },
+  {
+   "ref": "sample_loans",
+   "rows": [
+    {
+     "@label": "loan:0",
+     "sample_id": {
+      "@ref": "sample:sm2"
+     },
+     "company_id": {
+      "@ref": "co:veldt"
+     },
+     "contact_id": {
+      "@ref": "ct:marta"
+     },
+     "out_on": {
+      "@day": -11,
+      "@week": true
+     },
+     "due_back": {
+      "@day": 3,
+      "@week": true
+     }
+    },
+    {
+     "@label": "loan:1",
+     "sample_id": {
+      "@ref": "sample:sm3"
+     },
+     "company_id": {
+      "@ref": "co:fernway"
+     },
+     "contact_id": {
+      "@ref": "ct:ana"
+     },
+     "out_on": {
+      "@day": -4,
+      "@week": true
+     },
+     "due_back": {
+      "@day": 10,
+      "@week": true
+     }
+    },
+    {
+     "@label": "loan:2",
+     "sample_id": {
+      "@ref": "sample:sm4"
+     },
+     "company_id": {
+      "@ref": "co:loworbit"
+     },
+     "contact_id": {
+      "@ref": "ct:bea"
+     },
+     "out_on": {
+      "@day": -21,
+      "@week": true
+     },
+     "due_back": {
+      "@day": -7,
+      "@week": true
+     }
+    },
+    {
+     "@label": "loan:3",
+     "sample_id": {
+      "@ref": "sample:sm1"
+     },
+     "company_id": {
+      "@ref": "co:veldt"
+     },
+     "contact_id": {
+      "@ref": "ct:marta"
+     },
+     "out_on": {
+      "@day": -5,
+      "@week": true
+     },
+     "due_back": {
+      "@day": 9,
+      "@week": true
+     }
+    }
+   ]
+  },
+  {
+   "ref": "sample_chases",
+   "rows": [
+    {
+     "loan_id": {
+      "@ref": "loan:0"
+     },
+     "chased_on": {
+      "@day": -3,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "corin"
+     }
+    },
+    {
+     "loan_id": {
+      "@ref": "loan:2"
+     },
+     "chased_on": {
+      "@day": -6,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "corin"
+     }
+    },
+    {
+     "loan_id": {
+      "@ref": "loan:2"
+     },
+     "chased_on": {
+      "@day": -1,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "corin"
+     }
+    }
+   ]
+  },
+  {
+   "ref": "display_pieces",
+   "rows": [
+    {
+     "name": {
+      "@t": {
+       "en-US": "Bench desk run, four-person",
+       "de-DE": "Bench-Schreibtischreihe, vier Personen",
+       "fr-FR": "Rangée de bureaux bench, quatre personnes",
+       "cs-CZ": "Řada lavicových stolů, čtyřmístná",
+       "da-DK": "Bænkbordsrække, fire personer",
+       "zh-CN": "排桌组，四人位",
+       "zh-TW": "四人排桌組",
+       "ar-EG": "صف مكاتب مشتركة، لأربعة أشخاص"
+      }
+     },
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "out_since": {
+      "@day": -168,
+      "@week": true
+     },
+     "spec": "current",
+     "promised_booking_id": {
+      "@ref": "booking:w3"
+     }
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Task chair, mesh back",
+       "de-DE": "Arbeitsstuhl, Netzrücken",
+       "fr-FR": "Siège de travail, dossier résille",
+       "cs-CZ": "Pracovní židle, síťovaný opěrák",
+       "da-DK": "Kontorstol, mesh-ryg",
+       "zh-CN": "办公椅，网布靠背",
+       "zh-TW": "辦公椅，網背",
+       "ar-EG": "كرسي عمل بظهر شبكي"
+      }
+     },
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "out_since": {
+      "@day": -85,
+      "@week": true
+     },
+     "spec": "current",
+     "promised_booking_id": {
+      "@ref": "booking:w2"
+     }
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Acoustic booth, single",
+       "de-DE": "Akustikbox, einzeln",
+       "fr-FR": "Cabine acoustique, individuelle",
+       "cs-CZ": "Akustická kabina, jednomístná",
+       "da-DK": "Akustikboks, enkelt",
+       "zh-CN": "隔音舱，单人",
+       "zh-TW": "隔音間，單人",
+       "ar-EG": "كابينة عزل صوتي، فردية"
+      }
+     },
+     "space_id": {
+      "@ref": "space:booth"
+     },
+     "out_since": {
+      "@day": -248,
+      "@week": true
+     },
+     "spec": "current",
+     "promised_booking_id": {
+      "@ref": "booking:w5"
+     }
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Locker wall, twelve doors",
+       "de-DE": "Spindwand, zwölf Türen",
+       "fr-FR": "Mur de casiers, douze portes",
+       "cs-CZ": "Stěna skříněk, dvanáct dvířek",
+       "da-DK": "Lockervæg, tolv døre",
+       "zh-CN": "储物柜墙，十二门",
+       "zh-TW": "置物櫃牆，十二個門",
+       "ar-EG": "جدار خزائن، اثنا عشر بابًا"
+      }
+     },
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "out_since": {
+      "@day": -40,
+      "@week": true
+     },
+     "spec": "current",
+     "promised_booking_id": {
+      "@ref": "booking:w4"
+     }
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Analyst pod, two-person",
+       "de-DE": "Analysten-Pod, zwei Personen",
+       "fr-FR": "Pod d’analyste, deux personnes",
+       "cs-CZ": "Analytický box, dvoumístný",
+       "da-DK": "Analytikerpod, to personer",
+       "zh-CN": "分析师工位舱，双人",
+       "zh-TW": "分析師艙位，雙人",
+       "ar-EG": "كابينة محللين، لشخصين"
+      }
+     },
+     "space_id": {
+      "@ref": "space:booth"
+     },
+     "out_since": {
+      "@day": -22,
+      "@week": true
+     },
+     "spec": "current",
+     "promised_booking_id": {
+      "@ref": "booking:w1"
+     }
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Sit-stand frame, single",
+       "de-DE": "Sitz-Steh-Gestell, einzeln",
+       "fr-FR": "Piètement assis-debout, simple",
+       "cs-CZ": "Výškově nastavitelný rám, jednoduchý",
+       "da-DK": "Hæve-sænkestel, enkelt",
+       "zh-CN": "升降桌架，单人",
+       "zh-TW": "升降桌架，單人",
+       "ar-EG": "هيكل مكتب جلوس ووقوف، فردي"
+      }
+     },
+     "space_id": {
+      "@ref": "space:meet"
+     },
+     "out_since": {
+      "@day": -348,
+      "@week": true
+     },
+     "spec": "old"
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Corridor seating, three seat",
+       "de-DE": "Flursitzbank, dreisitzig",
+       "fr-FR": "Sièges de couloir, trois places",
+       "cs-CZ": "Sezení na chodbu, třímístné",
+       "da-DK": "Gangbænk, tre pladser",
+       "zh-CN": "走廊座椅，三人位",
+       "zh-TW": "走廊座椅，三人座",
+       "ar-EG": "مقاعد ممر، ثلاثة مقاعد"
+      }
+     },
+     "space_id": {
+      "@ref": "space:meet"
+     },
+     "out_since": {
+      "@day": -179,
+      "@week": true
+     },
+     "spec": "current",
+     "promised_booking_id": {
+      "@ref": "booking:w6"
+     }
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Meeting table, welded frame",
+       "de-DE": "Besprechungstisch, Schweißgestell",
+       "fr-FR": "Table de réunion, piétement soudé",
+       "cs-CZ": "Jednací stůl, svařovaný rám",
+       "da-DK": "Mødebord, svejset stel",
+       "zh-CN": "会议桌，焊接框架",
+       "zh-TW": "會議桌，焊接桌架",
+       "ar-EG": "طاولة اجتماعات بهيكل ملحوم"
+      }
+     },
+     "space_id": {
+      "@ref": "space:meet"
+     },
+     "out_since": {
+      "@day": -322,
+      "@week": true
+     },
+     "spec": "current"
+    },
+    {
+     "name": {
+      "@t": {
+       "en-US": "Canteen bench and tops",
+       "de-DE": "Kantinenbank mit Platten",
+       "fr-FR": "Banc de cantine et plateaux",
+       "cs-CZ": "Lavice do jídelny a desky",
+       "da-DK": "Kantinebænk og plader",
+       "zh-CN": "食堂长凳和台面",
+       "zh-TW": "員工餐廳長椅與桌面",
+       "ar-EG": "مقعد الكافيتريا والأسطح"
+      }
+     },
+     "space_id": {
+      "@ref": "space:main"
+     },
+     "out_since": {
+      "@day": -129,
+      "@week": true
+     },
+     "spec": "current",
+     "lent_company_id": {
+      "@ref": "co:brightloom"
+     },
+     "lent_until": {
+      "@day": 11,
+      "@week": true
+     }
+    }
+   ]
+  },
+  {
+   "ref": "vehicles",
+   "rows": [
+    {
+     "@label": "van:blue",
+     "name": {
+      "@t": {
+       "en-US": "Blue van",
+       "de-DE": "Blauer Transporter",
+       "fr-FR": "Camionnette bleue",
+       "cs-CZ": "Modrá dodávka",
+       "da-DK": "Blå varevogn",
+       "zh-CN": "蓝色货车",
+       "zh-TW": "藍色廂型車",
+       "ar-EG": "الفان الأزرق"
+      }
+     },
+     "plate": "YJ19 KPX",
+     "model": {
+      "@t": {
+       "en-US": "Sprinter, long wheelbase",
+       "de-DE": "Sprinter, langer Radstand",
+       "fr-FR": "Sprinter, empattement long",
+       "cs-CZ": "Sprinter, dlouhý rozvor",
+       "da-DK": "Sprinter, lang akselafstand",
+       "zh-CN": "Sprinter，长轴距",
+       "zh-TW": "Sprinter，長軸",
+       "ar-EG": "Sprinter، قاعدة عجلات طويلة"
+      }
+     },
+     "odometer": 118420,
+     "inspection_due": {
+      "@day": 109,
+      "@week": true
+     },
+     "service_due": {
+      "@day": 36,
+      "@week": true
+     },
+     "tax_to": {
+      "@day": 187,
+      "@week": true
+     },
+     "hired": false
+    },
+    {
+     "@label": "van:red",
+     "name": {
+      "@t": {
+       "en-US": "Red van",
+       "de-DE": "Roter Transporter",
+       "fr-FR": "Camionnette rouge",
+       "cs-CZ": "Červená dodávka",
+       "da-DK": "Rød varevogn",
+       "zh-CN": "红色货车",
+       "zh-TW": "紅色廂型車",
+       "ar-EG": "الفان الأحمر"
+      }
+     },
+     "plate": "YK20 HTC",
+     "model": {
+      "@t": {
+       "en-US": "Transit, high roof",
+       "de-DE": "Transit, Hochdach",
+       "fr-FR": "Transit, toit haut",
+       "cs-CZ": "Transit, vysoká střecha",
+       "da-DK": "Transit, højt tag",
+       "zh-CN": "Transit，高顶",
+       "zh-TW": "Transit，高頂",
+       "ar-EG": "Transit، سقف مرتفع"
+      }
+     },
+     "odometer": 96780,
+     "inspection_due": {
+      "@day": 11,
+      "@week": true
+     },
+     "service_due": {
+      "@day": -8,
+      "@week": true
+     },
+     "tax_to": {
+      "@day": 156,
+      "@week": true
+     },
+     "hired": false
+    },
+    {
+     "@label": "van:hire",
+     "name": {
+      "@t": {
+       "en-US": "Hired van",
+       "de-DE": "Gemieteter Transporter",
+       "fr-FR": "Camionnette de location",
+       "cs-CZ": "Najatá dodávka",
+       "da-DK": "Lejet varevogn",
+       "zh-CN": "租用货车",
+       "zh-TW": "租用廂型車",
+       "ar-EG": "فان مستأجر"
+      }
+     },
+     "plate": "ML24 VDR",
+     "model": {
+      "@t": {
+       "en-US": "Hired in for August",
+       "de-DE": "Für August angemietet",
+       "fr-FR": "Louée pour août",
+       "cs-CZ": "Najato na srpen",
+       "da-DK": "Lejet til august",
+       "zh-CN": "八月租用",
+       "zh-TW": "八月租用",
+       "ar-EG": "مستأجر لشهر أغسطس"
+      }
+     },
+     "odometer": 8310,
+     "inspection_due": {
+      "@day": 234,
+      "@week": true
+     },
+     "service_due": {
+      "@day": 65,
+      "@week": true
+     },
+     "tax_to": {
+      "@day": 246,
+      "@week": true
+     },
+     "hired": true
+    }
+   ]
+  },
+  {
+   "ref": "crews",
+   "rows": [
+    {
+     "@label": "crew:blue",
+     "name": {
+      "@t": {
+       "en-US": "Blue crew",
+       "de-DE": "Trupp Blau",
+       "fr-FR": "Équipe bleue",
+       "cs-CZ": "Modrá parta",
+       "da-DK": "Blåt hold",
+       "zh-CN": "蓝队",
+       "zh-TW": "藍組",
+       "ar-EG": "الطاقم الأزرق"
+      }
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     }
+    },
+    {
+     "@label": "crew:red",
+     "name": {
+      "@t": {
+       "en-US": "Red crew",
+       "de-DE": "Trupp Rot",
+       "fr-FR": "Équipe rouge",
+       "cs-CZ": "Červená parta",
+       "da-DK": "Rødt hold",
+       "zh-CN": "红队",
+       "zh-TW": "紅組",
+       "ar-EG": "الطاقم الأحمر"
+      }
+     },
+     "vehicle_id": {
+      "@ref": "van:red"
+     }
+    }
+   ]
+  },
+  {
+   "ref": "crew_members",
+   "rows": [
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "lead": true,
+     "since": "2018-01-01"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "user_id": {
+      "@person": "cal"
+     },
+     "lead": false,
+     "since": "2022-01-01"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "user_id": {
+      "@person": "rina"
+     },
+     "lead": true,
+     "since": "2019-01-01"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "user_id": {
+      "@person": "mo"
+     },
+     "lead": false,
+     "since": "2023-01-01"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "user_id": {
+      "@person": "sean"
+     },
+     "lead": false,
+     "since": "2024-01-01"
+    }
+   ]
+  },
+  {
+   "ref": "crew_days",
+   "rows": [
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "mon"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "tue"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "wed"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "thu"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "weekday": "fri"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "mon"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "tue"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "wed"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "thu"
+    },
+    {
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "weekday": "fri"
+    }
+   ]
+  },
+  {
+   "ref": "jobs",
+   "rows": [
+    {
+     "@label": "job:w1",
+     "code_seq": 1,
+     "code": "J-01",
+     "deal_id": {
+      "@ref": "deal:w1"
+     },
+     "site_name": "Cobalt Legal",
+     "address_lines": "12 Sovereign Street",
+     "town": "Leeds",
+     "lat": 53.8008,
+     "lng": -1.5491,
+     "place": {
+      "placeId": 2644688
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Loading bay off Sovereign Street. Ask at the desk for Tomas.",
+       "de-DE": "Ladehof an der Sovereign Street. Am Empfang nach Tomas fragen.",
+       "fr-FR": "Quai de chargement côté Sovereign Street. Demander Tomas à l’accueil.",
+       "cs-CZ": "Nakládací rampa ze Sovereign Street. Na recepci se zeptej na Tomase.",
+       "da-DK": "Lasterampe fra Sovereign Street. Spørg i receptionen efter Tomas.",
+       "zh-CN": "卸货口在 Sovereign Street 一侧。到前台找 Tomas。",
+       "zh-TW": "卸貨區在 Sovereign Street 旁。到櫃檯找 Tomas。",
+       "ar-EG": "رصيف التحميل قرب Sovereign Street. اسأل عن Tomas عند مكتب الاستقبال."
+      }
+     },
+     "ask_for": "Tomas Reidy",
+     "site_phone": "0113 496 0190",
+     "state": "signed-off"
+    },
+    {
+     "@label": "job:w2",
+     "code_seq": 2,
+     "code": "J-02",
+     "deal_id": {
+      "@ref": "deal:w2"
+     },
+     "site_name": "Harbor & Finch",
+     "address_lines": "19 Albany Court",
+     "town": "Edinburgh",
+     "lat": 55.9533,
+     "lng": -3.1883,
+     "place": {
+      "placeId": 2650225
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Street parking, one hour. Unload fast.",
+       "de-DE": "Parken am Straßenrand, eine Stunde. Schnell entladen.",
+       "fr-FR": "Stationnement dans la rue, une heure. Décharger vite.",
+       "cs-CZ": "Parkování na ulici, hodina. Vykládej rychle.",
+       "da-DK": "Gadeparkering, én time. Aflæs hurtigt.",
+       "zh-CN": "路边停车，限一小时。卸货要快。",
+       "zh-TW": "路邊停車，限一小時。卸貨要快。",
+       "ar-EG": "انتظار في الشارع لمدة ساعة. فرّغ بسرعة."
+      }
+     },
+     "ask_for": "Sadie Moore",
+     "site_phone": "0131 208 6641",
+     "state": "signed-off"
+    },
+    {
+     "@label": "job:w3",
+     "code_seq": 3,
+     "code": "J-03",
+     "deal_id": {
+      "@ref": "deal:w3"
+     },
+     "site_name": "Juno Analytics",
+     "address_lines": "8 Calder Row",
+     "town": "Manchester",
+     "lat": 53.4808,
+     "lng": -2.2426,
+     "place": {
+      "placeId": 2643123
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Second floor, lift at the back. Book the lift with building management.",
+       "de-DE": "Zweiter Stock, Aufzug hinten. Aufzug über die Gebäudeverwaltung buchen.",
+       "fr-FR": "Deuxième étage, ascenseur au fond. Réserver l’ascenseur auprès de la gestion de l’immeuble.",
+       "cs-CZ": "Druhé patro, výtah vzadu. Výtah si rezervuj u správy budovy.",
+       "da-DK": "Anden sal, elevator bagerst. Book elevatoren hos bygningsadministrationen.",
+       "zh-CN": "二层，电梯在最里面。电梯要找物业预约。",
+       "zh-TW": "二樓，電梯在後面。電梯要向大樓管理處預約。",
+       "ar-EG": "الدور الثاني، والمصعد في الخلف. احجز المصعد من إدارة المبنى."
+      }
+     },
+     "ask_for": "Owen Marsh",
+     "site_phone": "0161 884 7723",
+     "state": "signed-off"
+    },
+    {
+     "@label": "job:h3",
+     "code_seq": 4,
+     "code": "J-04",
+     "deal_id": {
+      "@ref": "deal:h3"
+     },
+     "site_name": "Nordwind Logistics",
+     "address_lines": "Gate 4, Marfleet Dock Road",
+     "town": "Hull",
+     "lat": 53.7676,
+     "lng": -0.3274,
+     "place": {
+      "placeId": 2645425
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Gate 4, weighbridge first. Hard hats on from the yard in.",
+       "de-DE": "Tor 4, zuerst zur Fahrzeugwaage. Ab Hofeinfahrt Helmpflicht.",
+       "fr-FR": "Portail 4, pont-bascule d’abord. Casque obligatoire dès l’entrée de la cour.",
+       "cs-CZ": "Brána 4, nejdřív váha. Od vjezdu na dvůr přilby na hlavu.",
+       "da-DK": "Port 4, vejebro først. Hjelm på fra gårdspladsen og ind.",
+       "zh-CN": "4号门，先过地磅。从堆场进来起就要戴安全帽。",
+       "zh-TW": "4 號門，先過磅。從場區進去就要戴安全帽。",
+       "ar-EG": "البوابة 4، الميزان أولاً. الخوذات إلزامية من الساحة إلى الداخل."
+      }
+     },
+     "ask_for": "Petra Lindqvist",
+     "site_phone": "01482 55 0913",
+     "state": "signed-off"
+    },
+    {
+     "@label": "job:h2",
+     "code_seq": 5,
+     "code": "J-05",
+     "deal_id": {
+      "@ref": "deal:h2"
+     },
+     "site_name": "Fernway Clinics",
+     "address_lines": "40 Harbourside Walk",
+     "town": "Bristol",
+     "lat": 51.4545,
+     "lng": -2.5879,
+     "place": {
+      "placeId": 2654675
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Side entrance only, and not before 09:30.",
+       "de-DE": "Nur Seiteneingang, und nicht vor 09:30.",
+       "fr-FR": "Entrée latérale uniquement, et pas avant 09:30.",
+       "cs-CZ": "Pouze boční vchod a ne před 09:30.",
+       "da-DK": "Kun sideindgang, og ikke før 09:30.",
+       "zh-CN": "只能走侧门，09:30 之前不能进。",
+       "zh-TW": "只能走側門，09:30 前不能進。",
+       "ar-EG": "المدخل الجانبي فقط، وليس قبل 09:30."
+      }
+     },
+     "ask_for": "Ana Belova",
+     "site_phone": "0117 302 4418",
+     "state": "signed-off"
+    },
+    {
+     "@label": "job:h1",
+     "code_seq": 6,
+     "code": "J-06",
+     "deal_id": {
+      "@ref": "deal:h1"
+     },
+     "site_name": "Cobalt Legal",
+     "address_lines": "12 Sovereign Street",
+     "town": "Leeds",
+     "lat": 53.8008,
+     "lng": -1.5491,
+     "place": {
+      "placeId": 2644688
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Loading bay off Sovereign Street. Ask at the desk for Tomas.",
+       "de-DE": "Ladehof an der Sovereign Street. Am Empfang nach Tomas fragen.",
+       "fr-FR": "Quai de chargement côté Sovereign Street. Demander Tomas à l’accueil.",
+       "cs-CZ": "Nakládací rampa ze Sovereign Street. Na recepci se zeptej na Tomase.",
+       "da-DK": "Lasterampe fra Sovereign Street. Spørg i receptionen efter Tomas.",
+       "zh-CN": "卸货口在 Sovereign Street 一侧。到前台找 Tomas。",
+       "zh-TW": "卸貨區在 Sovereign Street 旁。到櫃檯找 Tomas。",
+       "ar-EG": "رصيف التحميل قرب Sovereign Street. اسأل عن Tomas عند مكتب الاستقبال."
+      }
+     },
+     "ask_for": "Tomas Reidy",
+     "site_phone": "0113 496 0190",
+     "state": "signed-off"
+    },
+    {
+     "@label": "job:h5",
+     "code_seq": 7,
+     "code": "J-07",
+     "deal_id": {
+      "@ref": "deal:h5"
+     },
+     "site_name": "Tandem Robotics",
+     "address_lines": "Unit 6, Fen Road Park",
+     "town": "Cambridge",
+     "lat": 52.2053,
+     "lng": 0.1218,
+     "place": {
+      "placeId": 2653941
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Sign in at reception for a visitor badge. No phones on the test floor.",
+       "de-DE": "Am Empfang anmelden und Besucherausweis holen. Keine Handys auf der Testfläche.",
+       "fr-FR": "Se présenter à l’accueil pour un badge visiteur. Pas de téléphone sur le plateau d’essai.",
+       "cs-CZ": "Na recepci se podepiš a vezmi si návštěvnickou kartu. Na zkušební hale žádné telefony.",
+       "da-DK": "Skriv dig ind i receptionen og få et gæstekort. Ingen mobiler på testgulvet.",
+       "zh-CN": "到前台登记领访客证。测试区不能带手机。",
+       "zh-TW": "到接待處登記領訪客證。測試區不能帶手機。",
+       "ar-EG": "سجّل الدخول عند الاستقبال لتحصل على بطاقة زائر. ممنوع الهواتف في منطقة الاختبار."
+      }
+     },
+     "ask_for": "Yusuf Demir",
+     "site_phone": "01223 47 1108",
+     "state": "installed"
+    },
+    {
+     "@label": "job:h4",
+     "code_seq": 8,
+     "code": "J-08",
+     "deal_id": {
+      "@ref": "deal:h4"
+     },
+     "site_name": "Veldt Studios",
+     "address_lines": "27 Kelvin Lane",
+     "town": "Glasgow",
+     "lat": 55.8642,
+     "lng": -4.2518,
+     "place": {
+      "placeId": 2648579
+     },
+     "access_note": {
+      "@t": {
+       "en-US": "Goods lift is small. Two trips for anything over 1.6m.",
+       "de-DE": "Lastenaufzug ist klein. Zwei Fahrten bei allem über 1.6m.",
+       "fr-FR": "Le monte-charge est petit. Deux voyages pour tout ce qui dépasse 1.6m.",
+       "cs-CZ": "Nákladní výtah je malý. Na cokoli přes 1.6m dvě jízdy.",
+       "da-DK": "Godselevatoren er lille. To ture til alt over 1,6 m.",
+       "zh-CN": "货梯小。超过1.6米的东西要分两趟。",
+       "zh-TW": "貨梯很小。超過 1.6m 的東西要分兩趟。",
+       "ar-EG": "مصعد البضائع صغير. رحلتان لأي شيء يزيد على 1.6 متر."
+      }
+     },
+     "ask_for": "Marta Kovac",
+     "site_phone": "0141 662 8804",
+     "state": "signed-off"
+    }
+   ]
+  },
+  {
+   "ref": "job_visits",
+   "rows": [
+    {
+     "@label": "jobvisit:J-01-install",
+     "job_id": {
+      "@ref": "job:w1"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Reception refit, fourth floor",
+       "de-DE": "Umbau Empfang, vierter Stock",
+       "fr-FR": "Réaménagement de l’accueil, quatrième étage",
+       "cs-CZ": "Přestavba recepce, čtvrté patro",
+       "da-DK": "Ombygning af reception, fjerde sal",
+       "zh-CN": "前台翻新，四层",
+       "zh-TW": "接待區翻新，四樓",
+       "ar-EG": "تجديد الاستقبال، الدور الرابع"
+      }
+     },
+     "day": {
+      "@day": -252,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 8,
+     "crew_size": 2,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-02-install",
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Archive shelving",
+       "de-DE": "Archivregale",
+       "fr-FR": "Rayonnages d’archives",
+       "cs-CZ": "Regály do archivu",
+       "da-DK": "Arkivreoler",
+       "zh-CN": "档案架",
+       "zh-TW": "檔案書架",
+       "ar-EG": "أرفف الأرشيف"
+      }
+     },
+     "day": {
+      "@day": -195,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 4,
+     "crew_size": 2,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-03-install",
+     "job_id": {
+      "@ref": "job:w3"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Meeting pods, first floor",
+       "de-DE": "Meeting-Pods, erster Stock",
+       "fr-FR": "Pods de réunion, premier étage",
+       "cs-CZ": "Meetingové boxy, první patro",
+       "da-DK": "Mødepods, første sal",
+       "zh-CN": "会议舱，一层",
+       "zh-TW": "會議艙，一樓",
+       "ar-EG": "كبائن الاجتماعات، الدور الأول"
+      }
+     },
+     "day": {
+      "@day": -139,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "hours": 8,
+     "crew_size": 3,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-04-install",
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Warehouse office desks",
+       "de-DE": "Schreibtische fürs Lagerbüro",
+       "fr-FR": "Bureaux de l’entrepôt",
+       "cs-CZ": "Stoly do skladových kanceláří",
+       "da-DK": "Skriveborde til lagerkontor",
+       "zh-CN": "仓库办公室办公桌",
+       "zh-TW": "倉庫辦公室桌子",
+       "ar-EG": "مكاتب إدارة المخزن"
+      }
+     },
+     "day": {
+      "@day": -105,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "hours": 9,
+     "crew_size": 3,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-05-install",
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Ward corridor seating",
+       "de-DE": "Sitzmöbel für den Stationsflur",
+       "fr-FR": "Sièges de couloir de service",
+       "cs-CZ": "Sezení na chodbě oddělení",
+       "da-DK": "Siddemøbler til afdelingsgang",
+       "zh-CN": "病房走廊座椅",
+       "zh-TW": "病房走廊座椅",
+       "ar-EG": "مقاعد ممر عنبر المرضى"
+      }
+     },
+     "day": {
+      "@day": -97,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 5,
+     "crew_size": 2,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-06-install",
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Legal library shelving",
+       "de-DE": "Regale für die Rechtsbibliothek",
+       "fr-FR": "Rayonnages de la bibliothèque juridique",
+       "cs-CZ": "Regály do právní knihovny",
+       "da-DK": "Reoler til juridisk bibliotek",
+       "zh-CN": "法律图书室书架",
+       "zh-TW": "法律圖書室書架",
+       "ar-EG": "أرفف المكتبة القانونية"
+      }
+     },
+     "day": {
+      "@day": -83,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "hours": 11,
+     "crew_size": 3,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-07-install",
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Test-floor workbenches",
+       "de-DE": "Werkbänke für die Testfläche",
+       "fr-FR": "Établis du plateau d’essai",
+       "cs-CZ": "Pracovní stoly na zkušební halu",
+       "da-DK": "Arbejdsborde til testgulvet",
+       "zh-CN": "测试区工作台",
+       "zh-TW": "測試區工作檯",
+       "ar-EG": "طاولات عمل قاعة الاختبار"
+      }
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 7,
+     "crew_size": 2,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-08-install",
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "kind": "install",
+     "what": {
+      "@t": {
+       "en-US": "Studio meeting tables",
+       "de-DE": "Besprechungstische fürs Studio",
+       "fr-FR": "Tables de réunion du studio",
+       "cs-CZ": "Jednací stoly do studia",
+       "da-DK": "Mødeborde til studiet",
+       "zh-CN": "工作室会议桌",
+       "zh-TW": "工作室會議桌",
+       "ar-EG": "طاولات اجتماعات الاستوديو"
+      }
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 3,
+     "crew_size": 3,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-02-dn5",
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Archive shelving: drop",
+       "de-DE": "Archivregale: Anlieferung",
+       "fr-FR": "Rayonnages d’archives : livraison",
+       "cs-CZ": "Regály do archivu: dovoz",
+       "da-DK": "Arkivreoler: levering",
+       "zh-CN": "档案架：送货",
+       "zh-TW": "檔案書架：送貨",
+       "ar-EG": "أرفف الأرشيف: توصيل"
+      }
+     },
+     "day": {
+      "@day": -20,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "crew_size": 1,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-05-dn4",
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Ward corridor seating: drop",
+       "de-DE": "Sitzmöbel Stationsflur: Anlieferung",
+       "fr-FR": "Sièges de couloir de service : livraison",
+       "cs-CZ": "Sezení na chodbu oddělení: dovoz",
+       "da-DK": "Siddemøbler til afdelingsgang: levering",
+       "zh-CN": "病房走廊座椅：送货",
+       "zh-TW": "病房走廊座椅：送貨",
+       "ar-EG": "مقاعد ممر العنبر: توصيل"
+      }
+     },
+     "day": {
+      "@day": -15,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "crew_size": 1,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:J-06-dn3",
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Legal library shelving: drop",
+       "de-DE": "Regale Rechtsbibliothek: Anlieferung",
+       "fr-FR": "Rayonnages de la bibliothèque juridique : livraison",
+       "cs-CZ": "Regály do právní knihovny: dovoz",
+       "da-DK": "Reoler til juridisk bibliotek: levering",
+       "zh-CN": "法律图书室书架：送货",
+       "zh-TW": "法律圖書室書架：送貨",
+       "ar-EG": "أرفف المكتبة القانونية: توصيل"
+      }
+     },
+     "day": {
+      "@day": -12,
+      "@week": true
+     },
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "crew_size": 1,
+     "state": "done",
+     "tick_loaded": true,
+     "tick_arrived": true,
+     "tick_done": true,
+     "tick_cleared": true
+    },
+    {
+     "@label": "jobvisit:j1",
+     "job_id": {
+      "@ref": "job:w1"
+     },
+     "kind": "return",
+     "what": {
+      "@t": {
+       "en-US": "Reception refit, fourth floor: return visit",
+       "de-DE": "Umbau Empfang, vierter Stock: erneuter Besuch",
+       "fr-FR": "Réaménagement de l’accueil, quatrième étage : second passage",
+       "cs-CZ": "Přestavba recepce, čtvrté patro: opakovaná návštěva",
+       "da-DK": "Ombygning af reception, fjerde sal: tilbagebesøg",
+       "zh-CN": "前台翻新，四层：回访",
+       "zh-TW": "接待區翻新，四樓：回訪",
+       "ar-EG": "تجديد الاستقبال، الدور الرابع: زيارة عودة"
+      }
+     },
+     "day": {
+      "@day": 7,
+      "@week": true
+     },
+     "start_time": "08:00",
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 6,
+     "crew_size": 2,
+     "state": "booked",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j2",
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Warehouse office desks and screens",
+       "de-DE": "Lagerbüro-Schreibtische und Trennwände",
+       "fr-FR": "Bureaux et écrans de l’entrepôt",
+       "cs-CZ": "Stoly a paravány do skladových kanceláří",
+       "da-DK": "Skriveborde og skærme til lagerkontor",
+       "zh-CN": "仓库办公室办公桌和屏风",
+       "zh-TW": "倉庫辦公室桌子與屏風",
+       "ar-EG": "مكاتب وفواصل إدارة المخزن"
+      }
+     },
+     "day": {
+      "@day": 8,
+      "@week": true
+     },
+     "start_time": "08:00",
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "hours": 9,
+     "crew_size": 3,
+     "state": "booked",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j3",
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Ward corridor seating, two sites",
+       "de-DE": "Sitzmöbel Stationsflur, zwei Standorte",
+       "fr-FR": "Sièges de couloir de service, deux sites",
+       "cs-CZ": "Sezení na chodbu oddělení, dvě pobočky",
+       "da-DK": "Siddemøbler til afdelingsgang, to lokationer",
+       "zh-CN": "病房走廊座椅，两个点",
+       "zh-TW": "病房走廊座椅，兩個據點",
+       "ar-EG": "مقاعد ممر العنبر، موقعان"
+      }
+     },
+     "hours": 5,
+     "crew_size": 2,
+     "state": "waiting",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j4",
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Studio meeting tables",
+       "de-DE": "Besprechungstische fürs Studio",
+       "fr-FR": "Tables de réunion du studio",
+       "cs-CZ": "Jednací stoly do studia",
+       "da-DK": "Mødeborde til studiet",
+       "zh-CN": "工作室会议桌",
+       "zh-TW": "工作室會議桌",
+       "ar-EG": "طاولات اجتماعات الاستوديو"
+      }
+     },
+     "hours": 3,
+     "crew_size": 2,
+     "state": "waiting",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j5",
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Test-floor workbenches",
+       "de-DE": "Werkbänke für die Testfläche",
+       "fr-FR": "Établis du plateau d’essai",
+       "cs-CZ": "Pracovní stoly na zkušební halu",
+       "da-DK": "Arbejdsborde til testgulvet",
+       "zh-CN": "测试区工作台",
+       "zh-TW": "測試區工作檯",
+       "ar-EG": "طاولات عمل قاعة الاختبار"
+      }
+     },
+     "hours": 7,
+     "crew_size": 3,
+     "stock_ready_on": {
+      "@day": 8,
+      "@week": true
+     },
+     "state": "waiting",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j6",
+     "job_id": {
+      "@ref": "job:w3"
+     },
+     "kind": "return",
+     "what": {
+      "@t": {
+       "en-US": "Meeting pods, first floor: return visit",
+       "de-DE": "Meeting-Pods, erster Stock: erneuter Besuch",
+       "fr-FR": "Pods de réunion, premier étage : second passage",
+       "cs-CZ": "Meetingové boxy, první patro: opakovaná návštěva",
+       "da-DK": "Mødepods, første sal: tilbagebesøg",
+       "zh-CN": "会议舱，一层：回访",
+       "zh-TW": "會議艙，一樓：回訪",
+       "ar-EG": "كبائن الاجتماعات، الدور الأول: زيارة عودة"
+      }
+     },
+     "hours": 8,
+     "crew_size": 3,
+     "stock_ready_on": {
+      "@day": 10,
+      "@week": true
+     },
+     "state": "waiting",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j7",
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "kind": "drop",
+     "what": {
+      "@t": {
+       "en-US": "Legal library shelving, top-up",
+       "de-DE": "Regale Rechtsbibliothek, Ergänzung",
+       "fr-FR": "Rayonnages de la bibliothèque juridique, complément",
+       "cs-CZ": "Regály do právní knihovny, doplnění",
+       "da-DK": "Reoler til juridisk bibliotek, supplering",
+       "zh-CN": "法律图书室书架，补货",
+       "zh-TW": "法律圖書室書架，補貨",
+       "ar-EG": "أرفف المكتبة القانونية، استكمال"
+      }
+     },
+     "day": {
+      "@day": 9,
+      "@week": true
+     },
+     "start_time": "08:00",
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "hours": 2,
+     "crew_size": 1,
+     "state": "booked",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    },
+    {
+     "@label": "jobvisit:j8",
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "kind": "return",
+     "what": {
+      "@t": {
+       "en-US": "Archive shelving: return visit",
+       "de-DE": "Archivregale: erneuter Besuch",
+       "fr-FR": "Rayonnages d’archives : second passage",
+       "cs-CZ": "Regály do archivu: opakovaná návštěva",
+       "da-DK": "Arkivreoler: tilbagebesøg",
+       "zh-CN": "档案架：回访",
+       "zh-TW": "檔案書架：回訪",
+       "ar-EG": "أرفف الأرشيف: زيارة عودة"
+      }
+     },
+     "hours": 1,
+     "crew_size": 1,
+     "state": "waiting",
+     "tick_loaded": false,
+     "tick_arrived": false,
+     "tick_done": false,
+     "tick_cleared": false
+    }
+   ]
+  },
+  {
+   "ref": "sign_offs",
+   "rows": [
+    {
+     "job_id": {
+      "@ref": "job:w1"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-01-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Tomas Reidy",
+     "signed_at": {
+      "@day": -252,
+      "@time": "16:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-02-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Sadie Moore",
+     "signed_at": {
+      "@day": -195,
+      "@time": "16:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:w3"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-03-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Owen Marsh",
+     "signed_at": {
+      "@day": -139,
+      "@time": "16:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-04-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Petra Lindqvist",
+     "signed_at": {
+      "@day": -104,
+      "@time": "16:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-05-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Ana Belova",
+     "signed_at": {
+      "@day": -97,
+      "@time": "16:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-06-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Ines Vaughan",
+     "signed_at": {
+      "@day": -83,
+      "@time": "16:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-08-install"
+     },
+     "check_1": true,
+     "check_2": true,
+     "check_3": true,
+     "check_4": true,
+     "check_5": true,
+     "signer_name": "Marta Kovac",
+     "signed_at": {
+      "@day": -3,
+      "@time": "16:00",
+      "@week": true
+     }
+    }
+   ]
+  },
+  {
+   "ref": "snags",
+   "rows": [
+    {
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-07-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Cable trays short by two metres",
+       "de-DE": "Kabelkanäle zwei Meter zu kurz",
+       "fr-FR": "Chemins de câbles trop courts de deux mètres",
+       "cs-CZ": "Kabelovým žlabům chybí dva metry",
+       "da-DK": "Kabelbakker mangler to meter",
+       "zh-CN": "线槽短了两米",
+       "zh-TW": "線槽短少兩公尺",
+       "ar-EG": "مسارات الكابلات ناقصة مترين"
+      }
+     },
+     "stops_sign_off": true,
+     "state": "open",
+     "raised_on": {
+      "@day": -7,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "f_yusuf"
+     },
+     "due_on": {
+      "@day": -1,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-07-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "One bench top scratched along the back edge",
+       "de-DE": "Eine Tischplatte an der Rückkante zerkratzt",
+       "fr-FR": "Un plateau rayé sur le chant arrière",
+       "cs-CZ": "Jedna deska lavice poškrábaná podél zadní hrany",
+       "da-DK": "En bordplade ridset langs bagkanten",
+       "zh-CN": "一张排桌桌面后沿有划痕",
+       "zh-TW": "一張排桌桌面後緣有刮傷",
+       "ar-EG": "سطح مكتب واحد به خدش على طول الحافة الخلفية"
+      }
+     },
+     "stops_sign_off": false,
+     "state": "waiting-part",
+     "raised_on": {
+      "@day": -7,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "f_yusuf"
+     },
+     "due_on": {
+      "@day": 8,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-08-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Edge trim lifting on the small table",
+       "de-DE": "Kantenleiste am kleinen Tisch löst sich",
+       "fr-FR": "Chant décollé sur la petite table",
+       "cs-CZ": "Odlepuje se hranová lišta na malém stole",
+       "da-DK": "Kantliste løfter sig på det lille bord",
+       "zh-CN": "小桌子的封边条翘起",
+       "zh-TW": "小桌的封邊條翹起",
+       "ar-EG": "شريط الحافة منفصل على الطاولة الصغيرة"
+      }
+     },
+     "stops_sign_off": false,
+     "state": "open",
+     "raised_on": {
+      "@day": -4,
+      "@week": true
+     },
+     "raised_by_contact_id": {
+      "@ref": "ct:marta"
+     },
+     "due_on": {
+      "@day": 6,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-08-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Wrong castors on two of the chairs",
+       "de-DE": "Falsche Rollen an zwei Stühlen",
+       "fr-FR": "Mauvaises roulettes sur deux des chaises",
+       "cs-CZ": "Špatná kolečka na dvou židlích",
+       "da-DK": "Forkerte hjul på to af stolene",
+       "zh-CN": "两把椅子脚轮装错了",
+       "zh-TW": "兩張椅子裝錯了腳輪",
+       "ar-EG": "عجلات خاطئة على كرسيين"
+      }
+     },
+     "stops_sign_off": false,
+     "state": "waiting-part",
+     "raised_on": {
+      "@day": -4,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "rina"
+     },
+     "due_on": {
+      "@day": 2,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-06-dn3"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Two shelf ends missing from the run",
+       "de-DE": "Zwei Regalendstücke fehlen in der Reihe",
+       "fr-FR": "Deux embouts d’étagère manquants sur la rangée",
+       "cs-CZ": "V řadě chybí dvě koncovky polic",
+       "da-DK": "To hyldeender mangler i rækken",
+       "zh-CN": "这一排缺两个货架端板",
+       "zh-TW": "整排少了兩個層板端蓋",
+       "ar-EG": "جانبان نهائيان للأرفف ناقصان من الصف"
+      }
+     },
+     "stops_sign_off": true,
+     "state": "open",
+     "raised_on": {
+      "@day": -11,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "cal"
+     },
+     "due_on": {
+      "@day": -4,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-04-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Two screens marked in transit",
+       "de-DE": "Zwei Trennwände auf dem Transport beschädigt",
+       "fr-FR": "Deux écrans marqués pendant le transport",
+       "cs-CZ": "Dva paravány poškozené při přepravě",
+       "da-DK": "To skærme med mærker fra transporten",
+       "zh-CN": "两块屏风运输中受损",
+       "zh-TW": "兩片屏風運送途中有痕",
+       "ar-EG": "فاصلان بهما علامات من النقل"
+      }
+     },
+     "stops_sign_off": false,
+     "state": "put-right",
+     "raised_on": {
+      "@day": -105,
+      "@week": true
+     },
+     "raised_by_contact_id": {
+      "@ref": "ct:petra"
+     },
+     "due_on": {
+      "@day": -99,
+      "@week": true
+     },
+     "put_right_on": {
+      "@day": -99,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-05-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "One frame out of square",
+       "de-DE": "Ein Gestell nicht winklig",
+       "fr-FR": "Un cadre pas d’équerre",
+       "cs-CZ": "Jeden rám není v pravém úhlu",
+       "da-DK": "Ét stel er skævt",
+       "zh-CN": "一个框架不方正",
+       "zh-TW": "一個桌架歪斜",
+       "ar-EG": "هيكل واحد غير متعامد"
+      }
+     },
+     "stops_sign_off": true,
+     "state": "put-right",
+     "raised_on": {
+      "@day": -97,
+      "@week": true
+     },
+     "raised_by_contact_id": {
+      "@ref": "ct:ana"
+     },
+     "due_on": {
+      "@day": -92,
+      "@week": true
+     },
+     "put_right_on": {
+      "@day": -97,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-06-install"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Paint scuffed by the lift door",
+       "de-DE": "Lack an der Aufzugstür abgeschrammt",
+       "fr-FR": "Peinture éraflée près de la porte de l’ascenseur",
+       "cs-CZ": "Barva odřená u dveří výtahu",
+       "da-DK": "Maling slidt ved elevatordøren",
+       "zh-CN": "电梯门旁的漆面被蹭花",
+       "zh-TW": "電梯門邊的漆面被刮花",
+       "ar-EG": "الدهان مخدوش عند باب المصعد"
+      }
+     },
+     "stops_sign_off": false,
+     "state": "put-right",
+     "raised_on": {
+      "@day": -83,
+      "@week": true
+     },
+     "raised_by_contact_id": {
+      "@ref": "ct:ines"
+     },
+     "due_on": {
+      "@day": -76,
+      "@week": true
+     },
+     "put_right_on": {
+      "@day": -76,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-02-dn5"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Fixings missing for the top rail",
+       "de-DE": "Befestigungsmaterial für die obere Schiene fehlt",
+       "fr-FR": "Fixations manquantes pour la lisse haute",
+       "cs-CZ": "Chybí kování k horní liště",
+       "da-DK": "Beslag mangler til topskinnen",
+       "zh-CN": "上横梁的紧固件缺失",
+       "zh-TW": "上方橫桿的固定件缺少",
+       "ar-EG": "مثبتات القضيب العلوي ناقصة"
+      }
+     },
+     "stops_sign_off": false,
+     "state": "put-right",
+     "raised_on": {
+      "@day": -15,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "mo"
+     },
+     "due_on": {
+      "@day": -12,
+      "@week": true
+     },
+     "put_right_on": {
+      "@day": -12,
+      "@week": true
+     }
+    }
+   ]
+  },
+  {
+   "ref": "delivery_notes",
+   "rows": [
+    {
+     "@label": "note:dn1",
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-07-install"
+     },
+     "taken_by_id": {
+      "@person": "f_yusuf"
+     },
+     "signed_by_contact_id": {
+      "@ref": "ct:yusuf"
+     },
+     "signed_name": "Yusuf Demir",
+     "damage": false
+    },
+    {
+     "@label": "note:dn2",
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-08-install"
+     },
+     "taken_by_id": {
+      "@person": "cal"
+     },
+     "signed_by_contact_id": {
+      "@ref": "ct:marta"
+     },
+     "signed_name": "Marta Kovac",
+     "damage": true
+    },
+    {
+     "@label": "note:dn3",
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-06-dn3"
+     },
+     "taken_by_id": {
+      "@person": "cal"
+     },
+     "signed_by_contact_id": {
+      "@ref": "ct:tomas"
+     },
+     "signed_name": "Tomas Reidy",
+     "damage": false
+    },
+    {
+     "@label": "note:dn4",
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-05-dn4"
+     },
+     "taken_by_id": {
+      "@person": "rina"
+     },
+     "damage": false
+    },
+    {
+     "@label": "note:dn5",
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:J-02-dn5"
+     },
+     "taken_by_id": {
+      "@person": "cal"
+     },
+     "signed_by_contact_id": {
+      "@ref": "ct:sadie"
+     },
+     "signed_name": "Sadie Moore",
+     "damage": false
+    }
+   ]
+  },
+  {
+   "ref": "delivery_note_lines",
+   "rows": [
+    {
+     "note_id": {
+      "@ref": "note:dn1"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Workbench, 1800mm",
+       "de-DE": "Werkbank, 1800mm",
+       "fr-FR": "Établi, 1800mm",
+       "cs-CZ": "Pracovní stůl, 1800mm",
+       "da-DK": "Arbejdsbord, 1800mm",
+       "zh-CN": "工作台，1800mm",
+       "zh-TW": "工作檯，1800mm",
+       "ar-EG": "طاولة عمل 1800 مم"
+      }
+     },
+     "ordered": 12,
+     "delivered": 12
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn1"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Bench top, laminate",
+       "de-DE": "Tischplatte, Laminat",
+       "fr-FR": "Plateau de bench, stratifié",
+       "cs-CZ": "Deska lavice, laminát",
+       "da-DK": "Bordplade, laminat",
+       "zh-CN": "台面，防火板",
+       "zh-TW": "檯面，美耐板",
+       "ar-EG": "سطح مكتب، لامينيت"
+      }
+     },
+     "ordered": 12,
+     "delivered": 12
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn1"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Cable tray, 2m",
+       "de-DE": "Kabelkanal, 2m",
+       "fr-FR": "Chemin de câbles, 2m",
+       "cs-CZ": "Kabelový žlab, 2m",
+       "da-DK": "Kabelbakke, 2m",
+       "zh-CN": "线槽，2m",
+       "zh-TW": "線槽，2m",
+       "ar-EG": "مسار كابلات 2 متر"
+      }
+     },
+     "ordered": 8,
+     "delivered": 6
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn1"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Under-bench drawer",
+       "de-DE": "Unterbauschublade",
+       "fr-FR": "Tiroir sous plan",
+       "cs-CZ": "Zásuvka pod lavici",
+       "da-DK": "Skuffe under bordet",
+       "zh-CN": "台下抽屉",
+       "zh-TW": "檯下抽屜",
+       "ar-EG": "درج أسفل الطاولة"
+      }
+     },
+     "ordered": 12,
+     "delivered": 12
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn2"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Meeting table, welded frame",
+       "de-DE": "Besprechungstisch, Schweißgestell",
+       "fr-FR": "Table de réunion, piétement soudé",
+       "cs-CZ": "Jednací stůl, svařovaný rám",
+       "da-DK": "Mødebord, svejset stel",
+       "zh-CN": "会议桌，焊接框架",
+       "zh-TW": "會議桌，焊接桌架",
+       "ar-EG": "طاولة اجتماعات بهيكل ملحوم"
+      }
+     },
+     "ordered": 3,
+     "delivered": 3
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn2"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Table top, ash",
+       "de-DE": "Tischplatte, Esche",
+       "fr-FR": "Plateau de table, frêne",
+       "cs-CZ": "Deska stolu, jasan",
+       "da-DK": "Bordplade, ask",
+       "zh-CN": "桌面，白蜡木",
+       "zh-TW": "桌面，白蠟木",
+       "ar-EG": "سطح طاولة، أش"
+      }
+     },
+     "ordered": 3,
+     "delivered": 3
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn2"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Floor power module",
+       "de-DE": "Bodenstrommodul",
+       "fr-FR": "Module d’alimentation de sol",
+       "cs-CZ": "Podlahový napájecí modul",
+       "da-DK": "Gulvstrømmodul",
+       "zh-CN": "地面电源模块",
+       "zh-TW": "地面電源模組",
+       "ar-EG": "وحدة كهرباء أرضية"
+      }
+     },
+     "ordered": 2,
+     "delivered": 2
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn3"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Shelving bay, 900mm",
+       "de-DE": "Regalfeld, 900mm",
+       "fr-FR": "Travée de rayonnage, 900mm",
+       "cs-CZ": "Regálové pole, 900mm",
+       "da-DK": "Reolfag, 900mm",
+       "zh-CN": "货架单元，900mm",
+       "zh-TW": "書架單元，900mm",
+       "ar-EG": "وحدة أرفف 900 مم"
+      }
+     },
+     "ordered": 6,
+     "delivered": 6
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn3"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Heavy bracket pair",
+       "de-DE": "Schwerlastkonsolen, Paar",
+       "fr-FR": "Paire de consoles renforcées",
+       "cs-CZ": "Pár těžkých konzol",
+       "da-DK": "Kraftigt konsolpar",
+       "zh-CN": "重型支架一对",
+       "zh-TW": "重型托架一組",
+       "ar-EG": "زوج حوامل ثقيلة"
+      }
+     },
+     "ordered": 24,
+     "delivered": 24
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn3"
+     },
+     "what": {
+      "@t": {
+       "en-US": "End panel",
+       "de-DE": "Abschlussplatte",
+       "fr-FR": "Joue d’extrémité",
+       "cs-CZ": "Boční panel",
+       "da-DK": "Endeplade",
+       "zh-CN": "端板",
+       "zh-TW": "側板",
+       "ar-EG": "لوح جانبي"
+      }
+     },
+     "ordered": 2,
+     "delivered": 2
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn4"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Three-seat frame",
+       "de-DE": "Dreisitzer-Gestell",
+       "fr-FR": "Structure trois places",
+       "cs-CZ": "Třímístný rám",
+       "da-DK": "Stel til tre pladser",
+       "zh-CN": "三人位框架",
+       "zh-TW": "三人座框架",
+       "ar-EG": "هيكل ثلاثة مقاعد"
+      }
+     },
+     "ordered": 9,
+     "delivered": 9
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn4"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Seat pad, wipe-clean",
+       "de-DE": "Sitzpolster, abwischbar",
+       "fr-FR": "Assise lessivable",
+       "cs-CZ": "Sedák, omyvatelný",
+       "da-DK": "Sædepude, aftørbar",
+       "zh-CN": "坐垫，可擦洗",
+       "zh-TW": "座墊，易擦拭款",
+       "ar-EG": "وسادة مقعد قابلة للمسح"
+      }
+     },
+     "ordered": 27,
+     "delivered": 27
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn4"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Wall rail",
+       "de-DE": "Wandschiene",
+       "fr-FR": "Rail mural",
+       "cs-CZ": "Nástěnná lišta",
+       "da-DK": "Vægskinne",
+       "zh-CN": "墙面导轨",
+       "zh-TW": "牆面橫軌",
+       "ar-EG": "قضيب حائط"
+      }
+     },
+     "ordered": 9,
+     "delivered": 9
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn5"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Shelving bay, 900mm",
+       "de-DE": "Regalfeld, 900mm",
+       "fr-FR": "Travée de rayonnage, 900mm",
+       "cs-CZ": "Regálové pole, 900mm",
+       "da-DK": "Reolfag, 900mm",
+       "zh-CN": "货架单元，900mm",
+       "zh-TW": "書架單元，900mm",
+       "ar-EG": "وحدة أرفف 900 مم"
+      }
+     },
+     "ordered": 10,
+     "delivered": 10
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn5"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Standard bracket pair",
+       "de-DE": "Standardkonsolen, Paar",
+       "fr-FR": "Paire de consoles standard",
+       "cs-CZ": "Pár standardních konzol",
+       "da-DK": "Standard konsolpar",
+       "zh-CN": "标准支架一对",
+       "zh-TW": "標準托架一組",
+       "ar-EG": "زوج حوامل عادية"
+      }
+     },
+     "ordered": 40,
+     "delivered": 40
+    }
+   ]
+  },
+  {
+   "ref": "waste_removals",
+   "rows": [
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "day": {
+      "@day": -89,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Forty-two old shelving bays",
+       "de-DE": "Zweiundvierzig alte Regalfelder",
+       "fr-FR": "Quarante-deux anciennes travées de rayonnage",
+       "cs-CZ": "Čtyřicet dva starých regálových polí",
+       "da-DK": "Toogfyrre gamle reolfag",
+       "zh-CN": "四十二组旧货架",
+       "zh-TW": "四十二個舊書架單元",
+       "ar-EG": "اثنتان وأربعون وحدة أرفف قديمة"
+      }
+     },
+     "tonnes": 1.9,
+     "route": "recycled",
+     "cost": 0,
+     "income": 180,
+     "has_transfer_note": true
+    },
+    {
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "day": {
+      "@day": -123,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Sixty desks and screens",
+       "de-DE": "Sechzig Schreibtische und Trennwände",
+       "fr-FR": "Soixante bureaux et écrans",
+       "cs-CZ": "Šedesát stolů a paravánů",
+       "da-DK": "Tres borde og skærme",
+       "zh-CN": "六十张桌子和屏风",
+       "zh-TW": "六十張桌子與屏風",
+       "ar-EG": "ستون مكتبًا وفاصلًا"
+      }
+     },
+     "tonnes": 3.4,
+     "route": "reused",
+     "cost": 0,
+     "income": 0,
+     "has_transfer_note": true
+    },
+    {
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "day": {
+      "@day": -108,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Ninety chairs, foam and fabric",
+       "de-DE": "Neunzig Stühle, Schaumstoff und Stoff",
+       "fr-FR": "Quatre-vingt-dix chaises, mousse et tissu",
+       "cs-CZ": "Devadesát židlí, pěna a látka",
+       "da-DK": "Halvfems stole, skum og stof",
+       "zh-CN": "九十把椅子，海绵填充，布面",
+       "zh-TW": "九十張椅子，泡棉加布面",
+       "ar-EG": "تسعون كرسيًا، إسفنج وقماش"
+      }
+     },
+     "tonnes": 1.1,
+     "route": "landfill",
+     "cost": 310,
+     "income": 0,
+     "has_transfer_note": true
+    },
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "day": {
+      "@day": -43,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Eight tables",
+       "de-DE": "Acht Tische",
+       "fr-FR": "Huit tables",
+       "cs-CZ": "Osm stolů",
+       "da-DK": "Otte borde",
+       "zh-CN": "八张桌子",
+       "zh-TW": "八張桌子",
+       "ar-EG": "ثماني طاولات"
+      }
+     },
+     "tonnes": 0.4,
+     "route": "reused",
+     "cost": 0,
+     "income": 0,
+     "has_transfer_note": false
+    },
+    {
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "day": {
+      "@day": -53,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Twelve benches",
+       "de-DE": "Zwölf Bänke",
+       "fr-FR": "Douze bancs",
+       "cs-CZ": "Dvanáct lavic",
+       "da-DK": "Tolv bænke",
+       "zh-CN": "十二条长凳",
+       "zh-TW": "十二張長椅",
+       "ar-EG": "اثنا عشر مقعدًا طويلًا"
+      }
+     },
+     "tonnes": 0.9,
+     "route": "recycled",
+     "cost": 0,
+     "income": 40,
+     "has_transfer_note": true
+    }
+   ]
+  },
+  {
+   "ref": "feedback",
+   "rows": [
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "score": 5,
+     "text": {
+      "@t": {
+       "en-US": "In and out in a morning. The drawings matched the room exactly, which almost never happens.",
+       "de-DE": "In einem Vormittag rein und raus. Die Zeichnungen passten exakt zum Raum, was fast nie vorkommt.",
+       "fr-FR": "Posé en une matinée. Les plans correspondaient exactement à la pièce, ce qui n’arrive presque jamais.",
+       "cs-CZ": "Za jedno dopoledne hotovo. Výkresy sedly na místnost přesně, což se téměř nestává.",
+       "da-DK": "Ind og ud på en formiddag. Tegningerne passede præcis til rummet, hvilket næsten aldrig sker.",
+       "zh-CN": "一个上午就进出完了。图纸和房间完全吻合，这种事几乎没有过。",
+       "zh-TW": "一個早上就進出完成。圖面和房間完全吻合，這種事幾乎沒有過。",
+       "ar-EG": "دخلوا وخرجوا في صباح واحد. الرسومات طابقت الغرفة تمامًا، وهذا نادرًا ما يحدث."
+      }
+     },
+     "theme": {
+      "@t": {
+       "en-US": "Drawings matched the room",
+       "de-DE": "Zeichnungen passten zum Raum",
+       "fr-FR": "Plans conformes à la pièce",
+       "cs-CZ": "Výkresy sedly na místnost",
+       "da-DK": "Tegningerne passede til rummet",
+       "zh-CN": "图纸与现场吻合",
+       "zh-TW": "圖面與房間吻合",
+       "ar-EG": "الرسومات طابقت الغرفة"
+      }
+     },
+     "answered_on": {
+      "@day": -1,
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "score": 5,
+     "text": {
+      "@t": {
+       "en-US": "Two floors, no fuss. I have already put you in front of another firm.",
+       "de-DE": "Zwei Etagen, ohne Theater. Ich habe Sie schon an eine andere Firma weiterempfohlen.",
+       "fr-FR": "Deux étages, sans histoires. Je vous ai déjà recommandés à une autre entreprise.",
+       "cs-CZ": "Dvě patra, bez problémů. Už jsem vás doporučil další firmě.",
+       "da-DK": "To etager, ingen ballade. Jeg har allerede præsenteret jer for et andet firma.",
+       "zh-CN": "两层楼，毫不费事。我已经把你们推荐给另一家公司了。",
+       "zh-TW": "兩層樓，毫不費事。我已經把你們介紹給另一家公司了。",
+       "ar-EG": "دوران بلا متاعب. وقد رشّحتكم بالفعل لشركة أخرى."
+      }
+     },
+     "answered_on": {
+      "@day": -80,
+      "@week": true
+     },
+     "replied_at": {
+      "@day": -79,
+      "@time": "09:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "score": 3,
+     "text": {
+      "@t": {
+       "en-US": "The desks are good. The delivery date moved twice and I had to tell the floor twice.",
+       "de-DE": "Die Tische sind gut. Der Liefertermin hat sich zweimal verschoben, und ich musste es der Etage zweimal sagen.",
+       "fr-FR": "Les bureaux sont bien. La date de livraison a bougé deux fois et j’ai dû prévenir l’étage deux fois.",
+       "cs-CZ": "Stoly jsou dobré. Termín dodání se dvakrát posunul a musel jsem to dvakrát hlásit na patře.",
+       "da-DK": "Bordene er gode. Leveringsdatoen blev rykket to gange, og jeg skulle sige det til gulvet to gange.",
+       "zh-CN": "桌子不错。送货日期改了两次，我得跟楼层的人说了两遍。",
+       "zh-TW": "桌子很好。交貨日期改了兩次，我得向樓層同仁說了兩次。",
+       "ar-EG": "المكاتب جيدة. موعد التوصيل تغير مرتين واضطررت لإبلاغ الموظفين مرتين."
+      }
+     },
+     "theme": {
+      "@t": {
+       "en-US": "A date moved",
+       "de-DE": "Ein Termin verschoben",
+       "fr-FR": "Une date a bougé",
+       "cs-CZ": "Posunutý termín",
+       "da-DK": "En dato blev rykket",
+       "zh-CN": "日期改了",
+       "zh-TW": "日期變動",
+       "ar-EG": "تغيّر موعد"
+      }
+     },
+     "answered_on": {
+      "@day": -99,
+      "@week": true
+     },
+     "replied_at": {
+      "@day": -98,
+      "@time": "09:00",
+      "@week": true
+     },
+     "fix_written": {
+      "@t": {
+       "en-US": "We now confirm the week in writing before the order goes in.",
+       "de-DE": "Wir bestätigen jetzt die Woche schriftlich, bevor die Bestellung rausgeht.",
+       "fr-FR": "Nous confirmons désormais la semaine par écrit avant de passer la commande.",
+       "cs-CZ": "Týden dodání teď potvrzujeme písemně, než jde objednávka do výroby.",
+       "da-DK": "Vi bekræfter nu ugen skriftligt, før ordren lægges ind.",
+       "zh-CN": "现在下单前，我们都会书面确认周次。",
+       "zh-TW": "現在訂單送出前，我們會先以書面確認交貨週。",
+       "ar-EG": "نؤكد الآن الأسبوع كتابةً قبل إدخال الطلب."
+      }
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "score": 5,
+     "text": {
+      "@t": {
+       "en-US": "The wipe-clean fabric was the right call. The wards have been hard on it and it still looks new.",
+       "de-DE": "Der abwischbare Stoff war die richtige Entscheidung. Die Stationen haben ihn stark beansprucht, und er sieht immer noch aus wie neu.",
+       "fr-FR": "Le tissu lessivable était le bon choix. Les services l’ont malmené et il a toujours l’air neuf.",
+       "cs-CZ": "Omyvatelná látka byla správná volba. Oddělení ji dost zkouší a pořád vypadá jako nová.",
+       "da-DK": "Det aftørbare stof var det rigtige valg. Afdelingerne har været hårde ved det, og det ser stadig nyt ud.",
+       "zh-CN": "选可擦洗面料是对的。病房里用得很狠，还跟新的一样。",
+       "zh-TW": "易擦拭的布料選對了。病房用得很兇，看起來還是跟新的一樣。",
+       "ar-EG": "القماش القابل للمسح كان اختيارًا صائبًا. العنابر قاسية عليه ومع ذلك ما زال يبدو جديدًا."
+      }
+     },
+     "answered_on": {
+      "@day": -94,
+      "@week": true
+     },
+     "replied_at": {
+      "@day": -93,
+      "@time": "09:00",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:w1"
+     },
+     "score": 4,
+     "text": {
+      "@t": {
+       "en-US": "Good work. We wanted more warning that the desk was made to order.",
+       "de-DE": "Gute Arbeit. Wir hätten uns mehr Vorwarnung gewünscht, dass der Tisch auf Bestellung gefertigt wird.",
+       "fr-FR": "Bon travail. Nous aurions voulu être prévenus plus tôt que le bureau était fait sur commande.",
+       "cs-CZ": "Dobrá práce. Chtěli jsme být dřív upozorněni, že se stůl vyrábí na zakázku.",
+       "da-DK": "Godt arbejde. Vi ville gerne have haft mere varsel om, at bordet var en bestillingsvare.",
+       "zh-CN": "活干得好。只是希望早点告诉我们这张桌子是定制的。",
+       "zh-TW": "做得好。我們希望能更早知道那張桌子是訂製的。",
+       "ar-EG": "عمل جيد. كنا نريد إنذارًا أبكر بأن المكتب يُصنع حسب الطلب."
+      }
+     },
+     "theme": {
+      "@t": {
+       "en-US": "Wanted earlier warning on stock",
+       "de-DE": "Frühere Warnung beim Lagerbestand gewünscht",
+       "fr-FR": "Souhaitait être prévenu plus tôt sur le stock",
+       "cs-CZ": "Dřívější upozornění na sklad",
+       "da-DK": "Ville have tidligere besked om lager",
+       "zh-CN": "希望库存情况早点告知",
+       "zh-TW": "希望更早通知庫存狀況",
+       "ar-EG": "تنبيه أبكر بشأن المخزون مطلوب"
+      }
+     },
+     "answered_on": {
+      "@day": -250,
+      "@week": true
+     },
+     "replied_at": {
+      "@day": -249,
+      "@time": "09:00",
+      "@week": true
+     }
+    }
+   ]
+  },
+  {
+   "ref": "complaints",
+   "rows": [
+    {
+     "company_id": {
+      "@ref": "co:nordwind"
+     },
+     "contact_id": {
+      "@ref": "ct:petra"
+     },
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "owner_id": {
+      "@person": "sam"
+     },
+     "text": {
+      "@t": {
+       "en-US": "We cleared the floor on a Monday and sat looking at it for a fortnight. One phone call would have saved us the trouble.",
+       "de-DE": "Wir haben montags die Fläche geräumt und dann vierzehn Tage davor gesessen. Ein Anruf hätte uns den Ärger erspart.",
+       "fr-FR": "Nous avons vidé l’étage un lundi et l’avons regardé pendant quinze jours. Un coup de téléphone nous aurait évité ça.",
+       "cs-CZ": "V pondělí jsme vyklidili patro a čtrnáct dní se na něj dívali. Jeden telefonát by nám ušetřil starosti.",
+       "da-DK": "Vi ryddede gulvet en mandag og sad og kiggede på det i fjorten dage. Ét telefonopkald ville have sparet os for besværet.",
+       "zh-CN": "我们周一把场地清空了，然后对着空场地干等了两周。打个电话就省事了。",
+       "zh-TW": "我們週一把樓層清空，然後對著空地坐了兩個星期。一通電話就能省掉這些麻煩。",
+       "ar-EG": "أخلينا الدور يوم الاثنين وظللنا ننظر إليه أسبوعين. مكالمة واحدة كانت ستوفر علينا العناء."
+      }
+     },
+     "cause": "late",
+     "fairness": "serious",
+     "raised_on": {
+      "@day": -12,
+      "@week": true
+     },
+     "state": "open"
+    },
+    {
+     "company_id": {
+      "@ref": "co:tandem"
+     },
+     "contact_id": {
+      "@ref": "ct:yusuf"
+     },
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "owner_id": {
+      "@person": "leo"
+     },
+     "text": {
+      "@t": {
+       "en-US": "It is not the end of the world, but it is the first thing you see when you walk in.",
+       "de-DE": "Es ist nicht das Ende der Welt, aber es ist das Erste, was man beim Hereinkommen sieht.",
+       "fr-FR": "Ce n’est pas la fin du monde, mais c’est la première chose qu’on voit en entrant.",
+       "cs-CZ": "Není to konec světa, ale je to první, co člověk uvidí, když vejde dovnitř.",
+       "da-DK": "Det er ikke verdens undergang, men det er det første, man ser, når man træder ind.",
+       "zh-CN": "不是什么大事，但一进门第一眼就看到。",
+       "zh-TW": "不算天大的事，但這是一走進來第一眼就看到的東西。",
+       "ar-EG": "ليست نهاية العالم، لكنها أول ما تراه عند الدخول."
+      }
+     },
+     "cause": "damaged",
+     "fairness": "fair",
+     "raised_on": {
+      "@day": -7,
+      "@week": true
+     },
+     "state": "answered",
+     "answered_at": {
+      "@day": -6,
+      "@time": "12:00",
+      "@week": true
+     }
+    },
+    {
+     "company_id": {
+      "@ref": "co:fernway"
+     },
+     "contact_id": {
+      "@ref": "ct:ana"
+     },
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "owner_id": {
+      "@person": "dana"
+     },
+     "text": {
+      "@t": {
+       "en-US": "The ward is grey. These are teal. Somebody typed the wrong code.",
+       "de-DE": "Die Station ist grau. Diese hier sind petrol. Jemand hat den falschen Code eingegeben.",
+       "fr-FR": "Le service est gris. Ceux-là sont bleu canard. Quelqu’un a saisi le mauvais code.",
+       "cs-CZ": "Oddělení je šedé. Tyhle jsou tyrkysové. Někdo zadal špatný kód.",
+       "da-DK": "Afdelingen er grå. Disse er turkis. Nogen har tastet forkert kode.",
+       "zh-CN": "病房是灰色的。这些是青绿色的。有人把色号输错了。",
+       "zh-TW": "病房是灰色的。這些是藍綠色。有人打錯色號了。",
+       "ar-EG": "العنبر رمادي. وهذه بلون أخضر مزرق. شخص ما كتب كودًا خاطئًا."
+      }
+     },
+     "cause": "wrong",
+     "fairness": "serious",
+     "raised_on": {
+      "@day": -19,
+      "@week": true
+     },
+     "state": "settled",
+     "answered_at": {
+      "@day": -18,
+      "@time": "12:00",
+      "@week": true
+     },
+     "settled_at": {
+      "@day": -16,
+      "@time": "12:00",
+      "@week": true
+     }
+    },
+    {
+     "company_id": {
+      "@ref": "co:veldt"
+     },
+     "contact_id": {
+      "@ref": "ct:marta"
+     },
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "owner_id": {
+      "@person": "dana"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Good job on the tables. Cardboard everywhere at five o’clock though.",
+       "de-DE": "Gute Arbeit bei den Tischen. Um fünf Uhr lag aber überall Pappe herum.",
+       "fr-FR": "Bon travail sur les tables. Mais du carton partout à cinq heures.",
+       "cs-CZ": "Se stoly dobrá práce. V pět hodin ale všude samý karton.",
+       "da-DK": "Godt job med bordene. Men pap overalt klokken fem.",
+       "zh-CN": "桌子装得不错。可五点钟的时候纸板到处都是。",
+       "zh-TW": "桌子做得很好。不過下午五點到處都是紙箱。",
+       "ar-EG": "عمل جيد في الطاولات. لكن الكرتون كان في كل مكان عند الخامسة."
+      }
+     },
+     "cause": "crew",
+     "fairness": "fair",
+     "raised_on": {
+      "@day": -4,
+      "@week": true
+     },
+     "state": "answered",
+     "answered_at": {
+      "@day": -3,
+      "@time": "12:00",
+      "@week": true
+     }
+    },
+    {
+     "company_id": {
+      "@ref": "co:juno"
+     },
+     "contact_id": {
+      "@ref": "ct:owen"
+     },
+     "owner_id": {
+      "@person": "priya"
+     },
+     "text": {
+      "@t": {
+       "en-US": "I have asked twice about the pod layout. I would rather be told no than told nothing.",
+       "de-DE": "Ich habe zweimal nach dem Pod-Layout gefragt. Mir ist ein Nein lieber als gar keine Antwort.",
+       "fr-FR": "J’ai demandé deux fois pour l’agencement des pods. Je préfère qu’on me dise non plutôt qu’on ne me dise rien.",
+       "cs-CZ": "Na rozmístění boxů se ptám už podruhé. Radši uslyším ne než nic.",
+       "da-DK": "Jeg har spurgt to gange om pod-layoutet. Jeg vil hellere have et nej end ingenting.",
+       "zh-CN": "舱的布局我问了两次。宁可被告知不行，也不要没人理。",
+       "zh-TW": "我問過兩次艙位配置了。與其沒人理我，我寧可聽到說不行。",
+       "ar-EG": "سألت مرتين عن مخطط الكبائن. أفضّل أن يقال لي لا على ألا يقال لي شيء."
+      }
+     },
+     "cause": "silence",
+     "fairness": "serious",
+     "raised_on": {
+      "@day": -5,
+      "@week": true
+     },
+     "state": "open"
+    },
+    {
+     "company_id": {
+      "@ref": "co:brightloom"
+     },
+     "contact_id": {
+      "@ref": "ct:ruth"
+     },
+     "owner_id": {
+      "@person": "priya"
+     },
+     "text": {
+      "@t": {
+       "en-US": "The drawing shows tops. The order does not. One of us has read it wrong.",
+       "de-DE": "Die Zeichnung zeigt Tischplatten. Die Bestellung nicht. Einer von uns hat es falsch gelesen.",
+       "fr-FR": "Le plan montre des plateaux. La commande non. L’un de nous a mal lu.",
+       "cs-CZ": "Výkres ukazuje desky. Objednávka ne. Jeden z nás to čte špatně.",
+       "da-DK": "Tegningen viser plader. Ordren gør ikke. En af os har læst det forkert.",
+       "zh-CN": "图纸上有桌面，订单上没有。我们当中有一方看错了。",
+       "zh-TW": "圖面上有桌面，訂單上沒有。我們其中一方看錯了。",
+       "ar-EG": "الرسم يُظهر الأسطح، لكن الطلب لا يتضمنها. أحدنا قرأه خطأً."
+      }
+     },
+     "cause": "wrong",
+     "fairness": "misunderstanding",
+     "raised_on": {
+      "@day": -1,
+      "@week": true
+     },
+     "state": "open"
+    },
+    {
+     "company_id": {
+      "@ref": "co:harbor"
+     },
+     "contact_id": {
+      "@ref": "ct:sadie"
+     },
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "owner_id": {
+      "@person": "dana"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Twice is a pattern. I had someone waiting both mornings.",
+       "de-DE": "Zweimal ist ein Muster. An beiden Morgen hat jemand auf mich gewartet.",
+       "fr-FR": "Deux fois, c’est une habitude. J’avais quelqu’un qui attendait les deux matins.",
+       "cs-CZ": "Dvakrát už je vzorec. Oba rána tam na vás čekal můj člověk.",
+       "da-DK": "To gange er et mønster. Jeg havde nogen, der ventede begge morgener.",
+       "zh-CN": "两次就成规律了。两个早上我都有人在等。",
+       "zh-TW": "兩次就是慣例了。兩個早上我都有人在等。",
+       "ar-EG": "مرتان تعنيان نمطًا متكررًا. كان عندي شخص ينتظر في الصباحين."
+      }
+     },
+     "cause": "late",
+     "fairness": "fair",
+     "raised_on": {
+      "@day": -28,
+      "@week": true
+     },
+     "state": "settled",
+     "answered_at": {
+      "@day": -27,
+      "@time": "12:00",
+      "@week": true
+     },
+     "settled_at": {
+      "@day": -25,
+      "@time": "12:00",
+      "@week": true
+     }
+    }
+   ]
+  },
+  {
+   "ref": "warranty_claims",
+   "rows": [
+    {
+     "job_id": {
+      "@ref": "job:w1"
+     },
+     "contact_id": {
+      "@ref": "ct:tomas"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Chair gas lift sank on eight of forty",
+       "de-DE": "Gasfeder bei acht von vierzig Stühlen abgesackt",
+       "fr-FR": "Vérin à gaz affaissé sur huit chaises sur quarante",
+       "cs-CZ": "U osmi ze čtyřiceti klesl plynový píst",
+       "da-DK": "Gasfjederen sank på otte af fyrre stole",
+       "zh-CN": "四十把椅子里有八把气压棒下沉",
+       "zh-TW": "四十張椅子有八張氣壓棒下沉",
+       "ar-EG": "هبط ذراع الغاز في ثمانية من أربعين كرسيًا"
+      }
+     },
+     "part": {
+      "@t": {
+       "en-US": "Task chair, gas lift",
+       "de-DE": "Arbeitsstuhl, Gasfeder",
+       "fr-FR": "Siège de travail, vérin à gaz",
+       "cs-CZ": "Pracovní židle, plynový píst",
+       "da-DK": "Kontorstol, gasfjeder",
+       "zh-CN": "办公椅，气压棒",
+       "zh-TW": "辦公椅，氣壓棒",
+       "ar-EG": "كرسي عمل بذراع غاز"
+      }
+     },
+     "cover": "mechanism",
+     "cover_years": 2,
+     "raised_on": {
+      "@day": -15,
+      "@week": true
+     },
+     "supplier_name": "Ostrom Seating",
+     "paid_by": "supplier",
+     "state": "with-supplier"
+    },
+    {
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "contact_id": {
+      "@ref": "ct:ana"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Ward seating fabric pilling",
+       "de-DE": "Stoff der Stationssitze bildet Knötchen",
+       "fr-FR": "Boulochage du tissu des sièges de service",
+       "cs-CZ": "Žmolkování potahu sezení na oddělení",
+       "da-DK": "Stoffet på afdelingens siddemøbler fnuller",
+       "zh-CN": "病房座椅面料起球",
+       "zh-TW": "病房座椅布面起毛球",
+       "ar-EG": "تكتّل وبر قماش مقاعد العنبر"
+      }
+     },
+     "part": {
+      "@t": {
+       "en-US": "Corridor seating, wool blend",
+       "de-DE": "Flursitzmöbel, Wollmischung",
+       "fr-FR": "Sièges de couloir, mélange laine",
+       "cs-CZ": "Sezení na chodbu, vlněná směs",
+       "da-DK": "Gangbænk, uldblanding",
+       "zh-CN": "走廊座椅，羊毛混纺",
+       "zh-TW": "走廊座椅，羊毛混紡",
+       "ar-EG": "مقاعد ممر، خلطة صوف"
+      }
+     },
+     "cover": "fabric",
+     "cover_years": 1,
+     "raised_on": {
+      "@day": -22,
+      "@week": true
+     },
+     "supplier_name": "Trellis Textiles",
+     "paid_by": "supplier",
+     "state": "parts-coming"
+    },
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "contact_id": {
+      "@ref": "ct:marta"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Table leg weld cracked",
+       "de-DE": "Schweißnaht am Tischbein gerissen",
+       "fr-FR": "Soudure de pied de table fissurée",
+       "cs-CZ": "Prasklý svar nohy stolu",
+       "da-DK": "Svejsning i bordben revnet",
+       "zh-CN": "桌腿焊缝开裂",
+       "zh-TW": "桌腳焊接處裂開",
+       "ar-EG": "تشقق لحام رجل الطاولة"
+      }
+     },
+     "part": {
+      "@t": {
+       "en-US": "Meeting table, welded frame",
+       "de-DE": "Besprechungstisch, Schweißgestell",
+       "fr-FR": "Table de réunion, piétement soudé",
+       "cs-CZ": "Jednací stůl, svařovaný rám",
+       "da-DK": "Mødebord, svejset stel",
+       "zh-CN": "会议桌，焊接框架",
+       "zh-TW": "會議桌，焊接桌架",
+       "ar-EG": "طاولة اجتماعات بهيكل ملحوم"
+      }
+     },
+     "cover": "frame",
+     "cover_years": 5,
+     "raised_on": {
+      "@day": -1,
+      "@week": true
+     },
+     "supplier_name": "Ostrom Seating",
+     "state": "with-supplier"
+    },
+    {
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "contact_id": {
+      "@ref": "ct:sadie"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Shelf brackets bending under archive boxes",
+       "de-DE": "Regalkonsolen biegen sich unter Archivkartons",
+       "fr-FR": "Consoles d’étagère qui plient sous les cartons d’archives",
+       "cs-CZ": "Konzole polic se ohýbají pod archivními krabicemi",
+       "da-DK": "Hyldekonsoller bøjer under arkivkasser",
+       "zh-CN": "货架支架被档案盒压弯",
+       "zh-TW": "層板托架被檔案箱壓彎",
+       "ar-EG": "حوامل الأرفف تنحني تحت صناديق الأرشيف"
+      }
+     },
+     "part": {
+      "@t": {
+       "en-US": "Archive shelving, standard bracket",
+       "de-DE": "Archivregale, Standardkonsole",
+       "fr-FR": "Rayonnages d’archives, console standard",
+       "cs-CZ": "Regály do archivu, standardní konzola",
+       "da-DK": "Arkivreoler, standardkonsol",
+       "zh-CN": "档案架，标准支架",
+       "zh-TW": "檔案書架，標準托架",
+       "ar-EG": "أرفف الأرشيف، حامل عادي"
+      }
+     },
+     "cover": "frame",
+     "cover_years": 5,
+     "raised_on": {
+      "@day": -34,
+      "@week": true
+     },
+     "supplier_name": "Kirkwall Steel",
+     "paid_by": "us",
+     "state": "sorted"
+    },
+    {
+     "job_id": {
+      "@ref": "job:w3"
+     },
+     "contact_id": {
+      "@ref": "ct:owen"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Two pod doors out of true",
+       "de-DE": "Zwei Pod-Türen verzogen",
+       "fr-FR": "Deux portes de pod gauchies",
+       "cs-CZ": "Dvoje dveře boxu nesedí",
+       "da-DK": "To poddøre er skæve",
+       "zh-CN": "两个舱的门装歪了",
+       "zh-TW": "兩扇艙門變形",
+       "ar-EG": "بابان في الكبائن غير مضبوطين"
+      }
+     },
+     "part": {
+      "@t": {
+       "en-US": "Acoustic pod, door",
+       "de-DE": "Akustik-Pod, Tür",
+       "fr-FR": "Pod acoustique, porte",
+       "cs-CZ": "Akustický box, dveře",
+       "da-DK": "Akustikpod, dør",
+       "zh-CN": "隔音舱，门",
+       "zh-TW": "靜音艙，艙門",
+       "ar-EG": "كابينة عزل صوتي، الباب"
+      }
+     },
+     "cover": "mechanism",
+     "cover_years": 2,
+     "raised_on": {
+      "@day": -3,
+      "@week": true
+     },
+     "supplier_name": "Fenlow Acoustics",
+     "state": "to-raise"
+    }
+   ]
+  },
+  {
    "ref": "follow_ups",
    "rows": [
     {
@@ -11252,6 +15126,1931 @@
      },
      "kind": "step",
      "done": false
+    },
+    {
+     "job_id": {
+      "@ref": "job:w1"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": -224,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "outcome": "none",
+     "done": true,
+     "done_by_id": {
+      "@person": "hugo"
+     },
+     "done_at": {
+      "@day": -224,
+      "@time": "10:30",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:w2"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": -167,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "outcome": "none",
+     "done": true,
+     "done_by_id": {
+      "@person": "hugo"
+     },
+     "done_at": {
+      "@day": -167,
+      "@time": "10:30",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:w3"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": -111,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "outcome": "none",
+     "done": true,
+     "done_by_id": {
+      "@person": "hugo"
+     },
+     "done_at": {
+      "@day": -111,
+      "@time": "10:30",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h3"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": -76,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "outcome": "complaint",
+     "done": true,
+     "done_by_id": {
+      "@person": "hugo"
+     },
+     "done_at": {
+      "@day": -76,
+      "@time": "10:30",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h2"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": -69,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "outcome": "fault",
+     "done": true,
+     "done_by_id": {
+      "@person": "hugo"
+     },
+     "done_at": {
+      "@day": -69,
+      "@time": "10:30",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": -55,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "outcome": "more-work",
+     "done": true,
+     "done_by_id": {
+      "@person": "hugo"
+     },
+     "done_at": {
+      "@day": -55,
+      "@time": "10:30",
+      "@week": true
+     }
+    },
+    {
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": 21,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "done": false
+    },
+    {
+     "job_id": {
+      "@ref": "job:h4"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": 25,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 1,
+     "done": false
+    },
+    {
+     "job_id": {
+      "@ref": "job:h1"
+     },
+     "owner_id": {
+      "@person": "hugo"
+     },
+     "due_at": {
+      "@day": 9,
+      "@time": "10:00",
+      "@week": true
+     },
+     "text": {
+      "@t": {
+       "en-US": "Aftercare call",
+       "de-DE": "Nachbetreuungsanruf",
+       "fr-FR": "Appel après-vente",
+       "cs-CZ": "Poprodejní hovor",
+       "da-DK": "Opkald efter levering",
+       "zh-CN": "售后回访电话",
+       "zh-TW": "售後關懷電話",
+       "ar-EG": "مكالمة ما بعد البيع"
+      }
+     },
+     "kind": "aftercare",
+     "call_no": 2,
+     "done": false
+    }
+   ]
+  },
+  {
+   "ref": "vehicle_checks",
+   "rows": [
+    {
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "day": {
+      "@day": -1,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "f_yusuf"
+     },
+     "tyres": true,
+     "fluids": true,
+     "lights": true,
+     "straps": true,
+     "tail_lift": true
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "day": {
+      "@day": -1,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "rina"
+     },
+     "tyres": true,
+     "fluids": true,
+     "lights": false,
+     "straps": true,
+     "tail_lift": true
+    }
+   ]
+  },
+  {
+   "ref": "vehicle_faults",
+   "rows": [
+    {
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Nearside sliding door catches. Rina forces it.",
+       "de-DE": "Schiebetür auf der Beifahrerseite hakt. Rina muss nachhelfen.",
+       "fr-FR": "Porte coulissante côté passager qui accroche. Rina la force.",
+       "cs-CZ": "Levé posuvné dveře zadrhávají. Rina je musí zavírat silou.",
+       "da-DK": "Skydedør i passagersiden hænger. Rina må tvinge den.",
+       "zh-CN": "副驾侧推拉门会卡。Rina硬推才行。",
+       "zh-TW": "路邊側滑門會卡住。Rina 得用力才關得上。",
+       "ar-EG": "الباب المنزلق الأيسر يعلق. تفتحه Rina بالقوة."
+      }
+     },
+     "raised_on": {
+      "@day": -8,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "rina"
+     }
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Reversing camera goes blank in the wet.",
+       "de-DE": "Rückfahrkamera fällt bei Nässe aus.",
+       "fr-FR": "La caméra de recul devient noire sous la pluie.",
+       "cs-CZ": "Couvací kamera za mokra zčerná.",
+       "da-DK": "Bakkameraet går sort i vådt vejr.",
+       "zh-CN": "倒车影像下雨天会黑屏。",
+       "zh-TW": "倒車影像下雨天會黑屏。",
+       "ar-EG": "كاميرا الرجوع للخلف تنطفئ في المطر."
+      }
+     },
+     "raised_on": {
+      "@day": -1,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "mo"
+     }
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:hire"
+     },
+     "text": {
+      "@t": {
+       "en-US": "Tail lift is slower than ours. Allow ten minutes.",
+       "de-DE": "Hebebühne ist langsamer als unsere. Zehn Minuten einplanen.",
+       "fr-FR": "Le hayon élévateur est plus lent que les nôtres. Compter dix minutes.",
+       "cs-CZ": "Zadní hydraulické čelo je pomalejší než naše. Počítej s deseti minutami.",
+       "da-DK": "Lift bagpå er langsommere end vores. Regn med ti minutter.",
+       "zh-CN": "尾板升降比我们的慢。留出十分钟。",
+       "zh-TW": "尾門升降機比我們的慢。要多留十分鐘。",
+       "ar-EG": "الرافعة الخلفية أبطأ من رافعتنا. احسب عشر دقائق."
+      }
+     },
+     "raised_on": {
+      "@day": -1,
+      "@week": true
+     },
+     "raised_by_id": {
+      "@person": "sean"
+     }
+    }
+   ]
+  },
+  {
+   "ref": "fuel_fills",
+   "rows": [
+    {
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "day": {
+      "@day": -19,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "f_yusuf"
+     },
+     "litres": 36.2,
+     "cost": 52.85,
+     "odometer": 117940,
+     "prev_odometer": 117690
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "day": {
+      "@day": -12,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "cal"
+     },
+     "litres": 35.4,
+     "cost": 51.68,
+     "odometer": 118190,
+     "prev_odometer": 117940
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:blue"
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "f_yusuf"
+     },
+     "litres": 33.1,
+     "cost": 48.33,
+     "odometer": 118420,
+     "prev_odometer": 118190
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "day": {
+      "@day": -15,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "rina"
+     },
+     "litres": 41.5,
+     "cost": 60.59,
+     "odometer": 96300,
+     "prev_odometer": 96080
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "mo"
+     },
+     "litres": 40.2,
+     "cost": 58.69,
+     "odometer": 96520,
+     "prev_odometer": 96300
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:red"
+     },
+     "day": {
+      "@day": -1,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "rina"
+     },
+     "litres": 48.9,
+     "cost": 71.39,
+     "odometer": 96780,
+     "prev_odometer": 96520
+    },
+    {
+     "vehicle_id": {
+      "@ref": "van:hire"
+     },
+     "day": {
+      "@day": -1,
+      "@week": true
+     },
+     "by_id": {
+      "@person": "sean"
+     },
+     "litres": 44,
+     "cost": 64.24,
+     "odometer": 8310
+    }
+   ]
+  },
+  {
+   "ref": "time_sheets",
+   "rows": [
+    {
+     "@label": "sheet:f_yusuf",
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "week_of": {
+      "@day": -8,
+      "@week": true
+     },
+     "state": "sent"
+    },
+    {
+     "@label": "sheet:cal",
+     "user_id": {
+      "@person": "cal"
+     },
+     "week_of": {
+      "@day": -8,
+      "@week": true
+     },
+     "state": "sent"
+    },
+    {
+     "@label": "sheet:rina",
+     "user_id": {
+      "@person": "rina"
+     },
+     "week_of": {
+      "@day": -8,
+      "@week": true
+     },
+     "state": "sent"
+    },
+    {
+     "@label": "sheet:mo",
+     "user_id": {
+      "@person": "mo"
+     },
+     "week_of": {
+      "@day": -8,
+      "@week": true
+     },
+     "state": "sent"
+    },
+    {
+     "@label": "sheet:sean",
+     "user_id": {
+      "@person": "sean"
+     },
+     "week_of": {
+      "@day": -8,
+      "@week": true
+     },
+     "state": "sent"
+    }
+   ]
+  },
+  {
+   "ref": "time_sheet_lines",
+   "rows": [
+    {
+     "sheet_id": {
+      "@ref": "sheet:f_yusuf"
+     },
+     "day": {
+      "@day": -8,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Cambridge, workbench prep",
+       "de-DE": "Cambridge, Werkbänke vorbereiten",
+       "fr-FR": "Cambridge, préparation des établis",
+       "cs-CZ": "Cambridge, příprava pracovních stolů",
+       "da-DK": "Cambridge, forberedelse af arbejdsborde",
+       "zh-CN": "剑桥，工作台备料",
+       "zh-TW": "劍橋，工作檯備料",
+       "ar-EG": "كامبريدج، تجهيز طاولات العمل"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 1.5
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:f_yusuf"
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Tandem Robotics install",
+       "de-DE": "Montage Tandem Robotics",
+       "fr-FR": "Pose Tandem Robotics",
+       "cs-CZ": "Montáž Tandem Robotics",
+       "da-DK": "Montering hos Tandem Robotics",
+       "zh-CN": "Tandem Robotics安装",
+       "zh-TW": "Tandem Robotics 安裝",
+       "ar-EG": "تركيب Tandem Robotics"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 3,
+     "job_id": {
+      "@ref": "job:h5"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:f_yusuf"
+     },
+     "day": {
+      "@day": -6,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, rebuild a bench top",
+       "de-DE": "Depot, Tischplatte neu aufbauen",
+       "fr-FR": "Dépôt, refaire un plateau de bench",
+       "cs-CZ": "Depo, oprava desky lavice",
+       "da-DK": "Depot, genopbyg en bordplade",
+       "zh-CN": "仓库，重做一个台面",
+       "zh-TW": "倉儲點，重做一個檯面",
+       "ar-EG": "المستودع، إعادة تصنيع سطح طاولة"
+      }
+     },
+     "hours": 6,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:f_yusuf"
+     },
+     "day": {
+      "@day": -5,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Leeds, showroom set-up",
+       "de-DE": "Leeds, Showroom aufbauen",
+       "fr-FR": "Leeds, montage du showroom",
+       "cs-CZ": "Leeds, zřízení showroomu",
+       "da-DK": "Leeds, opsætning af showroom",
+       "zh-CN": "利兹，展厅布置",
+       "zh-TW": "里茲，展示間布置",
+       "ar-EG": "ليدز، تجهيز المعرض"
+      }
+     },
+     "hours": 5,
+     "travel_hours": 0.5
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:f_yusuf"
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Veldt Studios install",
+       "de-DE": "Montage Veldt Studios",
+       "fr-FR": "Pose Veldt Studios",
+       "cs-CZ": "Montáž Veldt Studios",
+       "da-DK": "Montering hos Veldt Studios",
+       "zh-CN": "Veldt Studios安装",
+       "zh-TW": "Veldt Studios 安裝",
+       "ar-EG": "تركيب Veldt Studios"
+      }
+     },
+     "hours": 3,
+     "travel_hours": 2,
+     "job_id": {
+      "@ref": "job:h4"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:cal"
+     },
+     "day": {
+      "@day": -8,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Cambridge, workbench prep",
+       "de-DE": "Cambridge, Werkbänke vorbereiten",
+       "fr-FR": "Cambridge, préparation des établis",
+       "cs-CZ": "Cambridge, příprava pracovních stolů",
+       "da-DK": "Cambridge, forberedelse af arbejdsborde",
+       "zh-CN": "剑桥，工作台备料",
+       "zh-TW": "劍橋，工作檯備料",
+       "ar-EG": "كامبريدج، تجهيز طاولات العمل"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 1.5
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:cal"
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Tandem Robotics install",
+       "de-DE": "Montage Tandem Robotics",
+       "fr-FR": "Pose Tandem Robotics",
+       "cs-CZ": "Montáž Tandem Robotics",
+       "da-DK": "Montering hos Tandem Robotics",
+       "zh-CN": "Tandem Robotics安装",
+       "zh-TW": "Tandem Robotics 安裝",
+       "ar-EG": "تركيب Tandem Robotics"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 3,
+     "job_id": {
+      "@ref": "job:h5"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:cal"
+     },
+     "day": {
+      "@day": -6,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, stock check",
+       "de-DE": "Depot, Bestandsprüfung",
+       "fr-FR": "Dépôt, inventaire du stock",
+       "cs-CZ": "Depo, inventura",
+       "da-DK": "Depot, lageroptælling",
+       "zh-CN": "仓库，盘点库存",
+       "zh-TW": "倉儲點，盤點庫存",
+       "ar-EG": "المستودع، جرد المخزون"
+      }
+     },
+     "hours": 5,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:cal"
+     },
+     "day": {
+      "@day": -5,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Cobalt Legal, shelf ends",
+       "de-DE": "Cobalt Legal, Regalendstücke",
+       "fr-FR": "Cobalt Legal, embouts d’étagère",
+       "cs-CZ": "Cobalt Legal, koncovky polic",
+       "da-DK": "Cobalt Legal, hyldeender",
+       "zh-CN": "Cobalt Legal，货架端板",
+       "zh-TW": "Cobalt Legal，層板端蓋",
+       "ar-EG": "Cobalt Legal، جوانب الأرفف"
+      }
+     },
+     "hours": 4,
+     "travel_hours": 1,
+     "job_id": {
+      "@ref": "job:h1"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:cal"
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Veldt Studios install",
+       "de-DE": "Montage Veldt Studios",
+       "fr-FR": "Pose Veldt Studios",
+       "cs-CZ": "Montáž Veldt Studios",
+       "da-DK": "Montering hos Veldt Studios",
+       "zh-CN": "Veldt Studios安装",
+       "zh-TW": "Veldt Studios 安裝",
+       "ar-EG": "تركيب Veldt Studios"
+      }
+     },
+     "hours": 3,
+     "travel_hours": 2,
+     "job_id": {
+      "@ref": "job:h4"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:rina"
+     },
+     "day": {
+      "@day": -8,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, van service",
+       "de-DE": "Depot, Fahrzeugservice",
+       "fr-FR": "Dépôt, entretien de la camionnette",
+       "cs-CZ": "Depo, servis dodávky",
+       "da-DK": "Depot, service på varevogn",
+       "zh-CN": "仓库，货车保养",
+       "zh-TW": "倉儲點，廂型車保養",
+       "ar-EG": "المستودع، صيانة الفان"
+      }
+     },
+     "hours": 4,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:rina"
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Fernway Clinics, seat swap",
+       "de-DE": "Fernway Clinics, Sitzaustausch",
+       "fr-FR": "Fernway Clinics, remplacement de sièges",
+       "cs-CZ": "Fernway Clinics, výměna sedáků",
+       "da-DK": "Fernway Clinics, udskiftning af sæder",
+       "zh-CN": "Fernway Clinics，更换座椅",
+       "zh-TW": "Fernway Clinics，更換座椅",
+       "ar-EG": "Fernway Clinics، استبدال المقاعد"
+      }
+     },
+     "hours": 6,
+     "travel_hours": 2.5,
+     "job_id": {
+      "@ref": "job:h2"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:rina"
+     },
+     "day": {
+      "@day": -6,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Harbor & Finch, shelving top-up",
+       "de-DE": "Harbor & Finch, Regalergänzung",
+       "fr-FR": "Harbor & Finch, complément de rayonnages",
+       "cs-CZ": "Harbor & Finch, doplnění regálů",
+       "da-DK": "Harbor & Finch, supplering af reoler",
+       "zh-CN": "Harbor & Finch，货架补货",
+       "zh-TW": "Harbor & Finch，書架補貨",
+       "ar-EG": "Harbor & Finch، استكمال الأرفف"
+      }
+     },
+     "hours": 5,
+     "travel_hours": 3,
+     "job_id": {
+      "@ref": "job:w2"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:rina"
+     },
+     "day": {
+      "@day": -5,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, panel build",
+       "de-DE": "Depot, Paneelbau",
+       "fr-FR": "Dépôt, montage de panneaux",
+       "cs-CZ": "Depo, výroba panelů",
+       "da-DK": "Depot, panelbygning",
+       "zh-CN": "仓库，面板组装",
+       "zh-TW": "倉儲點，板材組裝",
+       "ar-EG": "المستودع، تصنيع الألواح"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:rina"
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Veldt Studios install",
+       "de-DE": "Montage Veldt Studios",
+       "fr-FR": "Pose Veldt Studios",
+       "cs-CZ": "Montáž Veldt Studios",
+       "da-DK": "Montering hos Veldt Studios",
+       "zh-CN": "Veldt Studios安装",
+       "zh-TW": "Veldt Studios 安裝",
+       "ar-EG": "تركيب Veldt Studios"
+      }
+     },
+     "hours": 3,
+     "travel_hours": 2,
+     "job_id": {
+      "@ref": "job:h4"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:mo"
+     },
+     "day": {
+      "@day": -8,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, van service",
+       "de-DE": "Depot, Fahrzeugservice",
+       "fr-FR": "Dépôt, entretien de la camionnette",
+       "cs-CZ": "Depo, servis dodávky",
+       "da-DK": "Depot, service på varevogn",
+       "zh-CN": "仓库，货车保养",
+       "zh-TW": "倉儲點，廂型車保養",
+       "ar-EG": "المستودع، صيانة الفان"
+      }
+     },
+     "hours": 4,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:mo"
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Fernway Clinics, seat swap",
+       "de-DE": "Fernway Clinics, Sitzaustausch",
+       "fr-FR": "Fernway Clinics, remplacement de sièges",
+       "cs-CZ": "Fernway Clinics, výměna sedáků",
+       "da-DK": "Fernway Clinics, udskiftning af sæder",
+       "zh-CN": "Fernway Clinics，更换座椅",
+       "zh-TW": "Fernway Clinics，更換座椅",
+       "ar-EG": "Fernway Clinics، استبدال المقاعد"
+      }
+     },
+     "hours": 6,
+     "travel_hours": 2.5,
+     "job_id": {
+      "@ref": "job:h2"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:mo"
+     },
+     "day": {
+      "@day": -6,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Harbor & Finch, shelving top-up",
+       "de-DE": "Harbor & Finch, Regalergänzung",
+       "fr-FR": "Harbor & Finch, complément de rayonnages",
+       "cs-CZ": "Harbor & Finch, doplnění regálů",
+       "da-DK": "Harbor & Finch, supplering af reoler",
+       "zh-CN": "Harbor & Finch，货架补货",
+       "zh-TW": "Harbor & Finch，書架補貨",
+       "ar-EG": "Harbor & Finch، استكمال الأرفف"
+      }
+     },
+     "hours": 5,
+     "travel_hours": 3,
+     "job_id": {
+      "@ref": "job:w2"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:mo"
+     },
+     "day": {
+      "@day": -5,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, panel build",
+       "de-DE": "Depot, Paneelbau",
+       "fr-FR": "Dépôt, montage de panneaux",
+       "cs-CZ": "Depo, výroba panelů",
+       "da-DK": "Depot, panelbygning",
+       "zh-CN": "仓库，面板组装",
+       "zh-TW": "倉儲點，板材組裝",
+       "ar-EG": "المستودع، تصنيع الألواح"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:mo"
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Off, booked",
+       "de-DE": "Frei, gebucht",
+       "fr-FR": "Congé posé",
+       "cs-CZ": "Volno, naplánováno",
+       "da-DK": "Fri, booket",
+       "zh-CN": "休假，已批",
+       "zh-TW": "休假，已排",
+       "ar-EG": "إجازة، محجوزة"
+      }
+     },
+     "hours": 0,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:sean"
+     },
+     "day": {
+      "@day": -8,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, van service",
+       "de-DE": "Depot, Fahrzeugservice",
+       "fr-FR": "Dépôt, entretien de la camionnette",
+       "cs-CZ": "Depo, servis dodávky",
+       "da-DK": "Depot, service på varevogn",
+       "zh-CN": "仓库，货车保养",
+       "zh-TW": "倉儲點，廂型車保養",
+       "ar-EG": "المستودع، صيانة الفان"
+      }
+     },
+     "hours": 4,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:sean"
+     },
+     "day": {
+      "@day": -7,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Off, unwell",
+       "de-DE": "Frei, krank",
+       "fr-FR": "Absent, malade",
+       "cs-CZ": "Volno, nemoc",
+       "da-DK": "Fri, syg",
+       "zh-CN": "病假",
+       "zh-TW": "請病假",
+       "ar-EG": "إجازة مرضية"
+      }
+     },
+     "hours": 0,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:sean"
+     },
+     "day": {
+      "@day": -6,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Harbor & Finch, shelving top-up",
+       "de-DE": "Harbor & Finch, Regalergänzung",
+       "fr-FR": "Harbor & Finch, complément de rayonnages",
+       "cs-CZ": "Harbor & Finch, doplnění regálů",
+       "da-DK": "Harbor & Finch, supplering af reoler",
+       "zh-CN": "Harbor & Finch，货架补货",
+       "zh-TW": "Harbor & Finch，書架補貨",
+       "ar-EG": "Harbor & Finch، استكمال الأرفف"
+      }
+     },
+     "hours": 5,
+     "travel_hours": 3,
+     "job_id": {
+      "@ref": "job:w2"
+     }
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:sean"
+     },
+     "day": {
+      "@day": -5,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Depot, panel build",
+       "de-DE": "Depot, Paneelbau",
+       "fr-FR": "Dépôt, montage de panneaux",
+       "cs-CZ": "Depo, výroba panelů",
+       "da-DK": "Depot, panelbygning",
+       "zh-CN": "仓库，面板组装",
+       "zh-TW": "倉儲點，板材組裝",
+       "ar-EG": "المستودع، تصنيع الألواح"
+      }
+     },
+     "hours": 7,
+     "travel_hours": 0
+    },
+    {
+     "sheet_id": {
+      "@ref": "sheet:sean"
+     },
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Leeds, showroom set-up",
+       "de-DE": "Leeds, Showroom aufbauen",
+       "fr-FR": "Leeds, montage du showroom",
+       "cs-CZ": "Leeds, zřízení showroomu",
+       "da-DK": "Leeds, opsætning af showroom",
+       "zh-CN": "利兹，展厅布置",
+       "zh-TW": "里茲，展示間布置",
+       "ar-EG": "ليدز، تجهيز المعرض"
+      }
+     },
+     "hours": 6,
+     "travel_hours": 0.5
+    }
+   ]
+  },
+  {
+   "ref": "certificates",
+   "rows": [
+    {
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Manual handling",
+       "de-DE": "Heben und Tragen",
+       "fr-FR": "Manutention manuelle",
+       "cs-CZ": "Manipulace s břemeny",
+       "da-DK": "Manuel håndtering",
+       "zh-CN": "人工搬运",
+       "zh-TW": "人工搬運",
+       "ar-EG": "المناولة اليدوية"
+      }
+     },
+     "valid_until": {
+      "@day": 229,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Working at height",
+       "de-DE": "Arbeiten in der Höhe",
+       "fr-FR": "Travail en hauteur",
+       "cs-CZ": "Práce ve výškách",
+       "da-DK": "Arbejde i højden",
+       "zh-CN": "高处作业",
+       "zh-TW": "高處作業",
+       "ar-EG": "العمل على الارتفاعات"
+      }
+     },
+     "valid_until": {
+      "@day": 178,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Asbestos awareness",
+       "de-DE": "Asbest-Unterweisung",
+       "fr-FR": "Sensibilisation à l’amiante",
+       "cs-CZ": "Seznámení s azbestem",
+       "da-DK": "Asbestinstruktion",
+       "zh-CN": "石棉防护意识",
+       "zh-TW": "石綿認知",
+       "ar-EG": "التوعية بالأسبستوس"
+      }
+     },
+     "valid_until": {
+      "@day": 125,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "name": {
+      "@t": {
+       "en-US": "First aid at work",
+       "de-DE": "Ersthelfer",
+       "fr-FR": "Secourisme au travail",
+       "cs-CZ": "První pomoc v práci",
+       "da-DK": "Førstehjælp på arbejdspladsen",
+       "zh-CN": "工作场所急救",
+       "zh-TW": "職場急救",
+       "ar-EG": "الإسعافات الأولية في العمل"
+      }
+     },
+     "valid_until": "2028-04-18"
+    },
+    {
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "name": {
+      "@t": {
+       "en-US": "PASMA tower",
+       "de-DE": "PASMA tower",
+       "fr-FR": "PASMA tower",
+       "cs-CZ": "PASMA tower",
+       "da-DK": "PASMA tower",
+       "zh-CN": "PASMA tower",
+       "zh-TW": "PASMA tower",
+       "ar-EG": "PASMA tower"
+      }
+     },
+     "valid_until": {
+      "@day": 130,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "f_yusuf"
+     },
+     "name": {
+      "@t": {
+       "en-US": "CSCS card",
+       "de-DE": "CSCS card",
+       "fr-FR": "CSCS card",
+       "cs-CZ": "CSCS card",
+       "da-DK": "CSCS card",
+       "zh-CN": "CSCS card",
+       "zh-TW": "CSCS card",
+       "ar-EG": "CSCS card"
+      }
+     },
+     "valid_until": "2029-06-01"
+    },
+    {
+     "user_id": {
+      "@person": "cal"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Manual handling",
+       "de-DE": "Heben und Tragen",
+       "fr-FR": "Manutention manuelle",
+       "cs-CZ": "Manipulace s břemeny",
+       "da-DK": "Manuel håndtering",
+       "zh-CN": "人工搬运",
+       "zh-TW": "人工搬運",
+       "ar-EG": "المناولة اليدوية"
+      }
+     },
+     "valid_until": {
+      "@day": 316,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "cal"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Working at height",
+       "de-DE": "Arbeiten in der Höhe",
+       "fr-FR": "Travail en hauteur",
+       "cs-CZ": "Práce ve výškách",
+       "da-DK": "Arbejde i højden",
+       "zh-CN": "高处作业",
+       "zh-TW": "高處作業",
+       "ar-EG": "العمل على الارتفاعات"
+      }
+     },
+     "valid_until": {
+      "@day": 46,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "cal"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Asbestos awareness",
+       "de-DE": "Asbest-Unterweisung",
+       "fr-FR": "Sensibilisation à l’amiante",
+       "cs-CZ": "Seznámení s azbestem",
+       "da-DK": "Asbestinstruktion",
+       "zh-CN": "石棉防护意识",
+       "zh-TW": "石綿認知",
+       "ar-EG": "التوعية بالأسبستوس"
+      }
+     },
+     "valid_until": {
+      "@day": 201,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "cal"
+     },
+     "name": {
+      "@t": {
+       "en-US": "CSCS card",
+       "de-DE": "CSCS card",
+       "fr-FR": "CSCS card",
+       "cs-CZ": "CSCS card",
+       "da-DK": "CSCS card",
+       "zh-CN": "CSCS card",
+       "zh-TW": "CSCS card",
+       "ar-EG": "CSCS card"
+      }
+     },
+     "valid_until": "2028-03-20"
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Manual handling",
+       "de-DE": "Heben und Tragen",
+       "fr-FR": "Manutention manuelle",
+       "cs-CZ": "Manipulace s břemeny",
+       "da-DK": "Manuel håndtering",
+       "zh-CN": "人工搬运",
+       "zh-TW": "人工搬運",
+       "ar-EG": "المناولة اليدوية"
+      }
+     },
+     "valid_until": {
+      "@day": 164,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Working at height",
+       "de-DE": "Arbeiten in der Höhe",
+       "fr-FR": "Travail en hauteur",
+       "cs-CZ": "Práce ve výškách",
+       "da-DK": "Arbejde i højden",
+       "zh-CN": "高处作业",
+       "zh-TW": "高處作業",
+       "ar-EG": "العمل على الارتفاعات"
+      }
+     },
+     "valid_until": {
+      "@day": 306,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Asbestos awareness",
+       "de-DE": "Asbest-Unterweisung",
+       "fr-FR": "Sensibilisation à l’amiante",
+       "cs-CZ": "Seznámení s azbestem",
+       "da-DK": "Asbestinstruktion",
+       "zh-CN": "石棉防护意识",
+       "zh-TW": "石綿認知",
+       "ar-EG": "التوعية بالأسبستوس"
+      }
+     },
+     "valid_until": {
+      "@day": 80,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "First aid at work",
+       "de-DE": "Ersthelfer",
+       "fr-FR": "Secourisme au travail",
+       "cs-CZ": "První pomoc v práci",
+       "da-DK": "Førstehjælp på arbejdspladsen",
+       "zh-CN": "工作场所急救",
+       "zh-TW": "職場急救",
+       "ar-EG": "الإسعافات الأولية في العمل"
+      }
+     },
+     "valid_until": {
+      "@day": 24,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "PASMA tower",
+       "de-DE": "PASMA tower",
+       "fr-FR": "PASMA tower",
+       "cs-CZ": "PASMA tower",
+       "da-DK": "PASMA tower",
+       "zh-CN": "PASMA tower",
+       "zh-TW": "PASMA tower",
+       "ar-EG": "PASMA tower"
+      }
+     },
+     "valid_until": {
+      "@day": 341,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "CSCS card",
+       "de-DE": "CSCS card",
+       "fr-FR": "CSCS card",
+       "cs-CZ": "CSCS card",
+       "da-DK": "CSCS card",
+       "zh-CN": "CSCS card",
+       "zh-TW": "CSCS card",
+       "ar-EG": "CSCS card"
+      }
+     },
+     "valid_until": "2029-02-11"
+    },
+    {
+     "user_id": {
+      "@person": "rina"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Forklift, counterbalance",
+       "de-DE": "Gabelstapler, Gegengewicht",
+       "fr-FR": "Chariot élévateur, à contrepoids",
+       "cs-CZ": "Vysokozdvižný vozík, protizávažný",
+       "da-DK": "Gaffeltruck, kontravægt",
+       "zh-CN": "叉车，平衡重式",
+       "zh-TW": "堆高機，平衡重式",
+       "ar-EG": "رافعة شوكية، موازنة"
+      }
+     },
+     "valid_until": "2028-01-19"
+    },
+    {
+     "user_id": {
+      "@person": "mo"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Manual handling",
+       "de-DE": "Heben und Tragen",
+       "fr-FR": "Manutention manuelle",
+       "cs-CZ": "Manipulace s břemeny",
+       "da-DK": "Manuel håndtering",
+       "zh-CN": "人工搬运",
+       "zh-TW": "人工搬運",
+       "ar-EG": "المناولة اليدوية"
+      }
+     },
+     "valid_until": {
+      "@day": 248,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "mo"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Working at height",
+       "de-DE": "Arbeiten in der Höhe",
+       "fr-FR": "Travail en hauteur",
+       "cs-CZ": "Práce ve výškách",
+       "da-DK": "Arbejde i højden",
+       "zh-CN": "高处作业",
+       "zh-TW": "高處作業",
+       "ar-EG": "العمل على الارتفاعات"
+      }
+     },
+     "valid_until": {
+      "@day": 18,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "mo"
+     },
+     "name": {
+      "@t": {
+       "en-US": "CSCS card",
+       "de-DE": "CSCS card",
+       "fr-FR": "CSCS card",
+       "cs-CZ": "CSCS card",
+       "da-DK": "CSCS card",
+       "zh-CN": "CSCS card",
+       "zh-TW": "CSCS card",
+       "ar-EG": "CSCS card"
+      }
+     },
+     "valid_until": "2028-09-27"
+    },
+    {
+     "user_id": {
+      "@person": "sean"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Manual handling",
+       "de-DE": "Heben und Tragen",
+       "fr-FR": "Manutention manuelle",
+       "cs-CZ": "Manipulace s břemeny",
+       "da-DK": "Manuel håndtering",
+       "zh-CN": "人工搬运",
+       "zh-TW": "人工搬運",
+       "ar-EG": "المناولة اليدوية"
+      }
+     },
+     "valid_until": {
+      "@day": 106,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "sean"
+     },
+     "name": {
+      "@t": {
+       "en-US": "Working at height",
+       "de-DE": "Arbeiten in der Höhe",
+       "fr-FR": "Travail en hauteur",
+       "cs-CZ": "Práce ve výškách",
+       "da-DK": "Arbejde i højden",
+       "zh-CN": "高处作业",
+       "zh-TW": "高處作業",
+       "ar-EG": "العمل على الارتفاعات"
+      }
+     },
+     "valid_until": {
+      "@day": -16,
+      "@week": true
+     }
+    },
+    {
+     "user_id": {
+      "@person": "sean"
+     },
+     "name": {
+      "@t": {
+       "en-US": "CSCS card",
+       "de-DE": "CSCS card",
+       "fr-FR": "CSCS card",
+       "cs-CZ": "CSCS card",
+       "da-DK": "CSCS card",
+       "zh-CN": "CSCS card",
+       "zh-TW": "CSCS card",
+       "ar-EG": "CSCS card"
+      }
+     },
+     "valid_until": "2029-01-05"
+    }
+   ]
+  },
+  {
+   "ref": "subcontractors",
+   "rows": [
+    {
+     "name": "Petter Ojo",
+     "hands": 1,
+     "day_rate": 185,
+     "days_used": 22,
+     "insurance_until": {
+      "@day": 156,
+      "@week": true
+     },
+     "email": "petter@ojo-fitting.example"
+    },
+    {
+     "name": "Halden Fit-Out",
+     "hands": 2,
+     "day_rate": 340,
+     "days_used": 14,
+     "insurance_until": {
+      "@day": 215,
+      "@week": true
+     },
+     "email": "office@halden-fitout.example"
+    },
+    {
+     "name": "Bright Lane Interiors",
+     "hands": 3,
+     "day_rate": 900,
+     "days_used": 8,
+     "insurance_until": {
+      "@day": 307,
+      "@week": true
+     },
+     "email": "hello@brightlane.example"
+    },
+    {
+     "name": "Marek Sowa",
+     "hands": 1,
+     "day_rate": 190,
+     "days_used": 6,
+     "insurance_until": {
+      "@day": -28,
+      "@week": true
+     },
+     "email": "marek@sowa-lockers.example"
+    },
+    {
+     "name": "Ivo Nemec",
+     "hands": 1,
+     "day_rate": 210,
+     "days_used": 3,
+     "insurance_until": {
+      "@day": 125,
+      "@week": true
+     },
+     "email": "ivo@nemec-joinery.example"
+    }
+   ]
+  },
+  {
+   "ref": "insurance_incidents",
+   "rows": [
+    {
+     "day": {
+      "@day": -97,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Reversed into a bollard at gate 4",
+       "de-DE": "Am Tor 4 rückwärts gegen einen Poller gefahren",
+       "fr-FR": "A reculé dans une borne au portail 4",
+       "cs-CZ": "Při couvání narazil do sloupku u brány 4",
+       "da-DK": "Bakkede ind i en pullert ved port 4",
+       "zh-CN": "在4号门倒车撞到了护柱",
+       "zh-TW": "4 號門倒車撞到護柱",
+       "ar-EG": "ارتطم بالعمود الحديدي أثناء الرجوع عند البوابة 4"
+      }
+     },
+     "company_id": {
+      "@ref": "co:nordwind"
+     },
+     "kind": {
+      "@t": {
+       "en-US": "motor",
+       "de-DE": "Kfz",
+       "fr-FR": "auto",
+       "cs-CZ": "vozidla",
+       "da-DK": "motor",
+       "zh-CN": "车险",
+       "zh-TW": "車險",
+       "ar-EG": "سيارات"
+      }
+     },
+     "claimed": 1840,
+     "excess": 500,
+     "paid": 1340,
+     "state": "settled"
+    },
+    {
+     "day": {
+      "@day": -42,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Marked a customer floor moving lockers",
+       "de-DE": "Beim Umsetzen von Spinden einen Kundenboden zerkratzt",
+       "fr-FR": "A marqué le sol d’un client en déplaçant des casiers",
+       "cs-CZ": "Stopy na podlaze zákazníka po stěhování skříněk",
+       "da-DK": "Mærkede et kundegulv under flytning af lockere",
+       "zh-CN": "搬储物柜时蹭花了客户的地面",
+       "zh-TW": "搬置物櫃時刮傷客戶地板",
+       "ar-EG": "خدش أرضية عميل أثناء نقل الخزائن"
+      }
+     },
+     "company_id": {
+      "@ref": "co:cobalt"
+     },
+     "kind": {
+      "@t": {
+       "en-US": "public liability",
+       "de-DE": "Betriebshaftpflicht",
+       "fr-FR": "responsabilité civile",
+       "cs-CZ": "odpovědnost vůči třetím osobám",
+       "da-DK": "erhvervsansvar",
+       "zh-CN": "公众责任险",
+       "zh-TW": "公共責任險",
+       "ar-EG": "المسؤولية تجاه الغير"
+      }
+     },
+     "claimed": 680,
+     "excess": 250,
+     "paid": 430,
+     "state": "settled"
+    },
+    {
+     "day": {
+      "@day": -26,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Pallet of chairs damaged in transit",
+       "de-DE": "Palette Stühle auf dem Transport beschädigt",
+       "fr-FR": "Palette de chaises abîmée pendant le transport",
+       "cs-CZ": "Paleta židlí poškozena při přepravě",
+       "da-DK": "Palle med stole beskadiget under transport",
+       "zh-CN": "一托盘椅子运输中受损",
+       "zh-TW": "一棧板椅子運送途中受損",
+       "ar-EG": "طبلية كراسي تضررت أثناء النقل"
+      }
+     },
+     "company_id": {
+      "@ref": "co:brightloom"
+     },
+     "kind": {
+      "@t": {
+       "en-US": "goods in transit",
+       "de-DE": "Transport",
+       "fr-FR": "marchandises transportées",
+       "cs-CZ": "zboží v přepravě",
+       "da-DK": "godsforsikring",
+       "zh-CN": "货物运输险",
+       "zh-TW": "貨物運輸險",
+       "ar-EG": "البضائع أثناء النقل"
+      }
+     },
+     "claimed": 2960,
+     "excess": 250,
+     "paid": 0,
+     "state": "open"
+    },
+    {
+     "day": {
+      "@day": -19,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "A fitter strained his back on a bench top",
+       "de-DE": "Ein Monteur hat sich an einer Tischplatte den Rücken verhoben",
+       "fr-FR": "Un poseur s’est fait mal au dos sur un plateau de bench",
+       "cs-CZ": "Montér si s deskou lavice natáhl záda",
+       "da-DK": "En montør forstrakte ryggen på en bordplade",
+       "zh-CN": "一名安装工搬排桌台面时扭伤了腰",
+       "zh-TW": "一名安裝人員搬檯面時拉傷背部",
+       "ar-EG": "أصيب فني تركيب بشد في الظهر أثناء رفع سطح طاولة"
+      }
+     },
+     "company_id": {
+      "@ref": "co:tandem"
+     },
+     "kind": {
+      "@t": {
+       "en-US": "employer's liability",
+       "de-DE": "Arbeitgeberhaftpflicht",
+       "fr-FR": "responsabilité civile employeur",
+       "cs-CZ": "odpovědnost zaměstnavatele",
+       "da-DK": "arbejdsgiveransvar",
+       "zh-CN": "雇主责任险",
+       "zh-TW": "僱主責任險",
+       "ar-EG": "مسؤولية صاحب العمل"
+      }
+     },
+     "claimed": 0,
+     "excess": 0,
+     "paid": 0,
+     "state": "open"
+    },
+    {
+     "day": {
+      "@day": -4,
+      "@week": true
+     },
+     "what": {
+      "@t": {
+       "en-US": "Windscreen, stone on the road",
+       "de-DE": "Windschutzscheibe, Steinschlag",
+       "fr-FR": "Pare-brise, impact de gravillon",
+       "cs-CZ": "Čelní sklo, kámen na silnici",
+       "da-DK": "Forrude, stenslag",
+       "zh-CN": "挡风玻璃，路上被石子打到",
+       "zh-TW": "擋風玻璃，路上飛石擊中",
+       "ar-EG": "الزجاج الأمامي، أصابه حجر على الطريق"
+      }
+     },
+     "kind": {
+      "@t": {
+       "en-US": "glass",
+       "de-DE": "Glas",
+       "fr-FR": "bris de glace",
+       "cs-CZ": "sklo",
+       "da-DK": "glas",
+       "zh-CN": "玻璃险",
+       "zh-TW": "玻璃險",
+       "ar-EG": "زجاج"
+      }
+     },
+     "claimed": 390,
+     "excess": 0,
+     "paid": 390,
+     "state": "settled"
     }
    ]
   }

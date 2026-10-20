@@ -1,5 +1,5 @@
 {
-  "released": 1,
+  "released": 3,
   "stages": {
     "1": ["selling", "quotes", "accounts", "team", "inbox", "supply"],
     "2": ["showroom", "jobs", "aftercare"],

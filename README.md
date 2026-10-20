@@ -7,20 +7,20 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.29 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.30 or newer.
 
 ## What installs
 
 | | |
 | --- | --- |
 | Key | `crm` (tables are named `crm_…`) |
-| Parts | 6: Selling, Accounts and The team always; Inbox on; Quotes on with Invoices & Receipts; Supply on with Inventory |
-| Tables | 47 |
+| Parts | 10: Selling, Accounts and The team always; Inbox on; Quotes on with Invoices & Receipts; Supply on with Inventory; Showroom and samples, Jobs on site, After the job and Vehicles and crew off until switched on |
+| Tables | 75 |
 | Screens | The app's own screens (below), a customer's quote page, and a "Sales CRM" section in Adminium's own console |
-| Roles | 8 |
-| Shipped rules | 15: five the app works by, switched on at install, and ten that tell people, switched off |
-| E-mails | 10, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 463 rows in 41 tables, 11 people, one team |
+| Roles | 9 |
+| Shipped rules | 20: ten the app works by (a deal's history, a won deal's job, the crew's day sheet, the aftercare call), switched on, and ten that tell people, switched off |
+| E-mails | 18, each in eight languages |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 688 rows in 69 tables, 16 people, three teams (sales and two crews) |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -38,6 +38,10 @@ cards and runs none of its rules; its records stay.
 | The team | always on | Messages, Targets, the Weekly meeting, One-to-one notes, Coaching, New starter, Cover |
 | Inbox | on | The team inbox (an enquiry typed in by whoever takes the call), Trade-show leads with a pasted list |
 | Supply | on, with Inventory | Stock and lead times, the Supplier scorecard |
+| Showroom and samples | off | Showroom bookings and follow-ups, the Sample library and returns, Display stock; the front desk's home |
+| Jobs on site | off | A won deal's job, Deliveries, the Day sheet, the Route, Sign-off, Snags, Delivery notes, Recycling; the field crew's phone (My day, ticks, signing a job off with the customer's signature and photos, snags) |
+| After the job | off | Aftercare calls (one booked when a job is signed off), What customers said, Complaints, Warranty claims |
+| Vehicles and crew | off | Vehicles and their checks and faults, Fuel, Time sheets, Training and certificates, Subcontractors, Insurance claims; on the crew's phone My vehicle, My hours, My certificates |
 
 ### Add-ons
 
@@ -59,10 +63,11 @@ install's owner, who holds none, gets the CRM admin's menu.
 | Sales rep | `rep` | Today | Their own deals and what hangs on them (a helper or a cover reaches a colleague's); companies and contacts |
 | Sales manager | `sales-manager` | Team view | The deals of the people they lead; approves a discount (not their own); targets, cover, one-to-ones, coaching |
 | CRM admin | `admin` | Team view | Everything but the private one-to-ones and coaching; the app's settings |
-| Account manager | `account-manager` | Home | Companies and contacts; a deal once it is won; renewals, repeat orders, referrals |
+| Account manager | `account-manager` | Home | Companies and contacts; a deal once it is won, and an open one while he is on it; renewals, repeat orders, referrals; after the job |
 | Marketer | `marketer` | Home | Enquiries and trade-show leads; companies; no deal, no amount |
-| Front desk | `front-desk` | Team inbox | Types in an enquiry; no deal |
-| Operations manager | `ops-manager` | Stock | Supply; no deal, company or contact |
+| Front desk | `front-desk` | Team inbox (Home with the showroom) | Types in an enquiry; the showroom's bookings and samples; no deal |
+| Operations manager | `ops-manager` | Stock (Home with Jobs on site) | Supply; jobs, deliveries, crews; vehicles and time sheets; a won deal's name to make its job, no amount |
+| Field crew | `crew` | My day | His crew's visits and snags, signing a job off, his vehicle, hours and certificates; no amount anywhere |
 | Read-only | `read-only` | Team view | Reads everything but what is private; writes nothing, and the server refuses a write |
 
 Every "may not" is the server's: a screen without a button is never the only thing in the way.
@@ -156,9 +161,8 @@ The tests check the manifest against Adminium's own validator, a copy of which i
 
 ## The app by stage
 
-The app is released in stages; this release is stage 1, the six parts above. Showroom and samples,
-Jobs on site and After the job (stage 2) and Vehicles and crew (stage 3) arrive as updates over an
-install with data. `whole/` is the app with every stage, and the only place to edit a table, a
+The app was released in stages: 0.2.0 was stage 1 (the first six parts); 0.2.1 is stage 3, every
+part, and updates a 0.2.0 install with its data in place (the four new parts arrive switched off). `whole/` is the app with every stage, and the only place to edit a table, a
 role, a page or the sample; `stage.json` says which parts each stage brings. After a change there:
 
 ```bash
