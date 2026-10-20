@@ -166,7 +166,8 @@ test("the CRM admin reaches every tab of her stage from her menu, with the ledge
   await expect(setting(page, "depot_country").locator("input")).toHaveValue("GB");
   await expect(page.locator('[data-figure="depot"]')).toHaveText("Unit 2, Aire Works, Leeds");
   await expect(page.locator('[data-figure="pin"]')).toHaveText("Placed by town. Drag the pin to the street.");
-  await expect(page.locator('[data-kit-part="map"]')).toBeVisible();
+  // The app's host of the kit's map (the kit's own root carries the same mark inside it).
+  await expect(page.locator('.crm-ast-map-kit[data-kit-part="map"]')).toBeVisible();
   await expect(page.getByRole("group", { name: "Unit of distance" }).locator('[aria-pressed="true"]')).toHaveText("Kilometres");
 
   // Maps and Parts: what is on, read from the server, with who to ask and nothing to switch.

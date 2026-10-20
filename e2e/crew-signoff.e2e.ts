@@ -104,9 +104,19 @@ async function takeAway(data: Data, tessa: APIRequestContext): Promise<void> {
         if (visit.state === "done") await me.patch(data("job_visits", `/${String(visit.id)}`), { data: { values: { state: "booked" } }, headers });
         expect((await me.delete(data("job_visits", `/${String(visit.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
       }
-      // The customer's delivery mails (booked, and the "called off" a removed visit writes) last.
-      await under("outbox");
-      expect((await me.delete(data("jobs", `/${String(job.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
+      // The customer's delivery mails (booked, and the "called off" a removed visit writes) last. Rule 16's call is booked once
+      // the rule's undo wait is over, which on a slow runner can be after the sweep above: sweep again until the job goes.
+      let gone = 0;
+      for (let attempt = 0; attempt < 20 && gone === 0; attempt += 1) {
+        await under("outbox");
+        for (const row of await rows<{ id: number }>(me, data, "follow_ups", { column: "job_id", op: "eq", value: job.id }).catch(() => [] as { id: number }[])) {
+          await me.delete(data("follow_ups", `/${String(row.id)}?confirm=true`), { headers });
+        }
+        const removed = await me.delete(data("jobs", `/${String(job.id)}?confirm=true`), { headers });
+        if (removed.status() < 300) gone = removed.status();
+        else if (removed.status() !== 409 || attempt === 19) expect(removed.status(), await removed.text()).toBeLessThan(300);
+        else await new Promise((resolve) => setTimeout(resolve, 1_000));
+      }
     }
   }
   await removeDeals(tessa, data, "Spec crew:");
