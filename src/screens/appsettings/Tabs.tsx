@@ -184,9 +184,13 @@ export function Places({ session, rights }: { session: StaffSession; rights: Rig
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   // What was last sent for a field, until the row is read again: Enter saves, and leaving the field must not send it twice.
   const sent = useRef<Record<string, string>>({});
+  // A read of the row ends the drafts it answers (sent, or now what the server holds), never one still being typed: saving
+  // the region and typing the postal code at once must not empty the postal code when the region's read comes back.
   useEffect(() => {
-    setDrafts({});
-    sent.current = {};
+    if (row === null) return;
+    const held = (column: string): string => String(row[column] ?? "");
+    setDrafts((d) => Object.fromEntries(Object.entries(d).filter(([column, text]) => text !== held(column) && sent.current[column] !== text)));
+    sent.current = Object.fromEntries(Object.entries(sent.current).filter(([column, text]) => text !== held(column)));
   }, [row]);
   const [placing, setPlacing] = useState(false);
   const [status, setStatus] = useState<"loading" | "ready" | "unreachable" | "off">("loading");
