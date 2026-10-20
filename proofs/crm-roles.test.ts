@@ -358,7 +358,9 @@ for (const [dialect, reachable] of LEGS) {
         ['jobs feedback complaints warranty_claims', 'all team own all - - all - all'],
         ['job_visits sign_offs snags', 'all team own all - - all own all'],
         ['delivery_notes delivery_note_lines', 'all - - all - - all own all'],
-        ['crews crew_members crew_days vehicles vehicle_faults', 'all - - - - - all all all'],
+        ['crews crew_members crew_days', 'all - - - - - all all all'],
+        // P25: a crew member reads the vehicle his crew is given, and its faults; a check and a fill also through that vehicle.
+        ['vehicles vehicle_faults', 'all - - - - - all own all'],
         ['waste_removals subcontractors insurance_incidents', 'all - - - - - all - all'],
         // Supply is on only with Inventory, which is not here: its own roles (CRM admin, Operations manager, Read-only) hold
         // nothing on its table, and the sales roles, of other parts, go on reading it.

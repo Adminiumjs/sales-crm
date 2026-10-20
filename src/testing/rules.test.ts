@@ -328,7 +328,7 @@ describe("the e-mails the app ships", () => {
   const shape = (key: string, locale = "en-US") => m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks.map((block) => block.block);
 
   it("are seventeen: fifteen to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled", "crm-signed-copy"]);
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled", "crm-signed-copy", "crm-certificate-asked"]);
     for (const template of m.emailTemplates) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
@@ -435,6 +435,7 @@ describe("the outbox", () => {
       // A sign-off's copy, to the job's contact or to the address typed on the sign-off (e-mail 17).
       "signed-copy": "crm-signed-copy",
       "signed-copy-to": "crm-signed-copy",
+      "certificate-asked": "crm-certificate-asked",
     });
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });

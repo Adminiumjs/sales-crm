@@ -129,8 +129,10 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["warranty_claims"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
   // …and for the same reason she changes and removes a deal's stock need, and a rep (who reads the deal) makes it.
   [["deal_stock_needs"], "RCUD", "R:team", "RCU:own", "-", "-", "-", "RUD", "-", "R"],
-  [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
-  [["vehicle_faults"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC", "R"],
+  // A crew member is given his crew's vehicle (P25): he reads that one, and its faults, and makes a check, a fault and a
+  // fill only for it (a link to a vehicle out of his reach is refused as one that is not there).
+  [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
+  [["vehicle_faults"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
   [["vehicle_checks", "fuel_fills"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
   // The sign-off and the send-back are the sheet's: a line has no state, so the manager (and the CRM admin, P25) reads the lines.
   [["time_sheets"], "RU", "-", "-", "-", "-", "-", "RU", "RCU:own", "R"],
@@ -161,6 +163,8 @@ const PERSONAL: Record<string, readonly RoleKey[]> = {
   // and the crew goes there (its day sheet, P22). Read-only, a rep and her manager read them masked.
   jobs: ["admin", "ops-manager"],
   job_visits: ["admin", "ops-manager", "crew"],
+  // A subcontractor's address: the office asks him for his certificate there (P25, e-mail 11). Read-only sees it masked.
+  subcontractors: ["admin", "ops-manager"],
 };
 
 /** The settings the sales manager may change: the Selling keys. */

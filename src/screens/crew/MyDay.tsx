@@ -16,7 +16,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { addDays, noonOf } from "../../lib/format.ts";
 import { Icon } from "../../shell/icons.tsx";
-import { useNav } from "../../shell/nav.tsx";
+import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
@@ -155,6 +155,13 @@ export function MyDay({ rest }: ScreenProps) {
           </button>
         ))}
       </div>
+      {session.part("fleet") && session.can("vehicles", "read") && (
+        // Vehicles and crew (P25): his vehicle's check before the day, a fault and a fuel fill, one press away.
+        <ScreenLink to="myvan" className="crm-cw-back crm-fl-myday mr-gi">
+          <Icon name="truck" size={15} />
+          {t("fl.myday.link")}
+        </ScreenLink>
+      )}
       {day !== today && (
         <button type="button" className="crm-cw-back mr-gi" onClick={() => go(today)}>
           <Icon name="sun" size={15} />

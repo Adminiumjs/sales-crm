@@ -8,7 +8,6 @@
 import { tables } from "./table.ts";
 
 export const hours = /*#__PURE__*/ tables({
-  "nav.group.fleet": ["Vehicles and crew", "Fahrzeuge und Trupps", "Véhicules et équipes", "Køretøjer og hold", "Vozidla a party", "车辆与班组", "車輛與班組", "المركبات والطواقم"],
   "nav.item.timesheets": ["Time sheets", "Stundenzettel", "Feuilles de temps", "Timesedler", "Výkazy hodin", "工时单", "工時單", "كشوف الساعات"],
   "nav.item.training": ["Training", "Schulungen", "Formations", "Uddannelse", "Školení", "培训", "訓練", "التدريب"],
   "nav.item.myhours": ["My hours", "Meine Stunden", "Mes heures", "Mine timer", "Moje hodiny", "我的工时", "我的工時", "ساعاتي"],

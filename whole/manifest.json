@@ -12291,6 +12291,9 @@
           ],
           [
             "crew_id"
+          ],
+          [
+            "vehicle_id"
           ]
         ],
         "columns": [
@@ -12379,6 +12382,30 @@
               "ar-EG": "الهاتف",
               "zh-CN": "电话",
               "zh-TW": "電話"
+            }
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "crew_id",
+                "from": "vehicle_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
             }
           },
           {
@@ -16496,6 +16523,67 @@
             }
           },
           {
+            "ref": "last_fill_reading",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "rollup": {
+                "from": "fuel_fills",
+                "via": "vehicle_id",
+                "latest": {
+                  "of": "odometer",
+                  "by": "odometer"
+                }
+              }
+            },
+            "label": {
+              "en-US": "Reading at the last fill",
+              "de-DE": "Stand beim letzten Tanken",
+              "fr-FR": "Relevé au dernier plein",
+              "da-DK": "Aflæsning ved sidste tankning",
+              "cs-CZ": "Stav při posledním tankování",
+              "ar-EG": "القراءة عند آخر تعبئة",
+              "zh-CN": "上次加油时的读数",
+              "zh-TW": "上次加油時的讀數"
+            }
+          },
+          {
+            "ref": "reading",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "isNull": "last_fill_reading"
+                  },
+                  "odometer",
+                  {
+                    "max": [
+                      "last_fill_reading",
+                      {
+                        "coalesce": [
+                          "odometer",
+                          0
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Current reading",
+              "de-DE": "Aktueller Stand",
+              "fr-FR": "Relevé actuel",
+              "da-DK": "Aktuel aflæsning",
+              "cs-CZ": "Aktuální stav",
+              "ar-EG": "القراءة الحالية",
+              "zh-CN": "当前读数",
+              "zh-TW": "目前讀數"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -16513,6 +16601,15 @@
               "ar-EG": "مفتاح إعادة الإرسال",
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
+            }
+          }
+        ],
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "vehicle_id",
+              "user": "user_id"
             }
           }
         ]
@@ -16543,6 +16640,9 @@
         "belongs": [
           {
             "column": "by_id"
+          },
+          {
+            "via": "vehicle_id"
           }
         ],
         "indexes": [
@@ -16834,6 +16934,32 @@
             }
           },
           {
+            "ref": "photo",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "label": {
+              "en-US": "Photo",
+              "de-DE": "Foto",
+              "fr-FR": "Photo",
+              "da-DK": "Billede",
+              "cs-CZ": "Fotka",
+              "ar-EG": "الصورة",
+              "zh-CN": "照片",
+              "zh-TW": "照片"
+            },
+            "rules": {
+              "file": {
+                "accept": [
+                  "jpeg",
+                  "png",
+                  "webp"
+                ],
+                "maxBytes": 8388608
+              }
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -16852,6 +16978,11 @@
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
             }
+          }
+        ],
+        "belongs": [
+          {
+            "via": "vehicle_id"
           }
         ]
       },
@@ -16881,6 +17012,9 @@
         "belongs": [
           {
             "column": "by_id"
+          },
+          {
+            "via": "vehicle_id"
           }
         ],
         "indexes": [
@@ -16990,6 +17124,51 @@
               "ar-EG": "عدّاد المسافات",
               "zh-CN": "里程表读数",
               "zh-TW": "里程數"
+            }
+          },
+          {
+            "ref": "prev_odometer",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "vehicle_id",
+                "from": "reading",
+                "mode": "default"
+              }
+            },
+            "label": {
+              "en-US": "Reading before",
+              "de-DE": "Stand davor",
+              "fr-FR": "Relevé précédent",
+              "da-DK": "Forrige aflæsning",
+              "cs-CZ": "Předchozí stav",
+              "ar-EG": "القراءة السابقة",
+              "zh-CN": "上次读数",
+              "zh-TW": "上次讀數"
+            }
+          },
+          {
+            "ref": "distance",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "sub": [
+                  "odometer",
+                  "prev_odometer"
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Distance since the last fill",
+              "de-DE": "Strecke seit dem letzten Tanken",
+              "fr-FR": "Distance depuis le dernier plein",
+              "da-DK": "Afstand siden sidste tankning",
+              "cs-CZ": "Vzdálenost od posledního tankování",
+              "ar-EG": "المسافة منذ آخر تعبئة",
+              "zh-CN": "距上次加油的里程",
+              "zh-TW": "距上次加油的里程"
             }
           },
           {
@@ -17907,6 +18086,9 @@
               "ar-EG": "البريد الإلكتروني",
               "zh-CN": "邮箱",
               "zh-TW": "電子郵件"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -17922,6 +18104,63 @@
               "ar-EG": "وقت الاستعجال",
               "zh-CN": "催办时间",
               "zh-TW": "催辦時間"
+            }
+          },
+          {
+            "ref": "spent",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "semantic": "money",
+            "rules": {
+              "formula": {
+                "mul": [
+                  "day_rate",
+                  {
+                    "coalesce": [
+                      "days_used",
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Spent",
+              "de-DE": "Ausgegeben",
+              "fr-FR": "Dépensé",
+              "da-DK": "Brugt",
+              "cs-CZ": "Utraceno",
+              "ar-EG": "المبلغ المصروف",
+              "zh-CN": "花费",
+              "zh-TW": "花費"
+            }
+          },
+          {
+            "ref": "chased_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "columns": [
+                    "chased_at"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Chased by",
+              "de-DE": "Nachgefragt von",
+              "fr-FR": "Relancé par",
+              "da-DK": "Rykket af",
+              "cs-CZ": "Urgoval(a)",
+              "ar-EG": "طالب به",
+              "zh-CN": "催办人",
+              "zh-TW": "催辦人"
             }
           },
           {
@@ -18265,7 +18504,8 @@
               "delivery-moved",
               "delivery-cancelled",
               "signed-copy",
-              "signed-copy-to"
+              "signed-copy-to",
+              "certificate-asked"
             ],
             "rules": {
               "enumLabels": {
@@ -18429,6 +18669,16 @@
                     "ar-EG": "نسخة الاستلام الموقّعة إلى عنوان آخر",
                     "zh-CN": "验收签字副本（发往其他地址）",
                     "zh-TW": "驗收簽名副本（寄往其他地址）"
+                  },
+                  "certificate-asked": {
+                    "en-US": "Certificate asked",
+                    "de-DE": "Nachweis angefordert",
+                    "fr-FR": "Attestation demandée",
+                    "da-DK": "Certifikat efterspurgt",
+                    "cs-CZ": "Vyžádán certifikát",
+                    "ar-EG": "طلب شهادة",
+                    "zh-CN": "已索要证书",
+                    "zh-TW": "已索取證書"
                   }
                 }
               }
@@ -18871,6 +19121,22 @@
               "ar-EG": "الاستلام",
               "zh-CN": "验收",
               "zh-TW": "驗收"
+            }
+          },
+          {
+            "ref": "subcontractor_id",
+            "type": "fk",
+            "references": "subcontractors",
+            "nullable": true,
+            "label": {
+              "en-US": "Subcontractor",
+              "de-DE": "Subunternehmer",
+              "fr-FR": "Sous-traitant",
+              "da-DK": "Underentreprenør",
+              "cs-CZ": "Subdodavatel",
+              "ar-EG": "مقاول من الباطن",
+              "zh-CN": "分包商",
+              "zh-TW": "分包商"
             }
           }
         ]
@@ -20124,6 +20390,7 @@
         "table:@subcontractors:create",
         "table:@subcontractors:update",
         "table:@subcontractors:delete",
+        "table:@subcontractors:read_pii",
         "table:@insurance_incidents:read",
         "table:@insurance_incidents:create",
         "table:@insurance_incidents:update",
@@ -22909,6 +23176,7 @@
         "table:@subcontractors:create",
         "table:@subcontractors:update",
         "table:@subcontractors:delete",
+        "table:@subcontractors:read_pii",
         "table:@insurance_incidents:read",
         "table:@insurance_incidents:create",
         "table:@insurance_incidents:update",
@@ -23088,6 +23356,13 @@
             "litres",
             "cost",
             "odometer"
+          ],
+          "creatable": [
+            "vehicle_id",
+            "day",
+            "litres",
+            "cost",
+            "odometer"
           ]
         },
         "time_sheets": {
@@ -23133,6 +23408,58 @@
               }
             }
           }
+        },
+        "crew_members": {
+          "writable": [
+            "crew_id",
+            "user_id",
+            "lead",
+            "since",
+            "phone"
+          ]
+        },
+        "vehicles": {
+          "writable": [
+            "name",
+            "plate",
+            "model",
+            "odometer",
+            "inspection_due",
+            "service_due",
+            "tax_to",
+            "hired"
+          ],
+          "creatable": [
+            "name",
+            "plate",
+            "model",
+            "odometer",
+            "inspection_due",
+            "service_due",
+            "tax_to",
+            "hired"
+          ]
+        },
+        "subcontractors": {
+          "writable": [
+            "name",
+            "hands",
+            "day_rate",
+            "days_used",
+            "insurance_until",
+            "certificate",
+            "email",
+            "chased_at"
+          ],
+          "creatable": [
+            "name",
+            "hands",
+            "day_rate",
+            "days_used",
+            "insurance_until",
+            "certificate",
+            "email"
+          ]
         }
       },
       "tables": [
@@ -23452,8 +23779,14 @@
         "vehicle_faults": {
           "creatable": [
             "vehicle_id",
-            "text"
-          ]
+            "text",
+            "photo"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
         },
         "fuel_fills": {
           "creatable": [
@@ -23524,6 +23857,13 @@
           }
         },
         "certificates": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "vehicles": {
           "rows": {
             "read": {
               "reach": "own"
@@ -26327,7 +26667,8 @@
       "booking": "booking_id",
       "job_visit": "job_visit_id",
       "job": "job_id",
-      "sign_off": "sign_off_id"
+      "sign_off": "sign_off_id",
+      "subcontractor": "subcontractor_id"
     },
     "recipient": {
       "via": "contact_id",
@@ -26351,7 +26692,8 @@
       "delivery-moved": "crm-delivery-moved",
       "delivery-cancelled": "crm-delivery-cancelled",
       "signed-copy": "crm-signed-copy",
-      "signed-copy-to": "crm-signed-copy"
+      "signed-copy-to": "crm-signed-copy",
+      "certificate-asked": "crm-certificate-asked"
     },
     "producers": [
       {
@@ -26640,6 +26982,29 @@
         },
         "recipient": {
           "column": "copy_sent_to"
+        }
+      },
+      {
+        "kind": "certificate-asked",
+        "module": "fleet",
+        "link": "subcontractor_id",
+        "recipient": {
+          "column": "email",
+          "name": "name"
+        },
+        "onChange": {
+          "table": "subcontractors",
+          "columns": [
+            "chased_at"
+          ],
+          "changed": true,
+          "where": {
+            "column": "chased_at",
+            "isNull": false
+          }
+        },
+        "replyTo": {
+          "staff": "chased_by_id"
         }
       }
     ],
@@ -35071,6 +35436,570 @@
             }
           ],
           "footer": "您收到這封郵件，是因為您在 {{job.site_name}} 完成了驗收。"
+        }
+      }
+    },
+    {
+      "key": "crm-certificate-asked",
+      "name": {
+        "en-US": "Certificate asked",
+        "de-DE": "Nachweis angefordert",
+        "fr-FR": "Attestation demandée",
+        "da-DK": "Certifikat efterspurgt",
+        "cs-CZ": "Vyžádán certifikát",
+        "ar-EG": "طلب شهادة",
+        "zh-CN": "已索要证书",
+        "zh-TW": "已索取證書"
+      },
+      "vars": [
+        "recipient.first_name",
+        "subcontractor.insurance_until",
+        "subcontractor.insurance_until.days_since"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Please send your new insurance certificate",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Please send your new insurance certificate"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hello {{recipient.first_name}}, the insurance certificate we hold for you ran out on {{subcontractor.insurance_until}}, {{subcontractor.insurance_until.days_since}} days ago. Until we have one in date, we cannot book you on a visit."
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "Hello {{recipient.first_name}}, we hold no insurance certificate for you. Until we have one in date, we cannot book you on a visit."
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "What we need"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Document",
+                    "amount": "Your insurance certificate"
+                  },
+                  {
+                    "label": "It must show",
+                    "amount": "Your name and the dates it covers, with today inside them"
+                  },
+                  {
+                    "label": "Ours ran out",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "How to send it"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Reply",
+                    "amount": "Answer this email and attach the certificate"
+                  },
+                  {
+                    "label": "As",
+                    "amount": "A PDF or a clear photo of every page"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "You get this because you are on our list of subcontractors."
+        },
+        "de-DE": {
+          "subject": "Bitte senden Sie uns Ihren neuen Versicherungsnachweis",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Bitte senden Sie uns Ihren neuen Versicherungsnachweis"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, der Versicherungsnachweis, den wir von Ihnen haben, ist am {{subcontractor.insurance_until}} abgelaufen, vor {{subcontractor.insurance_until.days_since}} Tagen. Bis wir einen gültigen haben, können wir Sie für keinen Einsatz einplanen."
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "Guten Tag {{recipient.first_name}}, wir haben von Ihnen keinen Versicherungsnachweis. Bis wir einen gültigen haben, können wir Sie für keinen Einsatz einplanen."
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Was wir brauchen"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dokument",
+                    "amount": "Ihr Versicherungsnachweis"
+                  },
+                  {
+                    "label": "Er muss zeigen",
+                    "amount": "Ihren Namen und den Zeitraum, den er abdeckt, mit dem heutigen Tag darin"
+                  },
+                  {
+                    "label": "Unserer lief ab am",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "So senden Sie ihn"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Antwort",
+                    "amount": "Antworten Sie auf diese E-Mail und hängen Sie den Nachweis an"
+                  },
+                  {
+                    "label": "Als",
+                    "amount": "PDF oder gut lesbares Foto jeder Seite"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil Sie auf unserer Liste der Subunternehmer stehen."
+        },
+        "fr-FR": {
+          "subject": "Merci de nous envoyer votre nouvelle attestation d’assurance",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Merci de nous envoyer votre nouvelle attestation d’assurance"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, l’attestation d’assurance que nous avons pour vous a expiré le {{subcontractor.insurance_until}}, il y a {{subcontractor.insurance_until.days_since}} jours. Tant que nous n’en avons pas une en cours de validité, nous ne pouvons pas vous prévoir sur une intervention."
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "Bonjour {{recipient.first_name}}, nous n’avons aucune attestation d’assurance pour vous. Tant que nous n’en avons pas une en cours de validité, nous ne pouvons pas vous prévoir sur une intervention."
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ce qu’il nous faut"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Document",
+                    "amount": "Votre attestation d’assurance"
+                  },
+                  {
+                    "label": "Elle doit indiquer",
+                    "amount": "Votre nom et la période couverte, qui doit inclure aujourd’hui"
+                  },
+                  {
+                    "label": "La nôtre a expiré le",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Comment l’envoyer"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Réponse",
+                    "amount": "Répondez à cet e-mail en joignant l’attestation"
+                  },
+                  {
+                    "label": "Format",
+                    "amount": "Un PDF ou une photo nette de chaque page"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce que vous figurez sur notre liste de sous-traitants."
+        },
+        "da-DK": {
+          "subject": "Send os venligst dit nye forsikringsbevis",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Send os venligst dit nye forsikringsbevis"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, det forsikringsbevis, vi har fra dig, udløb {{subcontractor.insurance_until}}, for {{subcontractor.insurance_until.days_since}} dage siden. Indtil vi har et gyldigt, kan vi ikke booke dig til et besøg."
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "Hej {{recipient.first_name}}, vi har intet forsikringsbevis fra dig. Indtil vi har et gyldigt, kan vi ikke booke dig til et besøg."
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Det har vi brug for"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dokument",
+                    "amount": "Dit forsikringsbevis"
+                  },
+                  {
+                    "label": "Det skal vise",
+                    "amount": "Dit navn og den periode, det dækker, med dags dato inden for den"
+                  },
+                  {
+                    "label": "Vores udløb",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Sådan sender du det"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Svar",
+                    "amount": "Svar på denne e-mail og vedhæft beviset"
+                  },
+                  {
+                    "label": "Som",
+                    "amount": "En PDF eller et tydeligt billede af hver side"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi du står på vores liste over underentreprenører."
+        },
+        "cs-CZ": {
+          "subject": "Pošlete nám prosím nový doklad o pojištění",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Pošlete nám prosím nový doklad o pojištění"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, doklad o pojištění, který od vás máme, vypršel {{subcontractor.insurance_until}}, před {{subcontractor.insurance_until.days_since}} dny. Dokud nebudeme mít platný, nemůžeme vás naplánovat na žádný výjezd."
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "Dobrý den, {{recipient.first_name}}, nemáme od vás žádný doklad o pojištění. Dokud nebudeme mít platný, nemůžeme vás naplánovat na žádný výjezd."
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Co potřebujeme"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dokument",
+                    "amount": "Váš doklad o pojištění"
+                  },
+                  {
+                    "label": "Musí uvádět",
+                    "amount": "Vaše jméno a období, které kryje, včetně dnešního dne"
+                  },
+                  {
+                    "label": "Náš vypršel",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Jak ho poslat"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Odpověď",
+                    "amount": "Odpovězte na tento e-mail a doklad přiložte"
+                  },
+                  {
+                    "label": "Jako",
+                    "amount": "PDF nebo čitelnou fotku každé strany"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože jste na našem seznamu subdodavatelů."
+        },
+        "ar-EG": {
+          "subject": "يُرجى إرسال شهادة التأمين الجديدة",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "يُرجى إرسال شهادة التأمين الجديدة"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، انتهت شهادة التأمين التي لدينا لك في {{subcontractor.insurance_until}}، منذ {{subcontractor.insurance_until.days_since}} يومًا. لا يمكننا حجزك لأي زيارة حتى تصلنا شهادة سارية."
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "مرحبًا {{recipient.first_name}}، ليست لدينا شهادة تأمين لك. لا يمكننا حجزك لأي زيارة حتى تصلنا شهادة سارية."
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "ما نحتاجه"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "المستند",
+                    "amount": "شهادة التأمين الخاصة بك"
+                  },
+                  {
+                    "label": "يجب أن تُظهر",
+                    "amount": "اسمك والفترة التي تغطيها، على أن يقع اليوم ضمنها"
+                  },
+                  {
+                    "label": "انتهت شهادتنا في",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "كيف ترسلها"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "الرد",
+                    "amount": "رُدّ على هذه الرسالة وأرفق الشهادة"
+                  },
+                  {
+                    "label": "بصيغة",
+                    "amount": "ملف PDF أو صورة واضحة لكل صفحة"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "تصلك هذه الرسالة لأنك مدرج في قائمة مقاولي الباطن لدينا."
+        },
+        "zh-CN": {
+          "subject": "请发送您新的保险证明",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "请发送您新的保险证明"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好。我们存档的您的保险证明已于 {{subcontractor.insurance_until}} 到期，已过去 {{subcontractor.insurance_until.days_since}} 天。在收到有效证明之前，我们无法为您安排上门工作。"
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "{{recipient.first_name}}，您好。我们没有您的保险证明。在收到有效证明之前，我们无法为您安排上门工作。"
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "我们需要"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "文件",
+                    "amount": "您的保险证明"
+                  },
+                  {
+                    "label": "须写明",
+                    "amount": "您的姓名及承保期间，且今天在期间之内"
+                  },
+                  {
+                    "label": "存档证明到期日",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "如何发送"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "回复",
+                    "amount": "回复这封邮件并附上证明"
+                  },
+                  {
+                    "label": "格式",
+                    "amount": "PDF，或每一页的清晰照片"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "您收到这封邮件，是因为您在我们的分包商名单上。"
+        },
+        "zh-TW": {
+          "subject": "請寄來您新的保險證明",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "請寄來您新的保險證明"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好。我們存檔的您的保險證明已於 {{subcontractor.insurance_until}} 到期，已過了 {{subcontractor.insurance_until.days_since}} 天。在收到有效證明之前，我們無法為您安排到訪工作。"
+              },
+              "showWhen": {
+                "var": "subcontractor.insurance_until"
+              },
+              "otherwise": "{{recipient.first_name}}，您好。我們沒有您的保險證明。在收到有效證明之前，我們無法為您安排到訪工作。"
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "我們需要"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "文件",
+                    "amount": "您的保險證明"
+                  },
+                  {
+                    "label": "須寫明",
+                    "amount": "您的姓名及承保期間，且今天在期間之內"
+                  },
+                  {
+                    "label": "存檔證明到期日",
+                    "amount": "{{subcontractor.insurance_until|—}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "如何寄送"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "回覆",
+                    "amount": "回覆這封郵件並附上證明"
+                  },
+                  {
+                    "label": "格式",
+                    "amount": "PDF，或每一頁的清晰照片"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "您收到這封郵件，是因為您在我們的分包商名單上。"
         }
       }
     }

@@ -1,0 +1,514 @@
+/*
+ * Vehicles and crew, part A (P25): Vehicles, Fuel, Subcontractors, Insurance
+ * claims, and the crew's own vehicle on his phone. Every class is `crm-fl-…`;
+ * the shared pieces (a screen, a figure card, a pill, a chip, a dialog, the
+ * crew's phone column) are the app's own. Logical properties only: the page
+ * mirrors in Arabic. Colours are the tokens: dark follows by itself.
+ */
+
+.crm-fl-lead {
+  max-inline-size: 640px;
+}
+.crm-fl-quiet {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+.crm-fl-quiet[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-fl-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* The figures: three to five, smaller than a home's. */
+.crm-fl-stats {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin-block-start: 14px;
+}
+.crm-fl-stats .crm-kpi {
+  padding: 11px 13px;
+  border-radius: 12px;
+}
+.crm-fl-stat-value {
+  margin-block-start: 6px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.crm-fl-stat[data-tone="danger"] .crm-fl-stat-value {
+  color: var(--danger);
+}
+.crm-fl-stat[data-tone="warn"] .crm-fl-stat-value {
+  color: var(--warn);
+}
+.crm-fl-stat[data-tone="pos"] .crm-fl-stat-value {
+  color: var(--pos);
+}
+.crm-fl .crm-banner,
+.crm-fl .crm-chips {
+  margin-block-start: 12px;
+}
+
+/* A card: a vehicle, a subcontractor, an incident, a fill. */
+.crm-fl-list,
+.crm-fl-vans {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-fl-vans {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.crm-fl-card {
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  min-inline-size: 0;
+}
+.crm-fl-van {
+  flex: 1 1 230px;
+}
+.crm-fl-card[data-tone="danger"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-fl-card[data-tone="warn"] {
+  border-inline-start-color: var(--warn);
+}
+.crm-fl-card[data-tone="pos"] {
+  border-inline-start-color: var(--pos);
+}
+.crm-fl-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crm-fl-card-words {
+  flex: 1;
+  min-inline-size: 170px;
+}
+.crm-fl-card-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crm-fl-card-end {
+  text-align: end;
+  flex-shrink: 0;
+}
+.crm-fl-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+.crm-fl-plate {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-fl-reading,
+.crm-fl-rate {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-fl-big {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--fg-subtle);
+}
+.crm-fl-big[data-tone="pos"] {
+  color: var(--pos);
+}
+.crm-fl-big[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-fl-tile {
+  inline-size: 38px;
+  block-size: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-fl-tile[data-hired="1"] {
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-fl-facts {
+  display: flex;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+  margin-block-start: 11px;
+}
+.crm-fl-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-fl-cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 8px;
+  margin: 11px 0 0;
+}
+.crm-fl-cells > div {
+  min-inline-size: 0;
+}
+.crm-fl-cells dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-fl-cells dd {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+.crm-fl-cells dd[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-fl-cells dd[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-fl-cells dd[data-tone="pos"] {
+  color: var(--pos);
+}
+.crm-fl-card-foot {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-block-start: 11px;
+}
+.crm-fl-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+.crm-fl-link:hover,
+.crm-fl-link:focus-visible {
+  text-decoration: underline;
+}
+
+/* A vehicle's faults and its walk-round. */
+.crm-fl-faults {
+  list-style: none;
+  margin: 11px 0 0;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--warn-soft);
+}
+.crm-fl-fault {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--warn);
+}
+.crm-fl-fault > svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+}
+.crm-fl-fault-text {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.crm-fl-fault-photo {
+  inline-size: 44px;
+  block-size: 44px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--surface-3);
+}
+.crm-fl-walk {
+  margin-block-start: 8px;
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-fl-walk-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crm-fl-walk-line {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.crm-fl-walk-line[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-fl-walk-line[data-tone="pos"] {
+  color: var(--pos);
+}
+.crm-fl-ticks {
+  list-style: none;
+  margin: 9px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-fl-tick {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.crm-fl-tick[data-on="1"] {
+  color: var(--fg-muted);
+}
+.crm-fl-tickbox {
+  inline-size: 17px;
+  block-size: 17px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--status-fg, #fff);
+}
+.crm-fl-tick[data-on="1"] .crm-fl-tickbox {
+  border-color: var(--pos);
+  background: var(--pos);
+}
+
+/* Fuel: a fill, and the months. */
+.crm-fl-fill {
+  padding: 9px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-fl-fill-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.crm-fl-fill .crm-fl-cells {
+  margin-block-start: 6px;
+}
+.crm-fl-months {
+  margin-block-start: 16px;
+}
+.crm-fl-table-wrap {
+  margin-block-start: 8px;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-fl-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.crm-fl-table th,
+.crm-fl-table td {
+  padding: 8px 12px;
+  text-align: start;
+  border-block-end: 1px solid var(--border);
+  white-space: nowrap;
+}
+.crm-fl-table thead th {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-fl-table tbody tr:last-child th,
+.crm-fl-table tbody tr:last-child td {
+  border-block-end: none;
+}
+.crm-fl-table tbody th {
+  font-weight: 700;
+}
+
+/* A dialog's row of three amounts, and a yes/no on a line of its own. */
+.crm-fl-field-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.crm-fl-checkline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  min-block-size: 44px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+@media (max-width: 520px) {
+  .crm-fl-field-three {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The crew's phone: My vehicle. One column, as My day. */
+.crm-fl-my-van {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-start: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-fl-my-van > div:nth-child(2) {
+  flex: 1;
+  min-inline-size: 150px;
+}
+.crm-fl-my-part {
+  margin-block-start: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-fl-my-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.crm-fl-my-done {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pos);
+}
+.crm-fl-my-ticks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+  margin-block-start: 10px;
+}
+.crm-fl-my-tick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 50px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+}
+.crm-fl-my-tick[aria-checked="true"] {
+  border-color: var(--pos);
+  background: var(--pos-soft);
+}
+.crm-fl-my-tick:disabled {
+  cursor: default;
+}
+.crm-fl-my-foot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-start: 12px;
+}
+.crm-fl-my-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.crm-fl-my-wide {
+  grid-column: 1 / -1;
+}
+.crm-fl-my-foot {
+  margin-block-start: 14px;
+}
+.crm-field-note[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-fl-myday {
+  text-decoration: none;
+}
+
+/* A banner of these screens: its icon beside its words, a link at its end. */
+.crm-fl .crm-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crm-fl .crm-banner > span {
+  flex: 1;
+  min-inline-size: 200px;
+}
+.crm-fl .crm-banner > svg {
+  flex-shrink: 0;
+}
+.crm-fl-my-part > .crm-btn {
+  margin-block-start: 10px;
+}

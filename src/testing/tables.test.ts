@@ -213,7 +213,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   // row, which brings its own text.
   jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "place", "access_note", "ask_for", "site_phone", "signed_off_at"] },
   crews: { nullable: ["vehicle_id", "day_hours"] },
-  crew_members: { nullable: ["since", "phone"] },
+  crew_members: { nullable: ["since", "phone", "vehicle_id"] },
   // The weekdays a crew works: a visit is not booked on a day it has no row for.
   crew_days: { nullable: [] },
   job_visits: {
@@ -261,15 +261,15 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   // Supply
   deal_stock_needs: { nullable: ["qty", "item"] },
   // Vehicles and crew
-  vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to"] },
+  vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to", "last_fill_reading", "reading"] },
   vehicle_checks: { nullable: [] },
-  vehicle_faults: { nullable: ["raised_by_id", "fixed_on"] },
-  fuel_fills: { nullable: [] },
+  vehicle_faults: { nullable: ["raised_by_id", "fixed_on", "photo"] },
+  fuel_fills: { nullable: ["prev_odometer", "distance"] },
   // When it was sent is stamped on the move (B20); its hours in all are the server's, empty only while a total is.
   time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_at", "sent_back_note", "total_hours"] },
   time_sheet_lines: { nullable: ["visit_id", "job_id"] },
   certificates: { nullable: ["course_on"] },
-  subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "email", "chased_at"] },
+  subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "email", "chased_at", "spent", "chased_by_id"] },
   insurance_incidents: { nullable: ["company_id", "insurer_ref"] },
   // The app's own. Every column of the outbox but its kind and status may be
   // empty: Adminium fills them as it sends, and not every email is about a quote.
@@ -286,6 +286,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "job_visit_id",
       "job_id",
       "sign_off_id",
+      "subcontractor_id",
       "was",
       "deal_id",
       "due_at",
@@ -335,7 +336,7 @@ const OUTBOX_WORD = {
     // What a moved or a removed visit was, for its e-mail.
     was: "was",
   },
-  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id", sign_off: "sign_off_id" },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id", sign_off: "sign_off_id", subcontractor: "subcontractor_id" },
   recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
   // The settings row, read by a template as `practice.*` (where the showroom is).
   // …and the office's phone, for "call us" in a delivery's e-mail.
@@ -816,12 +817,32 @@ describe("a crew reaches its own work, and a rep the work on their deals", () =>
 
   it("limits the rest by the row's own person", () => {
     expect(byRef.get("complaints")?.belongs).toEqual([{ column: "owner_id", set: "anyone" }]);
-    for (const [ref, column] of [["vehicle_checks", "by_id"], ["fuel_fills", "by_id"], ["time_sheets", "user_id"], ["certificates", "user_id"]] as const) {
+    for (const [ref, column] of [["time_sheets", "user_id"], ["certificates", "user_id"]] as const) {
       expect(byRef.get(ref)?.belongs, ref).toEqual([{ column }]);
     }
-    for (const ref of ["crews", "waste_removals", "vehicles", "vehicle_faults", "subcontractors", "insurance_incidents"]) {
+    // A check and a fill are their maker's, and also his vehicle's: a crew-mate sees the van was checked today (P25).
+    for (const [ref, column] of [["vehicle_checks", "by_id"], ["fuel_fills", "by_id"]] as const) {
+      expect(byRef.get(ref)?.belongs, ref).toEqual([{ column }, { via: "vehicle_id" }]);
+    }
+    for (const ref of ["crews", "waste_removals", "subcontractors", "insurance_incidents"]) {
       expect(byRef.get(ref)?.belongs, ref).toBeUndefined();
     }
+  });
+
+  it("gives a crew member his crew's vehicle: reached through the crew's people, its faults through it, kept in step with the crew (P25)", () => {
+    expect(rulesOf("crew_members", "vehicle_id").copy).toEqual(follows("crew_id", "vehicle_id"));
+    expect(byRef.get("vehicles")?.belongs).toEqual([{ through: { table: "crew_members", link: "vehicle_id", user: "user_id" } }]);
+    expect(byRef.get("vehicle_faults")?.belongs).toEqual([{ via: "vehicle_id" }]);
+    expect(byRef.get("crew_members")?.indexes).toContainEqual(["vehicle_id"]);
+  });
+
+  it("measures a fill from the vehicle's reading before it: the newer of the typed one and its last fill's (P25)", () => {
+    expect(rulesOf("vehicles", "last_fill_reading").rollup).toEqual({ from: "fuel_fills", via: "vehicle_id", latest: { of: "odometer", by: "odometer" } });
+    expect(rulesOf("vehicles", "reading").formula).toEqual({ if: [{ isNull: "last_fill_reading" }, "odometer", { max: ["last_fill_reading", { coalesce: ["odometer", 0] }] }] });
+    expect(rulesOf("fuel_fills", "prev_odometer").copy).toEqual({ via: "vehicle_id", from: "reading", mode: "default" });
+    expect(rulesOf("fuel_fills", "distance").formula).toEqual({ sub: ["odometer", "prev_odometer"] });
+    expect(rulesOf("subcontractors", "spent").formula).toEqual({ mul: ["day_rate", { coalesce: ["days_used", 0] }] });
+    expect(rulesOf("subcontractors", "chased_by_id")).toMatchObject({ staff: true, stamp: { set: "user-id", on: { columns: ["chased_at"] } } });
   });
 
   it("keeps a line's job, visit and crew in step with its note, since a note is one link too far", () => {
@@ -1066,7 +1087,7 @@ describe("the outbox table is the shape the outbox word asks for", () => {
   it("keeps every link of it empty-able, since not every email is about one", () => {
     const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
     // A message is about a contact, a quote, a deal, a site visit, a referral or a showroom booking.
-    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id", "sign_off_id"]);
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"]);
     for (const link of links) expect(link.nullable, link.ref).toBe(true);
   });
 

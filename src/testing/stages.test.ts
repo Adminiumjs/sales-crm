@@ -146,7 +146,7 @@ describe("stage 1, the first release", () => {
     // The columns of kept tables that point into a later part (a follow-up's job; how many jobs a deal has; an e-mail's
     // visit to a job), the two settings only Jobs on site reads, and an action's link to its session, which comes with
     // stage 2 (`stage.json`): the released stage does not move.
-    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id", "sign_off_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"] });
+    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"] });
     expect(JSON.stringify(doc)).not.toContain('"session_id"');
     expect(Object.values((doc as unknown as { outbox: { links: Record<string, string> } }).outbox.links)).not.toContain("booking_id");
     // …and the showroom's three e-mails: no kind, no template.

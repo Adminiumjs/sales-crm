@@ -47,8 +47,8 @@ export type RouteKey =
   | "crews"
   /** The field crew's phone (P22): his day, a job signed off from one of its visits, and his crew's snags. */
   | "myday" | "crewsign" | "mysnags"
-  /** Vehicles and crew (stage 3, P25 part B): the office's Time sheets and Training; the crew's My hours and My certificates. */
-  | "timesheets" | "training" | "myhours" | "mycerts"
+  /** Vehicles and crew (stage 3, P25): the office's six screens; the crew's own vehicle, hours and certificates on his phone. */
+  | "vehicles" | "fuel" | "timesheets" | "training" | "subs" | "iclaims" | "myvan" | "myhours" | "mycerts"
   /** One deal: its room, its comments, its call notes. In no menu: it is reached from a card, a row, a link. */
   | "deal"
   /** A person's own: reached from their name at the top, whatever their role. */
@@ -132,6 +132,11 @@ export const ROUTES: Record<RouteKey, RouteDef> = {
   training: { path: "training", part: "fleet", reads: ["certificates", "crew_members"], icon: "graduation-cap" },
   myhours: { path: "my-hours", part: "fleet", reads: ["time_sheets", "time_sheet_lines"], icon: "clock" },
   mycerts: { path: "my-certificates", part: "fleet", reads: ["certificates"], icon: "badge-check" },
+  vehicles: { path: "vehicles", part: "fleet", reads: ["vehicles"], icon: "truck" },
+  fuel: { path: "fuel", part: "fleet", reads: ["fuel_fills", "vehicles"], icon: "fuel" },
+  subs: { path: "subcontractors", part: "fleet", reads: ["subcontractors"], icon: "users" },
+  iclaims: { path: "insurance-claims", part: "fleet", reads: ["insurance_incidents"], icon: "shield" },
+  myvan: { path: "my-vehicle", part: "fleet", reads: ["vehicles", "vehicle_checks"], icon: "truck" },
   deal: { path: "deals", part: "selling", reads: ["deals"], icon: "columns-3" },
   me: { path: "me", part: null, reads: [], icon: "user-round" },
   mydetails: { path: "my-details", part: null, reads: [], icon: "settings" },
@@ -172,8 +177,8 @@ const SUPPLY: MenuGroup = ["supply", [it("stock"), it("suppliers")]];
 const AFTER_THE_JOB: MenuGroup = ["aftercare", [it("aftercare"), it("feedback"), it("complaints"), it("claims")]];
 const SHOWROOM: MenuGroup = ["showroom", [it("showroom"), it("showfollow"), it("samples"), it("returns"), it("floor")]];
 const JOBS: MenuGroup = ["jobs", [it("deliveries"), it("daysheet"), it("route"), it("signoff"), it("dnotes"), it("snags"), it("waste")]];
-/** Vehicles and crew (stage 3): the design's six, as their screens are built. */
-const FLEET: MenuGroup = ["fleet", [it("timesheets"), it("training")]];
+/** Vehicles and crew (stage 3): the design's six, in its order. */
+const FLEET: MenuGroup = ["fleet", [it("vehicles"), it("fuel"), it("timesheets"), it("training"), it("subs"), it("iclaims")]];
 const without = (group: MenuGroup, routes: readonly RouteKey[]): MenuGroup => [group[0], group[1].filter((item) => !routes.includes(item.route))];
 
 /**
@@ -228,8 +233,8 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
   "front-desk": [["top", [it("deskhome", "home")]], SHOWROOM, ["inbox", [it("inbox")]]],
   // The design's sixteen, and a Settings line for the crews, their people and their days (P3): a crew is set up there, by her.
   "ops-manager": [["top", [it("ophome", "home")]], JOBS, SUPPLY, FLEET, ["settings", [it("crews", "appsettings")]]],
-  // The design's four: My day and Snags (Jobs on site), My hours and My certificates (Vehicles and crew, stage 3).
-  crew: [["top", [it("myday"), it("mysnags"), it("myhours"), it("mycerts")]]],
+  // My day and Snags (Jobs on site); his vehicle, My hours and My certificates (Vehicles and crew, stage 3).
+  crew: [["top", [it("myday"), it("mysnags"), it("myvan"), it("myhours"), it("mycerts")]]],
   "read-only": [
     without(TOP_TEAM, ["nudges"]),
     without(SELL_TEAM, ["handover"]),

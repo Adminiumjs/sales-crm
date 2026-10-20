@@ -15567,7 +15567,8 @@
      },
      "litres": 36.2,
      "cost": 52.85,
-     "odometer": 117940
+     "odometer": 117940,
+     "prev_odometer": 117690
     },
     {
      "vehicle_id": {
@@ -15582,7 +15583,8 @@
      },
      "litres": 35.4,
      "cost": 51.68,
-     "odometer": 118190
+     "odometer": 118190,
+     "prev_odometer": 117940
     },
     {
      "vehicle_id": {
@@ -15597,7 +15599,8 @@
      },
      "litres": 33.1,
      "cost": 48.33,
-     "odometer": 118420
+     "odometer": 118420,
+     "prev_odometer": 118190
     },
     {
      "vehicle_id": {
@@ -15612,7 +15615,8 @@
      },
      "litres": 41.5,
      "cost": 60.59,
-     "odometer": 96300
+     "odometer": 96300,
+     "prev_odometer": 96080
     },
     {
      "vehicle_id": {
@@ -15627,7 +15631,8 @@
      },
      "litres": 40.2,
      "cost": 58.69,
-     "odometer": 96520
+     "odometer": 96520,
+     "prev_odometer": 96300
     },
     {
      "vehicle_id": {
@@ -15642,7 +15647,8 @@
      },
      "litres": 48.9,
      "cost": 71.39,
-     "odometer": 96780
+     "odometer": 96780,
+     "prev_odometer": 96520
     },
     {
      "vehicle_id": {
@@ -16812,7 +16818,8 @@
      "insurance_until": {
       "@day": 156,
       "@week": true
-     }
+     },
+     "email": "petter@ojo-fitting.example"
     },
     {
      "name": "Halden Fit-Out",
@@ -16822,7 +16829,8 @@
      "insurance_until": {
       "@day": 215,
       "@week": true
-     }
+     },
+     "email": "office@halden-fitout.example"
     },
     {
      "name": "Bright Lane Interiors",
@@ -16832,7 +16840,8 @@
      "insurance_until": {
       "@day": 307,
       "@week": true
-     }
+     },
+     "email": "hello@brightlane.example"
     },
     {
      "name": "Marek Sowa",
@@ -16842,7 +16851,8 @@
      "insurance_until": {
       "@day": -28,
       "@week": true
-     }
+     },
+     "email": "marek@sowa-lockers.example"
     },
     {
      "name": "Ivo Nemec",
@@ -16852,7 +16862,8 @@
      "insurance_until": {
       "@day": 125,
       "@week": true
-     }
+     },
+     "email": "ivo@nemec-joinery.example"
     }
    ]
   },

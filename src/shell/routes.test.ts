@@ -84,10 +84,10 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     // With every part on, the front desk has her home and the showroom's five (P19); at the first release, the Inbox alone.
     expect(routesOf(facts(["front-desk"]))).toEqual(["deskhome", "showroom", "showfollow", "samples", "returns", "floor", "inbox"]);
     expect(routesOf(facts(["front-desk"], { part: (id: PartId) => id !== "showroom" }))).toEqual(["inbox"]);
-    // The field crew: his day and his crew's snags (P22), his hours and certificates (P25), and nothing at all while both parts are off (stage 1).
-    expect(routesOf(facts(["crew"]))).toEqual(["myday", "mysnags", "myhours", "mycerts"]);
+    // The field crew: his day and his crew's snags (P22), his vehicle, hours and certificates (P25), and nothing at all while both parts are off (stage 1).
+    expect(routesOf(facts(["crew"]))).toEqual(["myday", "mysnags", "myvan", "myhours", "mycerts"]);
     expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "fleet" }))).toEqual(["myday", "mysnags"]);
-    expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toEqual(["myhours", "mycerts"]);
+    expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toEqual(["myvan", "myhours", "mycerts"]);
     expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" && id !== "fleet" }))).toEqual([]);
   });
 
@@ -103,7 +103,7 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
       const office = role === "ops-manager" || role === "admin" || role === "read-only";
       for (const route of ["timesheets", "training"] as const) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, office]);
     }
-    expect(menuFor(facts(["ops-manager"])).find((group) => group.group === "fleet")?.items.map((item) => item.route)).toEqual(["timesheets", "training"]);
+    expect(menuFor(facts(["ops-manager"])).find((group) => group.group === "fleet")?.items.map((item) => item.route)).toEqual(["vehicles", "fuel", "timesheets", "training", "subs", "iclaims"]);
     // Off while Vehicles and crew is (stages 1 and 2).
     expect(routesOf(facts(["ops-manager"], { part: (id: PartId) => id !== "fleet" }))).not.toContain("timesheets");
   });
@@ -117,6 +117,20 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     for (const role of ["rep", "sales-manager", "account-manager", "marketer", "ops-manager", "crew"] as const) for (const route of showroom) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
     // The admin's groups: Inbox, then the showroom, Jobs on site, After the job, then Supply.
     expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "jobs", "aftercare", "supply", "fleet", "team", "settings"]);
+  });
+
+  it("gives Vehicles and crew's six to the operations manager, the CRM admin and Read-only, and the crew his own vehicle, hours and certificates (P25)", () => {
+    const fleet = ["vehicles", "fuel", "timesheets", "training", "subs", "iclaims"] as const;
+    for (const role of ["ops-manager", "admin", "read-only"] as const) {
+      const group = menuFor(facts([role])).find((one) => one.group === "fleet");
+      expect([role, group?.items.map((item) => item.route)]).toEqual([role, [...fleet]]);
+    }
+    // The operations manager's groups, as the design draws them: home, Jobs on site, Supply, Vehicles and crew; then her Settings line.
+    expect(menuFor(facts(["ops-manager"])).map((group) => group.group)).toEqual(["top", "jobs", "supply", "fleet", "settings"]);
+    for (const role of ["rep", "sales-manager", "account-manager", "marketer", "front-desk", "crew"] as const) for (const route of fleet) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
+    for (const role of ROLE_ORDER.filter((one) => one !== "crew")) for (const route of ["myvan", "myhours", "mycerts"] as const) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
+    // Off with its part: stage 1 and 2 offer none of them.
+    for (const role of ["ops-manager", "admin", "read-only", "crew"] as const) expect(menuFor(facts([role], { part: (id: PartId) => id !== "fleet" })).find((one) => one.group === "fleet")).toBeUndefined();
   });
 });
 
@@ -192,8 +206,8 @@ describe("where a person lands", () => {
 
   it("is nowhere for somebody with nothing switched on", () => {
     expect(homeFor(facts(["crew"]))).toBe("myday");
-    // With Jobs on site off, a crew member of stage 3 lands on his hours; with both of his parts off, nowhere.
-    expect(homeFor(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toBe("myhours");
+    // With Jobs on site off, a crew member of stage 3 lands on his vehicle; with both of his parts off, nowhere.
+    expect(homeFor(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toBe("myvan");
     expect(homeFor(facts(["crew"], { part: (id: PartId) => id !== "jobs" && id !== "fleet" }))).toBeNull();
     expect(homeFor(facts(["front-desk"], { part: () => false }))).toBeNull();
   });
