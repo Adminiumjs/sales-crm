@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "name": "@adminiumjs/app-crm",
+      "version": "0.2.0",
+      "integrity": "sha512-QMUIk218Ur9AldaN3ro/C6gSIQ3MwZ5x9JkjM90WdjirtlzAz65M2zGHFfTdDp0bn8oOnrusGiLDSWmDgelSng==",
+      "publishedAt": "2026-10-20T01:03:59.000Z"
+    }
+  ]
+}
