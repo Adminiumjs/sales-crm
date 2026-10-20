@@ -12,7 +12,10 @@
  *  3. the stage 2 file UPDATES that install while it holds the sample and rows
  *     typed since: nothing is lost, the three new parts arrive switched off,
  *     the follow-up's link to a job is added, and once Jobs on site is
- *     switched on the Field crew is offered.
+ *     switched on the Field crew is offered (gate S2);
+ *  4. the stage 3 file UPDATES that stage-2 install: every table keeps its
+ *     rows, the parts keep their switches, Vehicles and crew arrives off and
+ *     switches on (gate S3).
  *
  * The stage files are cut by the app's own `scripts/stage-manifest.mjs`, the
  * script the release and the browser stand use.
@@ -178,6 +181,39 @@ for (const [dialect, reachable] of LEGS) {
       expect(await roles()).toContain('crm-crew');
       // Stage 3's part is still not one this install has.
       expect((await h.inject({ method: 'PUT', url: '/apps/crm/parts/fleet', payload: { on: true } })).statusCode).toBe(404);
+    }, 600_000);
+
+    it('stage 3 updates that stage-2 install with its data in place: Vehicles and crew arrives switched off, and nothing that was there moves', async () => {
+      // Every table's rows as they stand, the parts as they are (Jobs on site switched on by the test before).
+      const tablesBefore = await crmTables();
+      const rowsBefore = Object.fromEntries(await Promise.all(tablesBefore.map(async (table) => [table, await count(table)] as const)));
+      const partsBefore = await parts();
+
+      const three = stage(3);
+      const next = { ...three.manifest, version: three.manifest.version.replace(/\d+$/, (patch) => String(Number(patch) + 2)) };
+      await h.stageApp(next, packed(three));
+      const updated = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: {} });
+      expect(updated.statusCode, updated.body).toBe(200);
+
+      const made = await crmTables();
+      const want = three.manifest.requiredSchema.tables.map((table) => `crm_${table.ref}`).sort();
+      expect({ extra: made.filter((name) => !want.includes(name)), missing: want.filter((name) => !made.includes(name)) }).toEqual({ extra: [], missing: [] });
+      for (const now of ['crm_vehicles', 'crm_fuel_fills', 'crm_time_sheets', 'crm_certificates', 'crm_subcontractors', 'crm_insurance_incidents']) expect(made, now).toContain(now);
+      // Every table that was there holds the rows it held: none lost, none made by the update.
+      const rowsAfter = Object.fromEntries(await Promise.all(tablesBefore.map(async (table) => [table, await count(table)] as const)));
+      expect(rowsAfter).toEqual(rowsBefore);
+      const open = (await h.rows("select count(*) as c, sum(amount) as a, sum(weighted_value) as w from crm_deals where state = 'open'"))[0]!;
+      expect([n(open['c']), n(open['a']), n(open['w'])]).toEqual([14, 286300, 156562.5]);
+
+      // The parts that were there are as they were; Vehicles and crew is there to switch, and off.
+      const now = await parts();
+      expect(now.map((part) => part.id)).toEqual(['selling', 'quotes', 'accounts', 'team', 'inbox', 'showroom', 'jobs', 'aftercare', 'supply', 'fleet']);
+      for (const was of partsBefore) expect([was.id, now.find((part) => part.id === was.id)!.on]).toEqual([was.id, was.on]);
+      expect(now.find((part) => part.id === 'fleet')!.on).toBe(false);
+      const on = await h.inject({ method: 'PUT', url: '/apps/crm/parts/fleet', payload: { on: true } });
+      expect(on.statusCode, on.body).toBe(200);
+      expect((await parts()).find((part) => part.id === 'fleet')!.on).toBe(true);
+      expect(await roles()).toContain('crm-crew');
     }, 600_000);
   });
 }
