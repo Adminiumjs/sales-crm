@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
 
 env:
-  ADMINIUM_REF: v0.3.29
+  ADMINIUM_REF: v0.3.30
   ADD_ONS_REF: v1.0.12
 
 jobs:
