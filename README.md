@@ -85,9 +85,12 @@ Every "may not" is the server's: a screen without a button is never the only thi
 
 ### The rules
 
-Five are switched on at install: a deal's mark and first history line; a line for each stage
+Ten are switched on at install: a deal's mark and first history line; a line for each stage
 move (two rules, so that a deal moved several times before the rules run keeps every move); the
-amount a quote was sent at; and "approval asked" to the asker's team lead (else the CRM admin).
+amount a quote was sent at; "approval asked" to the asker's team lead (else the CRM admin); a won
+deal's job (Jobs on site); three that tell a crew at once that today's or tomorrow's day sheet
+changed; and an aftercare call booked 28 days after a job is signed off, for the person Settings
+names, else the rep who sold it (After the job). A rule of a part that is off does not run.
 
 Ten tell people and are switched off: a deal gone quiet, stuck in its stage, or closing soon and
 not agreed (the days are the app's settings); a follow-up due; a quote running out; a deal handed
@@ -99,7 +102,9 @@ time, or switches it off.
 
 A quote sent (with the button that opens the customer's page) and accepted; a site visit confirmed,
 moved and cancelled, naming the rep who comes; an introduction thanked; the handover introduction;
-approval asked; the two weekly e-mails. Each in eight languages, in the recipient's.
+approval asked; the two weekly e-mails; a showroom booking and a delivery confirmed, moved and
+cancelled; the customer's signed copy of a sign-off, with what is still to put right; a
+subcontractor asked for their insurance certificate. Each in eight languages, in the recipient's.
 
 ### The console
 
@@ -112,8 +117,10 @@ reader's language; a card of a part that is off is not drawn.
 ## The sample data
 
 "Add sample data" brings Meridian's pipeline: 40 deals (14 open, 8 won, 18 lost), nine quotes, ten
-site visits, seventeen enquiries, the team's targets, one-to-ones, coaching and a cover, and eleven
-people in the eight roles with the team "Sales". The sample's people cannot sign in; they are there
+site visits, seventeen enquiries, the team's targets, one-to-ones, coaching and a cover; the
+showroom's bookings and samples; eight jobs with their visits, sign-offs and snags; aftercare calls,
+complaints and claims; two vans, their fuel and checks, the crews' time sheets and certificates;
+688 rows in 69 tables, and sixteen people in the nine roles, with the team "Sales" and two crews. The sample's people cannot sign in; they are there
 so every deal, target and follow-up has a name on it. Dates are written as days from the day the
 sample is added, so its late follow-ups are late on any day. Where Inventory is installed, the
 sample also brings ten stock lines, six suppliers and four orders on their way into it, posted by
