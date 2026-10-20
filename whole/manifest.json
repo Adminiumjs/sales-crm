@@ -17058,13 +17058,21 @@
           "initial": "open",
           "moves": {
             "open": [
-              "sent"
+              {
+                "to": "sent",
+                "requires": {
+                  "children": {
+                    "time_sheet_lines": 1
+                  }
+                }
+              }
             ],
             "sent": [
               {
                 "to": "signed-off",
                 "roles": [
-                  "ops-manager"
+                  "ops-manager",
+                  "admin"
                 ]
               },
               {
@@ -17078,12 +17086,20 @@
                   ]
                 },
                 "roles": [
-                  "ops-manager"
+                  "ops-manager",
+                  "admin"
                 ]
               }
             ],
             "sent-back": [
-              "sent"
+              {
+                "to": "sent",
+                "requires": {
+                  "children": {
+                    "time_sheet_lines": 1
+                  }
+                }
+              }
             ]
           },
           "lock": {
@@ -17331,6 +17347,102 @@
               "ar-EG": "سبب الإعادة",
               "zh-CN": "退回原因",
               "zh-TW": "退回原因"
+            }
+          },
+          {
+            "ref": "sent_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "sent"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Sent at",
+              "de-DE": "Eingereicht am",
+              "fr-FR": "Envoyée le",
+              "da-DK": "Sendt",
+              "cs-CZ": "Odesláno",
+              "ar-EG": "أُرسل في",
+              "zh-CN": "提交时间",
+              "zh-TW": "送出時間"
+            }
+          },
+          {
+            "ref": "hours_total",
+            "type": "decimal",
+            "scale": 2,
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "time_sheet_lines",
+                "via": "sheet_id",
+                "sum": "hours"
+              }
+            },
+            "label": {
+              "en-US": "Hours on the job",
+              "de-DE": "Stunden im Einsatz",
+              "fr-FR": "Heures sur le chantier",
+              "da-DK": "Timer på opgaven",
+              "cs-CZ": "Hodiny na zakázce",
+              "ar-EG": "ساعات العمل",
+              "zh-CN": "工作小时",
+              "zh-TW": "工作時數"
+            }
+          },
+          {
+            "ref": "travel_total",
+            "type": "decimal",
+            "scale": 2,
+            "default": 0,
+            "rules": {
+              "rollup": {
+                "from": "time_sheet_lines",
+                "via": "sheet_id",
+                "sum": "travel_hours"
+              }
+            },
+            "label": {
+              "en-US": "Travel hours",
+              "de-DE": "Fahrtstunden",
+              "fr-FR": "Heures de trajet",
+              "da-DK": "Køretimer",
+              "cs-CZ": "Hodiny na cestě",
+              "ar-EG": "ساعات التنقل",
+              "zh-CN": "路程小时",
+              "zh-TW": "交通時數"
+            }
+          },
+          {
+            "ref": "total_hours",
+            "type": "decimal",
+            "scale": 2,
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "add": [
+                  "hours_total",
+                  "travel_total"
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Hours in all",
+              "de-DE": "Stunden gesamt",
+              "fr-FR": "Heures au total",
+              "da-DK": "Timer i alt",
+              "cs-CZ": "Hodiny celkem",
+              "ar-EG": "مجموع الساعات",
+              "zh-CN": "总小时",
+              "zh-TW": "總時數"
             }
           },
           {
@@ -19599,6 +19711,12 @@
               "ar-EG": "تنبيه قبل انتهاء الشهادة (أيام)",
               "zh-CN": "证书到期前提醒（天）",
               "zh-TW": "證照到期前提醒（天）"
+            },
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 180
+              }
             }
           },
           {
@@ -19656,6 +19774,12 @@
               "ar-EG": "تنبيه قبل فحص المركبة (أيام)",
               "zh-CN": "车辆年检前提醒（天）",
               "zh-TW": "車輛檢驗前提醒（天）"
+            },
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 90
+              }
             }
           },
           {
@@ -19990,6 +20114,7 @@
         "table:@fuel_fills:update",
         "table:@fuel_fills:delete",
         "table:@time_sheets:read",
+        "table:@time_sheets:update",
         "table:@time_sheet_lines:read",
         "table:@certificates:read",
         "table:@certificates:create",
@@ -20212,6 +20337,23 @@
             "discount",
             "price_id"
           ]
+        },
+        "time_sheets": {
+          "writable": [
+            "state",
+            "sent_back_note"
+          ],
+          "writableValues": {
+            "state": [
+              "signed-off",
+              "sent-back"
+            ]
+          },
+          "writableFrom": {
+            "state": [
+              "sent"
+            ]
+          }
         }
       },
       "tables": [

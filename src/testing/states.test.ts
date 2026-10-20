@@ -68,7 +68,8 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
     initial: "to-raise",
     moves: ["to-raise → with-supplier", "to-raise → turned-down", "with-supplier → parts-coming", "with-supplier → turned-down", "parts-coming → sorted", "parts-coming → turned-down", "sorted → turned-down"],
   },
-  time_sheets: { column: "state", initial: "open", moves: ["open → sent", "sent → signed-off: only ops-manager", "sent → sent-back: sent_back_note filled; only ops-manager", "sent-back → sent"] },
+  // A week is sent with a day in it at least; the operations manager or the CRM admin answers it (P25).
+  time_sheets: { column: "state", initial: "open", moves: ["open → sent: 1 time_sheet_lines", "sent → signed-off: only ops-manager, admin", "sent → sent-back: sent_back_note filled; only ops-manager, admin", "sent-back → sent: 1 time_sheet_lines"] },
   insurance_incidents: { column: "state", initial: "open", moves: ["open → settled"] },
 };
 

@@ -23,6 +23,7 @@ import { DAYS, type Day } from "../appsettings/data.ts";
 import { Card } from "../appsettings/parts.tsx";
 import { crewPeople, dayHoursOf, num, readCrewFacts, truthy, type Crew, type CrewFacts, type Member } from "./data.ts";
 import { SettingNumbers } from "../appsettings/Numbers.tsx";
+import { FleetNumbers } from "../hours/FleetSettings.tsx";
 import { hoursOf, useJobsScreen } from "./parts.tsx";
 
 /** A day's name from the reader's language: 2024-01-01 was a Monday. */
@@ -56,6 +57,7 @@ export function CrewsTab({ session }: { session: StaffSession }) {
             {canAdd && <NewCrew onDone={again} />}
             <MailsCard facts={facts} onDone={again} />
             {session.part("jobs") && <SnagDays />}
+            {session.part("fleet") && <FleetNumbers />}
             {!canCrews && <p className="crm-jb-quiet">{t("jb.set.ask")}</p>}
           </>
         )}

@@ -65,6 +65,10 @@ import { Week } from "./week/Week.tsx";
 import { MyDay } from "./crew/MyDay.tsx";
 import { MySnags } from "./crew/MySnags.tsx";
 import { SignOffJob } from "./crew/SignOffJob.tsx";
+import { MyCerts } from "./hours/MyCerts.tsx";
+import { MyHours } from "./hours/MyHours.tsx";
+import { TimeSheets } from "./hours/TimeSheets.tsx";
+import { Training } from "./hours/Training.tsx";
 
 register("today", Today);
 register("week", Week);
@@ -129,3 +133,7 @@ register("crews", Settings);
 register("myday", MyDay);
 register("crewsign", SignOffJob);
 register("mysnags", MySnags);
+register("timesheets", TimeSheets);
+register("training", Training);
+register("myhours", MyHours);
+register("mycerts", MyCerts);

@@ -132,8 +132,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
   [["vehicle_faults"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC", "R"],
   [["vehicle_checks", "fuel_fills"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
-  // The sign-off and the send-back are the sheet's: a line has no state, so the manager reads the lines.
-  [["time_sheets"], "R", "-", "-", "-", "-", "-", "RU", "RCU:own", "R"],
+  // The sign-off and the send-back are the sheet's: a line has no state, so the manager (and the CRM admin, P25) reads the lines.
+  [["time_sheets"], "RU", "-", "-", "-", "-", "-", "RU", "RCU:own", "R"],
   [["time_sheet_lines"], "R", "-", "-", "-", "-", "-", "R", "RCU:own", "R"],
   [["certificates"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
   [["subcontractors", "insurance_incidents"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
@@ -797,7 +797,7 @@ describe("a discount is approved by the sales manager or the CRM admin, and by n
   });
 });
 
-describe("a time sheet is signed off or sent back by the operations manager", () => {
+describe("a time sheet is signed off or sent back by the operations manager or the CRM admin", () => {
   const sheet = tableOf.get("time_sheets");
   const movesOf = (from: string): Move[] => (sheet?.states?.moves[from] ?? []).map((move) => (typeof move === "string" ? { to: move } : move));
 
@@ -808,17 +808,19 @@ describe("a time sheet is signed off or sent back by the operations manager", ()
         for (const move of moves) if (typeof move === "object" && move.roles !== undefined) kept.push(`${table.ref}: ${from} → ${move.to} [${move.roles.join(", ")}]`);
       }
     }
-    expect(kept).toEqual(["time_sheets: sent → signed-off [ops-manager]", "time_sheets: sent → sent-back [ops-manager]"]);
+    expect(kept).toEqual(["time_sheets: sent → signed-off [ops-manager, admin]", "time_sheets: sent → sent-back [ops-manager, admin]"]);
     expect(movesOf("sent").map((move) => move.to)).toEqual(["signed-off", "sent-back"]);
   });
 
-  it("lets her write the state and the note, from a sent sheet, and nothing else of it", () => {
-    expect(limitOf("ops-manager", "time_sheets")).toEqual({
-      writable: ["state", "sent_back_note"],
-      writableValues: { state: ["signed-off", "sent-back"] },
-      writableFrom: { state: ["sent"] },
-    });
-    expect(held("ops-manager", "time_sheet_lines")).toEqual(["read"]);
+  it("lets her (and the CRM admin) write the state and the note, from a sent sheet, and nothing else of it", () => {
+    for (const role of ["ops-manager", "admin"] as const) {
+      expect(limitOf(role, "time_sheets"), role).toEqual({
+        writable: ["state", "sent_back_note"],
+        writableValues: { state: ["signed-off", "sent-back"] },
+        writableFrom: { state: ["sent"] },
+      });
+      expect(held(role, "time_sheet_lines"), role).toEqual(["read"]);
+    }
   });
 
   it("lets the crew change a sheet only while it is open or sent back, and only send it", () => {
@@ -838,7 +840,7 @@ describe("a time sheet is signed off or sent back by the operations manager", ()
   it("gives no other role a change of a time sheet or of its lines", () => {
     for (const key of ROLES) {
       if (key === "ops-manager" || key === "crew") continue;
-      for (const ref of ["time_sheets", "time_sheet_lines"]) for (const action of ["create", "update", "delete"] as const) expect(holds(key, ref, action), `${key}: ${ref} ${action}`).toBe(false);
+      for (const ref of ["time_sheets", "time_sheet_lines"]) for (const action of ["create", "update", "delete"] as const) expect(holds(key, ref, action), `${key}: ${ref} ${action}`).toBe(key === "admin" && ref === "time_sheets" && action === "update");
     }
   });
 });

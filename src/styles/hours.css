@@ -1,0 +1,396 @@
+/*
+ * Time sheets and training (P25, part B): the office's Time sheets and
+ * Training, the crew's My hours and My certificates. The design's measures,
+ * logical properties only (Arabic reads right to left with nothing to undo),
+ * the tokens only (light and dark), and nothing wider than a 390 px phone.
+ */
+
+/* ── the office: Time sheets ─────────────────────────────────────────────── */
+.crm-hr-jobline {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-subtle);
+  text-wrap: pretty;
+}
+.crm-hr-total {
+  font-size: 17px;
+  font-weight: 700;
+}
+.crm-hr-total[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-hr-lines {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-block-start: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-hr-lines li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+}
+.crm-hr-lines li[data-off="1"] {
+  background: var(--surface-3);
+}
+.crm-hr-day {
+  flex-shrink: 0;
+  min-inline-size: 64px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-hr-what {
+  flex: 1;
+  min-inline-size: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.crm-hr-hours {
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.crm-hr-foot {
+  margin: 8px 0 0;
+}
+.crm-hr-signed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--pos);
+}
+.crm-hr-acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-hr-acts .crm-input {
+  flex: 1 1 180px;
+  min-inline-size: 0;
+}
+.crm-hr-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+.crm-hr-hint {
+  margin: 6px 0 0;
+}
+.crm-hr .crm-btn[data-tone="danger"] {
+  color: var(--danger);
+}
+
+/* ── the crew's phone: My hours ──────────────────────────────────────────── */
+.crm-hr-weekline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+}
+.crm-hr-week {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.crm-hr-days {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-hr-day-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 13px 14px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-hr-dayno {
+  inline-size: 40px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.crm-hr-dow {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--fg-subtle);
+}
+.crm-hr-num {
+  font-size: 18px;
+  font-weight: 700;
+}
+.crm-hr-day-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-hr-day-words .crm-hr-what {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.crm-hr-visit {
+  margin-block-start: 2px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  overflow-wrap: anywhere;
+}
+.crm-hr-split {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-block-start: 7px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-hr-split b {
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-hr-add {
+  inline-size: 100%;
+}
+.crm-hr-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-block-start: 12px;
+}
+.crm-hr-tot {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-hr-tot-all {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.crm-hr-tot-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-hr-tot-all .crm-hr-tot-label {
+  font-weight: 800;
+  color: var(--fg);
+}
+.crm-hr-tot-value {
+  margin-block-start: 4px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.crm-hr-card {
+  margin-block-start: 14px;
+  padding: 15px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-hr-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.crm-hr-back {
+  font-weight: 700;
+  color: var(--warn);
+}
+.crm-hr-card .crm-hr-backnote {
+  margin-block-start: 8px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 13.5px;
+  overflow-wrap: anywhere;
+}
+.crm-hr-send {
+  inline-size: 100%;
+  block-size: 50px;
+  margin-block-start: 13px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 15px;
+  font-weight: 800;
+}
+.crm-hr-send:disabled {
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+  cursor: not-allowed;
+}
+.crm-hr-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* ── the crew's phone: My certificates ───────────────────────────────────── */
+.crm-hr-lead {
+  margin: 7px 0 0;
+  font-size: 13.5px;
+}
+.crm-hr-certs {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-hr-cert {
+  padding: 14px 15px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-hr-cert[data-tone="danger"] {
+  border-inline-start-color: var(--danger);
+}
+.crm-hr-cert[data-tone="warn"] {
+  border-inline-start-color: var(--warn);
+}
+.crm-hr-cert-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crm-hr-cert-words {
+  flex: 1;
+  min-inline-size: 170px;
+}
+.crm-hr-until {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-start: 5px;
+  font-size: 12.5px;
+}
+.crm-hr-until .crm-mono {
+  font-weight: 700;
+}
+.crm-hr-left {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-hr-left[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-hr-left[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-hr-course {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 10px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── the office: Training ────────────────────────────────────────────────── */
+.crm-hr-holder-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.crm-hr-summary {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pos);
+}
+.crm-hr-summary[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-hr-summary[data-tone="warn"] {
+  color: var(--warn);
+}
+.crm-hr-certgrid {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 11px 0 0;
+  border-block-start: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: 6px;
+}
+.crm-hr-certrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-hr-certrow[data-tone="danger"] {
+  background: var(--danger-soft);
+}
+.crm-hr-certrow[data-tone="warn"] {
+  background: var(--warn-soft);
+}
+.crm-hr-certname {
+  flex: 1 1 9em;
+  min-inline-size: 0;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.crm-hr-certrow[data-tone="danger"] .crm-hr-certname,
+.crm-hr-certrow[data-tone="danger"] .crm-hr-when {
+  color: var(--danger);
+}
+.crm-hr-certrow[data-tone="warn"] .crm-hr-certname,
+.crm-hr-certrow[data-tone="warn"] .crm-hr-when {
+  color: var(--warn);
+}
+.crm-hr-certend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+.crm-hr-when {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+
+@media (max-width: 480px) {
+  .crm-hr .crm-jb-row-top {
+    flex-wrap: wrap;
+  }
+}

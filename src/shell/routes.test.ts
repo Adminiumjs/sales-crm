@@ -84,16 +84,28 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     // With every part on, the front desk has her home and the showroom's five (P19); at the first release, the Inbox alone.
     expect(routesOf(facts(["front-desk"]))).toEqual(["deskhome", "showroom", "showfollow", "samples", "returns", "floor", "inbox"]);
     expect(routesOf(facts(["front-desk"], { part: (id: PartId) => id !== "showroom" }))).toEqual(["inbox"]);
-    // The field crew: his day and his crew's snags (P22), and nothing at all while Jobs on site is off (stage 1).
-    expect(routesOf(facts(["crew"]))).toEqual(["myday", "mysnags"]);
-    expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toEqual([]);
+    // The field crew: his day and his crew's snags (P22), his hours and certificates (P25), and nothing at all while both parts are off (stage 1).
+    expect(routesOf(facts(["crew"]))).toEqual(["myday", "mysnags", "myhours", "mycerts"]);
+    expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "fleet" }))).toEqual(["myday", "mysnags"]);
+    expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toEqual(["myhours", "mycerts"]);
+    expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" && id !== "fleet" }))).toEqual([]);
   });
 
   it("keeps the crew's phone to the crew: no other role's menu holds it, and the sign-off page is lit by his day", () => {
-    for (const route of ["myday", "mysnags", "crewsign"] as const) {
+    for (const route of ["myday", "mysnags", "crewsign", "myhours", "mycerts"] as const) {
       for (const role of ROLE_ORDER.filter((one) => one !== "crew")) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
       expect(inMenu(route, ["crm-crew"]), route).toBe(true);
     }
+  });
+
+  it("gives Time sheets and Training to the operations manager, the CRM admin and Read-only, and to nobody else (P25)", () => {
+    for (const role of ROLE_ORDER) {
+      const office = role === "ops-manager" || role === "admin" || role === "read-only";
+      for (const route of ["timesheets", "training"] as const) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, office]);
+    }
+    expect(menuFor(facts(["ops-manager"])).find((group) => group.group === "fleet")?.items.map((item) => item.route)).toEqual(["timesheets", "training"]);
+    // Off while Vehicles and crew is (stages 1 and 2).
+    expect(routesOf(facts(["ops-manager"], { part: (id: PartId) => id !== "fleet" }))).not.toContain("timesheets");
   });
 
   it("gives the showroom's five to the front desk, the CRM admin and Read-only, and to nobody else (P19)", () => {
@@ -104,7 +116,7 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     }
     for (const role of ["rep", "sales-manager", "account-manager", "marketer", "ops-manager", "crew"] as const) for (const route of showroom) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, false]);
     // The admin's groups: Inbox, then the showroom, Jobs on site, After the job, then Supply.
-    expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "jobs", "aftercare", "supply", "team", "settings"]);
+    expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "jobs", "aftercare", "supply", "fleet", "team", "settings"]);
   });
 });
 
@@ -180,7 +192,9 @@ describe("where a person lands", () => {
 
   it("is nowhere for somebody with nothing switched on", () => {
     expect(homeFor(facts(["crew"]))).toBe("myday");
-    expect(homeFor(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toBeNull();
+    // With Jobs on site off, a crew member of stage 3 lands on his hours; with both of his parts off, nowhere.
+    expect(homeFor(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toBe("myhours");
+    expect(homeFor(facts(["crew"], { part: (id: PartId) => id !== "jobs" && id !== "fleet" }))).toBeNull();
     expect(homeFor(facts(["front-desk"], { part: () => false }))).toBeNull();
   });
 });

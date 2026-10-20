@@ -379,9 +379,11 @@ export const PARTS: readonly { id: PartId; name: MessageKey; line: MessageKey; r
   { id: "jobs", name: "nav.group.jobs", line: "aset.part.jobs", roles: ["admin", "ops-manager", "crew", "read-only"] },
   { id: "aftercare", name: "nav.group.aftercare", line: "aset.part.aftercare", roles: ["admin", "account-manager", "read-only"] },
   { id: "supply", name: "nav.group.supply", line: "aset.part.supply", roles: ["admin", "ops-manager", "read-only"], needs: "aset.part.supply.needs" },
+  // Stage 3's, once the install has it.
+  { id: "fleet", name: "nav.group.fleet", line: "aset.part.fleet", roles: ["admin", "ops-manager", "crew", "read-only"] },
 ];
 const ALWAYS: readonly PartId[] = ["selling", "accounts", "team"];
-const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package", showroom: "store", jobs: "truck", aftercare: "heart-handshake" };
+const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package", showroom: "store", jobs: "truck", aftercare: "heart-handshake", fleet: "truck" };
 
 export function Parts({ session, f }: { session: StaffSession; f: Formatters }) {
   const t = useT();

@@ -40,6 +40,9 @@ export const BOUNDS: Record<string, readonly [number, number]> = {
   aftercare_days: [1, 365],
   complaint_answer_days: [1, 30],
   claim_red_days: [1, 180],
+  // Stage 3's (P25): when a certificate runs out soon, when a vehicle's inspection is due soon.
+  certificate_warn_days: [1, 180],
+  inspection_warn_days: [1, 90],
 };
 
 export interface Place {

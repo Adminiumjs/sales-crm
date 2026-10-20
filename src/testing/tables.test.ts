@@ -265,7 +265,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   vehicle_checks: { nullable: [] },
   vehicle_faults: { nullable: ["raised_by_id", "fixed_on"] },
   fuel_fills: { nullable: [] },
-  time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_back_note"] },
+  // When it was sent is stamped on the move (B20); its hours in all are the server's, empty only while a total is.
+  time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_at", "sent_back_note", "total_hours"] },
   time_sheet_lines: { nullable: ["visit_id", "job_id"] },
   certificates: { nullable: ["course_on"] },
   subcontractors: { nullable: ["days_used", "insurance_until", "certificate", "email", "chased_at"] },

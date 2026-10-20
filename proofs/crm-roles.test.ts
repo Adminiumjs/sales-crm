@@ -479,8 +479,14 @@ for (const [dialect, reachable] of LEGS) {
       t('1 admin reads every deal', await keys('tessa', 'deals'), all);
       t('2 admin reads no action that is not hers', await keys('tessa', 'actions'), await ids(`SELECT id FROM ${s.real('actions')} WHERE owner_id = '${s.id['tessa']!}'`));
       t('3 admin reads no conversation she is not in', await keys('tessa', 'messages'), []);
-      const sheet = (await ids(`SELECT id FROM ${s.real('time_sheets')} WHERE state = 'sent'`))[0]!;
-      t('4 admin does not sign a time sheet off', refused(await patch('tessa', 'time_sheets', sheet, { state: 'signed-off' })), '403');
+      const sheet = (await ids(`SELECT id FROM ${s.real('time_sheets')} WHERE state = 'sent' ORDER BY id`))[0]!;
+      // Sean's: no later try reads it (Yusuf's and Cal's are tried below).
+      const otherSheet = (await ids(`SELECT id FROM ${s.real('time_sheets')} WHERE state = 'sent' AND user_id = '${s.id['sean']!}'`))[0]!;
+      // P25: the CRM admin answers a sent week as the operations manager does; once signed off, nobody changes it.
+      t('4 admin signs a sent time sheet off, and then changes it no more', [
+        said(await patch('tessa', 'time_sheets', otherSheet!, { state: 'signed-off' })),
+        refused(await patch('tessa', 'time_sheets', otherSheet!, { state: 'sent-back', sent_back_note: 'Again' })).startsWith('4'),
+      ], ['ok', true]);
       t('5 admin reads the outbox; nobody else does', [await keys('tessa', 'outbox'), String(await keys('ivy', 'outbox')).slice(0, 3)], [[], '403']);
 
       // ── Sales manager (Ivy), and a rep in no team of hers (Noor) ──────────────
@@ -864,6 +870,9 @@ for (const [dialect, reachable] of LEGS) {
 
       // A time sheet: its fitter sends it; signing it off and sending it back are the Operations manager's buttons.
       const sheet = made(await post('cal', 'time_sheets', { user_id: s.id['cal'], week_of: '2027-03-01' }));
+      // P25: a week is sent with a day written in it.
+      expect((await press('cal', 'time_sheets', sheet, 'send', 'open')).statusCode).toBe(409);
+      expect(said(await post('cal', 'time_sheet_lines', { sheet_id: sheet, day: '2027-03-01', what: 'Depot', hours: 7, travel_hours: 0 }))).toBe('ok');
       expect(said(await press('cal', 'time_sheets', sheet, 'send', 'open'))).toBe('ok');
       expect((await press('cal', 'time_sheets', sheet, 'sign-off', 'sent')).statusCode).toBeGreaterThanOrEqual(400);
       expect((await press('ada', 'time_sheets', sheet, 'send-back', 'sent')).statusCode).toBeGreaterThanOrEqual(400);

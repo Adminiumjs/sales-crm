@@ -35,6 +35,7 @@ import { visits } from "../strings/visits.ts";
 import { showroom } from "../strings/showroom.ts";
 import { jobs } from "../strings/jobs.ts";
 import { crew } from "../strings/crew.ts";
+import { hours } from "../strings/hours.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
 
 /**
@@ -74,6 +75,7 @@ const AREAS = [
   showroom satisfies Area<(typeof showroom)["en-US"]>,
   jobs satisfies Area<(typeof jobs)["en-US"]>,
   crew satisfies Area<(typeof crew)["en-US"]>,
+  hours satisfies Area<(typeof hours)["en-US"]>,
 ] as const;
 
 /**
@@ -112,4 +114,5 @@ export type MessageKey =
   | keyof (typeof supply)["en-US"]
   | keyof (typeof showroom)["en-US"]
   | keyof (typeof jobs)["en-US"]
-  | keyof (typeof crew)["en-US"];
+  | keyof (typeof crew)["en-US"]
+  | keyof (typeof hours)["en-US"];
