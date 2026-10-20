@@ -48,6 +48,10 @@
   font-weight: 700;
   opacity: 0.75;
 }
+/* On a pressed chip's tint, the faded accent read 3.24:1 (axe, P26): the count is drawn at full strength there, as the label is. */
+.crm-chip-btn[aria-pressed="true"] .crm-ac-chip-count {
+  opacity: 1;
+}
 .crm-ac-list {
   display: flex;
   flex-direction: column;

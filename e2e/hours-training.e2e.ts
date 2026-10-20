@@ -24,7 +24,7 @@ import AxeBuilder from "@axe-core/playwright";
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, inArabic, rows, STAFF, watch } from "./helpers.ts";
+import { csrf, inArabic, rows, STAFF, unfoldMenu, watch } from "./helpers.ts";
 import type { StandState } from "./stand.mjs";
 
 const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
@@ -52,6 +52,8 @@ test("Training: the sample's certificates with the ledger's figures, as the serv
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(STAFF);
+  // Her menu is long (Jobs on site, Supply, Vehicles and crew): it starts folded.
+  await unfoldMenu(page);
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Training" }).click();
   await expect(page).toHaveURL(/\/training$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Training records");

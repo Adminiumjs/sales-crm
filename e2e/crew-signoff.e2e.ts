@@ -89,6 +89,17 @@ async function takeAway(data: Data, tessa: APIRequestContext): Promise<void> {
         for (const row of await rows<{ id: number }>(me, data, ref, { column: "job_id", op: "eq", value: job.id })) expect((await me.delete(data(ref, `/${String(row.id)}?confirm=true`), { headers })).status(), ref).toBeLessThan(300);
       };
       for (const ref of ["sign_offs", "snags", "delivery_notes"]) await under(ref);
+      // What the signed job set off or may hold from a later part: the aftercare call its sign-off books (rule 16, once the
+      // sign-off moves the job to signed off), and a time sheet's line on its visit (stage 3). A table this stage lacks is passed over.
+      for (const ref of ["follow_ups", "time_sheet_lines"]) {
+        let held: { id: number }[] = [];
+        try {
+          held = await rows<{ id: number }>(me, data, ref, { column: "job_id", op: "eq", value: job.id });
+        } catch {
+          continue;
+        }
+        for (const row of held) expect((await me.delete(data(ref, `/${String(row.id)}?confirm=true`), { headers })).status(), ref).toBeLessThan(300);
+      }
       for (const visit of await rows<{ id: number; state: string }>(me, data, "job_visits", { column: "job_id", op: "eq", value: job.id })) {
         if (visit.state === "done") await me.patch(data("job_visits", `/${String(visit.id)}`), { data: { values: { state: "booked" } }, headers });
         expect((await me.delete(data("job_visits", `/${String(visit.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);

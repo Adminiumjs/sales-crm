@@ -85,9 +85,9 @@ test("My vehicle: his crew's van only, from My day and his menu; the check befor
   try {
     await page.goto(STAFF);
     await expect(page).toHaveURL(/\/my-day$/);
-    // His menu: the two of stage 2, and his vehicle.
+    // His menu: the two of stage 2, then his vehicle, his hours and his certificates (stage 3).
     await page.getByRole("button", { name: "Open the menu" }).click();
-    await expect(page.getByRole("dialog", { name: "Menu" }).getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(["My day", "Snags", "My vehicle"]);
+    await expect(page.getByRole("dialog", { name: "Menu" }).getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(["My day", "Snags", "My vehicle", "My hours", "My certificates"]);
     await page.keyboard.press("Escape");
     // From My day, one press.
     await page.getByRole("link", { name: "My vehicle: its check, a fault, a fuel fill" }).click();

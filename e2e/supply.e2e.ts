@@ -199,10 +199,12 @@ test("the operations manager lands on Stock, reads no open deal, and is told how
   await page.goto(STAFF);
   const menu = page.getByRole("navigation", { name: "Menu" });
   if (stand.parts.includes("jobs")) {
-    // From stage 2 her home is Jobs on site's; Supply follows the jobs' seven lines, and Settings (her crews) closes the menu.
+    // From stage 2 her home is Jobs on site's; Supply follows the jobs' seven lines, then (stage 3) Vehicles and crew's six,
+    // and Settings (her crews) closes the menu.
     await expect(page).toHaveURL(/\/home$/);
     await unfoldMenu(page);
-    await expect(menu.getByRole("link")).toHaveText(["Home", "Deliveries", "Day sheet", "Route", "Sign-off", "Delivery notes", "Job snag list", "Recycling and disposal", "Stock and lead times", "Supplier scorecard", "Settings"]);
+    const fleet = stand.parts.includes("fleet") ? ["Vehicles", "Fuel", "Time sheets", "Training", "Subcontractors", "Insurance claims"] : [];
+    await expect(menu.getByRole("link")).toHaveText(["Home", "Deliveries", "Day sheet", "Route", "Sign-off", "Delivery notes", "Job snag list", "Recycling and disposal", "Stock and lead times", "Supplier scorecard", ...fleet, "Settings"]);
     await menu.getByRole("link", { name: "Stock and lead times" }).click();
   } else {
     // At stage 1 her menu is Supply, and her first page is Stock (her home's part is a later stage's).

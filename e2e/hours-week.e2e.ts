@@ -113,7 +113,7 @@ test("My hours: his own week as the server keeps it, sent and read only; a crew-
   const problems = watch(page);
   await page.goto(STAFF);
   await page.getByRole("button", { name: "Open the menu" }).click();
-  await expect(page.getByRole("dialog", { name: "Menu" }).getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(["My day", "Snags", "My hours", "My certificates"]);
+  await expect(page.getByRole("dialog", { name: "Menu" }).getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(["My day", "Snags", "My vehicle", "My hours", "My certificates"]);
   await page.getByRole("dialog", { name: "Menu" }).getByRole("link", { name: "My hours" }).click();
   await expect(page).toHaveURL(/\/my-hours$/);
   await expect(page.getByTestId("hr-mh-week")).toHaveText("Mon, Jul 20 – Fri, Jul 24");

@@ -43,9 +43,9 @@ test("My day: he lands on today, his crew and its people; a day with a visit has
   const problems = watch(page);
   await page.goto(STAFF);
   await expect(page).toHaveURL(/\/my-day$/);
-  // His menu: the two screens of stage 2, and nothing else.
+  // His menu: the two screens of stage 2, and nothing else; from stage 3 his vehicle, his hours and his certificates after them.
   await page.getByRole("button", { name: "Open the menu" }).click();
-  await expect(page.getByRole("dialog", { name: "Menu" }).getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(["My day", "Snags"]);
+  await expect(page.getByRole("dialog", { name: "Menu" }).getByRole("navigation", { name: "Menu" }).getByRole("link")).toHaveText(stand.parts.includes("fleet") ? ["My day", "Snags", "My vehicle", "My hours", "My certificates"] : ["My day", "Snags"]);
   await page.keyboard.press("Escape");
   await expect(page.getByTestId("cw-crew")).toHaveText("Blue crew");
   await expect(page.getByTestId("cw-mates")).toHaveText("Yusuf Adeyemi · Cal Brennan");
@@ -202,7 +202,7 @@ test("Snags: his crew's, open first, with the server's three counts; no other cr
   expect(problems).toEqual([]);
 });
 
-test("his own: My profile holds his name, crew, phone, language and alerts and no figure; Jump lists his screens, no record and no action", async ({ as }) => {
+test("his own: My profile holds his name, crew, phone, language and alerts and no figure; Jump lists his screens, no record and no action", async ({ as, stand }) => {
   const context = await as("f_yusuf", PHONE);
   const page = await context.newPage();
   const problems = watch(page);
@@ -219,12 +219,12 @@ test("his own: My profile holds his name, crew, phone, language and alerts and n
   // Notifications lists what can reach him: a change to a visit of his.
   await page.goto(`${STAFF}notifications`);
   await expect(page.getByTestId("told-reasons")).toContainText("A visit of mine today or tomorrow is changed");
-  // Jump (N1): his two screens, and nothing else: no action, and no record whatever he types.
+  // Jump (N1): his two screens (from stage 3, his five), and nothing else: no action, and no record whatever he types.
   await page.goto(`${STAFF}my-day`);
   await expect(page.getByTestId("cw-day")).toBeVisible();
   await page.keyboard.press("Control+k");
   const jump = page.getByRole("dialog", { name: "Jump" });
-  await expect(jump.getByRole("option")).toHaveText([/My day/, /Snags/]);
+  await expect(jump.getByRole("option")).toHaveText(stand.parts.includes("fleet") ? [/My day/, /Snags/, /My vehicle/, /My hours/, /My certificates/] : [/My day/, /Snags/]);
   await jump.getByRole("combobox").fill("Cobalt");
   await page.waitForTimeout(2000);
   await expect(jump.getByRole("option")).toHaveCount(0);

@@ -54,7 +54,8 @@ test("Vehicles, as the operations manager: the ledger's figures, each the server
     await page.goto(STAFF);
     await unfoldMenu(page);
     const menu = page.getByRole("navigation", { name: "Menu" });
-    await expect(menu.locator("#crm-menu-fleet a")).toHaveText(["Vehicles", "Fuel", "Subcontractors", "Insurance claims"]);
+    // The group in the design's order: the four here, and Time sheets and Training (hours-*.e2e.ts) between them.
+    await expect(menu.locator("#crm-menu-fleet a")).toHaveText(["Vehicles", "Fuel", "Time sheets", "Training", "Subcontractors", "Insurance claims"]);
     await menu.getByRole("link", { name: "Vehicles", exact: true }).click();
     await expect(page).toHaveURL(/\/vehicles$/);
 
@@ -315,7 +316,7 @@ test("the CRM admin has the four, with the company named; Read-only reads each w
   const page = await tessa.newPage();
   await page.goto(`${STAFF}insurance-claims`);
   await unfoldMenu(page);
-  for (const name of ["Vehicles", "Fuel", "Subcontractors", "Insurance claims"]) await expect(page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name, exact: true })).toBeVisible();
+  for (const name of ["Vehicles", "Fuel", "Time sheets", "Training", "Subcontractors", "Insurance claims"]) await expect(page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name, exact: true })).toBeVisible();
   // The admin reads companies: the incident names one.
   await expect(page.locator("[data-incident]").filter({ hasText: "Pallet of chairs damaged in transit" })).toContainText("Brightloom");
 
@@ -354,7 +355,7 @@ test("a rep and the sales manager are refused every fleet table by the server, b
     await page.goto(`${STAFF}subcontractors`);
     await expect(page.getByRole("heading", { name: "This page is not part of your role" })).toBeVisible();
     await unfoldMenu(page);
-    for (const name of ["Vehicles", "Fuel", "Subcontractors", "Insurance claims"]) await expect(page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name, exact: true })).toHaveCount(0);
+    for (const name of ["Vehicles", "Fuel", "Time sheets", "Training", "Subcontractors", "Insurance claims"]) await expect(page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name, exact: true })).toHaveCount(0);
   }
   // The crew reads no subcontractor and no claim, by any door.
   const yusuf = await api("f_yusuf");
