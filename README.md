@@ -152,7 +152,10 @@ The stand starts Adminium on `CRM_STAND_PORT` (4774 unless set), connects a data
 installs the app with every part on and loads the sample at its ledger's moment, Tuesday 28 July
 2026, 09:35 London. It gives each sample person a password (`<name>@crm.test`; the password is in
 `e2e/.stand/state.json`), which the product never does. `CRM_STAND_ADD_ONS=none` installs it without
-Invoices and Inventory; `CRM_STAND_STAGE=3` installs a later stage.
+Invoices and Inventory; `CRM_STAND_STAGE=3` installs a later stage. `CRM_STAND_MAIL=1` keeps every
+mail the stand sends in a catcher (SMTP on the stand's port + 100; the mails as JSON at port + 101,
+read by `mailbox()` in `e2e/stand.mjs`). Adminium never mails a `.example` or `.test` address, so in
+mail mode the people are `<name>@crm.stand` and the sample's addresses end `.stand`.
 
 ### Specs and proofs
 

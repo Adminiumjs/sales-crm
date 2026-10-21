@@ -25,7 +25,12 @@
  * CRM_STAND_VERSION (the version the server says, while the engine is unreleased),
  * CRM_STAND_NOW (the moment the sample is added at; the ledger's, unless set;
  * `real` for the real clock) and CRM_STAND_TZ (the server's time zone),
- * TEST_POSTGRES_URL / TEST_MYSQL_URL for the other two engines.
+ * TEST_POSTGRES_URL / TEST_MYSQL_URL for the other two engines, and
+ * CRM_STAND_MAIL=1 to keep the mail it sends (`e2e/mail-catcher.mjs`: SMTP on
+ * the stand's port + 100, the mails at port + 101; `mailbox()` reads them).
+ * Adminium never mails a `.example` or `.test` address, so in mail mode the
+ * people sign in as `<key>@crm.stand` and the sample's addresses end `.stand`:
+ * a spec that reads an address on screen runs on a stand without mail.
  */
 import { execFileSync, spawn } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
@@ -127,6 +132,65 @@ export function readState() {
   return existsSync(STATE_FILE) ? JSON.parse(readFileSync(STATE_FILE, "utf8")) : null;
 }
 
+/**
+ * MAIL MODE ONLY: every address the app could mail moved off the domains kept
+ * for examples and tests (`.example`, `.test`), which Adminium never mails, onto
+ * `.stand`, a name no one owns. Nothing can leave: the stand's only relay is the
+ * catcher. Any column named like `email` in the app's tables (contacts,
+ * subcontractors, Inventory's suppliers…) keeps its name before the domain:
+ * `marta@veldtstudios.example` becomes `marta@veldtstudios.stand`.
+ */
+async function moveAddresses(engine, dsn, engineRequire) {
+  const ending = ".example";
+  let moved = 0;
+  if (engine === "sqlite") {
+    const db = new (engineRequire("better-sqlite3"))(dsn.slice("sqlite:".length));
+    for (const { name } of db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all()) {
+      for (const column of db.prepare(`PRAGMA table_info("${name}")`).all().filter((one) => one.name.includes("email"))) {
+        moved += db.prepare(`UPDATE "${name}" SET "${column.name}" = substr("${column.name}", 1, length("${column.name}") - ${String(ending.length)}) || '.stand' WHERE "${column.name}" LIKE '%${ending}'`).run().changes;
+      }
+    }
+    db.close();
+    return moved;
+  }
+  if (engine === "postgres") {
+    const { Client } = engineRequire("pg");
+    const db = new Client({ connectionString: dsn });
+    await db.connect();
+    const found = await db.query("SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = 'public' AND column_name LIKE '%email%' AND data_type IN ('text', 'character varying')");
+    for (const row of found.rows) {
+      const done = await db.query(`UPDATE "${row.table_name}" SET "${row.column_name}" = left("${row.column_name}", length("${row.column_name}") - ${String(ending.length)}) || '.stand' WHERE "${row.column_name}" LIKE '%${ending}'`);
+      moved += done.rowCount ?? 0;
+    }
+    await db.end();
+    return moved;
+  }
+  const db = await engineRequire("mysql2/promise").createConnection(dsn);
+  const [found] = await db.query("SELECT table_name AS t, column_name AS c FROM information_schema.columns WHERE table_schema = DATABASE() AND column_name LIKE '%email%' AND data_type IN ('varchar', 'text')");
+  for (const row of found) {
+    const [done] = await db.query(`UPDATE \`${row.t}\` SET \`${row.c}\` = CONCAT(LEFT(\`${row.c}\`, CHAR_LENGTH(\`${row.c}\`) - ${String(ending.length)}), '.stand') WHERE \`${row.c}\` LIKE '%${ending}'`);
+    moved += done.affectedRows ?? 0;
+  }
+  await db.end();
+  return moved;
+}
+
+/** The mails the stand has sent, oldest first (the stand must be up with CRM_STAND_MAIL=1). */
+export async function mailbox() {
+  const state = readState();
+  if (!state?.mail) throw new Error("the stand keeps no mail: start it with CRM_STAND_MAIL=1");
+  const res = await fetch(`${state.mail.url}/messages`);
+  if (!res.ok) throw new Error(`the mail catcher answered ${String(res.status)}`);
+  return res.json();
+}
+
+/** Forget every mail kept so far. */
+export async function clearMailbox() {
+  const state = readState();
+  if (!state?.mail) throw new Error("the stand keeps no mail: start it with CRM_STAND_MAIL=1");
+  await fetch(`${state.mail.url}/messages`, { method: "DELETE" });
+}
+
 /** Whether the process a state file names is still there. */
 function alive(pid) {
   try {
@@ -183,6 +247,7 @@ export async function standDown() {
   const state = readState();
   if (state === null) return;
   // By its pid, never by a pattern: another server on this machine has the same name.
+  if (typeof state.mail?.pid === "number" && alive(state.mail.pid)) process.kill(state.mail.pid, "SIGTERM");
   if (typeof state.pid === "number" && alive(state.pid)) {
     try {
       process.kill(-state.pid, "SIGTERM");
@@ -291,6 +356,18 @@ export async function standUp() {
   save();
   log(`server pid ${String(child.pid)} on ${url} (${engine}); log ${logFile}`);
 
+  // The mail catcher, when asked for: its own process, up before anything can send.
+  if (process.env.CRM_STAND_MAIL === "1") {
+    const smtpPort = port + 100;
+    const httpPort = port + 101;
+    const mailLog = openSync(join(STAND_DIR, "mail.log"), "w");
+    const catcher = spawn(process.execPath, [join(here, "mail-catcher.mjs"), adminiumRepo, String(smtpPort), String(httpPort)], { cwd: work, detached: true, stdio: ["ignore", mailLog, mailLog] });
+    closeSync(mailLog);
+    catcher.unref();
+    state.mail = { pid: catcher.pid, smtpPort, url: `http://127.0.0.1:${String(httpPort)}` };
+    save();
+  }
+
   try {
     for (const deadline = Date.now() + 120_000; ; await sleep(300)) {
       if (!alive(child.pid)) throw new Error(`the server stopped:\n${readFileSync(logFile, "utf8").slice(-4000)}`);
@@ -329,6 +406,20 @@ export async function standUp() {
 
     // The owner's writes carry the token their session was given (Node's fetch says how it was sent, so the server asks for it).
     csrf = data(await call("the owner", "POST", "/api/v1/setup/super-admin", OWNER, [201])).csrfToken ?? "";
+    if (state.mail) {
+      for (const deadline = Date.now() + 20_000; ; await sleep(200)) {
+        if (!alive(state.mail.pid)) throw new Error(`the mail catcher stopped:\n${readFileSync(join(STAND_DIR, "mail.log"), "utf8").slice(-2000)}`);
+        try {
+          if ((await fetch(`${state.mail.url}/messages`)).ok) break;
+        } catch {
+          /* not yet */
+        }
+        if (Date.now() > deadline) throw new Error("the mail catcher never answered");
+      }
+      // Adminium's own mail settings, as an owner sets them: the relay is the catcher (no user, so no AUTH; loopback, so plain).
+      await call("the mail settings", "PUT", "/api/v1/settings/email", { smtp: { host: "127.0.0.1", port: state.mail.smtpPort, user: "", from: `Meridian <${OWNER.email}>`, secure: false } });
+      log(`mail kept at ${state.mail.url}/messages`);
+    }
     const connection = data(await call("the connection", "POST", "/api/v1/connections", { name: "Meridian", engine, dsn: source.dsn }, [201]));
     state.connectionId = connection.id ?? connection.connection?.id;
     // Money is the install's currency: the stand's business keeps its books in pounds.
@@ -393,8 +484,16 @@ export async function standUp() {
       meta.prepare(`UPDATE adminium_users SET status = 'active', ${col("passwordHash")} = ?, email = ? WHERE id = ?`).run(hash, `${person.key}@crm.test`, row.id);
       people[person.key] = { id: row.id, email: `${person.key}@crm.test`, name: person.name, role: person.role };
     }
+    // With mail kept, the people's addresses are mailable too (`.test` is never mailed).
+    if (state.mail) {
+      for (const person of Object.values(people)) {
+        person.email = person.email.replace(/@crm\.test$/, "@crm.stand");
+        meta.prepare("UPDATE adminium_users SET email = ? WHERE id = ?").run(person.email, person.id);
+      }
+    }
     meta.close();
     state.people = people;
+    if (state.mail) log(`mail mode: the people are @crm.stand; ${String(await moveAddresses(engine, source.dsn, engineRequire))} sample addresses moved from .example to .stand`);
 
     const schema = await call("the schema", "GET", `/api/v1/connections/${state.connectionId}/schema`);
     state.tables = Object.fromEntries((schema.model ?? data(schema).model).tables.map((table) => [table.name, table.id]));
