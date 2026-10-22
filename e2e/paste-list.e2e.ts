@@ -6,7 +6,10 @@
  * Settings. Below the admin a line that is already here is left as it is and
  * the screen offers nothing else (the server would let a rep update; the
  * proof `crm-accounts` shows that it does, and the screen keeps it for the
- * admin). A company is "already here" when its name is the same.
+ * admin). A company is "already here" when its customer number is the same
+ * (plan 68 X3 holds a rep and the manager to some companies, and the server
+ * matches such a writer's list only on a column no two companies share); for
+ * the CRM admin, when its name is.
  *
  * Nobody else brings a list in: the marketer, Read-only and the account
  * manager are refused BY THE SERVER, asked directly, and their address for
@@ -20,7 +23,9 @@ import type { APIRequestContext, Page } from "@playwright/test";
 import { authOf, expect, picture, stand, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
-const LIST = ["Name\tSector\tTown", "P07 List Kestrel Print\tPrinting\tYork", "P07 List Verity Insurance\tInsurance\tDurham", "P07 List Halden Foods\tFood\tRipon"].join("\n");
+const LIST = ["Name\tSector\tTown\tCustomer number", "P07 List Kestrel Print\tPrinting\tYork\tP07LK", "P07 List Verity Insurance\tInsurance\tDurham\tP07LV", "P07 List Halden Foods\tFood\tRipon\tP07LH"].join("\n");
+/** What each line of the preview would do, in order. */
+const statuses = async (page: Page): Promise<string[]> => (await lines(page)).map((line) => line.split(" ")[0]!);
 const wizard = (page: Page) => page.locator('[data-kit-part="import"]').first();
 const lines = (page: Page): Promise<string[]> =>
   wizard(page)
@@ -64,9 +69,10 @@ test("Dana pastes three companies: looked at, brought in, in the list; pasted ag
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Paste a list" }).click();
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/paste-a-list$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Paste a list");
-  // What she is offered, said before she pastes: a line already here is left alone, and a company is matched on its name.
+  // What she is offered, said before she pastes: a line already here is left alone, and a company is matched on its
+  // customer number (plan 68 X3: the server matches her list on no other kind of column).
   await expect(page.locator('[data-note="modes"]')).toHaveText("A line that is already here is left as it is. Changing what is already here by a list is the CRM admin’s to do.");
-  await expect(page.locator('[data-note="companies"]')).toHaveText("A company is already here when its name is the same, letter for letter.");
+  await expect(page.locator('[data-note="companies"]')).toHaveText("A company is already here when its customer number is the same. A line with no customer number is brought in as a new company, so leave out the ones you already have.");
   await expect(wizard(page).getByRole("group", { name: "Paste a list" })).toBeVisible({ timeout: 30_000 });
   // Two tables to bring a list into, Companies first.
   const target = wizard(page).getByTestId("import-target");
@@ -74,14 +80,14 @@ test("Dana pastes three companies: looked at, brought in, in the list; pasted ag
 
   await wizard(page).getByRole("textbox").fill(LIST);
   await wizard(page).getByTestId("import-paste-use").click();
-  // The pasted headings find their columns, and lines are matched on the name.
-  await expect.poll(() => wizard(page).locator('[data-part="mapping-row"] [data-part="mapping-target"]').evaluateAll((all) => all.map((select) => (select as HTMLSelectElement).value))).toEqual(["name", "sector", "town"]);
-  await expect(wizard(page).getByTestId("import-match-on")).toHaveValue("name");
+  // The pasted headings find their columns, and lines are matched on the customer number.
+  await expect.poll(() => wizard(page).locator('[data-part="mapping-row"] [data-part="mapping-target"]').evaluateAll((all) => all.map((select) => (select as HTMLSelectElement).value))).toEqual(["name", "sector", "town", "customer_no"]);
+  await expect(wizard(page).getByTestId("import-match-on")).toHaveValue("customer_no");
   // One thing may be done with a line already here, so she is not asked.
   await expect(wizard(page).getByTestId("import-when-here")).toHaveCount(0);
   await wizard(page).getByTestId("wizard-validate").click();
   await expect(wizard(page).getByTestId("validation-summary")).toHaveText("3 new lines will be brought in.");
-  expect(await lines(page)).toEqual(["new P07 List Kestrel Print", "new P07 List Verity Insurance", "new P07 List Halden Foods"]);
+  expect(await statuses(page)).toEqual(["new", "new", "new"]);
   // Looking wrote nothing.
   expect(await brought(context.request, data)).toEqual([]);
   await picture(page, "1-dana-paste-looked-at");
@@ -106,7 +112,7 @@ test("Dana pastes three companies: looked at, brought in, in the list; pasted ag
   await wizard(page).getByTestId("import-paste-use").click();
   await wizard(page).getByTestId("wizard-validate").click();
   await expect(wizard(page).getByTestId("import-nothing")).toHaveText("Nothing here would be brought in.");
-  expect(await lines(page)).toEqual(["here P07 List Kestrel Print", "here P07 List Verity Insurance", "here P07 List Halden Foods"]);
+  expect(await statuses(page)).toEqual(["here", "here", "here"]);
   await expect(wizard(page).getByTestId("wizard-run")).toBeDisabled();
   expect(await brought(context.request, data)).toHaveLength(3);
   expect(problems).toEqual([]);

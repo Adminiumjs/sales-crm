@@ -1196,8 +1196,8 @@ for (const [dialect, reachable] of LEGS) {
         expect(said(await patch('sam', 'activities', made(his), { text: 'Sam looked at the floor plan, twice' }))).toBe('ok');
         expect((await patch('dana', 'activities', made(his), { text: 'Rewritten by the owner' })).statusCode).toBeGreaterThanOrEqual(400);
         expect(said(await patch('dana', 'activities', noted['id'], { text: String(noted['text']) }))).toBe('ok');
-        // Their manager leads them both, and changes either.
-        expect(said(await patch('ivy', 'activities', made(his), { text: 'Sam looked at the floor plan (noted by Ivy)' }))).toBe('ok');
+        // Their manager leads them both, and rewords neither (plan 68 X6: a note is its author's to change).
+        expect(said(await patch('ivy', 'activities', made(his), { text: 'Sam looked at the floor plan (noted by Ivy)' }))).toMatch(/^403/);
       });
 
       it('E3, CLOSED: a new row is somebody\'s, unless its writer\'s reach includes the rows nobody owns', async () => {
@@ -1208,14 +1208,10 @@ for (const [dialect, reachable] of LEGS) {
         const hers = await post('dana', 'saved_views', { name: 'Dana\'s board', filters: {}, owner_id: s.id['dana'] });
         expect(said(hers), hers.body).toBe('ok');
         expect(said(await del('dana', 'saved_views', made(hers)))).toBe('ok');
-        // The Sales manager's reach includes the views nobody owns: she makes a shared one, every rep sees it, and only
-        // she or the CRM admin takes it away.
-        const shared = await post('ivy', 'saved_views', { name: 'The team\'s board', filters: {} });
-        expect(said(shared), shared.body).toBe('ok');
-        expect((await one(`SELECT owner_id FROM ${s.real('saved_views')} WHERE id = ${String(made(shared))}`))['owner_id']).toBeNull();
-        expect(await keys('sam', 'saved_views')).toContain(made(shared));
-        expect((await del('sam', 'saved_views', made(shared))).statusCode).toBeGreaterThanOrEqual(400);
-        expect(said(await del('tessa', 'saved_views', made(shared)))).toBe('ok');
+        // Saved views are private (plan 68 D9): nobody's reach includes the views nobody owns, the Sales manager's and the
+        // CRM admin's neither, so nobody makes one.
+        for (const person of ['ivy', 'tessa']) expect((await post(person, 'saved_views', { name: 'The team\'s board', filters: {} })).statusCode, person).toBe(422);
+        expect(await ids(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id IS NULL`)).toEqual([]);
         // A deal must name its owner, and a rep may name only themselves.
         const company = (await ids(`SELECT id FROM ${s.real('companies')}`))[0]!;
         const stage = (await ids(`SELECT id FROM ${s.real('stages')}`))[0]!;
