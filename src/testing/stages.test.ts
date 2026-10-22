@@ -222,6 +222,33 @@ describe("stage 1, the first release", () => {
   });
 });
 
+describe("a crew's vehicle for the day comes with Vehicles and crew (plan 68 S14)", () => {
+  it("leaves stage 2 with no van_days, no vehicle on a visit and no occupancy of one, and no stock need a crew reads", () => {
+    const two = stage(2).manifest as unknown as { requiredSchema: { tables: { ref: string; occupies?: { resource: string }; columns: { ref: string }[]; belongs?: unknown[] }[] }; roles: { key: string; permissions: string[]; tables?: unknown[] }[] };
+    const tables = new Map(two.requiredSchema.tables.map((table) => [table.ref, table]));
+    expect(tables.has("van_days")).toBe(false);
+    expect(tables.get("job_visits")!.columns.map((column) => column.ref)).not.toContain("vehicle_id");
+    for (const table of two.requiredSchema.tables) expect(table.occupies?.resource, table.ref).not.toBe("vehicle_id");
+    expect(tables.get("deal_stock_needs")!.columns.map((column) => column.ref)).not.toEqual(expect.arrayContaining(["visit_id"]));
+    expect(tables.get("deal_stock_needs")!.belongs).toEqual([{ via: "deal_id" }]);
+    const crew = two.roles.find((role) => role.key === "crew")!;
+    expect(crew.permissions).not.toContain("table:@deal_stock_needs:read");
+    expect(crew.tables).toBeUndefined();
+    // The sample's stock need of J-07 is there, without the visit it goes on.
+    const inventory = JSON.parse(String(stage(2).files["seeds/meridian.inventory.json"])) as { tables: { ref: string; rows: Record<string, unknown>[] }[] };
+    expect(inventory.tables.find((table) => table.ref === "deal_stock_needs")!.rows.filter((row) => "visit_id" in row)).toEqual([]);
+    // The old crew is told from stage 2: the rules and their table are Jobs on site's.
+    expect(tables.has("left_visits")).toBe(true);
+  });
+
+  it("brings, at stage 3, one crew a vehicle a day, the hire days, and the crew's reach of its own days", () => {
+    const van = (whole.requiredSchema.tables as unknown as { ref: string; occupies?: unknown; unique?: unknown; belongs?: unknown }[]).find((table) => table.ref === "van_days")!;
+    expect(van.occupies).toEqual({ resource: "vehicle_id", day: "day" });
+    expect(van.unique).toEqual([["crew_id", "day"]]);
+    expect(van.belongs).toEqual([{ through: { table: "crew_members", link: "crew_id", on: "crew_id", user: "user_id" } }]);
+  });
+});
+
 describe("what sits at the repo's root", () => {
   const listed = (dir: string, under = ""): string[] => (existsSync(dir) ? readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? listed(join(dir, name), `${under}${name}/`) : [`${under}${name}`])) : []);
 
