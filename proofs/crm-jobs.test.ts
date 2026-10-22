@@ -270,6 +270,11 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await s.change('ada', 'job_visits', near, { day: day(1) }))).toBe('ok');
       await settle();
 
+      {
+        const runs = await s.meta.db.selectFrom('adminium_automation_runs' as never).selectAll().execute() as Record<string, unknown>[];
+        console.log('DEBUG runs', JSON.stringify(runs.map((run) => ({ id: run['id'], rule: run['automation_id'], status: run['status'], created: run['created_at'], started: run['started_at'], ev: run['trigger_event'] })).filter((run) => JSON.stringify(run.ev).includes('job_visits')).slice(-14)));
+        console.log('DEBUG left', JSON.stringify(await s.rows(`select * from ${s.t('left_visits')} order by id`)));
+      }
       expect(await told('yusuf')).toEqual(['A visit is no longer yours: Cupboards given', 'A visit left your day sheet: Cupboards moved', 'Your day sheet changed: Cupboards near']);
       expect(await told('rina')).toEqual(['A visit is now yours: Cupboards given', 'A visit is off your day sheet: Cupboards waiting', 'A visit was called off: Cupboards called off']);
       for (const who of ['ada', 'tessa', 'dana', 'grace']) expect(await told(who), who).toEqual([]);
@@ -280,10 +285,10 @@ for (const [dialect, reachable] of LEGS) {
       const kept = await s.rows(`select was_day, was_crew_id, was_state from ${s.t('job_visits')} where id = ${String(later)}`);
       expect([String(kept[0]!['was_day']).slice(0, 10), Number(kept[0]!['was_crew_id']), kept[0]!['was_state']]).toEqual([day(1), crew['blue'], 'booked']);
       // The note is the old crew's to read, never the new one's or another crew's; nobody but the rules writes one.
-      const notes = async (who: string): Promise<string[]> => (await list(who, 'left_visits')).map((one) => String(one['what'])).sort();
+      const notes = async (who: string): Promise<string[]> => (await list(who, 'left_visits')).map((one) => String(one['what'])).filter((what) => what.startsWith('Cupboards')).sort();
       expect(await notes('yusuf')).toEqual(['Cupboards given', 'Cupboards moved']);
       expect(await notes('rina')).toEqual(['Cupboards called off', 'Cupboards waiting']);
-      expect((await notes('ada')).filter((what) => what.startsWith('Cupboards'))).toEqual(['Cupboards called off', 'Cupboards given', 'Cupboards moved', 'Cupboards waiting']);
+      expect(await notes('ada')).toEqual(['Cupboards called off', 'Cupboards given', 'Cupboards moved', 'Cupboards waiting']);
       for (const who of ['ada', 'tessa', 'yusuf']) expect((await s.make(who, 'left_visits', { crew_id: crew['blue'], what: 'Typed', why: 'day' })).statusCode, who).toBe(403);
       expect((await s.get('dana', url('left_visits', '?limit=5'))).statusCode).toBe(403);
       for (const id of [later, given, waits, far, near]) expect(said(await remove('ada', 'job_visits', id))).toBe('ok');

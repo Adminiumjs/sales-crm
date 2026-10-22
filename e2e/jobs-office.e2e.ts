@@ -208,11 +208,11 @@ test("book from the list: a day before the stock lands is refused and the first 
     const dialog = page.getByRole("dialog", { name: "Book a visit to a job" });
     await expect(dialog.getByTestId("jb-bk-job")).toContainText("Tandem Robotics · J-07 · Test-floor workbenches");
     // It opens on the first day it may be booked, with the first crew that has three people.
-    await expect(dialog.getByLabel("Day")).toHaveValue("2026-08-05");
+    await expect(dialog.getByLabel("Day", { exact: true })).toHaveValue("2026-08-05");
     await expect(dialog.getByLabel("Crew", { exact: true })).toHaveValue(String(RED));
     await expect(dialog.getByTestId("jb-told")).toHaveText("The customer is e-mailed that the visit is booked.");
     // A day before the stock: refused here, nothing sent, and the first day that would do offered.
-    await dialog.getByLabel("Day").fill("2026-08-04");
+    await dialog.getByLabel("Day", { exact: true }).fill("2026-08-04");
     await expect(dialog.getByTestId("jb-refusal")).toHaveAttribute("data-kind", "stock");
     await expect(dialog.getByTestId("jb-refusal")).toContainText("J-07 waits for stock that lands Wed, Aug 5. The first day it may be booked is Wed, Aug 5.");
     await expect(dialog.locator("[data-go]")).toBeDisabled();
@@ -224,7 +224,7 @@ test("book from the list: a day before the stock lands is refused and the first 
     expect((await early.json()) as unknown).toMatchObject({ error: { details: { fields: { day: { code: "out-of-range" } } } } });
     expect((await context.request.patch(data("job_visits", `/${String(V.tandem)}`), { data: { values: { day: null, crew_id: null, start_time: null } }, headers })).status()).toBe(200);
     await dialog.getByTestId("jb-offer").click();
-    await expect(dialog.getByLabel("Day")).toHaveValue("2026-08-05");
+    await expect(dialog.getByLabel("Day", { exact: true })).toHaveValue("2026-08-05");
     // Red already has 9 h that day: booked, and flagged.
     await expect(dialog.getByTestId("jb-over")).toHaveText("Red crew: 16 h of 8 on Wed, Aug 5. It can still be booked.");
     await dialog.locator("[data-go]").click();
@@ -244,7 +244,7 @@ test("book from the list: a day before the stock lands is refused and the first 
     const move = page.getByRole("dialog", { name: "Move this visit to a job" });
     await expect(move.getByTestId("jb-was")).toHaveText("WasWed, Aug 5, 08:00 · 7 h · Red crew");
     await expect(move.getByTestId("jb-told")).toHaveText("The day and the start stay as they were: the customer is not e-mailed.");
-    await move.getByLabel("Day").fill("2026-08-06");
+    await move.getByLabel("Day", { exact: true }).fill("2026-08-06");
     await expect(move.getByTestId("jb-told")).toHaveText("The customer is e-mailed the new day.");
     await expect(move.getByTestId("jb-over")).toHaveCount(0);
     await move.locator("[data-go]").click();
@@ -276,7 +276,7 @@ test("dragging onto a day follows the rules of booking: a visit that waits opens
     // J-03 waits for stock that lands on Friday: dropped on Tuesday, the dialog opens on Tuesday and says why not.
     await page.locator(`[data-testid="jb-tobook"] li[data-visit="${String(V.juno)}"]`).dragTo(dayColumn(page, "2026-08-04"));
     const dialog = page.getByRole("dialog", { name: "Book a visit to a job" });
-    await expect(dialog.getByLabel("Day")).toHaveValue("2026-08-04");
+    await expect(dialog.getByLabel("Day", { exact: true })).toHaveValue("2026-08-04");
     await expect(dialog.getByTestId("jb-refusal")).toContainText("J-03 waits for stock that lands Fri, Aug 7.");
     await expect(dialog.getByTestId("jb-offer")).toHaveText("Use Fri, Aug 7");
     await page.keyboard.press("Escape");
@@ -317,7 +317,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     await dialog.getByLabel("Hours on site").fill("2");
     await dialog.getByLabel("Crew members").fill("1");
     // No day: it waits in To book.
-    await dialog.getByLabel("Day").fill("");
+    await dialog.getByLabel("Day", { exact: true }).fill("");
     await expect(dialog.getByTestId("jb-told")).toHaveCount(0);
     const sent: { key: string; replayed: boolean | null }[] = [];
     let dropped = false;
@@ -355,7 +355,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     // Booked from To book for Friday, Blue: the customer is told once.
     await page.getByRole("button", { name: `Book ${what} at Harbor & Finch` }).click();
     const book = page.getByRole("dialog", { name: "Book a visit to a job" });
-    await book.getByLabel("Day").fill("2026-08-07");
+    await book.getByLabel("Day", { exact: true }).fill("2026-08-07");
     await expect(book.getByLabel("Crew", { exact: true })).toHaveValue(String(BLUE));
     await book.locator("[data-go]").click();
     await expect(page.locator(".crm-toast").last()).toHaveText("Booked: Harbor & Finch, Fri, Aug 7, Blue crew.");

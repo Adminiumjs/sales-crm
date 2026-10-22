@@ -192,7 +192,12 @@ for (const [dialect, reachable] of LEGS) {
       const three = stage(3);
       const next = { ...three.manifest, version: three.manifest.version.replace(/\d+$/, (patch) => String(Number(patch) + 2)) };
       await h.stageApp(next, packed(three));
-      const updated = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: {} });
+      // The field crew reads Inventory's line names and units with Vehicles and crew (plan 68 S14, what to load): a wider grant
+      // on an add-on's table, which the owner allows by name, and is refused until then.
+      const asked = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: {} });
+      expect(asked.statusCode, asked.body).toBe(422);
+      expect((asked.json() as { error: { details: { roleTables: { role: string; table: string; wider: unknown }[] } } }).error.details.roleTables).toEqual([{ role: 'crew', roleName: 'Field crew', addOn: 'inventory', table: 'items', wider: { actions: ['read'], columns: ['id', 'name', 'unit'] } }]);
+      const updated = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: { roleTables: true } });
       expect(updated.statusCode, updated.body).toBe(200);
 
       const made = await crmTables();

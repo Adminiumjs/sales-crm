@@ -147,7 +147,7 @@ export function VehiclePick({ id, facts, crews, crewId, crewName, day, value, on
                 data-vehicle={one.vehicle.id}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(i)}
-                onMouseEnter={() => setActive(i)}
+                onMouseMove={() => i !== active && setActive(i)}
               >
                 <Icon name={can ? (one.vehicle.id === value ? "check" : "truck") : "ban"} size={15} />
                 <span className="crm-vd-value-words">

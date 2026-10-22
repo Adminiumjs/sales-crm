@@ -79,7 +79,7 @@ test("the booking dialog's vehicle for the day: the crew's day as it stands, the
     await page.goto(`${STAFF}deliveries`);
     await page.getByRole("button", { name: "Book Ward corridor seating, two sites at Fernway Clinics" }).click();
     const dialog = page.getByRole("dialog", { name: "Book a visit to a job" });
-    await dialog.getByLabel("Day").fill("2026-08-05");
+    await dialog.getByLabel("Day", { exact: true }).fill("2026-08-05");
     await dialog.getByLabel("Crew", { exact: true }).selectOption(String(BLUE));
     // Blue's Wednesday is on its own vehicle already: a line says so, and the other visit that day.
     await expect(dialog.getByTestId("vd-line")).toContainText("Blue crew is on YJ19 KPX all day Wed, Aug 5. 1 other visit.");
@@ -108,20 +108,20 @@ test("the booking dialog's vehicle for the day: the crew's day as it stands, the
 
     // Red crew on Mon 10 Aug has no day yet: its own vehicle; the hired one picked, then the day moved past the hire.
     await dialog.getByLabel("Crew", { exact: true }).selectOption(String(RED));
-    await dialog.getByLabel("Day").fill("2026-08-10");
+    await dialog.getByLabel("Day", { exact: true }).fill("2026-08-10");
     await expect(dialog.getByTestId("vd-pick").locator("button")).toHaveAttribute("data-vehicle", String(RED));
     await dialog.getByTestId("vd-pick").locator("button").click();
     await expect(list.locator(`[data-vehicle="${String(HIRED)}"]`)).toHaveCount(0);
     const redList = dialog.getByRole("listbox", { name: "Vehicles for Red crew on Mon, Aug 10" });
     await expect(redList.locator(`[data-vehicle="${String(HIRED)}"]`)).toContainText("Hired until Fri, Aug 14");
     await redList.locator(`[data-vehicle="${String(HIRED)}"]`).click();
-    await dialog.getByLabel("Day").fill("2026-08-17");
+    await dialog.getByLabel("Day", { exact: true }).fill("2026-08-17");
     await expect(dialog.getByTestId("vd-refusal")).toHaveAttribute("data-kind", "hiredTo");
     await expect(dialog.getByTestId("vd-refusal")).toContainText("ML24 VDR is hired until Fri, Aug 14.");
     await expect(dialog.getByTestId("vd-change-hire").locator("a")).toHaveAttribute("href", /\/vehicles\/hire\/3$/);
     await expect(dialog.locator("[data-go]")).toBeDisabled();
     // Back inside the hire: booked, and Red's Monday is on the hired vehicle, as the server keeps it.
-    await dialog.getByLabel("Day").fill("2026-08-10");
+    await dialog.getByLabel("Day", { exact: true }).fill("2026-08-10");
     await expect(dialog.getByTestId("vd-refusal")).toHaveCount(0);
     await dialog.locator("[data-go]").click();
     await expect(page.locator(".crm-toast").last()).toHaveText("Booked: Fernway Clinics, Mon, Aug 10, Red crew.");

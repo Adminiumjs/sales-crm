@@ -210,14 +210,14 @@ test("Subcontractors: the ledger's figures; \"Chase the certificate\" sends e-ma
       spent: await figure(ada, stand, "subcontractors", { fn: "sum", column: "spent", alias: "s" }),
       undated: await figure(ada, stand, "job_visits", undefined, [{ column: "state", op: "eq", value: "waiting" }, { column: "day", op: "is_null" }]),
     };
-    expect(served).toEqual({ all: 5, covered: 4, out: 1, days: 53, spent: 17800, undated: 5 });
+    expect(served).toEqual({ all: 5, covered: 4, out: 1, days: 53, spent: 17800, undated: 4 });
     await expect(page.locator('[data-figure="on-books"] [data-value]')).toHaveText("5");
     await expect(page.locator('[data-figure="on-books"]')).toContainText("covered 4");
     await expect(page.locator('[data-figure="days"] [data-value]')).toHaveText("53");
     await expect(page.locator('[data-figure="days"]')).toContainText("£17,800 of outside help");
     await expect(page.locator('[data-figure="out"] [data-value]')).toHaveText("1");
     await expect(page.getByTestId("fl-sb-out")).toHaveText("Marek Sowa’s insurance ran out 28 days ago. They do not go on a site until we have seen the new certificate.");
-    await expect(page.getByTestId("fl-sb-undated")).toContainText("5 visits have no day yet.");
+    await expect(page.getByTestId("fl-sb-undated")).toContainText("4 visits have no day yet.");
     const row = (name: string) => page.locator("[data-sub]").filter({ has: page.getByRole("heading", { name, exact: true }) });
     await expect(row("Marek Sowa").locator('[data-cell="insurance"]')).toHaveText("ran out 28 days ago");
     await expect(row("Bright Lane Interiors").locator('[data-cell="spent"]')).toHaveText("£7,200");

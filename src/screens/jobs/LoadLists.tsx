@@ -17,7 +17,7 @@ export function LoadLists({ loads, visitId, day, f, print = false }: { loads: Lo
   const note = loads.note.get(visitId) ?? [];
   const head = print ? "crm-vd-load-head crm-vd-print-head" : "crm-vd-load-head";
   return (
-    <div className="crm-vd-loads" data-testid="vd-loads" data-visit={visitId}>
+    <div className="crm-vd-loads" data-testid="vd-loads" data-load-visit={visitId}>
       {loads.readsStock && (
         <div className="crm-vd-load" data-testid="vd-stock">
           <div className={head}>{t("vandays.ds.stock")}</div>
