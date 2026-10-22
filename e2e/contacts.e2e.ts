@@ -177,7 +177,9 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   const sheet = page.getByRole("dialog", { name: "Callum Finch" });
   await expect(sheet).toContainText("Partner · Harbor & Finch");
   const facts = sheet.locator(".crm-acc-rec-facts > div");
-  await expect(facts).toHaveText(["RolePartner", "CompanyHarbor & Finch", "Emailc.finch@harborfinch.example", "Phone0131 208 6600", "WhereEdinburgh, United Kingdom"]);
+  // The company's street is a business's, read by everybody who reads companies (plan 68 R3); whether he may be emailed is said
+  // too, and Callum has not said yes (R8, D14).
+  await expect(facts).toHaveText(["RolePartner", "CompanyHarbor & Finch", "Emailc.finch@harborfinch.example", "Phone0131 208 6600", "Where19 Albany Court, Edinburgh, United Kingdom", "May be emailedNo"]);
   const links = sheet.locator(".crm-acc-rec-link");
   await expect(links).toHaveCount(2);
   await expect(links.first()).toContainText("Partner-office fit-out");
@@ -223,6 +225,11 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   await expect(add.locator(".crm-form-error")).toHaveText("Pick the company they work at.");
   await add.getByLabel("Job title").fill("Buyer");
   await add.getByLabel("Email").fill("ada.lowe@example.test");
+  // A new contact may not be emailed until somebody ticks it (R8): the switch starts off, and she has said yes.
+  const may = add.getByRole("switch", { name: "May be emailed" });
+  await expect(may).toHaveAttribute("aria-checked", "false");
+  await may.click();
+  await expect(may).toHaveAttribute("aria-checked", "true");
   await add.getByRole("radio", { name: "Tandem Robotics" }).click();
   const sent: { key: string; replayed: boolean | null }[] = [];
   let dropped = false;
@@ -246,11 +253,23 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   await page.unroute("**/api/v1/data/**");
   const made = await rows<{ job_title: string; email: string; may_email: boolean; company_id: number }>(context.request, data, "contacts", { column: "name", op: "eq", value: "P07 Ada Lowe" });
   expect(made).toHaveLength(1);
-  expect([made[0]!.job_title, made[0]!.email, made[0]!.may_email]).toEqual(["Buyer", "ada.lowe@example.test", true]);
+  expect([made[0]!.job_title, made[0]!.email, Boolean(made[0]!.may_email)]).toEqual(["Buyer", "ada.lowe@example.test", true]);
   await expect(card(page, "P07 Ada Lowe").locator(".crm-acc-contact-co")).toHaveText("Tandem Robotics");
   await expect(card(page, "P07 Ada Lowe").locator(".crm-acc-contact-deals")).toHaveCount(0);
   expect(problems.filter((problem) => !/ERR_CONNECTION_RESET|Failed to load resource/.test(problem))).toEqual([]);
   await picture(page, "4-sam-contact-added");
+});
+
+test("whether a contact may be emailed says who ticked it and when (R8)", async ({ as }) => {
+  const page = await (await as("dana")).newPage();
+  const problems = watch(page);
+  await page.goto(`${STAFF}contacts`);
+  const who = card(page, "Ines Vaughan").locator(".crm-acc-contact-who");
+  await who.focus();
+  await page.keyboard.press("Enter");
+  const sheet = page.getByRole("dialog", { name: "Ines Vaughan" });
+  await expect(sheet.locator(".crm-acc-rec-facts > div").last()).toHaveText(/^May be emailedYes, since .+, ticked by Dana Whitlock$/);
+  expect(problems).toEqual([]);
 });
 
 test("a contact has an address: the deal's room names its people as links to it", async ({ as, data }) => {

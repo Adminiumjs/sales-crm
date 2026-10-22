@@ -1272,6 +1272,10 @@
   font-size: 12px;
   color: var(--fg-subtle);
 }
+.crm-ms-talk-head .crm-ms-add {
+  margin-inline-start: auto;
+  flex: none;
+}
 .crm-ms-scroll {
   display: flex;
   flex-direction: column;

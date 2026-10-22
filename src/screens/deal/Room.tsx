@@ -906,6 +906,11 @@ export function Room({ id }: { id: string }) {
                     )}
                   </>
                 )}
+                {!open && session.can("quotes", "create") && (
+                  <p className="crm-room-quiet" data-testid="room-quote-closed">
+                    {t("room.quote.closed")}
+                  </p>
+                )}
               </section>
             )}
           </aside>

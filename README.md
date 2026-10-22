@@ -18,7 +18,7 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | Tables | 75 |
 | Screens | The app's own screens (below), a customer's quote page, and a "Sales CRM" section in Adminium's own console |
 | Roles | 9 |
-| Shipped rules | 20: ten the app works by (a deal's history, a won deal's job, the crew's day sheet, the aftercare call), switched on, and ten that tell people, switched off |
+| Shipped rules | 21: ten the app works by (a deal's history, a won deal's job, the crew's day sheet, the aftercare call) and one that tells a deal's owner when a customer accepts a quote on a lost deal, switched on, and ten that tell people, switched off |
 | E-mails | 18, each in eight languages |
 | Sample data | "Meridian", an office-furniture wholesaler in pounds: 688 rows in 69 tables, 16 people, three teams (sales and two crews) |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |

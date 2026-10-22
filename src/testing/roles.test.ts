@@ -100,7 +100,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["actions"], "R:own", "RCUD:own", "RCU:own", "-", "-", "-", "-", "-", "-"],
   [["meetings", "meeting_slots", "meeting_decisions"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
   [["threads"], ...talk("RC:own")],
-  [["thread_members"], ...talk("RCU;u=own")],
+  // Who is in a conversation is read by its members and the CRM admin (plan 68 R4c); each moves only her own mark.
+  [["thread_members"], "RCU;u=own-self", ...talk("RCU;r=own;u=own-self").slice(1)],
   [["messages"], ...talk("RC:own")],
   [["starters"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
   [["starter_steps"], "RCUD", "RCUD", "RU", "-", "-", "-", "-", "-", "R"],
@@ -230,6 +231,8 @@ const REACHES: Record<string, Reach> = {
   "own-named": { reach: "own", by: "rep_id" },
   "team-named": { reach: "team", by: "rep_id" },
   "team-away": { reach: "team", by: "owner_id" },
+  // Of the people of the conversations they are in, only their own row.
+  "own-self": { reach: "own", by: "user_id" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
@@ -997,10 +1000,10 @@ describe("a listing a table is read through is not a way in", () => {
   });
 
   it("lets a member of a conversation add a colleague, and change no row there but their own", () => {
-    expect(tableOf.get("thread_members")?.belongs).toEqual([{ column: "user_id", set: "anyone" }]);
+    expect(tableOf.get("thread_members")?.belongs).toEqual([{ column: "user_id", set: "anyone" }, { via: "thread_id" }]);
     for (const key of ROLES) {
       if (!holds(key, "thread_members", "update")) continue;
-      expect(limitOf(key, "thread_members")?.rows, key).toEqual({ update: { reach: "own" } });
+      expect(limitOf(key, "thread_members")?.rows?.update, key).toEqual({ reach: "own", by: "user_id" });
       expect(holds(key, "thread_members", "delete"), key).toBe(false);
     }
     // Nobody changes a conversation or a message once written, so no row is added under one by a change of it.

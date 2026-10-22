@@ -563,5 +563,51 @@ for (const [dialect, reachable] of LEGS) {
       expect(on.statusCode, on.body).toBeLessThan(300);
       expect((await pub('POST', '/claim/token', { payload: { token: quote.code } })).statusCode).toBe(200);
     });
+
+    it('R1a: a closed deal takes no new quote and sends no draft; a quote already out stays acceptable, and a yes on a lost deal tells its owner', async () => {
+      // A deal of Dana's of its own, so the other cases keep theirs open.
+      const stage = Number((await one(`SELECT stage_id FROM ${s.real('deals')} WHERE id = ${String(deal)}`))['stage_id']);
+      const company = Number((await one(`SELECT company_id FROM ${s.real('deals')} WHERE id = ${String(deal)}`))['company_id']);
+      const ours = made(await post('dana', 'deals', { name: 'R1a spec deal', company_id: company, contact_id: contact, owner_id: s.id['dana'], stage_id: stage, typed_amount: 1000 }));
+      const act = (person: string, key: number, action: string, from: string, values?: Record<string, unknown>) =>
+        s.app.inject({ method: 'POST', url: url('deals', `/${String(key)}/actions/${action}`), headers: { cookie: who(person) }, payload: { from, ...(values === undefined ? {} : { values }) } });
+      const sentOne = made(await post('dana', 'quotes', { deal_id: ours, sent_to_contact_id: contact }));
+      made(await post('dana', 'quote_lines', { document_id: sentOne, qty: 10, rate: 100, price_id: item }));
+      expect(said(await patch('dana', 'quotes', sentOne, { status: 'sent' }))).toBe('ok');
+      const draft = made(await post('dana', 'quotes', { deal_id: ours, sent_to_contact_id: contact, replaces_id: sentOne, version: 2 }));
+      made(await post('dana', 'quote_lines', { document_id: draft, qty: 5, rate: 100, price_id: item }));
+      // The deal is lost.
+      const reason = Number((await one(`SELECT id FROM ${s.real('lost_reasons')} ORDER BY id`))['id']);
+      expect(said(await act('dana', ours, 'mark-lost', 'open', { lost_reason_id: reason }))).toBe('ok');
+      expect((await one(`SELECT state FROM ${s.real('deals')} WHERE id = ${String(ours)}`))['state']).toBe('lost');
+
+      // Its draft is not sent, by anybody who sends quotes: the quote keeps its deal's state, and the send is held to "open".
+      // (No new quote on it waits for the engine word that lets a quote built on Invoices hold its create to the same.)
+      expect((await quoteRow(draft))['deal_state']).toBe('lost');
+      for (const person of ['dana', 'ivy', 'tessa']) expect(said(await patch(person, 'quotes', draft, { status: 'sent' })), person).toMatch(/^4/);
+      expect((await quoteRow(draft))['status']).toBe('draft');
+
+      // The quote already out is still the customer's to accept.
+      const code = String((await quoteRow(sentOne))['share_code']);
+      const session = await open(code);
+      expect((await answer(sentOne, session, { status: 'accepted', accepted_name: 'Petra Lindqvist' })).statusCode).toBe(200);
+      expect((await quoteRow(sentOne))['status']).toBe('accepted');
+
+      // Its owner is told in the bell; nobody else.
+      await s.jobs();
+      const toldTo = async (person: string) =>
+        (await s.meta.db.selectFrom('adminium_notifications').select(['title', 'body']).where('userId', '=', s.id[person]!).where('title', 'like', '%on a lost deal').execute()) as { title: string; body: string | null }[];
+      const told = await toldTo('dana');
+      expect(told.map((one) => one.title)).toEqual([`Petra Lindqvist said yes to quote ${String((await quoteRow(sentOne))['number'])}, on a lost deal`]);
+      for (const person of ['ivy', 'sam', 'tessa']) expect(await toldTo(person), person).toEqual([]);
+
+      // "Leave it closed": the owner stamps it seen, which the quote's lock lets through, and nobody else of a closed quote.
+      expect(said(await patch('dana', 'quotes', sentOne, { yes_seen_at: new Date().toISOString() }))).toBe('ok');
+      expect((await quoteRow(sentOne))['yes_seen_at']).not.toBeNull();
+      expect(said(await patch('dana', 'quotes', sentOne, { notes: 'changed after' }))).toMatch(/^4/);
+      // Reopened, the deal's draft is sent again: the copy follows the deal.
+      expect(said(await act('dana', ours, 'reopen', 'lost'))).toBe('ok');
+      expect((await quoteRow(draft))['deal_state']).toBe('open');
+    });
   });
 }

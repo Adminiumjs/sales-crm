@@ -701,6 +701,58 @@ test("Messages: the ledger's four conversations and three unread; read, answered
 
 /* ─── The new starter ─────────────────────────────────────────────────────── */
 
+test("Messages: a member brings a colleague into a group conversation, who reads it from its start; a two-person one offers nobody (R4c, D3, D12)", async ({ as, api, data }) => {
+  const owner = await api("owner");
+  const ownerHeaders = await csrf(owner);
+  const ivyId = await me(await api("ivy"));
+  // Ivy is in none of the group's rows, as the sample has it: taken back out at the end whatever happens.
+  const takeOut = async (): Promise<void> => {
+    for (const row of await rows<{ id: number; thread_id: number }>(owner, data, "thread_members", { column: "user_id", op: "eq", value: ivyId })) {
+      if (row.thread_id !== 1) expect((await owner.delete(data("thread_members", `/${String(row.id)}?confirm=true`), { headers: ownerHeaders })).status()).toBeLessThan(300);
+    }
+  };
+  await takeOut();
+  try {
+    const context = await as("dana");
+    const page = await context.newPage();
+    const problems = watch(page);
+    await page.goto(`${STAFF}messages`);
+    const talk = page.getByTestId("msgs-talk");
+    // A two-person conversation offers nobody to add.
+    await page.locator(".crm-ms-thread", { hasText: "Ivy Sandoval" }).click();
+    await expect(talk.locator(".crm-ms-talk-head")).toContainText("Ivy Sandoval");
+    await expect(talk.getByRole("button", { name: "Add a colleague" })).toHaveCount(0);
+    // The group: Ivy is not in it, and is answered none of it.
+    const ivy = await api("ivy");
+    const group = (await rows<{ id: number; title: string | null }>(owner, data, "threads", { column: "kind", op: "eq", value: "group" })).find((row) => row.title === "The four of us")!;
+    expect((await rows(ivy, data, "messages", { column: "thread_id", op: "eq", value: group.id })).length).toBe(0);
+    await page.locator(".crm-ms-thread", { hasText: "The four of us" }).click();
+    await talk.getByRole("button", { name: "Add a colleague" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add a colleague to this conversation" });
+    await expect(dialog.getByTestId("msgs-add-note")).toHaveText("Whoever you add reads this conversation from its start, every message already in it.");
+    await expect(dialog.getByRole("button", { name: "Add to the conversation" })).toBeDisabled();
+    await dialog.locator(`[data-person="${ivyId}"]`).click();
+    await expect(dialog.getByTestId("msgs-add-note")).toHaveText("Ivy reads this conversation from its start, every message already in it.");
+    await dialog.getByRole("button", { name: "Add to the conversation" }).click();
+    await expect(page.locator(".crm-toast")).toHaveText("Ivy Sandoval is in the conversation.");
+    await expect(dialog).toHaveCount(0);
+    await expect(talk.locator(".crm-ms-talk-head")).toContainText("Dana, Priya, Sam, Leo, Ivy");
+    // From its start: every message already in it, and its five people.
+    expect((await rows(ivy, data, "messages", { column: "thread_id", op: "eq", value: group.id })).length).toBe(4);
+    expect((await rows(ivy, data, "thread_members", { column: "thread_id", op: "eq", value: group.id })).length).toBe(5);
+    const ivyPage = await (await as("ivy")).newPage();
+    await ivyPage.goto(`${STAFF}messages`);
+    await expect(ivyPage.locator(".crm-ms-thread")).toHaveCount(2);
+    // The server refuses a third person on a two-person conversation, whatever a screen offers.
+    const direct = (await rows<{ thread_id: number }>(context.request, data, "thread_members", { column: "user_id", op: "eq", value: ivyId })).find((row) => row.thread_id !== group.id)!;
+    const third = await context.request.post(data("thread_members"), { data: { values: { thread_id: direct.thread_id, user_id: (await me(await api("sam"))) } }, headers: await csrf(context.request) });
+    expect(third.status()).toBeGreaterThanOrEqual(400);
+    expect(problems).toEqual([]);
+  } finally {
+    await takeOut();
+  }
+});
+
 test("New starter: the ledger's three of twelve; a step ticked and put back; the first-year target set; a rep ticks and changes nothing else; Read-only presses nothing", async ({ as, api, data }) => {
   const context = await as("ivy");
   await room(context.request, data, 100);

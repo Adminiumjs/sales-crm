@@ -150,6 +150,8 @@ export function QuotePage({ id }: { id: string }) {
           const linesOk = data.lines.length > 0 && data.lines.every((line) => (line.description ?? "").trim() !== "" && num(line.qty) > 0) && num(quote.total) > 0;
           const maySend = num(quote.may_send) === 1;
           const over = num(quote.needs_approval) === 1;
+          // A closed deal takes no new quote, and a draft of it is not sent (plan 68 R1a; the server refuses both).
+          const dealOpen = quote.deal_state === null || quote.deal_state === undefined || quote.deal_state === "open";
 
           const save = async (work: () => Promise<unknown>): Promise<void> => {
             setBusy(true);
@@ -227,7 +229,7 @@ export function QuotePage({ id }: { id: string }) {
                 return null;
             }
           })();
-          const canNew = canWrite && !(["draft", "waiting", "approved", "refused", "accepted"] as QuoteState[]).includes(lastState);
+          const canNew = canWrite && dealOpen && !(["draft", "waiting", "approved", "refused", "accepted"] as QuoteState[]).includes(lastState);
 
           return (
             <>
@@ -441,7 +443,15 @@ export function QuotePage({ id }: { id: string }) {
                     </dl>
                   </section>
 
-                  {canWrite && isNewest && quote.status === "draft" && quote.approval !== "asked" && maySend && (
+                  {canWrite && isNewest && quote.status === "draft" && !dealOpen && (
+                    <section className="crm-side-card" data-panel="closed-deal">
+                      <p className="crm-side-note" data-testid="quote-closed-deal">
+                        {t("quote.closedDeal")}
+                      </p>
+                    </section>
+                  )}
+
+                  {canWrite && isNewest && dealOpen && quote.status === "draft" && quote.approval !== "asked" && maySend && (
                     <section className="crm-side-card" data-panel="send">
                       <h2>{t("quote.send")}</h2>
                       {contact === null ? (

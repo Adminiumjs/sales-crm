@@ -111,7 +111,7 @@ export function Comments({ id }: { id: string }) {
   const again = useCoalesced(reload);
   useLive(useMemo(() => ["comments", "deal_members"].filter((table) => session.can(table, "read")), [session]), again);
 
-  const authors = load.state === "ready" && load.data !== null ? [...new Set([load.data.deal.owner_id, ...load.data.comments.map((comment) => comment.author_id)].filter((one): one is string => one !== null))].sort().join(",") : "";
+  const authors = load.state === "ready" && load.data !== null ? [...new Set([load.data.deal.owner_id, ...load.data.comments.flatMap((comment) => [comment.author_id, comment.settled_at === null ? null : comment.settled_by_id])].filter((one): one is string => one !== null))].sort().join(",") : "";
   const names = useLoad(() => readNames(session, authors === "" ? [] : authors.split(",")), [session, authors]);
   const nameOf = useCallback((userId: string | null): string => (userId === null ? "" : ((names.load.state === "ready" ? names.load.data[userId] : undefined) ?? t("closed.someone"))), [names.load, t]);
 
@@ -170,12 +170,12 @@ export function Comments({ id }: { id: string }) {
     }
     again();
   };
-  // Settled is "has a moment it was settled at". Reopening empties that moment and leaves who had settled it: the server lets nobody held to their own rows empty a column that names a person.
+  // Settled is "has a moment it was settled at". Who settled it is the server's: it stamps whoever changes that moment, so the screen sends the moment alone (plan 68 R1b).
   const settle = async (thread: Comment): Promise<void> => {
     setBusy(true);
     const settled = thread.settled_at !== null;
     await toasts.say(
-      session.update("comments", thread.id, settled ? { settled_at: null } : { settled_at: session.now().toISOString(), settled_by_id: me }, { seen: { settled_at: thread.settled_at } }),
+      session.update("comments", thread.id, { settled_at: settled ? null : session.now().toISOString() }, { seen: { settled_at: thread.settled_at } }),
       () => t(settled ? "cmt.toast.reopened" : "cmt.toast.settled"),
     );
     setBusy(false);
@@ -229,8 +229,8 @@ export function Comments({ id }: { id: string }) {
                           <div className="crm-cmt-head">
                             <span className="crm-cmt-who">{author}</span>
                             {settled && (
-                              <span className="crm-pill" data-tone="pos">
-                                {t("cmt.settled")}
+                              <span className="crm-pill" data-tone="pos" data-testid="cmt-settled">
+                                {thread.first.settled_by_id === null ? t("cmt.settled") : t("cmt.settledBy", { name: nameOf(thread.first.settled_by_id) })}
                               </span>
                             )}
                             {maySettle && (

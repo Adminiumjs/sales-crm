@@ -35,6 +35,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { KitPart } from "../../ui/kit.tsx";
 import { LoadFailed, Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { addressOf } from "../accounts/data.ts";
 import { boxRound, readTerritory, sameJson, sameSpot, type Company, type Territory as TerritoryRow } from "./data.ts";
 import { strangersIn, strayedFrom, type AreaGeometry } from "./geometry.ts";
 import { RecordName } from "./Name.tsx";
@@ -499,7 +500,7 @@ export function Territory(_props: ScreenProps) {
                           <RecordName kind="company" id={company.id} className="crm-terr-unplaced-name">
                             {company.name}
                           </RecordName>
-                          <span className="crm-terr-unplaced-addr">{company.town ?? ""}</span>
+                          <span className="crm-terr-unplaced-addr">{addressOf({ address_lines: company.addressLines, town: company.town, region: company.region, postal_code: company.postalCode, country: company.country }, locale)}</span>
                         </span>
                         {canPlace && status === "ready" && !editing && (
                           <button type="button" className="crm-btn crm-btn-ghost mr-gi" aria-pressed={placing === company.id} onClick={() => setPlacing((now) => (now === company.id ? null : company.id))}>

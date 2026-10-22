@@ -77,11 +77,13 @@ describe("the rules the app ships", () => {
   const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved"];
   // After the job books the aftercare call a signed-off job is owed (rule 16): on, as its part brings it.
   const AFTER = ["aftercare-call"];
+  // A customer's yes on a lost deal tells its owner (plan 68 R1a): it tells people, and ships on (D2).
+  const YES = ["quote-yes-on-lost"];
 
-  it("are twenty: six the app works by, three that tell a crew and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
-    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...TELLS, ...CREW, ...AFTER]);
+  it("are twenty-one: six the app works by, a late yes, three that tell a crew and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
+    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...AFTER]);
     for (const one of m.automations) {
-      expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || CREW.includes(one.key) || AFTER.includes(one.key));
+      expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || YES.includes(one.key) || CREW.includes(one.key) || AFTER.includes(one.key));
       expect(inAll(one.name), `${one.key} name`).toBe(true);
       expect(inAll(one.description), `${one.key} description`).toBe(true);
     }
@@ -97,6 +99,20 @@ describe("the rules the app ships", () => {
   });
   const notYet = (key: string) => ({ left: { count: { table: "deal_stage_changes", matchColumn: "move_key", equalsField: key } }, op: "is", right: 0 });
   const historyOf = (key: string) => walked(key).filter((node) => node.id !== "t" && node.id !== "mark").map((node) => [node.id, node.kind, node.action ?? node.condition]);
+
+  it("a customer's yes on a lost deal tells the deal's owner, in the bell, and nobody else (R1a)", () => {
+    expect(rule("quote-yes-on-lost").trigger).toEqual({
+      kind: "record",
+      event: "updated",
+      table: "quotes",
+      changedColumn: "status",
+      // The deal is read when the rule runs, by a count: no copy of its state is needed for the rule.
+      when: [{ left: { field: "status" }, op: "is", right: "accepted" }, { left: { count: { table: "deals", matchColumn: "id", equalsField: "deal_id", where: { left: { field: "state" }, op: "is", right: "lost" } } }, op: "gt", right: 0 }],
+    });
+    const tell = steps("quote-yes-on-lost") as unknown as { kind: string; to: unknown; title: Record<string, string>; body: Record<string, string> }[];
+    expect(tell.map((one) => [one.kind, one.to])).toEqual([["notification", { column: "deal_id.owner_id" }]]);
+    expect(inAll(tell[0]!.title) && inAll(tell[0]!.body)).toBe(true);
+  });
 
   it("a deal made gets its mark and the first line of its history", () => {
     expect(rule("deal-made").trigger).toEqual({ kind: "record", event: "created", table: "deals" });

@@ -475,6 +475,46 @@ for (const [dialect, reachable] of LEGS) {
       expect(await count('contacts', 'P07 %')).toBe(1);
       expect(Number((await one(`SELECT company_id FROM ${s.real('contacts')} WHERE name = 'P07 Ada Lowe'`))['company_id'])).toBe(halden);
       for (const person of ['hugo', 'grace', 'lena']) expect(await run(person, people, 'contacts', CONTACT, { mode: 'insert' }), person).toBe('403 TABLE_FORBIDDEN');
+
+      // MAY BE EMAILED (plan 68 R8, Q1 = A): a list that does not bring the column, or says no, makes contacts at "no"; a yes
+      // brought in is stamped as its bringer's, now. (A blank cell in a brought column is refused as "required" until E23
+      // reads an empty cell as the column's default: phase 4.)
+      const asStored = async (name: string) => one(`SELECT may_email, may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE name = '${name}'`);
+      const said_no = await run('dana', `Company\tName\tMay\n${String(halden)}\tP07 No Line\tno\n`, 'contacts', [['Company', 'company_id'], ['Name', 'name'], ['May', 'may_email']], { mode: 'insert' });
+      const unsaid = await run('dana', `Company\tName\n${String(halden)}\tP07 Unsaid Line\n`, 'contacts', [['Company', 'company_id'], ['Name', 'name']], { mode: 'insert' });
+      for (const ran of [said_no, unsaid]) expect(ran).toMatchObject({ stats: { inserted: 1 } });
+      for (const name of ['P07 No Line', 'P07 Unsaid Line']) expect(Boolean(Number((await asStored(name))['may_email'])), name).toBe(false);
+      const ada = await asStored('P07 Ada Lowe');
+      expect([Boolean(Number(ada['may_email'])), ada['may_email_by_id'], ada['may_email_at'] === null]).toEqual([true, s.id['dana'], false]);
+    });
+
+    it('a new contact may not be emailed until somebody ticks it, and the server says who and when (R8)', async () => {
+      const names = await byName('companies');
+      const cobalt = names['Cobalt Legal']!;
+      // The sample: six of the thirteen say yes, each ticked by a colleague on a day; the rest say no.
+      const sample = await s.rows(`SELECT name, may_email, may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE name NOT LIKE 'P07 %' ORDER BY name`);
+      expect(sample).toHaveLength(13);
+      const yes = sample.filter((row) => Boolean(Number(row['may_email'])));
+      expect(yes.map((row) => row['name'])).toEqual(['Ana Belova', 'Ines Vaughan', 'Marta Kovac', 'Petra Lindqvist', 'Ruth Adeyemi', 'Sadie Moore']);
+      for (const row of yes) expect([row['may_email_by_id'] !== null, row['may_email_at'] !== null], String(row['name'])).toEqual([true, true]);
+      expect(yes.find((row) => row['name'] === 'Ines Vaughan')!['may_email_by_id']).toBe(s.id['dana']);
+
+      // Made with no word on it, by every role that makes contacts: no, stamped as whoever made it (who set what it says, and when).
+      for (const person of ['dana', 'ivy', 'tessa', 'hugo']) {
+        const made = await send(person, 'POST', url('contacts'), { values: { name: `P07 R8 ${person}`, company_id: cobalt } });
+        expect(made.statusCode, made.body).toBe(201);
+        const row = await one(`SELECT may_email, may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE name = 'P07 R8 ${person}'`);
+        expect([Boolean(Number(row['may_email'])), row['may_email_by_id'], row['may_email_at'] !== null], person).toEqual([false, s.id[person], true]);
+      }
+      // A tick is stamped as whoever ticks it, now; a name or a moment sent with it is not taken, the CRM admin's included.
+      const hers = Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE name = 'P07 R8 dana'`))['id']);
+      expect(said(await send('dana', 'PATCH', url('contacts', `/${String(hers)}`), { values: { may_email: true, may_email_by_id: s.id['ivy'] } }))).toBe('403 COLUMN_FORBIDDEN');
+      expect(said(await send('dana', 'PATCH', url('contacts', `/${String(hers)}`), { values: { may_email: true } }))).toBe('ok');
+      const ticked = await one(`SELECT may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE id = ${String(hers)}`);
+      expect([ticked['may_email_by_id'], ticked['may_email_at'] !== null]).toEqual([s.id['dana'], true]);
+      expect(said(await send('tessa', 'PATCH', url('contacts', `/${String(hers)}`), { values: { may_email: false, may_email_by_id: s.id['ivy'], may_email_at: '2020-01-01T00:00:00.000Z' } }))).toBe('ok');
+      const unticked = await one(`SELECT may_email, may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE id = ${String(hers)}`);
+      expect([Boolean(Number(unticked['may_email'])), unticked['may_email_by_id'], String(unticked['may_email_at']).startsWith('2020')]).toEqual([false, s.id['tessa'], false]);
     });
 
     it('a company and a contact are everybody\'s to read; who may change them is the server\'s', async () => {
@@ -492,6 +532,20 @@ for (const [dialect, reachable] of LEGS) {
         expect([row['email'], row['phone'], row['_masked']], person).toEqual([null, null, expect.arrayContaining(['email', 'phone'])]);
       }
       expect(data(await get('dana', url('contacts', '?select=id,name,email&limit=1')))[0]!['email']).toMatch(/@/);
+      // A COMPANY'S STREET AND POSTAL CODE ARE NOT PERSONAL (plan 68 R3, ruling 3): every reader of companies is answered them,
+      // Read-only and the marketer included, by a list that names them and by the record, while a contact's e-mail and
+      // phone stay kept from those two (above). The sample's Cobalt has no postal code: the CRM admin gives it one first.
+      expect(said(await send('tessa', 'PATCH', url('companies', `/${String(cobalt)}`), { values: { postal_code: 'LS1 4BJ' } }))).toBe('ok');
+      const only = encodeURIComponent(JSON.stringify({ column: 'id', op: 'eq', value: cobalt }));
+      for (const person of ['dana', 'ivy', 'tessa', 'hugo', 'grace', 'lena']) {
+        const listed = data(await get(person, url('companies', `?select=id,address_lines,postal_code&where=${only}`)))[0]!;
+        expect([listed['address_lines'], listed['postal_code']], person).toEqual(['12 Sovereign Street', 'LS1 4BJ']);
+        const record = await get(person, url('companies', `/${String(cobalt)}`));
+        expect(record.statusCode, record.body).toBe(200);
+        const row = (record.json() as { data: Record<string, unknown> }).data;
+        expect([row['address_lines'], row['postal_code']], person).toEqual(['12 Sovereign Street', 'LS1 4BJ']);
+        expect((row['_masked'] as string[] | undefined) ?? [], person).not.toEqual(expect.arrayContaining(['address_lines']));
+      }
 
       // Changing a company: a rep, the manager, the admin and the account manager; Read-only and the marketer are refused.
       const town = async (): Promise<string> => String((await one(`SELECT town FROM ${s.real('companies')} WHERE id = ${String(cobalt)}`))['town']);

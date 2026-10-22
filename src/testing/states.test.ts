@@ -50,7 +50,7 @@ const moves = (ref: string): string[] =>
 /** Every table with states, its column, and each move with what it needs. */
 const EXPECTED: Record<string, { column: string; initial: string; moves: string[] }> = {
   deals: { column: "state", initial: "open", moves: ["open → won", "open → lost: lost_reason_id filled", "won → open: back", "lost → open: back; empties lost_reason_id"] },
-  quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; to_email filled; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
+  quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; to_email filled; deal_state = open; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
   // A cancelled visit is removed, never marked (F17): the only move left is "it was made".
   site_visits: { column: "state", initial: "booked", moves: ["booked → done"] },
   renewals: { column: "state", initial: "open", moves: ["open → done", "open → dropped"] },
@@ -136,7 +136,7 @@ describe("a deal", () => {
       expect(role.limits?.["quotes"]?.writable ?? [], role.key).not.toContain("deal_id");
     }
     // Once sent, who it went to is not changed: the lock keeps only what the customer's answer and a withdrawal write.
-    expect((states("quotes") as unknown as { lock: { except: string[] } }).lock.except).toEqual(["valid_until", "decided_at", "withdraw_reason", "accepted_name"]);
+    expect((states("quotes") as unknown as { lock: { except: string[] } }).lock.except).toEqual(["valid_until", "decided_at", "withdraw_reason", "accepted_name", "yes_seen_at"]);
     expect(column("replaces_ok").rules).toEqual({ formula: { if: [{ or: [{ isNull: "replaces_id" }, { and: [{ gte: ["replaces_deal_id", "deal_no"] }, { lte: ["replaces_deal_id", "deal_no"] }] }] }, 1, 0] } });
     // Nobody types who accepted: the customer's page does, as plain text, and the server says through which door.
     expect(column("accepted_name").rules).toEqual({ plainText: { max: 120 } });

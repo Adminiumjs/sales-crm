@@ -31,6 +31,7 @@ import { firstName } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
 import { readNames } from "../visits/data.ts";
 import { AddEnquiry } from "./AddEnquiry.tsx";
+import { YesOnLost } from "./YesOnLost.tsx";
 import { canClaim, inInboxFilter, isLead, markRung, notForUs, passOn, readInbox, readPassTo, type Enquiry, type InboxFilter } from "./data.ts";
 import { SOURCE_ICON, sourceLabel, warmLabel, WARM_TONE, whenOf } from "./parts.tsx";
 
@@ -104,6 +105,8 @@ export function Inbox(_props: ScreenProps) {
           </div>
         )}
       </div>
+
+      <YesOnLost />
 
       <Loaded load={load} reload={reload} skeleton={<Skeleton rows={4} height={132} />}>
         {(data) => {

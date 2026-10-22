@@ -737,7 +737,15 @@
      },
      "email": "ines.vaughan@cobaltlegal.example",
      "phone": "0113 496 0182",
-     "may_email": true
+     "may_email": true,
+     "may_email_by_id": {
+      "@person": "dana"
+     },
+     "may_email_at": {
+      "@day": -40,
+      "@time": "10:20",
+      "@week": true
+     }
     },
     {
      "@label": "ct:tomas",
@@ -759,7 +767,7 @@
      },
      "email": "t.reidy@cobaltlegal.example",
      "phone": "0113 496 0190",
-     "may_email": true
+     "may_email": false
     },
     {
      "@label": "ct:ana",
@@ -781,7 +789,15 @@
      },
      "email": "a.belova@fernwayclinics.example",
      "phone": "0117 302 4418",
-     "may_email": true
+     "may_email": true,
+     "may_email_by_id": {
+      "@person": "priya"
+     },
+     "may_email_at": {
+      "@day": -62,
+      "@time": "14:05",
+      "@week": true
+     }
     },
     {
      "@label": "ct:owen",
@@ -803,7 +819,7 @@
      },
      "email": "owen@junoanalytics.example",
      "phone": "0161 884 7723",
-     "may_email": true
+     "may_email": false
     },
     {
      "@label": "ct:kit",
@@ -825,7 +841,7 @@
      },
      "email": "kit@junoanalytics.example",
      "phone": "0161 884 7730",
-     "may_email": true
+     "may_email": false
     },
     {
      "@label": "ct:petra",
@@ -847,7 +863,15 @@
      },
      "email": "p.lindqvist@nordwind.example",
      "phone": "01482 55 0913",
-     "may_email": true
+     "may_email": true,
+     "may_email_by_id": {
+      "@person": "dana"
+     },
+     "may_email_at": {
+      "@day": -18,
+      "@time": "09:40",
+      "@week": true
+     }
     },
     {
      "@label": "ct:jonas",
@@ -869,7 +893,7 @@
      },
      "email": "j.reuter@nordwind.example",
      "phone": "01482 55 0940",
-     "may_email": true
+     "may_email": false
     },
     {
      "@label": "ct:marta",
@@ -891,7 +915,15 @@
      },
      "email": "marta@veldtstudios.example",
      "phone": "0141 662 8804",
-     "may_email": true
+     "may_email": true,
+     "may_email_by_id": {
+      "@person": "leo"
+     },
+     "may_email_at": {
+      "@day": -9,
+      "@time": "16:30",
+      "@week": true
+     }
     },
     {
      "@label": "ct:ruth",
@@ -913,7 +945,15 @@
      },
      "email": "r.adeyemi@brightloom.example",
      "phone": "0121 774 3355",
-     "may_email": true
+     "may_email": true,
+     "may_email_by_id": {
+      "@person": "sam"
+     },
+     "may_email_at": {
+      "@day": -30,
+      "@time": "11:15",
+      "@week": true
+     }
     },
     {
      "@label": "ct:sadie",
@@ -935,7 +975,15 @@
      },
      "email": "s.moore@harborfinch.example",
      "phone": "0131 208 6641",
-     "may_email": true
+     "may_email": true,
+     "may_email_by_id": {
+      "@person": "leo"
+     },
+     "may_email_at": {
+      "@day": -25,
+      "@time": "15:50",
+      "@week": true
+     }
     },
     {
      "@label": "ct:callum",
@@ -957,7 +1005,7 @@
      },
      "email": "c.finch@harborfinch.example",
      "phone": "0131 208 6600",
-     "may_email": true
+     "may_email": false
     },
     {
      "@label": "ct:yusuf",
@@ -979,7 +1027,7 @@
      },
      "email": "yusuf@tandemrobotics.example",
      "phone": "01223 47 1108",
-     "may_email": true
+     "may_email": false
     },
     {
      "@label": "ct:bea",
@@ -1001,7 +1049,7 @@
      },
      "email": "bea@loworbit.example",
      "phone": "0118 990 2277",
-     "may_email": true
+     "may_email": false
     }
    ]
   },

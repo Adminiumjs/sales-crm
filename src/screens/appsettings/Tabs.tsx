@@ -382,16 +382,51 @@ export const PARTS: readonly { id: PartId; name: MessageKey; line: MessageKey; r
   // Stage 3's, once the install has it.
   { id: "fleet", name: "nav.group.fleet", line: "aset.part.fleet", roles: ["admin", "ops-manager", "crew", "read-only"] },
 ];
+type PartDef = (typeof PARTS)[number];
 const ALWAYS: readonly PartId[] = ["selling", "accounts", "team"];
 const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package", showroom: "store", jobs: "truck", aftercare: "heart-handshake", fleet: "truck" };
+
+/**
+ * A table each part's sample rows always land in: a part whose table holds none while the sample is in came by an update after
+ * the sample was added. Supply's rows are Inventory's, so it is never named.
+ */
+const SAMPLE_TABLE: Partial<Record<PartId, string>> = { selling: "deals", quotes: "quotes", accounts: "companies", team: "targets", inbox: "enquiries", showroom: "showroom_bookings", jobs: "jobs", aftercare: "feedback", fleet: "vehicles" };
+
+/** The parts that came after the sample, for the person who runs the install (the one who removes it and adds it again); empty for anybody else, and when the server does not say. */
+function useAfterSample(session: StaffSession, owner: boolean, parts: readonly PartDef[]): PartDef[] {
+  const [after, setAfter] = useState<PartDef[]>([]);
+  useEffect(() => {
+    if (!owner) return;
+    let live = true;
+    session
+      .call<{ data?: SampleStatus } & SampleStatus>("GET", "/apps/crm/sample-data")
+      .then((reply) => {
+        const status = reply.data ?? reply;
+        if (!live || status.loaded !== true) return;
+        const holds = new Set((status.tables ?? []).filter((one) => one.count > 0).map((one) => one.ref));
+        setAfter(parts.filter((part) => SAMPLE_TABLE[part.id] !== undefined && !holds.has(SAMPLE_TABLE[part.id]!)));
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [session, owner, parts]);
+  return after;
+}
+interface SampleStatus {
+  loaded?: boolean;
+  tables?: { ref: string; count: number }[];
+}
 
 export function Parts({ session, f }: { session: StaffSession; f: Formatters }) {
   const t = useT();
   const owner = runsInstall(session);
   const known = session.config.modules ?? null;
   // The parts this install has: the ones its config names. A later stage's parts arrive with that stage, and are not listed before.
-  const shown = PARTS.filter((part) => known === null || known[part.id] !== undefined);
+  const shown = useMemo(() => PARTS.filter((part) => known === null || known[part.id] !== undefined), [known]);
   const on = shown.filter((part) => session.part(part.id)).length;
+  // No sample top-up after an update (plan 68 R6): the person who can do it is told how to see the new parts with sample rows.
+  const afterSample = useAfterSample(session, owner, shown);
   return (
     <div role="tabpanel" aria-label={t("aset.tab.parts")} className="crm-ast-panel" data-panel="parts">
       <Card name="parts" flush title={t("aset.parts.title")} sub={t("aset.parts.sub")} aside={<span className="crm-mono" data-figure="parts">{t("aset.parts.count", { on: f.number(on), all: f.number(shown.length) })}</span>}>
@@ -433,6 +468,11 @@ export function Parts({ session, f }: { session: StaffSession; f: Formatters }) 
           })}
         </div>
       </Card>
+      {afterSample.length > 0 && (
+        <AskLine icon={<Icon name="layers" size={15} />}>
+          <span data-testid="parts-after-sample">{t("aset.parts.afterSample", { parts: afterSample.map((part) => t(part.name)).join(", ") })}</span>
+        </AskLine>
+      )}
       <AskLine icon={<Icon name="lock" size={15} />}>{t(owner ? "aset.parts.owner" : "aset.parts.ask")}</AskLine>
     </div>
   );

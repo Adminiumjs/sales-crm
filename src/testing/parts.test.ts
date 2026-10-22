@@ -131,6 +131,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       // The amount line is written when a quote is sent: no quotes, no line.
       ["quote-sent-amount", "quotes"],
       ["approval-asked", "quotes"],
+      ["quote-yes-on-lost", "quotes"],
       ["nudge-quiet", "selling"],
       ["nudge-stuck", "selling"],
       ["nudge-soon", "selling"],

@@ -658,6 +658,18 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   const settled = (await rows<{ settled_at: string | null; settled_by_id: string | null }>(dana, data, "comments", { column: "id", op: "eq", value: stored[0]!.id }))[0]!;
   expect([settled.settled_at !== null, settled.settled_by_id]).toEqual([true, deal.me]);
   await page.getByRole("button", { name: "Show settled" }).click();
+  // WHO SETTLED IS THE SERVER'S (plan 68 R1b): the thread names her, and nobody types it. Dana may not send it at all; the
+  // CRM admin, who may write the row, is stamped over whatever she sends.
+  await expect(page.getByTestId("cmt-settled")).toHaveText("Settled by Dana Whitlock");
+  const thread = `/${String(stored[0]!.id)}`;
+  const typed = await dana.patch(data("comments", thread), { data: { values: { settled_by_id: ivyId } }, headers: await csrf(dana) });
+  expect([typed.status(), ((await typed.json()) as { error?: { code?: string } }).error?.code]).toEqual([403, "COLUMN_FORBIDDEN"]);
+  const tessa = await api("tessa");
+  const tessaId = await userId(tessa);
+  expect((await tessa.patch(data("comments", thread), { data: { values: { settled_at: null } }, headers: await csrf(tessa) })).status()).toBe(200);
+  expect((await tessa.patch(data("comments", thread), { data: { values: { settled_at: new Date().toISOString(), settled_by_id: ivyId } }, headers: await csrf(tessa) })).status()).toBe(200);
+  expect((await rows<{ settled_by_id: string | null }>(dana, data, "comments", { column: "id", op: "eq", value: stored[0]!.id }))[0]!.settled_by_id).toBe(tessaId);
+  await expect(page.getByTestId("cmt-settled")).toHaveText("Settled by Tessa Marlow");
   await page.locator(".crm-cmt-thread").getByRole("button", { name: "Reopen" }).click();
   await expect(page.locator(".crm-toast")).toHaveText("Back open.");
   await expect(room.getByTestId("room-open-threads")).toHaveText("1");

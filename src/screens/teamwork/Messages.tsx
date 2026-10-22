@@ -26,7 +26,8 @@ import { newClientKey, type Condition, type StaffSession } from "../../staffSess
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
-import { Avatar, countOf, Empty, Head, NOBODY, readWho, useF, type Names } from "./common.tsx";
+import { Dialog } from "../../ui/dialog.tsx";
+import { Avatar, countOf, Empty, Head, NOBODY, PersonChips, readWho, useF, type Names } from "./common.tsx";
 
 interface Thread extends Record<string, unknown> {
   id: number;
@@ -174,7 +175,7 @@ export function Messages(_: ScreenProps) {
                       );
                     })}
                   </nav>
-                  <Conversation key={shown.thread.id} row={shown} title={titleOf(shown, me, who.names, t("msgs.group"))} names={who.names} f={f} me={me} round={round} opened={picked === shown.thread.id} onOpen={() => void markRead([shown], false)} onSent={again} />
+                  <Conversation key={shown.thread.id} row={shown} title={titleOf(shown, me, who.names, t("msgs.group"))} names={who.names} everyone={who.everyone} f={f} me={me} round={round} opened={picked === shown.thread.id} onOpen={() => void markRead([shown], false)} onSent={again} />
                 </div>
               )}
             </>
@@ -191,7 +192,7 @@ function whenOf(at: Date, now: Date, f: Formatters, yesterday: string): string {
   return days <= 0 ? f.time(at) : days === 1 ? yesterday : f.dayShort(at);
 }
 
-function Conversation({ row, title, names, f, me, round, opened, onOpen, onSent }: { row: Listed; title: string; names: Names; f: Formatters; me: string; round: number; /** The reader picked this conversation (the one shown on arrival is not yet "read"). */ opened: boolean; onOpen: () => void; onSent: () => void }) {
+function Conversation({ row, title, names, everyone, f, me, round, opened, onOpen, onSent }: { row: Listed; title: string; names: Names; everyone: { id: string; name: string }[]; f: Formatters; me: string; round: number; /** The reader picked this conversation (the one shown on arrival is not yet "read"). */ opened: boolean; onOpen: () => void; onSent: () => void }) {
   const t = useT();
   const session = useSession();
   const toasts = useToasts();
@@ -211,6 +212,9 @@ function Conversation({ row, title, names, f, me, round, opened, onOpen, onSent 
   }, [count]);
   const canSend = session.can("messages", "create") && row.mine !== null;
   const others = row.members.filter((member) => member.user_id !== me);
+  // A member brings a colleague into a group conversation; a two-person one takes nobody else (the server refuses it too).
+  const canAdd = row.thread.kind === "group" && row.mine !== null && session.can("thread_members", "create");
+  const [adding, setAdding] = useState(false);
 
   const send = async (): Promise<void> => {
     const text = draft.trim();
@@ -247,7 +251,26 @@ function Conversation({ row, title, names, f, me, round, opened, onOpen, onSent 
             </span>
           )}
         </div>
+        {canAdd && (
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-ms-add mr-gi" onClick={() => setAdding(true)}>
+            <Icon name="user-round-plus" size={14} />
+            {t("msgs.add")}
+          </button>
+        )}
       </div>
+      {adding && (
+        <AddColleague
+          thread={row.thread.id}
+          title={title}
+          people={everyone.filter((person) => !row.members.some((member) => member.user_id === person.id))}
+          names={names}
+          onClose={() => setAdding(false)}
+          onAdded={() => {
+            setAdding(false);
+            onSent();
+          }}
+        />
+      )}
       <div className="crm-ms-scroll mr-scroll" role="log" aria-live="polite" tabIndex={0} aria-label={t("msgs.log", { name: title })}>
         <Loaded load={load} reload={reload} skeleton={<Skeleton rows={3} height={44} />}>
           {(messages) => (
@@ -298,5 +321,62 @@ function Conversation({ row, title, names, f, me, round, opened, onOpen, onSent 
         <p className="crm-tw-quiet crm-ms-nothing">{t("msgs.readOnly")}</p>
       )}
     </section>
+  );
+}
+
+/** Bring a colleague into a group conversation. They read it from its start: the dialog says so before anything is saved (D3). */
+function AddColleague({ thread, title, people, names, onClose, onAdded }: { thread: number; title: string; people: { id: string; name: string }[]; names: Names; onClose: () => void; onAdded: () => void }) {
+  const t = useT();
+  const session = useSession();
+  const toasts = useToasts();
+  const [picked, setPicked] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const key = useRef(newClientKey());
+  const add = async (): Promise<void> => {
+    if (picked === null) return;
+    setBusy(true);
+    const saved = await session.create("thread_members", { thread_id: thread, user_id: picked }, key.current);
+    setBusy(false);
+    if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
+    if (saved.state === "unknown") return setError(t("ui.unknown"));
+    toasts.show(t("msgs.add.toast", { name: names[picked] ?? "" }));
+    onAdded();
+  };
+  return (
+    <Dialog
+      shape="box"
+      name="msgs-add"
+      icon="user-round-plus"
+      title={t("msgs.add.title")}
+      subtitle={title}
+      onClose={onClose}
+      busy={busy}
+      foot={
+        <>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
+            {t("ui.cancel")}
+          </button>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" disabled={busy || picked === null} onClick={() => void add()}>
+            <Icon name="user-round-plus" size={14} />
+            {busy ? t("ui.saving") : t("msgs.add.go")}
+          </button>
+        </>
+      }
+    >
+      {people.length === 0 ? (
+        <p className="crm-tw-quiet">{t("msgs.add.nobody")}</p>
+      ) : (
+        <PersonChips people={people.map((person) => person.id)} names={names} value={picked} onPick={(id) => (setPicked(id), setError(null))} label={t("msgs.add.who")} />
+      )}
+      <p className="crm-field-note" data-testid="msgs-add-note">
+        {picked === null ? t("msgs.add.note.anyone") : t("msgs.add.note", { name: firstName(names[picked] ?? "") })}
+      </p>
+      {error !== null && (
+        <p className="crm-form-error" role="alert">
+          {error}
+        </p>
+      )}
+    </Dialog>
   );
 }

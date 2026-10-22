@@ -28,7 +28,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useLoad } from "../../ui/load.tsx";
 import { initials } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
-import { addressOf, fixedOn, PAGE, type Company, type Person, type Reach } from "./data.ts";
+import { addressOf, fixedOn, namesOf, PAGE, type Company, type Person, type Reach } from "./data.ts";
 import { useAccounts } from "./shared.tsx";
 
 export type Rec =
@@ -53,6 +53,8 @@ interface Loaded_ {
   company: Company | null;
   /** The open deals the reader may open on which this contact is the main contact. */
   deals: { id: number; name: string; amount: number | string; stage: string | null }[];
+  /** Who last ticked "may be emailed", by name: the server's stamp, read for a contact's view. */
+  tickedBy?: string | null;
 }
 
 const keptOf = (row: Row | null | undefined): string[] => (Array.isArray(row?.["_masked"]) ? (row["_masked"] as string[]) : []);
@@ -88,7 +90,9 @@ async function read(session: StaffSession, rec: Rec, reach: Reach): Promise<Load
           .then((page) => page.rows)
       : Promise.resolve([]),
   ]);
-  return { row, kept: keptOf(row), companies: await companies, company, deals };
+  const by = rec.mode === "view" && typeof row["may_email_by_id"] === "string" ? row["may_email_by_id"] : null;
+  const tickedBy = by === null ? null : ((await namesOf(session).catch(() => ({}) as Record<string, string>))[by] ?? null);
+  return { row, kept: keptOf(row), companies: await companies, company, deals, tickedBy };
 }
 
 const shown = (value: unknown): string => (value === null || value === undefined ? "" : String(value));
@@ -141,12 +145,20 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
   const texts = useMemo(() => (isCompany ? COMPANY_TEXTS : CONTACT_TEXTS).filter((column) => !data.kept.includes(column)), [isCompany, data.kept]);
   const [draft, setDraft] = useState<Record<string, string>>(() => Object.fromEntries(texts.map((column) => [column, shown(row?.[column])])));
   const [companyId, setCompanyId] = useState<number | null>(() => (rec.kind !== "contact" ? null : row !== null ? Number(row["company_id"]) : (rec.mode === "add" ? rec.companyId : undefined) ?? null));
-  const [mayEmail, setMayEmail] = useState<boolean>(() => (row === null ? true : row["may_email"] !== false));
+  // A new contact starts at "may not be emailed": somebody ticks it once she has said yes (plan 68 R8).
+  const [mayEmail, setMayEmail] = useState<boolean>(() => (row === null ? false : row["may_email"] === true));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // One key for as long as the sheet is open: a save sent twice makes one record.
   const key = useRef(newClientKey());
   const set = (column: string, value: string): void => (setDraft((was) => ({ ...was, [column]: value })), setError(null));
+
+  /** Whether a contact may be emailed, and who said so when: the server's stamp, or "before this was recorded" for an older yes. */
+  const mayEmailLine = (person: Person, by: string | null): string => {
+    if (person.may_email !== true) return t("acc.rec.ct.mayEmail.no");
+    const at = typeof person["may_email_at"] === "string" ? new Date(person["may_email_at"]) : null;
+    return at === null ? t("acc.rec.ct.mayEmail.before") : t("acc.rec.ct.mayEmail.since", { date: f.date(at), name: by ?? t("closed.someone") });
+  };
 
   if (rec.kind === "contact" && rec.mode === "view" && row !== null) {
     const person = row as unknown as Person;
@@ -157,6 +169,7 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
       { label: "acc.rec.fact.company", value: company?.name ?? "" },
       ...(hidden ? [] : [{ label: "acc.rec.fact.email" as const, value: shown(person.email), mono: true }, { label: "acc.rec.fact.phone" as const, value: shown(person.phone), mono: true }]),
       { label: "acc.rec.fact.where", value: company === null ? "" : addressOf(company, locale) },
+      { label: "acc.rec.ct.mayEmail", value: mayEmailLine(person, data.tickedBy ?? null) },
     ];
     const canEdit = session.can("contacts", "update") && onEdit !== undefined;
     return (
@@ -261,7 +274,7 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
       values["may_email"] = mayEmail;
     }
     // A change sends what changed and nothing else.
-    const same = (column: string, value: unknown): boolean => (typeof value === "boolean" ? value === (row?.[column] !== false) : shown(value) === shown(row?.[column]));
+    const same = (column: string, value: unknown): boolean => (typeof value === "boolean" ? value === (row?.[column] === true) : shown(value) === shown(row?.[column]));
     const changed: Row = adding ? values : Object.fromEntries(Object.entries(values).filter(([column, value]) => !same(column, value)));
     if (!adding && Object.keys(changed).length === 0) return onClose();
     setBusy(true);

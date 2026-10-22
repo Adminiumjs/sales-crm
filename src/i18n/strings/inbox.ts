@@ -434,4 +434,11 @@ export const inbox = tables({
     "展覽後 {count} 天",
     "اليوم|يوم واحد منذ المعرض|يومان منذ المعرض|{count} أيام منذ المعرض|{count} يومًا منذ المعرض|{count} يوم منذ المعرض",
   ],
+  "inbox.yes.title": ["A customer said yes to a lost deal", "Ein Kunde hat zu einem verlorenen Deal Ja gesagt", "Un client a accepté sur une affaire perdue", "En kunde har sagt ja til en tabt handel", "Zákazník přijal nabídku u ztraceného obchodu", "客户接受了已输商机的报价", "客戶接受了已輸案件的報價", "عميل وافق على صفقة خاسرة"],
+  "inbox.yes.line": ["{name} accepted {quote}", "{name} hat {quote} angenommen", "{name} a accepté {quote}", "{name} accepterede {quote}", "{name} přijal(a) {quote}", "{name} 接受了 {quote}", "{name} 接受了 {quote}", "وافق {name} على {quote}"],
+  "inbox.yes.line.nobody": ["{quote} was accepted", "{quote} wurde angenommen", "{quote} a été accepté", "{quote} blev accepteret", "{quote} byla přijata", "{quote} 已被接受", "{quote} 已被接受", "قُبل {quote}"],
+  "inbox.yes.reopen": ["Reopen the deal", "Deal wieder öffnen", "Rouvrir l’affaire", "Genåbn handlen", "Znovu otevřít obchod", "重新打开商机", "重新開啟案件", "أعد فتح الصفقة"],
+  "inbox.yes.leave": ["Leave it closed", "Geschlossen lassen", "La laisser close", "Lad den være lukket", "Nechat uzavřený", "保持关闭", "保持關閉", "اتركها مغلقة"],
+  "inbox.yes.toast.reopened": ["{deal} is open again.", "{deal} ist wieder offen.", "{deal} est de nouveau ouverte.", "{deal} er åben igen.", "{deal} je znovu otevřený.", "{deal} 已重新打开。", "{deal} 已重新開啟。", "أُعيد فتح {deal}."],
+  "inbox.yes.toast.left": ["{deal} stays lost.", "{deal} bleibt verloren.", "{deal} reste perdue.", "{deal} forbliver tabt.", "{deal} zůstává ztracený.", "{deal} 保持已输。", "{deal} 維持已輸。", "تبقى {deal} خاسرة."],
 });

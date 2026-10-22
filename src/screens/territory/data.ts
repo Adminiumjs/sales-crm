@@ -32,6 +32,11 @@ export interface Company {
   id: number;
   name: string;
   town: string | null;
+  /** The street and the rest of the address, for the list of companies not on the map (a company's street is not personal). */
+  addressLines: string | null;
+  region: string | null;
+  postalCode: string | null;
+  country: string | null;
   territoryId: number | null;
   spot: (Spot & { by: "town" | "exact" }) | null;
   /** The open deals of this company the reader can open, and what they come to; null when the reader reads no deals. */
@@ -71,7 +76,11 @@ interface TerritoryRow extends Record<string, unknown> {
 interface CompanyRow extends Record<string, unknown> {
   id: number;
   name: string;
+  address_lines: string | null;
   town: string | null;
+  region: string | null;
+  postal_code: string | null;
+  country: string | null;
   territory_id: number | null;
   place: unknown;
   open?: number | string | null;
@@ -112,8 +121,7 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
   const [territoryPage, companyPage, people, reps] = await Promise.all([
     session.list<TerritoryRow>("territories", { select: ["id", "name", "owner_id", "area"], order: ["id"], limit: LISTED }),
     session.list<CompanyRow>("companies", {
-      // The street address is personal to Adminium (masked for every role of this app), so a company is shown by its town.
-      select: ["id", "name", "town", "territory_id", "place"],
+      select: ["id", "name", "address_lines", "town", "region", "postal_code", "country", "territory_id", "place"],
       order: ["name", "id"],
       limit: LISTED,
       count: "exact",
@@ -135,6 +143,10 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
     id: row.id,
     name: row.name,
     town: row.town,
+    addressLines: row.address_lines ?? null,
+    region: row.region ?? null,
+    postalCode: row.postal_code ?? null,
+    country: row.country ?? null,
     territoryId: row.territory_id,
     spot: spotOf(row.place),
     open: readsDeals ? num(row.open) : null,

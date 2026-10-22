@@ -2680,6 +2680,30 @@
             }
           },
           {
+            "ref": "deal_state",
+            "type": "text",
+            "maxLength": 16,
+            "nullable": true,
+            "label": {
+              "en-US": "Deal state",
+              "de-DE": "Deal-Status",
+              "fr-FR": "État de l’affaire",
+              "da-DK": "Handlens status",
+              "cs-CZ": "Stav obchodu",
+              "ar-EG": "حالة الصفقة",
+              "zh-CN": "商机状态",
+              "zh-TW": "案件狀態"
+            },
+            "rules": {
+              "copy": {
+                "via": "deal_id",
+                "from": "state",
+                "mode": "always",
+                "follow": true
+              }
+            }
+          },
+          {
             "ref": "replaces_deal_id",
             "type": "int",
             "nullable": true,
@@ -3584,6 +3608,21 @@
             }
           },
           {
+            "ref": "yes_seen_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Yes on a lost deal seen",
+              "de-DE": "Zusage zu verlorenem Deal gesehen",
+              "fr-FR": "Accord sur affaire perdue vu",
+              "da-DK": "Ja til tabt handel set",
+              "cs-CZ": "Souhlas u ztraceného obchodu viděn",
+              "ar-EG": "تمت رؤية الموافقة على صفقة خاسرة",
+              "zh-CN": "已查看已输商机的接受",
+              "zh-TW": "已查看已輸案件的接受"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -3631,6 +3670,10 @@
                     {
                       "column": "to_email",
                       "isNull": false
+                    },
+                    {
+                      "column": "deal_state",
+                      "eq": "open"
                     }
                   ]
                 }
@@ -3663,7 +3706,8 @@
               "valid_until",
               "decided_at",
               "withdraw_reason",
-              "accepted_name"
+              "accepted_name",
+              "yes_seen_at"
             ]
           },
           "children": {
@@ -4427,7 +4471,15 @@
             "maxLength": 36,
             "nullable": true,
             "rules": {
-              "staff": true
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "columns": [
+                    "settled_at"
+                  ]
+                }
+              }
             },
             "label": {
               "en-US": "Settled by",
@@ -6048,6 +6100,9 @@
               "ar-EG": "العنوان",
               "zh-CN": "地址",
               "zh-TW": "地址"
+            },
+            "rules": {
+              "personal": false
             }
           },
           {
@@ -6096,6 +6151,9 @@
               "ar-EG": "الرمز البريدي",
               "zh-CN": "邮编",
               "zh-TW": "郵遞區號"
+            },
+            "rules": {
+              "personal": false
             }
           },
           {
@@ -6437,6 +6495,59 @@
               "ar-EG": "يُسمح بمراسلته",
               "zh-CN": "可发邮件",
               "zh-TW": "可寄電子郵件"
+            },
+            "default": false
+          },
+          {
+            "ref": "may_email_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "label": {
+              "en-US": "Ticked by",
+              "de-DE": "Angehakt von",
+              "fr-FR": "Coché par",
+              "da-DK": "Markeret af",
+              "cs-CZ": "Zaškrtl(a)",
+              "ar-EG": "أشّر عليه",
+              "zh-CN": "勾选人",
+              "zh-TW": "勾選人"
+            },
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "columns": [
+                    "may_email"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "ref": "may_email_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Ticked on",
+              "de-DE": "Angehakt am",
+              "fr-FR": "Coché le",
+              "da-DK": "Markeret den",
+              "cs-CZ": "Zaškrtnuto",
+              "ar-EG": "تاريخ التأشير",
+              "zh-CN": "勾选时间",
+              "zh-TW": "勾選時間"
+            },
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "columns": [
+                    "may_email"
+                  ]
+                }
+              }
             }
           },
           {
@@ -8886,6 +8997,9 @@
           {
             "column": "user_id",
             "set": "anyone"
+          },
+          {
+            "via": "thread_id"
           }
         ],
         "indexes": [
@@ -8970,7 +9084,19 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "capacity": {
+          "kind": "parent",
+          "via": "thread_id",
+          "size": 2,
+          "countWhere": {
+            "column": "kind",
+            "values": [
+              "direct"
+            ],
+            "via": "thread_id"
+          }
+        }
       },
       {
         "ref": "messages",
@@ -20536,7 +20662,8 @@
         "thread_members": {
           "rows": {
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "by": "user_id"
             }
           }
         },
@@ -20563,7 +20690,8 @@
             "ask_reason",
             "decision_note",
             "sent_to_contact_id",
-            "notes"
+            "notes",
+            "yes_seen_at"
           ],
           "creatable": [
             "valid_until",
@@ -21083,7 +21211,8 @@
             "ask_reason",
             "decision_note",
             "sent_to_contact_id",
-            "notes"
+            "notes",
+            "yes_seen_at"
           ],
           "creatable": [
             "valid_until",
@@ -21147,7 +21276,6 @@
         "comments": {
           "writable": [
             "text",
-            "settled_by_id",
             "settled_at"
           ],
           "rows": {
@@ -21416,8 +21544,12 @@
         },
         "thread_members": {
           "rows": {
-            "update": {
+            "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "user_id"
             }
           }
         },
@@ -21864,7 +21996,8 @@
             "approval",
             "ask_reason",
             "sent_to_contact_id",
-            "notes"
+            "notes",
+            "yes_seen_at"
           ],
           "writableValues": {
             "approval": [
@@ -21937,7 +22070,6 @@
         "comments": {
           "writable": [
             "text",
-            "settled_by_id",
             "settled_at"
           ],
           "rows": {
@@ -22168,8 +22300,12 @@
         },
         "thread_members": {
           "rows": {
-            "update": {
+            "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "user_id"
             }
           }
         },
@@ -22615,8 +22751,12 @@
         },
         "thread_members": {
           "rows": {
-            "update": {
+            "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "user_id"
             }
           }
         },
@@ -22762,7 +22902,9 @@
             "accepted_name",
             "accepted_via",
             "answered_by_id",
-            "withdrawn_at"
+            "withdrawn_at",
+            "yes_seen_at",
+            "deal_state"
           ]
         },
         "quote_lines": {
@@ -24102,7 +24244,9 @@
             "accepted_name",
             "accepted_via",
             "answered_by_id",
-            "withdrawn_at"
+            "withdrawn_at",
+            "yes_seen_at",
+            "deal_state"
           ]
         },
         "covers": {
@@ -25009,6 +25153,105 @@
                 "ar-EG": "طلبه {{asked_by_id.name}}: {{record.under_list_pct}} ٪ تحت القائمة. السبب: {{record.ask_reason}}",
                 "zh-CN": "申请人：{{asked_by_id.name}}。低于目录价 {{record.under_list_pct}} %。原因：{{record.ask_reason}}",
                 "zh-TW": "申請人：{{asked_by_id.name}}。低於牌價 {{record.under_list_pct}} %。原因：{{record.ask_reason}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quote-yes-on-lost",
+      "name": {
+        "en-US": "A customer says yes on a lost deal: its owner is told",
+        "de-DE": "Ein Kunde sagt Ja zu einem verlorenen Deal: der Verantwortliche wird informiert",
+        "fr-FR": "Un client accepte sur une affaire perdue : son responsable est prévenu",
+        "da-DK": "En kunde siger ja til en tabt handel: ejeren får besked",
+        "cs-CZ": "Zákazník přijme nabídku u ztraceného obchodu: jeho vlastník se to dozví",
+        "ar-EG": "عميل وافق على صفقة خاسرة: يُبلَّغ صاحبها",
+        "zh-CN": "客户接受了已输商机的报价：通知负责人",
+        "zh-TW": "客戶接受了已輸案件的報價：通知負責人"
+      },
+      "description": {
+        "en-US": "When a customer accepts a quote whose deal is lost, the deal owner is told in the bell. They reopen the deal or leave it closed, from their Inbox.",
+        "de-DE": "Wenn ein Kunde ein Angebot zu einem verlorenen Deal annimmt, wird der Verantwortliche über die Glocke informiert. Im Posteingang öffnet er den Deal wieder oder lässt ihn geschlossen.",
+        "fr-FR": "Quand un client accepte un devis dont l’affaire est perdue, son responsable est prévenu dans la cloche. Depuis sa boîte de réception, il rouvre l’affaire ou la laisse close.",
+        "da-DK": "Når en kunde accepterer et tilbud på en tabt handel, får ejeren besked i klokken. Fra sin indbakke genåbner ejeren handlen eller lader den være lukket.",
+        "cs-CZ": "Když zákazník přijme nabídku, jejíž obchod je ztracený, vlastník obchodu dostane zprávu ve zvonku. Ve své schránce obchod znovu otevře, nebo ho nechá uzavřený.",
+        "ar-EG": "عندما يقبل عميل عرض سعر صفقته خاسرة، يُبلَّغ صاحب الصفقة في الجرس. ومن صندوق الوارد يعيد فتح الصفقة أو يتركها مغلقة.",
+        "zh-CN": "客户接受了所属商机已输的报价时，在铃铛里通知商机负责人。负责人可在收件箱重新打开商机，或让它保持关闭。",
+        "zh-TW": "客戶接受了所屬案件已輸的報價時，在鈴鐺裡通知案件負責人。負責人可在收件匣重新開啟案件，或讓它保持關閉。"
+      },
+      "enabled": true,
+      "module": "quotes",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "quotes",
+        "changedColumn": "status",
+        "when": [
+          {
+            "left": {
+              "field": "status"
+            },
+            "op": "is",
+            "right": "accepted"
+          },
+          {
+            "left": {
+              "count": {
+                "table": "deals",
+                "matchColumn": "id",
+                "equalsField": "deal_id",
+                "where": {
+                  "left": {
+                    "field": "state"
+                  },
+                  "op": "is",
+                  "right": "lost"
+                }
+              }
+            },
+            "op": "gt",
+            "right": 0
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A customer says yes on a lost deal: its owner is told"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell the deal owner",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "column": "deal_id.owner_id"
+              },
+              "title": {
+                "en-US": "{{record.accepted_name}} said yes to quote {{record.number}}, on a lost deal",
+                "de-DE": "{{record.accepted_name}} hat Angebot {{record.number}} angenommen, zu einem verlorenen Deal",
+                "fr-FR": "{{record.accepted_name}} a accepté le devis {{record.number}}, sur une affaire perdue",
+                "da-DK": "{{record.accepted_name}} sagde ja til tilbud {{record.number}} på en tabt handel",
+                "cs-CZ": "{{record.accepted_name}} přijal(a) nabídku {{record.number}} u ztraceného obchodu",
+                "ar-EG": "وافق {{record.accepted_name}} على عرض السعر {{record.number}} في صفقة خاسرة",
+                "zh-CN": "{{record.accepted_name}} 接受了已输商机的报价 {{record.number}}",
+                "zh-TW": "{{record.accepted_name}} 接受了已輸案件的報價 {{record.number}}"
+              },
+              "body": {
+                "en-US": "Reopen the deal, or leave it closed, from your Inbox.",
+                "de-DE": "Öffnen Sie den Deal wieder oder lassen Sie ihn geschlossen, in Ihrem Posteingang.",
+                "fr-FR": "Rouvrez l’affaire ou laissez-la close, depuis votre boîte de réception.",
+                "da-DK": "Genåbn handlen, eller lad den være lukket, fra din indbakke.",
+                "cs-CZ": "Obchod znovu otevřete, nebo ho nechte uzavřený, ve své schránce.",
+                "ar-EG": "أعد فتح الصفقة أو اتركها مغلقة، من صندوق الوارد.",
+                "zh-CN": "在收件箱里重新打开商机，或让它保持关闭。",
+                "zh-TW": "在收件匣裡重新開啟案件，或讓它保持關閉。"
               }
             }
           }

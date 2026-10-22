@@ -374,9 +374,9 @@ test("a company is added once though its reply is lost, then changed; the sheet 
   await sheet.getByLabel("How many people").fill("40");
   await sheet.getByLabel("Town").fill("York");
   await sheet.getByLabel("Country").fill("gb");
-  // The street and the postal code are kept from every role of the app: they are not offered, and the sheet says why.
-  await expect(sheet.getByLabel("Address lines")).toHaveCount(0);
-  await expect(sheet).toContainText("The street and the postal code are kept from your role");
+  // The street and the postal code are a business's (plan 68 R3): offered to whoever adds the company, with no note.
+  await sheet.getByLabel("Address lines").fill("4 Mill Lane");
+  await expect(sheet).not.toContainText("The street and the postal code are kept from your role");
 
   // The first save reaches the server and is written; its answer never arrives.
   const sent: { key: string; replayed: boolean | null }[] = [];

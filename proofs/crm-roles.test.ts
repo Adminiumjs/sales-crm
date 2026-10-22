@@ -351,7 +351,7 @@ for (const [dialect, reachable] of LEGS) {
         ['actions', 'own own own - - - - - -'],
         ['meetings meeting_slots meeting_decisions starters starter_steps', 'all all all - - - - - all'],
         ['threads messages', 'own own own own - - - - -'],
-        ['thread_members', 'all all all all - - - - -'],
+        ['thread_members', 'all own own own - - - - -'],
         ['enquiries', 'all team+free own+free - all own+free - - all'],
         ['shows', 'all all all - all all - - all'],
         ['showroom_spaces samples display_pieces showroom_bookings sample_loans sample_chases', 'all all all - - all - - all'],
@@ -1220,6 +1220,43 @@ for (const [dialect, reachable] of LEGS) {
         expect((await post('dana', 'deals', { name: 'Nobody\'s deal', company_id: company, stage_id: stage, typed_amount: 5000 })).statusCode).toBeGreaterThanOrEqual(400);
         expect(await ids(`SELECT id FROM ${s.real('deals')} WHERE owner_id IS NULL`)).toEqual([]);
       });
+    });
+
+    it('R4c: who is in a conversation is its members\' to read; a colleague added to a group one reads it from its start; a two-person one takes nobody else', async () => {
+      const thread = async (title: string | null, kind: string): Promise<number> => {
+        const rows = await s.rows(`SELECT t.id FROM ${s.real('threads')} t WHERE t.kind = '${kind}' AND EXISTS (SELECT 1 FROM ${s.real('thread_members')} m WHERE m.thread_id = t.id AND m.user_id = '${s.id['dana']!}') ORDER BY t.id`);
+        expect(rows.length, `${kind} ${String(title)}`).toBeGreaterThan(0);
+        return Number(rows[0]!['id']);
+      };
+      const team = await thread('The four of us', 'group');
+      const members = async (id: number): Promise<number[]> => ids(`SELECT id FROM ${s.real('thread_members')} WHERE thread_id = ${String(id)}`);
+      const inThreadsOf = async (person: string): Promise<number[]> =>
+        ids(`SELECT m.id FROM ${s.real('thread_members')} m WHERE m.thread_id IN (SELECT thread_id FROM ${s.real('thread_members')} WHERE user_id = '${s.id[person]!}')`);
+      // Each member reads the people of her own conversations and of no other; the CRM admin reads them all; Read-only and the rest none.
+      for (const person of ['dana', 'ivy', 'sam', 'hugo']) expect(await keys(person, 'thread_members'), person).toEqual(await inThreadsOf(person));
+      expect(await keys('tessa', 'thread_members')).toEqual(await ids(`SELECT id FROM ${s.real('thread_members')}`));
+      for (const person of ['grace', 'lena', 'ada']) expect(String(await keys(person, 'thread_members')).slice(0, 3), person).toBe('403');
+      // Ivy is not in "the four of us": she is answered none of it.
+      expect(await keys('ivy', 'thread_members')).not.toEqual(expect.arrayContaining(await members(team)));
+      await gone('ivy', 'threads', team);
+      // A member brings her in. From then on she reads the conversation from its start: its people and every message in it.
+      const added = await post('dana', 'thread_members', { thread_id: team, user_id: s.id['ivy'] });
+      expect(added.statusCode, added.body).toBe(201);
+      expect(await keys('ivy', 'thread_members')).toEqual(await inThreadsOf('ivy'));
+      expect(await keys('ivy', 'thread_members')).toEqual(expect.arrayContaining(await members(team)));
+      expect(await keys('ivy', 'messages')).toEqual(expect.arrayContaining(await ids(`SELECT id FROM ${s.real('messages')} WHERE thread_id = ${String(team)}`)));
+      // Each moves only her own mark: Dana may not move Priya's, nor Ivy's.
+      const priyas = Number((await one(`SELECT id FROM ${s.real('thread_members')} WHERE thread_id = ${String(team)} AND user_id = '${s.id['priya']!}'`))['id']);
+      expect(said(await patch('dana', 'thread_members', priyas, { read_at: new Date().toISOString() }))).toMatch(/^40[34]/);
+      // Somebody outside a conversation brings nobody into it, herself included.
+      expect(said(await post('hugo', 'thread_members', { thread_id: team, user_id: s.id['hugo'] }))).toMatch(/^4/);
+      // A TWO-PERSON CONVERSATION TAKES NOBODY ELSE (D12): start a new one instead.
+      const direct = Number((await one(`SELECT t.id FROM ${s.real('threads')} t WHERE t.kind = 'direct' AND EXISTS (SELECT 1 FROM ${s.real('thread_members')} m WHERE m.thread_id = t.id AND m.user_id = '${s.id['ivy']!}')`))['id']);
+      const before = await members(direct);
+      expect(before).toHaveLength(2);
+      const third = await post('dana', 'thread_members', { thread_id: direct, user_id: s.id['sam'] });
+      expect(third.statusCode, third.body).toBeGreaterThanOrEqual(400);
+      expect(await members(direct)).toEqual(before);
     });
   });
 }

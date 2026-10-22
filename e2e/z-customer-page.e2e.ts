@@ -227,3 +227,70 @@ test("in Arabic the page runs right to left; and the spec's deal is closed", asy
   const reason = (await rows<{ id: number }>(dana, data, "lost_reasons"))[0]!;
   expect((await dana.post(data("deals", `/${String(deal.id)}/actions/mark-lost`), { data: { from: "open", values: { lost_reason_id: reason.id } }, headers })).status()).toBe(200);
 });
+
+test("R1a: a lost deal's quote the customer then accepts: the owner's bell and Inbox say so, she leaves it closed; the room and the draft say why nothing more is quoted or sent", async ({ browser, as, api, data }) => {
+  const dana = await api("dana");
+  const headers = await csrf(dana);
+  const me = (await (await dana.get(`${STAFF}surface-config.json`)).json() as { user: { id: string } }).user.id;
+  const petra = (await rows<{ id: number; company_id: number }>(dana, data, "contacts", { column: "name", op: "eq", value: "Petra Lindqvist" }))[0]!;
+  const stages = await rows<{ id: number }>(dana, data, "stages", undefined, "&order=position");
+  const item = (await rows<{ id: number; list_rate: string }>(dana, data, "price_list", undefined, "&order=id"))[0]!;
+  const made = await dana.post(data("deals"), { data: { values: { name: "Customer spec: late yes", company_id: petra.company_id, contact_id: petra.id, owner_id: me, stage_id: stages[2]!.id, typed_amount: 100 } }, headers });
+  expect(made.status(), await made.text()).toBeLessThan(300);
+  const deal = ((await made.json()) as { data: { id: number } }).data.id;
+  const quote = ((await (await dana.post(data("quotes"), { data: { values: { deal_id: deal, sent_to_contact_id: petra.id } }, headers })).json()) as { data: { id: number; number: string } }).data;
+  expect((await dana.post(data("quote_lines"), { data: { values: { document_id: quote.id, qty: 2, rate: Number(item.list_rate), price_id: item.id } }, headers })).status()).toBeLessThan(300);
+  expect((await dana.patch(data("quotes", `/${String(quote.id)}`), { data: { values: { status: "sent" } }, headers })).status()).toBe(200);
+  // A second version, drafted and not sent, before the deal is lost.
+  const draft = ((await (await dana.post(data("quotes"), { data: { values: { deal_id: deal, sent_to_contact_id: petra.id, replaces_id: quote.id, version: 2 } }, headers })).json()) as { data: { id: number } }).data.id;
+  expect((await dana.post(data("quote_lines"), { data: { values: { document_id: draft, qty: 3, rate: Number(item.list_rate), price_id: item.id } }, headers })).status()).toBeLessThan(300);
+  const reason = (await rows<{ id: number }>(dana, data, "lost_reasons"))[0]!;
+  expect((await dana.post(data("deals", `/${String(deal)}/actions/mark-lost`), { data: { from: "open", values: { lost_reason_id: reason.id } }, headers })).status()).toBe(200);
+  const number0 = String((await rows<{ number: string }>(dana, data, "quotes", { column: "id", op: "eq", value: quote.id }))[0]!.number);
+
+  // The customer accepts the one already out: still theirs to accept.
+  // A browser of its own with nothing kept in it: an earlier spec's customer session would open its own quote instead.
+  const customer = await stranger(browser, { storageState: { cookies: [], origins: [] } });
+  // The door lets one address open only so many links a minute, and this file's earlier cases spend it: wait it out.
+  const link = `${CUSTOMER}#${await linkCodeOf(quote.id)}`;
+  await expect(async () => {
+    // A new document each time: the same address again only moves its "#", and the page would ask nothing.
+    await customer.goto("about:blank");
+    await customer.goto(link);
+    await expect(customer.getByRole("heading", { level: 1 })).toHaveText(number0, { timeout: 4_000 });
+  }).toPass({ timeout: 100_000, intervals: [15_000] });
+  await customer.getByRole("button", { name: "Accept" }).click();
+  await customer.getByLabel("Your name").fill("Petra Lindqvist");
+  await customer.keyboard.press("Enter");
+  await expect(customer.getByRole("status")).toContainText("by Petra Lindqvist");
+  await customer.context().close();
+  const number = String((await rows<{ number: string }>(dana, data, "quotes", { column: "id", op: "eq", value: quote.id }))[0]!.number);
+
+  // Dana's Inbox says so, with the deal's own Reopen and "Leave it closed"; her bell too, once the rule has run.
+  const context = await as("dana");
+  const page = await context.newPage();
+  const problems = watch(page);
+  await page.goto(`${STAFF}inbox`);
+  const late = page.getByTestId("inbox-yes-on-lost");
+  await expect(late.getByRole("heading", { level: 2 })).toHaveText("A customer said yes to a lost deal");
+  const line = late.locator(`[data-quote="${String(quote.id)}"]`);
+  await expect(line).toContainText(`Petra Lindqvist accepted ${number}`);
+  await expect(line).toContainText("Customer spec: late yes");
+  await expect(line.getByRole("button", { name: "Reopen the deal" })).toBeVisible();
+  await expect
+    .poll(async () => ((await (await dana.get("/api/v1/me/notifications?limit=50")).json()) as { data: { items: { title: string }[] } }).data.items.map((item) => item.title), { timeout: 90_000 })
+    .toContain(`Petra Lindqvist said yes to quote ${number}, on a lost deal`);
+  await line.getByRole("button", { name: "Leave it closed" }).click();
+  await expect(page.locator(".crm-toast")).toHaveText("Customer spec: late yes stays lost.");
+  // Its line leaves the list (the file's own "two quotes" deal, lost with a quote accepted earlier, may still be listed).
+  await expect(page.locator(`[data-quote="${String(quote.id)}"]`)).toHaveCount(0);
+
+  // The room says why it takes no new quote; the draft says why it is not sent, and offers no Send.
+  await page.goto(`${STAFF}deals/${String(deal)}`);
+  await expect(page.getByTestId("room-quote-closed")).toHaveText("A closed deal takes no new quote, and its drafts are not sent. A quote already sent can still be accepted. Reopen the deal to quote again.");
+  await page.goto(`${STAFF}quotes/${String(draft)}`);
+  await expect(page.getByTestId("quote-closed-deal")).toHaveText("This deal is closed, so this draft is not sent and no new version is made. Reopen the deal to quote again.");
+  await expect(page.locator('[data-panel="send"]')).toHaveCount(0);
+  expect((await dana.patch(data("quotes", `/${String(draft)}`), { data: { values: { status: "sent" } }, headers })).status()).toBeGreaterThanOrEqual(400);
+  expect(problems).toEqual([]);
+});

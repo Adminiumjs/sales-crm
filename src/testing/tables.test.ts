@@ -109,6 +109,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "accepted_name",
       "accepted_via", "answered_by_id",
       "withdrawn_at",
+      "deal_state",
+      "yes_seen_at",
     ],
   },
   price_list: { nullable: [] },
@@ -144,7 +146,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "ask_for_contact_id",
     ],
   },
-  contacts: { nullable: ["reference", "job_title", "email", "phone", "unsubscribed_at"] },
+  contacts: { nullable: ["reference", "job_title", "email", "phone", "may_email_by_id", "may_email_at", "unsubscribed_at"] },
   territories: { nullable: ["owner_id", "area"] },
   territory_places: { nullable: [] },
   renewals: { nullable: ["deal_id", "est_value", "due_on", "every_months"] },
@@ -712,8 +714,10 @@ describe("the listings a table is read through are limited by their own person",
     expect(members?.unique).toEqual([["thread_id", "user_id"]]);
     // `anyone`: a member adds a colleague. The four roles change only their own row there, and a writer
     // held to their own rows names nobody but themselves in a column that does not say otherwise. A
-    // stranger is kept out by the link: a new row names a conversation its writer reaches.
-    expect(members?.belongs).toEqual([{ column: "user_id", set: "anyone" }]);
+    // stranger is kept out by the link: a new row names a conversation its writer reaches. Who is in a
+    // conversation is its members' to read (`via`, plan 68 R4c), and a two-person one takes nobody else (D12).
+    expect(members?.belongs).toEqual([{ column: "user_id", set: "anyone" }, { via: "thread_id" }]);
+    expect(members?.capacity).toEqual({ kind: "parent", via: "thread_id", size: 2, countWhere: { column: "kind", values: ["direct"], via: "thread_id" } });
     expect(byRef.get("threads")?.belongs).toEqual([{ through: { table: "thread_members", link: "thread_id", user: "user_id" } }]);
     expect(byRef.get("messages")?.belongs).toEqual([{ via: "thread_id" }]);
   });
