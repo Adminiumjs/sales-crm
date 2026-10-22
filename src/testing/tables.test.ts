@@ -235,6 +235,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "was_state",
       "moved_at",
       "now_crew_id",
+      "leave_key",
       "crew_moved",
       "site_address",
       "site_town",
@@ -263,7 +264,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   delivery_notes: { nullable: ["crew_id", "taken_by_id", "signed_by_contact_id", "signed_name", "note", "short", "sorted_on", "needs_sorting"] },
   delivery_note_lines: { nullable: ["crew_id"] },
   // A visit that left a crew's today or tomorrow, for that crew (plan 68 D17): written by the rules only.
-  left_visits: { nullable: ["visit_id", "site_name", "site_town", "day", "now_day"] },
+  left_visits: { nullable: ["visit_id", "site_name", "site_town", "leave_key", "day", "now_day"] },
   waste_removals: { nullable: ["carrier", "note_number"] },
   // After the job
   feedback: { nullable: ["text", "theme", "replied_at", "fix_written"] },

@@ -104,8 +104,8 @@ function Sheet({ day, crewId, visits, crews, onOther, onPrint, onDone, printing,
   // The crew's vehicle that day, and what to load on each visit (plan 68 S14).
   const vans = hasVanDays(session);
   const { load: vanLoad, reload: reloadVan } = useLoad(() => (vans ? readDayFacts(session, day) : Promise.resolve(null)), [session, vans, day, ids]);
-  const { load: loadsLoad, reload: reloadLoads } = useLoad(() => readLoadLists(session, visits.map((visit) => visit.id)), [session, ids]);
-  useLive(vans ? ["van_days", "vehicles", "deal_stock_needs", "delivery_notes", "delivery_note_lines"] : ["delivery_notes", "delivery_note_lines"], useCoalesced(useCallback(() => (reloadVan(), reloadLoads()), [reloadVan, reloadLoads])));
+  const { load: loadsLoad, reload: reloadLoads } = useLoad(() => (vans ? readLoadLists(session, visits.map((visit) => visit.id)) : Promise.resolve(null)), [session, vans, ids]);
+  useLive(vans ? ["van_days", "vehicles", ...(session.can("deal_stock_needs", "read") ? ["deal_stock_needs"] : []), "delivery_notes", "delivery_note_lines"] : [], useCoalesced(useCallback(() => (reloadVan(), reloadLoads()), [reloadVan, reloadLoads])));
   const dayFacts = vanLoad.state === "ready" ? vanLoad.data : null;
   const loads = loadsLoad.state === "ready" ? loadsLoad.data : null;
   const vanDay = dayFacts === null ? undefined : rowOf(dayFacts.days, crewId, day);

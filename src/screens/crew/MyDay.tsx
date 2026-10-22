@@ -22,7 +22,7 @@ import { Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { crewPeople, type CrewFacts } from "../jobs/data.ts";
 import { useCrewFacts, useJobsScreen } from "../jobs/parts.tsx";
-import { crewsOf, dayKeyOf, hoursText, readDayFigures, readMoves, readSignOffs, readSnags, readWeek, setTick, weekDays, type CrewVisit, type Tick } from "./data.ts";
+import { crewsOf, dayKeyOf, hoursText, readDayFigures, readLoads, readMoves, readSignOffs, readSnags, readWeek, setTick, weekDays, type CrewVisit, type Tick } from "./data.ts";
 import { readLoadLists, readVanDays } from "../jobs/vandays.ts";
 import { DayVehicle } from "./DayVehicle.tsx";
 import { NoConnection, useConnection } from "./Offline.tsx";
@@ -58,7 +58,8 @@ export function MyDay({ rest }: ScreenProps) {
     const [snags, signed, loads, moves, after, vans] = await Promise.all([
       readSnags(session, jobs),
       readSignOffs(session, jobs),
-      readLoadLists(session, shown.map((visit) => visit.id)),
+      // What to load, the stock and the note (plan 68 S14) where Vehicles and crew is on; the note's lines alone before it.
+      session.part("fleet") ? readLoadLists(session, shown.map((visit) => visit.id)) : readLoads(session, shown.map((visit) => visit.id)),
       readMoves(session, shown),
       shown.length > 0
         ? Promise.resolve(null)
@@ -67,7 +68,7 @@ export function MyDay({ rest }: ScreenProps) {
             .then((page) => dayKeyOf(page.rows[0]?.day) ?? null),
       readVanDays(session, day, day).catch(() => []),
     ]);
-    const cards = shown.map((visit) => ({ visit, signed: signed.get(visit.job_id), snags: snags.filter((snag) => snag.job_id === visit.job_id), load: undefined, loads, moved: moves.get(visit.id) }));
+    const cards = shown.map((visit) => ({ visit, signed: signed.get(visit.job_id), snags: snags.filter((snag) => snag.job_id === visit.job_id), load: loads instanceof Map ? loads.get(visit.id) : undefined, loads: loads instanceof Map ? undefined : loads, moved: moves.get(visit.id) }));
     return { week, figures, cards, next: after, vans };
   }, [session, day]);
 

@@ -13686,6 +13686,22 @@
             }
           },
           {
+            "ref": "leave_key",
+            "type": "text",
+            "maxLength": 80,
+            "nullable": true,
+            "label": {
+              "en-US": "The change a rule last read",
+              "de-DE": "Die Änderung, die eine Regel zuletzt las",
+              "fr-FR": "La modification qu’une règle a lue en dernier",
+              "da-DK": "Den ændring, en regel sidst læste",
+              "cs-CZ": "Změna, kterou pravidlo naposledy přečetlo",
+              "ar-EG": "التغيير الذي قرأته قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的更改",
+              "zh-TW": "規則最近讀到的變更"
+            }
+          },
+          {
             "ref": "crew_moved",
             "type": "int",
             "nullable": true,
@@ -14001,6 +14017,9 @@
           ],
           [
             "visit_id"
+          ],
+          [
+            "leave_key"
           ]
         ],
         "belongs": [
@@ -14109,6 +14128,22 @@
               "ar-EG": "اليوم الذي كانت فيه",
               "zh-CN": "原定日期",
               "zh-TW": "原定日期"
+            }
+          },
+          {
+            "ref": "leave_key",
+            "type": "text",
+            "maxLength": 80,
+            "nullable": true,
+            "label": {
+              "en-US": "The change it is about",
+              "de-DE": "Die Änderung, um die es geht",
+              "fr-FR": "La modification concernée",
+              "da-DK": "Den ændring, det drejer sig om",
+              "cs-CZ": "Změna, o kterou jde",
+              "ar-EG": "التغيير المعني",
+              "zh-CN": "所涉及的更改",
+              "zh-TW": "所涉及的變更"
             }
           },
           {
@@ -27717,7 +27752,8 @@
                 "was_day": "{{was.day}}",
                 "was_crew_id": "{{was.crew_id}}",
                 "was_state": "{{was.state}}",
-                "now_crew_id": "{{record.crew_id}}"
+                "now_crew_id": "{{record.crew_id}}",
+                "leave_key": "{{record.id}}|{{record.moved_at}}"
               }
             }
           },
@@ -27787,6 +27823,31 @@
             }
           },
           {
+            "id": "not-noted",
+            "kind": "condition",
+            "title": {
+              "en-US": "…and this change is not noted yet",
+              "de-DE": "…und diese Änderung ist noch nicht notiert",
+              "fr-FR": "…et ce changement n’est pas encore noté",
+              "da-DK": "…og ændringen er ikke noteret endnu",
+              "cs-CZ": "…a tato změna ještě není zapsána",
+              "ar-EG": "…ولم يُدوَّن هذا التغيير بعد",
+              "zh-CN": "……且这次更改尚未记下",
+              "zh-TW": "……且這次變更尚未記下"
+            },
+            "condition": {
+              "left": {
+                "count": {
+                  "table": "left_visits",
+                  "matchColumn": "leave_key",
+                  "equalsField": "leave_key"
+                }
+              },
+              "op": "is",
+              "right": 0
+            }
+          },
+          {
             "id": "if-waiting",
             "kind": "branch",
             "title": {
@@ -27835,7 +27896,8 @@
                         "why": "waiting",
                         "crew_id": "{{was.crew_id}}",
                         "day": "{{was.day}}",
-                        "now_day": "{{record.day}}"
+                        "now_day": "{{record.day}}",
+                        "leave_key": "{{record.leave_key}}"
                       }
                     }
                   },
@@ -27911,7 +27973,8 @@
                         "why": "crew",
                         "crew_id": "{{was.crew_id}}",
                         "day": "{{was.day}}",
-                        "now_day": "{{record.day}}"
+                        "now_day": "{{record.day}}",
+                        "leave_key": "{{record.leave_key}}"
                       }
                     }
                   },
@@ -27990,7 +28053,8 @@
                         "why": "day",
                         "crew_id": "{{was.crew_id}}",
                         "day": "{{was.day}}",
-                        "now_day": "{{record.day}}"
+                        "now_day": "{{record.day}}",
+                        "leave_key": "{{record.leave_key}}"
                       }
                     }
                   },
