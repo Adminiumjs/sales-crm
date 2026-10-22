@@ -14,6 +14,13 @@
  *
  * LIVE. The screen listens for new messages and marks: a colleague's message
  * appears in the open conversation without a reload.
+ *
+ * A NEW CONVERSATION (T04) is made with its people in one save: the reader and
+ * whoever she picks, written by the server as the conversation's own rows (a
+ * member row is otherwise written only by somebody already in it). One colleague
+ * makes a two-person conversation, which takes nobody else later (D12); two or
+ * more a group, which anybody in it may bring a colleague into (D3). Somebody
+ * she already has a two-person conversation with opens that one instead.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -27,7 +34,7 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { Dialog } from "../../ui/dialog.tsx";
-import { Avatar, countOf, Empty, Head, NOBODY, PersonChips, readWho, useF, type Names } from "./common.tsx";
+import { Avatar, childLink, countOf, Empty, Head, NOBODY, PersonChips, readWho, useF, type Names } from "./common.tsx";
 
 interface Thread extends Record<string, unknown> {
   id: number;
@@ -108,6 +115,8 @@ export function Messages(_: ScreenProps) {
   );
   useLive(["messages", "thread_members"], again);
   const [marking, setMarking] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const canStart = session.can("threads", "create") && session.can("thread_members", "create");
 
   /** Move the reader's own mark on these conversations to the server's clock, one row at a time. */
   const markRead = async (rows: Listed[], say: boolean): Promise<void> => {
@@ -139,7 +148,27 @@ export function Messages(_: ScreenProps) {
                     {t("msgs.readAll")}
                   </button>
                 )}
+                {canStart && (
+                  <button type="button" className="crm-btn crm-btn-primary crm-btn-38 mr-btn" data-testid="msgs-new" onClick={() => setStarting(true)}>
+                    <Icon name="message-square-plus" size={14} />
+                    {t("msgs.new")}
+                  </button>
+                )}
               </Head>
+              {starting && (
+                <NewConversation
+                  me={me}
+                  everyone={who.everyone}
+                  names={who.names}
+                  threads={threads}
+                  onClose={() => setStarting(false)}
+                  onOpen={(id) => {
+                    setStarting(false);
+                    setPicked(id);
+                    again();
+                  }}
+                />
+              )}
               {shown === null ? (
                 <Empty icon="send" title={t("msgs.none")} body={t("msgs.none.body")} />
               ) : (
@@ -371,6 +400,89 @@ function AddColleague({ thread, title, people, names, onClose, onAdded }: { thre
       )}
       <p className="crm-field-note" data-testid="msgs-add-note">
         {picked === null ? t("msgs.add.note.anyone") : t("msgs.add.note", { name: firstName(names[picked] ?? "") })}
+      </p>
+      {error !== null && (
+        <p className="crm-form-error" role="alert">
+          {error}
+        </p>
+      )}
+    </Dialog>
+  );
+}
+
+/**
+ * Start a conversation: pick one colleague or several. The reader and those she picks are its people from the start,
+ * made with it in one save. A colleague she already has a two-person conversation with is offered that one instead.
+ */
+function NewConversation({ me, everyone, names, threads, onClose, onOpen }: { me: string; everyone: { id: string; name: string }[]; names: Names; threads: Listed[]; onClose: () => void; onOpen: (thread: number) => void }) {
+  const t = useT();
+  const session = useSession();
+  const toasts = useToasts();
+  const [picked, setPicked] = useState<string[]>([]);
+  const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const key = useRef(newClientKey());
+  const people = everyone.filter((person) => person.id !== me);
+  const group = picked.length > 1;
+  // Two people already talking: open what they have.
+  const already = picked.length === 1 ? (threads.find((row) => row.thread.kind === "direct" && row.members.length === 2 && row.members.some((member) => member.user_id === picked[0]) && row.mine !== null) ?? null) : null;
+  const toggle = (id: string): void => (setPicked((was) => (was.includes(id) ? was.filter((one) => one !== id) : [...was, id])), setError(null));
+  const go = async (): Promise<void> => {
+    if (busy || picked.length === 0) return;
+    if (already !== null) return onOpen(already.thread.id);
+    setBusy(true);
+    const members = [me, ...picked].map((user) => ({ values: { user_id: user } }));
+    const saved = await session.create<Thread>("threads", { kind: group ? "group" : "direct", title: group && title.trim() !== "" ? title.trim() : null }, key.current, { children: { [childLink(session, "thread_members", "thread_id", "threads")]: members } });
+    setBusy(false);
+    if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
+    if (saved.state === "unknown") return setError(t("ui.unknown"));
+    toasts.show(group ? t("msgs.new.toast.group") : t("msgs.new.toast", { name: names[picked[0]!] ?? "" }), "pos");
+    onOpen(Number(saved.row.id));
+  };
+  return (
+    <Dialog
+      shape="box"
+      name="msgs-new"
+      icon="message-square-plus"
+      title={t("msgs.new")}
+      subtitle={t("msgs.new.sub")}
+      onClose={onClose}
+      busy={busy}
+      foot={
+        <>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
+            {t("ui.cancel")}
+          </button>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-go disabled={busy || picked.length === 0} onClick={() => void go()}>
+            <Icon name={already === null ? "message-square-plus" : "send"} size={14} />
+            {busy ? t("ui.saving") : already !== null ? t("msgs.new.open") : t("msgs.new.go")}
+          </button>
+        </>
+      }
+    >
+      {people.length === 0 ? (
+        <p className="crm-tw-quiet">{t("msgs.new.nobody")}</p>
+      ) : (
+        <div className="crm-chips crm-tw-people" role="group" aria-label={t("msgs.new.who")}>
+          {people.map((person) => (
+            <button key={person.id} type="button" className="crm-chip-btn mr-chip" aria-pressed={picked.includes(person.id)} data-person={person.id} disabled={busy} onClick={() => toggle(person.id)}>
+              <Avatar name={person.name} size="sm" />
+              {firstName(person.name)}
+            </button>
+          ))}
+        </div>
+      )}
+      {group && (
+        <fieldset className="crm-fields" disabled={busy}>
+          <label className="crm-label" htmlFor="crm-ms-title">
+            {t("msgs.new.title")}
+          </label>
+          <input id="crm-ms-title" className="crm-input mr-fld" maxLength={80} value={title} placeholder={t("msgs.new.title.hint")} onChange={(event) => setTitle(event.target.value)} />
+        </fieldset>
+      )}
+      <p className="crm-field-note" data-testid="msgs-new-note">
+        {picked.length === 0 ? t("msgs.new.note.none") : already !== null ? t("msgs.new.note.already", { name: firstName(names[picked[0]!] ?? "") }) : group ? t("msgs.new.note.group") : t("msgs.new.note.two", { name: firstName(names[picked[0]!] ?? "") })}
       </p>
       {error !== null && (
         <p className="crm-form-error" role="alert">

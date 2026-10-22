@@ -1282,5 +1282,117 @@ for (const [dialect, reachable] of LEGS) {
       const asked = (await get('dana', 'stages', `/${String(stage)}`)).json() as { data: Record<string, unknown> };
       expect(asked.data['worth_asking']).toBe('Who signs?');
     });
+
+    it('T04 (S5): the Team screens\' five writes, each made by whom it is for and refused to whom it is not', async () => {
+      const remove = (person: string, ref: string, key: unknown) => s.app.inject({ method: 'DELETE', url: url(ref, `/${String(key)}?confirm=true`), headers: { cookie: who(person) } });
+      const yesOf = (value: unknown): boolean => [true, 1, '1'].includes(value as never);
+      // A NEW CONVERSATION, made with its people in the same save: a member row is otherwise written only from inside it.
+      const link = (child: string, column: string, parent: string): string => `fk:${s.t(child)}(${column})->${s.t(parent)}(id)`;
+      const start = (person: string, values: Record<string, unknown>, people: string[]) =>
+        s.app.inject({ method: 'POST', url: url('threads'), headers: { cookie: who(person) }, payload: { values, children: { [link('thread_members', 'thread_id', 'threads')]: people.map((one) => ({ values: { user_id: s.id[one] } })) } } });
+      const threads = async (): Promise<number[]> => ids(`SELECT id FROM ${s.real('threads')}`);
+      const group = await start('dana', { kind: 'group', title: 'T04 spec: the Leeds show' }, ['dana', 'sam', 'leo']);
+      expect(group.statusCode, group.body).toBe(201);
+      const groupId = made(group);
+      const people = (await s.rows(`SELECT user_id FROM ${s.real('thread_members')} WHERE thread_id = ${String(groupId)}`)).map((row) => String(row['user_id'])).sort();
+      expect(people).toEqual([s.id['dana']!, s.id['sam']!, s.id['leo']!].sort());
+      expect(await keys('sam', 'threads')).toContain(groupId);
+      await gone('priya', 'threads', groupId);
+      // Its people write in it; somebody outside it does not, nor brings herself in.
+      expect(said(await post('leo', 'messages', { thread_id: groupId, text: 'T04 spec: in' }))).toBe('ok');
+      expect(said(await post('priya', 'messages', { thread_id: groupId, text: 'T04 spec: out' }))).toMatch(/^4/);
+      expect(said(await post('priya', 'thread_members', { thread_id: groupId, user_id: s.id['priya'] }))).toMatch(/^4/);
+      // A two-person conversation is made of two (D12): with three it is refused whole, and nothing is left of it.
+      const before = await threads();
+      const three = await start('dana', { kind: 'direct' }, ['dana', 'sam', 'leo']);
+      expect(three.statusCode, three.body).toBeGreaterThanOrEqual(400);
+      expect(await threads()).toEqual(before);
+      const two = await start('hugo', { kind: 'direct' }, ['hugo', 'dana']);
+      expect(two.statusCode, two.body).toBe(201);
+      expect(await keys('dana', 'threads')).toContain(made(two));
+      // Made bare, a conversation is nobody's: its maker cannot then put herself in it. So the screen makes both at once.
+      const bare = await post('dana', 'threads', { kind: 'group', title: 'T04 spec: bare' });
+      expect(bare.statusCode, bare.body).toBe(201);
+      expect(said(await post('dana', 'thread_members', { thread_id: made(bare), user_id: s.id['dana'] }))).toMatch(/^4/);
+      // Read-only and the people with no Messages start none.
+      for (const person of ['grace', 'lena', 'ada']) expect([person, said(await start(person, { kind: 'direct' }, [person, 'dana']))]).toEqual([person, expect.stringMatching(/^403/)]);
+
+      // THE WEEKLY MEETING: an item ticked off and a decision moved are the meeting's runner's (the sales manager, the CRM admin).
+      const slot = Number((await one(`SELECT id FROM ${s.real('meeting_slots')} ORDER BY position, id`))['id']);
+      const covered = async (): Promise<boolean> => yesOf((await one(`SELECT covered FROM ${s.real('meeting_slots')} WHERE id = ${String(slot)}`))['covered']);
+      expect(await covered()).toBe(false);
+      for (const person of ['dana', 'grace', 'hugo']) expect([person, said(await patch(person, 'meeting_slots', slot, { covered: true }))]).toEqual([person, expect.stringMatching(/^403/)]);
+      expect(await covered()).toBe(false);
+      expect(said(await patch('ivy', 'meeting_slots', slot, { covered: true }))).toBe('ok');
+      expect(await covered()).toBe(true);
+      expect(said(await patch('tessa', 'meeting_slots', slot, { covered: false }))).toBe('ok');
+      expect(await covered()).toBe(false);
+      const meeting = Number((await one(`SELECT id FROM ${s.real('meetings')} ORDER BY id`))['id']);
+      const decision = await post('ivy', 'meeting_decisions', { meeting_id: meeting, text: 'T04 spec: who covers in August', who_id: s.id['ivy'] });
+      expect(decision.statusCode, decision.body).toBe(201);
+      const stateOf = async (): Promise<string> => String((await one(`SELECT state FROM ${s.real('meeting_decisions')} WHERE id = ${String(made(decision))}`))['state']);
+      expect(await stateOf()).toBe('open');
+      for (const person of ['dana', 'grace']) expect([person, said(await patch(person, 'meeting_decisions', made(decision), { state: 'done' }))]).toEqual([person, expect.stringMatching(/^403/)]);
+      expect(said(await patch('ivy', 'meeting_decisions', made(decision), { state: 'carried' }))).toBe('ok');
+      expect(await stateOf()).toBe('carried');
+      // Carried over is where it stays: open goes to done or carried, and nothing moves on from either.
+      expect(said(await patch('tessa', 'meeting_decisions', made(decision), { state: 'done' }))).toMatch(/^4/);
+      expect(await stateOf()).toBe('carried');
+      expect(said(await remove('ivy', 'meeting_decisions', made(decision)))).toBe('ok');
+
+      // A COACHING AREA: made and renamed by the manager who wrote the plan, for a rep she leads; read by the rep.
+      const plan = await one(`SELECT id FROM ${s.real('coaching_plans')} WHERE rep_id = '${s.id['dana']!}'`);
+      const area = { plan_id: plan['id'], rep_id: s.id['dana'], manager_id: s.id['ivy'], title: 'T04 spec: ask for the order', position: 9, why: 'T04 spec: why', good_looks_like: 'T04 spec: good', measure: 'deals' };
+      for (const person of ['dana', 'tessa', 'grace']) expect([person, said(await post(person, 'coaching_areas', area))]).toEqual([person, expect.stringMatching(/^403/)]);
+      // Not for a person she does not lead, nor in another manager's name.
+      expect(said(await post('ivy', 'coaching_areas', { ...area, rep_id: s.id['hugo'] }))).toMatch(/^4/);
+      expect(said(await post('ivy', 'coaching_areas', { ...area, manager_id: s.id['tessa'] }))).toMatch(/^4/);
+      expect(said(await post('ivy', 'coaching_areas', { ...area, measure: 'luck' }))).toMatch(/^4/);
+      const madeArea = await post('ivy', 'coaching_areas', area);
+      expect(madeArea.statusCode, madeArea.body).toBe(201);
+      const areaId = made(madeArea);
+      expect(said(await patch('dana', 'coaching_areas', areaId, { title: 'T04 spec: mine now' }))).toMatch(/^40[34]/);
+      expect(said(await patch('ivy', 'coaching_areas', areaId, { title: 'T04 spec: ask for the whole order', why: null, measure: null }))).toBe('ok');
+      const hers = ((await get('dana', 'coaching_areas', `/${String(areaId)}`)).json() as { data: Record<string, unknown> }).data;
+      expect([hers['title'], hers['why'], hers['good_looks_like'], hers['measure']]).toEqual(['T04 spec: ask for the whole order', null, 'T04 spec: good', null]);
+      await gone('sam', 'coaching_areas', areaId);
+      expect(said(await remove('ivy', 'coaching_areas', areaId))).toBe('ok');
+
+      // A NEW STARTER, with her patch and the steps of the one before, in one save: the sales manager's and the CRM admin's.
+      const patchId = Number((await one(`SELECT id FROM ${s.real('territories')} ORDER BY id`))['id']);
+      const starter = { name: 'T04 spec: Ola Berg', starts_on: '2026-09-01', manager_id: s.id['ivy'], patch: patchId };
+      for (const person of ['dana', 'grace', 'hugo']) expect([person, said(await post(person, 'starters', { ...starter, manager_id: s.id[person] }))]).toEqual([person, expect.stringMatching(/^403/)]);
+      const steps = [{ values: { phase: 'before', text: 'T04 spec: a desk', owner_id: s.id['ivy'], for_starter: false } }, { values: { phase: 'week', text: 'T04 spec: her first call', for_starter: true } }];
+      const ola = await s.app.inject({ method: 'POST', url: url('starters'), headers: { cookie: who('ivy') }, payload: { values: starter, children: { [link('starter_steps', 'starter_id', 'starters')]: steps } } });
+      expect(ola.statusCode, ola.body).toBe(201);
+      const olaId = made(ola);
+      expect(await ids(`SELECT id FROM ${s.real('starter_steps')} WHERE starter_id = ${String(olaId)}`)).toHaveLength(2);
+      // A rep reads who starts and her patch, never the first-year target.
+      const seen = ((await get('dana', 'starters', `/${String(olaId)}`)).json() as { data: Record<string, unknown> }).data;
+      expect(Number(seen['patch'])).toBe(patchId);
+      expect(Object.keys(seen)).not.toContain('first_year_target');
+      const tessas = await post('tessa', 'starters', { ...starter, name: 'T04 spec: Ada Lind', manager_id: s.id['tessa'], patch: null });
+      expect(tessas.statusCode, tessas.body).toBe(201);
+      for (const id of await ids(`SELECT id FROM ${s.real('starter_steps')} WHERE starter_id = ${String(olaId)}`)) expect(said(await remove('ivy', 'starter_steps', id))).toBe('ok');
+      expect(said(await remove('ivy', 'starters', olaId))).toBe('ok');
+      expect(said(await remove('tessa', 'starters', made(tessas)))).toBe('ok');
+
+      // A ONE-TO-ONE SESSION keeps what was covered, what else was raised and how long it ran: the manager's to write.
+      const pair = await one(`SELECT id, manager_id, rep_id FROM ${s.real('one_to_ones')} WHERE rep_id = '${s.id['dana']!}'`);
+      const session = { one_to_one_id: pair['id'], manager_id: pair['manager_id'], rep_id: pair['rep_id'], held_on: '2026-07-28', notes: 'T04 spec: the session', cover_biggest: true, cover_late: true, raise: 'T04 spec: the August cover', minutes: 30 };
+      expect(said(await post('dana', 'one_to_one_sessions', session))).toMatch(/^403/);
+      expect(said(await post('ivy', 'one_to_one_sessions', { ...session, minutes: 300 }))).toMatch(/^4/);
+      const held = await post('ivy', 'one_to_one_sessions', session);
+      expect(held.statusCode, held.body).toBe(201);
+      const kept = await one(`SELECT cover_sitting, cover_biggest, cover_target, cover_late, raise, minutes FROM ${s.real('one_to_one_sessions')} WHERE id = ${String(made(held))}`);
+      expect([yesOf(kept['cover_sitting']), yesOf(kept['cover_biggest']), yesOf(kept['cover_target']), yesOf(kept['cover_late']), kept['raise'], Number(kept['minutes'])]).toEqual([false, true, false, true, 'T04 spec: the August cover', 30]);
+      // An action it sets keeps it, and the rep reads which session it came from.
+      const action = await post('ivy', 'actions', { text: 'T04 spec: send the layout', owner_id: s.id['dana'], source: 'one-to-one', one_to_one_id: pair['id'], session_id: made(held) });
+      expect(action.statusCode, action.body).toBe(201);
+      const danas = ((await get('dana', 'actions', `/${String(made(action))}`)).json() as { data: Record<string, unknown> }).data;
+      expect(Number(danas['session_id'])).toBe(made(held));
+      expect(said(await remove('ivy', 'actions', made(action)))).toBe('ok');
+      expect(said(await remove('ivy', 'one_to_one_sessions', made(held)))).toBe('ok');
+    });
   });
 }

@@ -10,6 +10,11 @@
  *
  * Every figure is the server's, cut to the reader's rows: the manager reads
  * the team's five numbers, a rep her own (and the heading says which).
+ *
+ * WHO TICKS (T04). Whoever runs the meeting (the sales manager, the CRM admin)
+ * ticks an item of the running order off as it is covered, and marks a decision
+ * still open as done or carried over; "N of 6 covered" is the ticks the server
+ * holds. A rep reads both and presses neither: the server refuses her either.
  */
 import { useCallback, useRef, useState } from "react";
 
@@ -24,8 +29,8 @@ import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
-import { ActionRow, Avatar, Empty, Head, NOBODY, readWho, tickAction, useF, type Action } from "./common.tsx";
-import { readMeeting } from "./meeting.ts";
+import { ActionRow, Avatar, Empty, Head, NOBODY, readWho, tickAction, truthy, useF, type Action } from "./common.tsx";
+import { readMeeting, type Decision, type Slot } from "./meeting.ts";
 
 const PILL = { done: "pos", carried: "warn", open: undefined } as const;
 
@@ -53,6 +58,33 @@ export function Meeting(_: ScreenProps) {
   const key = useRef(newClientKey());
   const canAdd = session.can("actions", "create");
   const canTick = session.can("actions", "update");
+  const canCover = session.can("meeting_slots", "update");
+  const canDecide = session.can("meeting_decisions", "update");
+  const [moving, setMoving] = useState<string | null>(null);
+
+  /** Tick an item of the running order, or take the tick off: one change of the one row, naming what the screen saw. */
+  const cover = async (slot: Slot): Promise<void> => {
+    if (moving !== null) return;
+    const on = truthy(slot.covered);
+    setMoving(`slot:${String(slot.id)}`);
+    const saved = await session.update("meeting_slots", slot.id, { covered: !on }, { seen: { covered: on } });
+    setMoving(null);
+    if (saved.state === "refused") return toasts.show(t("ui.refused", { reason: reasonOf(saved.error, t) }), "danger", true);
+    if (saved.state === "unknown") return toasts.show(t("ui.unknown"), "danger", true);
+    toasts.show(t(on ? "meeting.toast.uncovered" : "meeting.toast.covered", { item: slot.label }), "pos");
+    again();
+  };
+  /** A decision still open, marked done or carried over: the server holds the move (open goes to either, and no further). */
+  const decide = async (decision: Decision, to: "done" | "carried"): Promise<void> => {
+    if (moving !== null) return;
+    setMoving(`decision:${String(decision.id)}`);
+    const saved = await session.update("meeting_decisions", decision.id, { state: to }, { seen: { state: decision.state } });
+    setMoving(null);
+    if (saved.state === "refused") return toasts.show(t("ui.refused", { reason: reasonOf(saved.error, t) }), "danger", true);
+    if (saved.state === "unknown") return toasts.show(t("ui.unknown"), "danger", true);
+    toasts.show(t(to === "done" ? "meeting.toast.decided.done" : "meeting.toast.decided.carried"), "pos");
+    again();
+  };
 
   const tick = async (action: Action, done: boolean): Promise<void> => {
     setTicking(action.id);
@@ -94,6 +126,7 @@ export function Meeting(_: ScreenProps) {
           const total = Number(data.meeting.minutes);
           const ends = new Date(at.getTime() + total * 60_000);
           const people = [...new Set(data.slots.map((slot) => slot.who_id).filter((id): id is string => id !== null && id !== ""))];
+          const covered = data.slots.filter((slot) => truthy(slot.covered)).length;
           const n = data.numbers;
           let clock = at.getTime();
           return (
@@ -135,8 +168,17 @@ export function Meeting(_: ScreenProps) {
                 <section className="crm-tw-card" aria-labelledby="crm-mt-order">
                   <div className="crm-tw-card-head">
                     <h2 id="crm-mt-order">{t("meeting.order")}</h2>
-                    <span className="crm-mono">{t("meeting.order.count", { count: f.number(data.slots.length) }, data.slots.length)}</span>
+                    <span className="crm-mono" data-testid="mt-covered">
+                      {t("meeting.order.covered", { done: f.number(covered), all: f.number(data.slots.length) })}
+                    </span>
                   </div>
+                  {data.slots.length > 0 && (
+                    <div className="crm-mt-bar" aria-hidden="true">
+                      {data.slots.map((slot) => (
+                        <span key={slot.id} data-part={truthy(slot.covered) ? "done" : undefined} />
+                      ))}
+                    </div>
+                  )}
                   <ol className="crm-mt-order" data-testid="mt-order">
                     {data.slots.map((slot) => {
                       const from = new Date(clock);
@@ -144,8 +186,12 @@ export function Meeting(_: ScreenProps) {
                       const whoId = slot.who_id ?? "";
                       const isRep = who.reps.includes(whoId) && firstName(who.names[whoId] ?? "") === slot.label;
                       const brings = isRep ? (data.brings[whoId] ?? []) : [];
+                      const on = truthy(slot.covered);
                       return (
-                        <li key={slot.id} className="crm-mt-slot" data-slot={slot.position}>
+                        <li key={slot.id} className="crm-mt-slot" data-slot={slot.position} data-covered={on ? "1" : "0"}>
+                          <button type="button" className="crm-tw-tick mr-gi" role="checkbox" aria-checked={on} aria-label={slot.label} disabled={!canCover || moving !== null} onClick={() => void cover(slot)}>
+                            {on && <Icon name="check" size={13} />}
+                          </button>
                           <span className="crm-mt-slot-at">
                             <strong className="crm-mono">{f.time(from)}</strong>
                             <span>{t("visits.minutes", { count: f.number(Number(slot.minutes)) })}</span>
@@ -217,7 +263,7 @@ export function Meeting(_: ScreenProps) {
                     </div>
                     <ul className="crm-mt-last">
                       {data.decisions.map((decision) => (
-                        <li key={decision.id}>
+                        <li key={decision.id} data-decision={decision.id} data-state={decision.state}>
                           <p>{decision.text}</p>
                           <div>
                             {decision.who_id !== null && decision.who_id !== "" && (
@@ -229,6 +275,17 @@ export function Meeting(_: ScreenProps) {
                             <span className="crm-pill" data-tone={PILL[decision.state]}>
                               {t(`meeting.decision.${decision.state}`)}
                             </span>
+                            {decision.state === "open" && canDecide && (
+                              <span className="crm-mt-decide">
+                                <button type="button" className="crm-btn crm-btn-ghost crm-btn-28 mr-gi" disabled={moving !== null} aria-label={t("meeting.decide.done.label", { text: decision.text })} onClick={() => void decide(decision, "done")}>
+                                  <Icon name="check" size={12} />
+                                  {t("meeting.decide.done")}
+                                </button>
+                                <button type="button" className="crm-btn crm-btn-ghost crm-btn-28 mr-gi" disabled={moving !== null} aria-label={t("meeting.decide.carried.label", { text: decision.text })} onClick={() => void decide(decision, "carried")}>
+                                  {t("meeting.decide.carried")}
+                                </button>
+                              </span>
+                            )}
                           </div>
                         </li>
                       ))}

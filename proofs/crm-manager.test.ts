@@ -406,6 +406,41 @@ for (const [dialect, reachable] of LEGS) {
       expect((await list('hugo', 'deals', { column: 'state', op: 'in', value: ['open', 'lost'] })).total).toBe(0);
     });
 
+    it('T04 (S5): a coaching area\'s live number is a figure the server answers over the rep\'s own work, the same to her and her manager', async () => {
+      const dana = s.id['dana']!;
+      // The sample measures Dana's two areas by her late follow-ups and her days from open to won; Sam's first by Discovery.
+      const measures = (await s.rows(`SELECT a.title, a.measure FROM ${s.real('coaching_areas')} a WHERE a.rep_id = '${dana}' ORDER BY a.position`)).map((row) => row['measure']);
+      expect(measures).toEqual(['late', 'cycle']);
+      const hers = { column: 'owner_id', op: 'eq', value: dana };
+      // Late: her steps not done, due before now (the ledger's three), as a count the list answers to either reader.
+      const late = { and: [hers, { column: 'kind', op: 'eq', value: 'step' }, { column: 'done', op: 'eq', value: false }, { column: 'due_at', op: 'lt', value: LEDGER_NOW }] };
+      expect([(await list('dana', 'follow_ups', late)).total, (await list('ivy', 'follow_ups', late)).total]).toEqual([3, 3]);
+      // Open deals, and the average open deal: the server's count and average, cut to her rows for both.
+      const open = [hers, OPEN];
+      expect([await count('dana', 'deals', open), await count('ivy', 'deals', open)]).toEqual([6, 6]);
+      const average = async (person: string): Promise<number> => Number((await figure<{ value: number }>(person, 'deals', { shape: 'single-metric', filters: open, aggregations: [{ fn: 'avg', column: 'amount', alias: 'v' }] })).value);
+      const sql = Number((await s.rows(`SELECT AVG(amount) AS v FROM ${s.real('deals')} WHERE owner_id = '${dana}' AND state = 'open'`))[0]!['v']);
+      expect(Math.round(await average('dana'))).toBe(Math.round(sql));
+      expect(Math.round(await average('ivy'))).toBe(Math.round(sql));
+      // Still in the first stage: one of hers is in Discovery.
+      const first = Number((await s.rows(`SELECT id FROM ${s.real('stages')} ORDER BY position, id`))[0]!['id']);
+      expect(stages[String(first)]).toBe('Discovery');
+      expect([await count('dana', 'deals', [...open, { column: 'stage_id', op: 'eq', value: first }]), await count('ivy', 'deals', [...open, { column: 'stage_id', op: 'eq', value: first }])]).toEqual([1, 1]);
+      // Win rate and days from open to won over the last twelve months: the same two counts and one average for both.
+      const closed = async (person: string) => {
+        const grouped = await figure<Grouped>(person, 'deals', { shape: 'categorical', filters: [hers, { column: 'state', op: 'in', value: ['won', 'lost'] }, { column: 'closed_on', op: 'between', value: ['2025-07-28', '2026-07-28'] }], groupBy: ['state'], aggregations: [{ fn: 'count', alias: 'n' }, { fn: 'avg', column: 'cycle_days', alias: 'cycle' }] });
+        const of = (state: string) => grouped.items.find((item) => item.key === state)?.values ?? {};
+        return [Number(of('won')['n'] ?? 0), Number(of('lost')['n'] ?? 0), Math.round(Number(of('won')['cycle'] ?? 0))];
+      };
+      const asSql = await s.rows(`SELECT state, COUNT(*) AS n, AVG(cycle_days) AS c FROM ${s.real('deals')} WHERE owner_id = '${dana}' AND state IN ('won', 'lost') AND closed_on BETWEEN '2025-07-28' AND '2026-07-28' GROUP BY state`);
+      const n = (state: string) => Number(asSql.find((row) => row['state'] === state)?.['n'] ?? 0);
+      const won = asSql.find((row) => row['state'] === 'won');
+      expect(await closed('dana')).toEqual([n('won'), n('lost'), Math.round(Number(won?.['c'] ?? 0))]);
+      expect(await closed('ivy')).toEqual(await closed('dana'));
+      // A colleague's numbers are not Dana's to read: asked for Sam's, she is answered nothing.
+      expect(await count('dana', 'deals', [{ column: 'owner_id', op: 'eq', value: s.id['sam'] }, OPEN])).toBe(0);
+    });
+
     it('refuses the people these screens are not for, by a list and by a figure, table by table', async () => {
       const refused: string[] = [];
       const tried = async (person: string, table: string): Promise<void> => {

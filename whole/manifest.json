@@ -8009,6 +8009,107 @@
             }
           },
           {
+            "ref": "cover_sitting",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Covered: the deal longest in its stage",
+              "de-DE": "Besprochen: der Deal, der am längsten in seiner Phase steht",
+              "fr-FR": "Traité : l’affaire la plus ancienne dans son étape",
+              "da-DK": "Gennemgået: handlen, der har stået længst i sin fase",
+              "cs-CZ": "Probráno: obchod, který je nejdéle ve své fázi",
+              "ar-EG": "تمت تغطيته: الصفقة الأطول بقاءً في مرحلتها",
+              "zh-CN": "已讲：在当前阶段停留最久的商机",
+              "zh-TW": "已談：在目前階段停留最久的商機"
+            }
+          },
+          {
+            "ref": "cover_biggest",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Covered: the biggest open deal",
+              "de-DE": "Besprochen: der größte offene Deal",
+              "fr-FR": "Traité : la plus grosse affaire ouverte",
+              "da-DK": "Gennemgået: den største åbne handel",
+              "cs-CZ": "Probráno: největší otevřený obchod",
+              "ar-EG": "تمت تغطيته: أكبر صفقة مفتوحة",
+              "zh-CN": "已讲：金额最大的进行中商机",
+              "zh-TW": "已談：金額最大的進行中商機"
+            }
+          },
+          {
+            "ref": "cover_target",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Covered: the year’s target",
+              "de-DE": "Besprochen: das Jahresziel",
+              "fr-FR": "Traité : l’objectif de l’année",
+              "da-DK": "Gennemgået: årets mål",
+              "cs-CZ": "Probráno: roční cíl",
+              "ar-EG": "تمت تغطيته: هدف السنة",
+              "zh-CN": "已讲：年度目标",
+              "zh-TW": "已談：年度目標"
+            }
+          },
+          {
+            "ref": "cover_late",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Covered: follow-ups past due",
+              "de-DE": "Besprochen: überfällige Nachfassaktionen",
+              "fr-FR": "Traité : relances en retard",
+              "da-DK": "Gennemgået: forfaldne opfølgninger",
+              "cs-CZ": "Probráno: zpožděná dotažení",
+              "ar-EG": "تمت تغطيته: المتابعات المتأخرة",
+              "zh-CN": "已讲：逾期的跟进",
+              "zh-TW": "已談：逾期的跟進"
+            }
+          },
+          {
+            "ref": "raise",
+            "type": "text",
+            "nullable": true,
+            "label": {
+              "en-US": "Something else to raise",
+              "de-DE": "Was sonst noch anzusprechen ist",
+              "fr-FR": "Autre chose à aborder",
+              "da-DK": "Andet at tage op",
+              "cs-CZ": "Co dalšího probrat",
+              "ar-EG": "شيء آخر للطرح",
+              "zh-CN": "其他要提的事",
+              "zh-TW": "其他要提的事"
+            },
+            "rules": {
+              "validation": {
+                "maxLength": 400
+              }
+            }
+          },
+          {
+            "ref": "minutes",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Minutes",
+              "de-DE": "Minuten",
+              "fr-FR": "Minutes",
+              "da-DK": "Minutter",
+              "cs-CZ": "Minuty",
+              "ar-EG": "الدقائق",
+              "zh-CN": "分钟",
+              "zh-TW": "分鐘"
+            },
+            "rules": {
+              "validation": {
+                "min": 5,
+                "max": 240
+              }
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -8280,6 +8381,135 @@
               "ar-EG": "العنوان",
               "zh-CN": "标题",
               "zh-TW": "標題"
+            }
+          },
+          {
+            "ref": "why",
+            "type": "text",
+            "nullable": true,
+            "label": {
+              "en-US": "Why",
+              "de-DE": "Warum",
+              "fr-FR": "Pourquoi",
+              "da-DK": "Hvorfor",
+              "cs-CZ": "Proč",
+              "ar-EG": "لماذا",
+              "zh-CN": "原因",
+              "zh-TW": "原因"
+            },
+            "rules": {
+              "validation": {
+                "maxLength": 400
+              }
+            }
+          },
+          {
+            "ref": "good_looks_like",
+            "type": "text",
+            "nullable": true,
+            "label": {
+              "en-US": "What good looks like",
+              "de-DE": "Woran man Erfolg erkennt",
+              "fr-FR": "À quoi ressemble la réussite",
+              "da-DK": "Sådan ser godt ud",
+              "cs-CZ": "Jak vypadá úspěch",
+              "ar-EG": "كيف يبدو النجاح",
+              "zh-CN": "做好是什么样",
+              "zh-TW": "做好是什麼樣"
+            },
+            "rules": {
+              "validation": {
+                "maxLength": 300
+              }
+            }
+          },
+          {
+            "ref": "measure",
+            "type": "enum",
+            "enum": [
+              "late",
+              "deals",
+              "average",
+              "first_stage",
+              "win_rate",
+              "cycle"
+            ],
+            "nullable": true,
+            "label": {
+              "en-US": "Measured by",
+              "de-DE": "Gemessen an",
+              "fr-FR": "Mesuré par",
+              "da-DK": "Måles på",
+              "cs-CZ": "Měří se",
+              "ar-EG": "يُقاس بـ",
+              "zh-CN": "衡量指标",
+              "zh-TW": "衡量指標"
+            },
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "late": {
+                    "en-US": "Follow-ups past due",
+                    "de-DE": "Überfällige Nachfassaktionen",
+                    "fr-FR": "Relances en retard",
+                    "da-DK": "Forfaldne opfølgninger",
+                    "cs-CZ": "Zpožděná dotažení",
+                    "ar-EG": "المتابعات المتأخرة",
+                    "zh-CN": "逾期跟进",
+                    "zh-TW": "逾期跟進"
+                  },
+                  "deals": {
+                    "en-US": "Open deals",
+                    "de-DE": "Offene Deals",
+                    "fr-FR": "Affaires ouvertes",
+                    "da-DK": "Åbne handler",
+                    "cs-CZ": "Otevřené obchody",
+                    "ar-EG": "الصفقات المفتوحة",
+                    "zh-CN": "进行中的商机",
+                    "zh-TW": "進行中的商機"
+                  },
+                  "average": {
+                    "en-US": "Average open deal",
+                    "de-DE": "Durchschnittlicher offener Deal",
+                    "fr-FR": "Affaire ouverte moyenne",
+                    "da-DK": "Gennemsnitlig åben handel",
+                    "cs-CZ": "Průměrný otevřený obchod",
+                    "ar-EG": "متوسط الصفقة المفتوحة",
+                    "zh-CN": "进行中商机的平均金额",
+                    "zh-TW": "進行中商機的平均金額"
+                  },
+                  "first_stage": {
+                    "en-US": "Deals still in the first stage",
+                    "de-DE": "Deals noch in der ersten Phase",
+                    "fr-FR": "Affaires encore à la première étape",
+                    "da-DK": "Handler stadig i første fase",
+                    "cs-CZ": "Obchody stále v první fázi",
+                    "ar-EG": "صفقات ما زالت في المرحلة الأولى",
+                    "zh-CN": "仍在第一阶段的商机",
+                    "zh-TW": "仍在第一階段的商機"
+                  },
+                  "win_rate": {
+                    "en-US": "Win rate, last twelve months",
+                    "de-DE": "Abschlussquote, letzte zwölf Monate",
+                    "fr-FR": "Taux de réussite, douze derniers mois",
+                    "da-DK": "Vinderrate, sidste tolv måneder",
+                    "cs-CZ": "Úspěšnost, posledních dvanáct měsíců",
+                    "ar-EG": "نسبة الفوز، آخر اثني عشر شهرًا",
+                    "zh-CN": "近十二个月赢单率",
+                    "zh-TW": "近十二個月贏單率"
+                  },
+                  "cycle": {
+                    "en-US": "Days from open to won",
+                    "de-DE": "Tage vom Start bis zum Gewinn",
+                    "fr-FR": "Jours de l’ouverture au gain",
+                    "da-DK": "Dage fra åben til vundet",
+                    "cs-CZ": "Dny od otevření po výhru",
+                    "ar-EG": "الأيام من الفتح إلى الفوز",
+                    "zh-CN": "从开启到赢单的天数",
+                    "zh-TW": "從開啟到贏單的天數"
+                  }
+                }
+              }
             }
           },
           {
@@ -8816,6 +9046,21 @@
               "ar-EG": "الترتيب",
               "zh-CN": "排序",
               "zh-TW": "排序"
+            }
+          },
+          {
+            "ref": "covered",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Covered",
+              "de-DE": "Besprochen",
+              "fr-FR": "Traité",
+              "da-DK": "Gennemgået",
+              "cs-CZ": "Probráno",
+              "ar-EG": "تمت تغطيته",
+              "zh-CN": "已讲完",
+              "zh-TW": "已講完"
             }
           },
           {
@@ -9527,6 +9772,22 @@
               "ar-EG": "الحساب",
               "zh-CN": "账号",
               "zh-TW": "帳號"
+            }
+          },
+          {
+            "ref": "patch",
+            "type": "fk",
+            "references": "territories",
+            "nullable": true,
+            "label": {
+              "en-US": "Patch",
+              "de-DE": "Gebiet",
+              "fr-FR": "Secteur",
+              "da-DK": "Distrikt",
+              "cs-CZ": "Oblast",
+              "ar-EG": "المنطقة",
+              "zh-CN": "负责区域",
+              "zh-TW": "負責區域"
             }
           },
           {
@@ -22491,7 +22752,8 @@
             "name",
             "starts_on",
             "manager_id",
-            "user_id"
+            "user_id",
+            "patch"
           ]
         },
         "starter_steps": {

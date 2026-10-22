@@ -10,8 +10,14 @@
  * sets). Actions are rows of the one list (`common.tsx`): ticked here, they
  * read as done in Coaching and in the weekly meeting too, and the other way
  * round.
+ *
+ * WHAT TO COVER (T04). The record suggests up to four things (read from the
+ * deals, the target and the queue, never kept); the manager ticks them off as
+ * they are talked through and adds anything else to raise, and the session
+ * keeps both with how long it ran. Where an action keeps its session (the
+ * app's second stage on), each session lists the actions it set.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { noonOf, type Formatters } from "../../lib/format.ts";
@@ -22,7 +28,8 @@ import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { ActionRow, Avatar, Empty, Head, NOBODY, PersonChips, readWho, tickAction, truthy, useF, type Action, type Who } from "./common.tsx";
-import { readOneToOnes, readPair, saveSession, type DraftAction, type OneToOne, type Pair } from "./notes.ts";
+import { firstName } from "../../ui/people.ts";
+import { raisedOf, readOneToOnes, readPair, saveSession, topicColumn, TOPICS, type DraftAction, type OneToOne, type Pair, type Topic } from "./notes.ts";
 import { coverOf, leftOf } from "./targets.ts";
 
 export function Notes(_: ScreenProps) {
@@ -80,6 +87,9 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
   const { load, reload } = useLoad(() => readPair(session, pair, now, today), [session, pair.id, today, round]);
   const [writing, setWriting] = useState(false);
   const [ticking, setTicking] = useState<number | null>(null);
+  // What to cover: the lines ticked off and anything else raised, kept with the session when it is saved.
+  const [covered, setCovered] = useState<readonly Topic[]>([]);
+  const [raised, setRaised] = useState<readonly string[]>([]);
   const opener = useRef<HTMLButtonElement>(null);
   // Closing the form gives the focus back to "New session", once that button is drawn again.
   const giveBack = useRef(false);
@@ -130,40 +140,68 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
           return (
             <div className="crm-tw-grid">
               <div className="crm-tw-col">
-                <Raise data={data} f={f} now={now} />
+                <Raise
+                  data={data}
+                  f={f}
+                  now={now}
+                  canWrite={canWrite}
+                  covered={covered}
+                  onTick={(topic) => setCovered((was) => (was.includes(topic) ? was.filter((one) => one !== topic) : [...was, topic]))}
+                  raised={raised}
+                  onRaise={(line) => setRaised((was) => [...was, line])}
+                  onDrop={(at) => setRaised((was) => was.filter((_, i) => i !== at))}
+                  manager={manager}
+                  opener={
+                    canWrite && !writing ? (
+                      <button ref={opener} type="button" className="crm-btn crm-btn-primary crm-btn-32 mr-btn" data-testid="notes-new" onClick={() => setWriting(true)}>
+                        <Icon name="plus" size={14} />
+                        {t("notes.new")}
+                      </button>
+                    ) : null
+                  }
+                />
+                {writing && (
+                  <SessionForm
+                    pair={pair}
+                    who={who}
+                    today={today}
+                    covered={covered}
+                    raised={raised}
+                    onClose={() => {
+                      giveBack.current = true;
+                      setWriting(false);
+                    }}
+                    onSaved={() => {
+                      setCovered([]);
+                      setRaised([]);
+                      onChanged();
+                    }}
+                  />
+                )}
 
                 <section className="crm-tw-card" aria-labelledby="crm-no-before">
                   <div className="crm-tw-card-head">
                     <h2 id="crm-no-before">{t("notes.before")}</h2>
                     <span className="crm-tw-quiet">{t("notes.before.count", { count: f.number(data.sessionCount) }, data.sessionCount)}</span>
-                    {canWrite && !writing && (
-                      <button ref={opener} type="button" className="crm-btn crm-btn-primary crm-btn-32 mr-btn" data-testid="notes-new" onClick={() => setWriting(true)}>
-                        <Icon name="plus" size={14} />
-                        {t("notes.new")}
-                      </button>
-                    )}
                   </div>
-                  {writing && (
-                    <SessionForm
-                      pair={pair}
-                      who={who}
-                      today={today}
-                      onClose={() => {
-                        giveBack.current = true;
-                        setWriting(false);
-                      }}
-                      onSaved={onChanged}
-                    />
-                  )}
                   <ol className="crm-no-sessions">
                     {data.sessions.map((one) => {
                       const day = String(one.held_on).slice(0, 10);
                       const ago = f.dayDiff(noonOf(day), now);
+                      const minutes = one.minutes === null || one.minutes === undefined || one.minutes === "" ? null : Number(one.minutes);
+                      const ticked = TOPICS.filter((topic) => truthy(one[topicColumn(topic)]));
+                      const lines = raisedOf(one);
+                      const set = data.linked ? data.actions.filter((action) => action.session_id === one.id) : [];
                       return (
                         <li key={one.id} className="crm-no-session" data-session={one.id}>
                           <div className="crm-no-session-head">
                             <strong>{f.dayShort(noonOf(day))}</strong>
                             <span className="crm-mono">{ago <= 0 ? t("notes.ago.today") : ago === 1 ? t("notes.ago.yesterday") : t("notes.ago", { count: f.number(ago) }, ago)}</span>
+                            {minutes !== null && (
+                              <span className="crm-mono crm-no-session-mins" data-testid="notes-minutes">
+                                {t("notes.session.minutes", { count: f.number(minutes) }, minutes)}
+                              </span>
+                            )}
                           </div>
                           {(one.notes ?? "")
                             .split(/\n+/)
@@ -172,6 +210,29 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
                             .map((line, at) => (
                               <p key={at}>{line}</p>
                             ))}
+                          {(ticked.length > 0 || lines.length > 0) && (
+                            <ul className="crm-no-covered" data-testid="notes-covered">
+                              {ticked.map((topic) => (
+                                <li key={topic} data-topic={topic}>
+                                  <Icon name="check" size={12} />
+                                  {t(`notes.topic.${topic}`)}
+                                </li>
+                              ))}
+                              {lines.map((line, at) => (
+                                <li key={`raised-${String(at)}`} data-topic="raised">
+                                  <Icon name="plus" size={12} />
+                                  {line}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {set.length > 0 && (
+                            <ul className="crm-tw-actions crm-no-session-actions" data-testid="notes-session-actions">
+                              {set.map((action) => (
+                                <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick ? (row, on) => void tick(row, on) : null} busy={ticking === action.id} />
+                              ))}
+                            </ul>
+                          )}
                         </li>
                       );
                     })}
@@ -252,10 +313,39 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
   );
 }
 
-/** What the record suggests raising: read from the deals, the target and the queue, not kept anywhere. */
-function Raise({ data, f, now }: { data: Pair; f: Formatters; now: Date }) {
+/**
+ * What to cover: what the record suggests raising (read from the deals, the target and the queue, not kept anywhere),
+ * and anything else the manager adds. She ticks a line off as it is talked through; the ticks and the added lines are
+ * kept with the session she saves next.
+ */
+function Raise({
+  data,
+  f,
+  now,
+  canWrite,
+  covered,
+  onTick,
+  raised,
+  onRaise,
+  onDrop,
+  manager,
+  opener,
+}: {
+  data: Pair;
+  f: Formatters;
+  now: Date;
+  canWrite: boolean;
+  covered: readonly Topic[];
+  onTick: (topic: Topic) => void;
+  raised: readonly string[];
+  onRaise: (line: string) => void;
+  onDrop: (at: number) => void;
+  manager: string;
+  opener: ReactNode;
+}) {
   const t = useT();
-  const lines: { key: string; text: string; from: string }[] = [];
+  const [draft, setDraft] = useState("");
+  const lines: { key: Topic; text: string; from: string }[] = [];
   if (data.sitting !== null && data.sitting.since !== null) {
     const days = f.dayDiff(new Date(data.sitting.since), now);
     lines.push({ key: "sitting", text: t("notes.raise.sitting", { deal: data.sitting.name, stage: data.sitting.stage ?? "", count: f.number(days) }, days), from: t("notes.raise.from.board") });
@@ -266,39 +356,92 @@ function Raise({ data, f, now }: { data: Pair; f: Formatters; now: Date }) {
     lines.push({ key: "target", text: t("notes.raise.target", { share: share === null ? "—" : f.percent(share), left: f.money(leftOf(data.year.sums.toward, data.year.target)) }), from: t("notes.raise.from.targets") });
   }
   if (data.late > 0) lines.push({ key: "late", text: t("notes.raise.late", { count: f.number(data.late) }, data.late), from: t("notes.raise.from.today") });
-  if (lines.length === 0) return null;
+  if (lines.length === 0 && !canWrite) return null;
+  const add = (): void => {
+    const line = draft.trim();
+    if (line === "") return;
+    onRaise(line);
+    setDraft("");
+  };
   return (
     <section className="crm-tw-card" aria-labelledby="crm-no-raise" data-testid="notes-raise">
       <div className="crm-tw-card-head">
         <h2 id="crm-no-raise">{t("notes.raise")}</h2>
-        <span className="crm-mono">{f.number(lines.length)}</span>
+        <span className="crm-mono">{f.number(lines.length + raised.length)}</span>
+        {opener}
       </div>
       <ul className="crm-no-raise">
-        {lines.map((line) => (
-          <li key={line.key} data-raise={line.key}>
-            <span>{line.text}</span>
-            <em>{line.from}</em>
+        {lines.map((line) => {
+          const on = covered.includes(line.key);
+          return (
+            <li key={line.key} data-raise={line.key} data-on={on ? "1" : "0"}>
+              {canWrite && (
+                <button type="button" className="crm-tw-tick mr-gi" role="checkbox" aria-checked={on} aria-label={line.text} onClick={() => onTick(line.key)}>
+                  {on && <Icon name="check" size={13} />}
+                </button>
+              )}
+              <span>{line.text}</span>
+              <em>{line.from}</em>
+            </li>
+          );
+        })}
+        {raised.map((line, at) => (
+          <li key={`raised-${String(at)}`} data-raise="raised">
+            <span>{line}</span>
+            <em>{t("notes.raise.from.added", { name: firstName(manager) })}</em>
+            <button type="button" className="crm-icon-btn crm-icon-btn-sm mr-gi" aria-label={t("notes.raise.drop", { line })} onClick={() => onDrop(at)}>
+              <Icon name="x" size={13} />
+            </button>
           </li>
         ))}
       </ul>
+      {canWrite && (
+        <>
+          <div className="crm-tw-add">
+            <input
+              className="crm-input mr-fld"
+              aria-label={t("notes.raise.add.label")}
+              value={draft}
+              maxLength={160}
+              placeholder={t("notes.raise.add.hint")}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  add();
+                }
+              }}
+            />
+            <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi" disabled={draft.trim() === ""} onClick={add}>
+              <Icon name="plus" size={14} />
+              {t("notes.raise.add")}
+            </button>
+          </div>
+          <p className="crm-tw-quiet crm-no-raise-note">{t("notes.raise.kept")}</p>
+        </>
+      )}
     </section>
   );
 }
 
-function SessionForm({ pair, who, today, onClose, onSaved }: { pair: OneToOne; who: Who; today: string; onClose: () => void; onSaved: () => void }) {
+function SessionForm({ pair, who, today, covered, raised, onClose, onSaved }: { pair: OneToOne; who: Who; today: string; covered: readonly Topic[]; raised: readonly string[]; onClose: () => void; onSaved: () => void }) {
   const t = useT();
   const session = useSession();
   const toasts = useToasts();
+  const f = useF();
   const blank = (): DraftAction => ({ text: "", owner: pair.rep_id, due: "", key: newClientKey() });
   const [day, setDay] = useState(today);
   const [notes, setNotes] = useState("");
+  const [minutes, setMinutes] = useState("");
   const [actions, setActions] = useState<DraftAction[]>(() => [blank()]);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // One key for this session, for as long as the form is open.
   const key = useRef(newClientKey());
-  const ready = /^\d{4}-\d{2}-\d{2}$/.test(day) && notes.trim() !== "";
+  const length = minutes.trim() === "" ? null : Number(minutes);
+  const lengthOk = length === null || (Number.isInteger(length) && length >= 5 && length <= 240);
+  const ready = /^\d{4}-\d{2}-\d{2}$/.test(day) && notes.trim() !== "" && lengthOk;
   const change = (at: number, patch: Partial<DraftAction>): void => setActions((was) => was.map((one, i) => (i === at ? { ...one, ...patch } : one)));
 
   const save = async (): Promise<void> => {
@@ -306,7 +449,7 @@ function SessionForm({ pair, who, today, onClose, onSaved }: { pair: OneToOne; w
     setError(null);
     setBusy(true);
     const slow = setTimeout(() => setChecking(true), 1200);
-    const done = await saveSession(session, pair, { held_on: day, notes: notes.trim() }, actions.filter((one) => one.text.trim() !== "").map((one) => ({ ...one, text: one.text.trim() })), key.current);
+    const done = await saveSession(session, pair, { held_on: day, notes: notes.trim(), covered, raised, minutes: length }, actions.filter((one) => one.text.trim() !== "").map((one) => ({ ...one, text: one.text.trim() })), key.current);
     clearTimeout(slow);
     setChecking(false);
     setBusy(false);
@@ -343,6 +486,13 @@ function SessionForm({ pair, who, today, onClose, onSaved }: { pair: OneToOne; w
           {t("notes.form.notes")}
         </label>
         <textarea id="crm-no-notes" className="crm-input crm-textarea mr-fld" autoFocus rows={4} maxLength={4000} value={notes} onChange={(event) => (setNotes(event.target.value), setError(null))} />
+        <label className="crm-label" htmlFor="crm-no-mins">
+          {t("notes.form.minutes")}
+        </label>
+        <input id="crm-no-mins" className="crm-input crm-mono crm-no-mins mr-fld" type="number" inputMode="numeric" min={5} max={240} step={5} value={minutes} aria-describedby="crm-no-mins-note" onChange={(event) => (setMinutes(event.target.value), setError(null))} />
+        <p id="crm-no-mins-note" className="crm-field-note">
+          {lengthOk ? t("notes.form.minutes.note", { count: f.number(covered.length + raised.length) }, covered.length + raised.length) : t("notes.form.minutes.bad")}
+        </p>
         <div role="group" aria-label={t("notes.form.actions")}>
           <div className="crm-label">{t("notes.form.actions")}</div>
           {actions.map((action, at) => (
