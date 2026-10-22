@@ -84,9 +84,10 @@ for (const [dialect, reachable] of LEGS) {
       const forSam = await book('dana', 'sam', 'danas');
       expect(forSam.statusCode, forSam.body).toBe(403);
       // On a colleague's deal, which she cannot open: refused in the words of "no such deal".
-      const onSams = await book('dana', 'dana', 'sams');
+      // (A day of its own, so the visit she already has that morning is not what refuses it: plan 68 X7.)
+      const onSams = await book('dana', 'dana', 'sams', { starts_at: at(4) });
       expect(onSams.statusCode, onSams.body).toBe(409);
-      const missing = await s.make('dana', 'site_visits', { deal_id: 999_999, contact_id: contact['petra'], rep_id: s.ids['dana'], starts_at: at(3), minutes: 60, purpose: 'Nowhere' });
+      const missing = await s.make('dana', 'site_visits', { deal_id: 999_999, contact_id: contact['petra'], rep_id: s.ids['dana'], starts_at: at(4), minutes: 60, purpose: 'Nowhere' });
       expect(missing.statusCode).toBe(onSams.statusCode);
       expect(said(missing)).toBe(said(onSams));
       // With nobody named: the row would be nobody's.
@@ -106,8 +107,8 @@ for (const [dialect, reachable] of LEGS) {
       const forSam = made(await book('ivy', 'sam', 'sams'));
       // Noor is in no team of hers: neither Noor's name nor Noor's deal.
       expect((await book('ivy', 'noor', 'danas')).statusCode).toBe(403);
-      const onNoors = await book('ivy', 'dana', 'noors');
-      expect(said(onNoors)).toBe(said(await book('ivy', 'dana', 'nowhere')));
+      const onNoors = await book('ivy', 'dana', 'noors', { starts_at: at(4) });
+      expect(said(onNoors)).toBe(said(await book('ivy', 'dana', 'nowhere', { starts_at: at(4) })));
       expect(onNoors.statusCode).toBe(409);
       // The CRM admin books for anybody.
       const forNoor = made(await book('tessa', 'noor', 'noors'));
@@ -210,6 +211,29 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.make('priya', 'visit_notes', { visit_id: id, saw: 'Not mine' })).statusCode).toBeGreaterThanOrEqual(400);
       expect(await list('priya', 'visit_notes')).toEqual([]);
       expect(await s.rows(`select id from crm_visit_notes where visit_id = ${String(id)}`)).toEqual([]);
+    });
+
+    it('X7: a rep\'s two visits never overlap, whoever books or moves them; two reps at the same time do', async () => {
+      const code = (res: Reply): string => said(res);
+      const first = made(await book('dana', 'dana', 'danas', { starts_at: at(6, '09:00'), minutes: 60 }));
+      // Half an hour into it, as her, as her manager and as the CRM admin: taken, and nothing is written.
+      for (const who of ['dana', 'ivy', 'tessa']) expect(code(await book(who, 'dana', 'danas', { starts_at: at(6, '09:30'), minutes: 30, purpose: `X7 over, by ${who}` })), who).toBe('409 BOOKING_TAKEN');
+      expect((await s.rows(`select id from crm_site_visits where purpose like 'X7 over%'`))).toEqual([]);
+      // Starting as it ends is no overlap; another rep at the very same time is none either.
+      const next = made(await book('dana', 'dana', 'danas', { starts_at: at(6, '10:00'), minutes: 30 }));
+      const sams = made(await book('sam', 'sam', 'sams', { starts_at: at(6, '09:00'), minutes: 60 }));
+      // A move onto it is refused, by a new start or a longer length, and the visit keeps its time.
+      expect(code(await s.change('dana', 'site_visits', next, { starts_at: at(6, '09:45') }))).toBe('409 BOOKING_TAKEN');
+      expect(code(await s.change('ivy', 'site_visits', first, { minutes: 90 }))).toBe('409 BOOKING_TAKEN');
+      expect(new Date(String((await row('dana', 'site_visits', next))?.['starts_at'])).getTime()).toBe(new Date(at(6, '10:00')).getTime());
+      expect(Number((await row('dana', 'site_visits', first))?.['minutes'])).toBe(60);
+      // Given to Sam (by the manager), it would overlap his: refused too.
+      expect(code(await s.change('ivy', 'site_visits', first, { rep_id: s.ids['sam'] }))).toBe('409 BOOKING_TAKEN');
+      // A change that does not move it (its note) is taken, and a move clear of the others is.
+      expect(said(await s.change('dana', 'site_visits', next, { note: 'X7 spec' }))).toBe('ok');
+      expect(said(await s.change('dana', 'site_visits', next, { starts_at: at(6, '11:00') }))).toBe('ok');
+      expect(said(await s.change('ivy', 'site_visits', first, { minutes: 90 }))).toBe('ok');
+      for (const [who, id] of [['dana', first], ['dana', next], ['sam', sams]] as const) expect(said(await remove(who, 'site_visits', id))).toBe('ok');
     });
 
     it('lets the manager make cover for people she leads, the admin for anybody who reads deals, and nobody else', async () => {

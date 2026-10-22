@@ -452,6 +452,67 @@ for (const [dialect, reachable] of LEGS) {
       expect((await send('ivy', 'DELETE', url('nudge_snoozes', `/${String(id.id)}?confirm=true`))).statusCode).toBeLessThan(300);
     });
 
+    it('X1: a rep ticks her own onboarding steps; the manager changes her team\'s starters, steps and agenda items, and nobody else\'s', async () => {
+      const step = async (text: string): Promise<number> => Number((await s.rows(`SELECT id FROM ${s.real('starter_steps')} WHERE text = '${text}'`))[0]!['id']);
+      const tick = (person: string, id: number, done: boolean) => send(person, 'PATCH', url('starter_steps', `/${String(id)}`), { values: { done } });
+      const said = (res: Reply): string => (res.statusCode < 300 ? 'ok' : String(res.statusCode));
+      // The sample's Nia starts with Ivy: four steps are Ivy's, one each Leo's, Dana's and Priya's, three Nia's own (no owner).
+      const [danas, leos, ivys, nias] = [await step('Sit in on three calls'), await step('Walk the catalogue'), await step('Add her to the workspace'), await step('Log her first activity')];
+      expect(said(await tick('dana', danas, true))).toBe('ok');
+      for (const id of [leos, ivys, nias]) expect(said(await tick('dana', id, true)), String(id)).toMatch(/^40[34]$/);
+      expect((await send('dana', 'PATCH', url('starter_steps', `/${String(danas)}`), { values: { text: 'Mine now' } })).statusCode).toBe(403);
+      const done = async (id: number): Promise<boolean> => [true, 1, '1'].includes((await s.rows(`SELECT done FROM ${s.real('starter_steps')} WHERE id = ${String(id)}`))[0]!['done'] as never);
+      expect([await done(danas), await done(leos), await done(nias)]).toEqual([true, false, false]);
+      // Her manager ticks any step of her starter, Nia's own included; the CRM admin any; Read-only none.
+      for (const id of [leos, nias, danas]) expect(said(await tick('ivy', id, false)), String(id)).toBe('ok');
+      expect(said(await tick('tessa', leos, false))).toBe('ok');
+      expect(said(await tick('grace', leos, true))).toBe('403');
+
+      // ANOTHER MANAGER'S STARTER (the CRM admin makes one for Hugo, who is in no team of Ivy's): Ivy reads it, and changes,
+      // removes and adds to none of it; nor does she name Hugo as a starter's manager or as a step's owner.
+      const starter = await send('tessa', 'POST', url('starters'), { values: { name: 'X1 spec starter', starts_on: '2026-09-01', manager_id: s.id['hugo'] } });
+      expect(starter.statusCode, starter.body).toBe(201);
+      const hugos = Number((starter.json() as { data: { id: number } }).data.id);
+      const hugosStep = Number((await send('tessa', 'POST', url('starter_steps'), { values: { starter_id: hugos, phase: 'before', text: 'X1 spec step', for_starter: true, done: false } })).json().data.id);
+      expect((await list('ivy', 'starters', { column: 'id', op: 'eq', value: hugos })).total).toBe(1);
+      expect(said(await send('ivy', 'PATCH', url('starters', `/${String(hugos)}`), { values: { name: 'Mine now' } }))).toMatch(/^40[34]$/);
+      expect(said(await send('ivy', 'DELETE', url('starters', `/${String(hugos)}?confirm=true`)))).toMatch(/^40[34]$/);
+      expect(said(await tick('ivy', hugosStep, true))).toMatch(/^40[34]$/);
+      expect(said(await send('ivy', 'DELETE', url('starter_steps', `/${String(hugosStep)}?confirm=true`)))).toMatch(/^40[34]$/);
+      expect(said(await send('ivy', 'POST', url('starter_steps'), { values: { starter_id: hugos, phase: 'week', text: 'X1 spec: Ivy adds', for_starter: true, done: false } }))).toMatch(/^4/);
+      expect(said(await send('ivy', 'POST', url('starters'), { values: { name: 'X1 spec: for Hugo', starts_on: '2026-09-01', manager_id: s.id['hugo'] } }))).toMatch(/^403$/);
+      const nia = Number((await s.rows(`SELECT id FROM ${s.real('starters')} WHERE name = 'Nia Okonjo'`))[0]!['id']);
+      expect(said(await send('ivy', 'POST', url('starter_steps'), { values: { starter_id: nia, phase: 'week', text: 'X1 spec: Hugo does', owner_id: s.id['hugo'], for_starter: false, done: false } }))).toMatch(/^403$/);
+      // Her own: a step for Nia herself (no owner) and one for Dana, changed and removed.
+      for (const owner of [null, s.id['dana']]) {
+        const made = await send('ivy', 'POST', url('starter_steps'), { values: { starter_id: nia, phase: 'week', text: 'X1 spec: Ivy adds', owner_id: owner, for_starter: owner === null, done: false } });
+        expect(made.statusCode, made.body).toBe(201);
+        const id = Number((made.json() as { data: { id: number } }).data.id);
+        expect(said(await send('ivy', 'PATCH', url('starter_steps', `/${String(id)}`), { values: { text: 'X1 spec: Ivy rewords' } }))).toBe('ok');
+        expect(said(await send('ivy', 'DELETE', url('starter_steps', `/${String(id)}?confirm=true`)))).toBe('ok');
+      }
+      expect(said(await send('ivy', 'PATCH', url('starters', `/${String(nia)}`), { values: { first_year_target: 56250 } }))).toBe('ok');
+      expect(said(await send('tessa', 'DELETE', url('starter_steps', `/${String(hugosStep)}?confirm=true`)))).toBe('ok');
+      expect(said(await send('tessa', 'DELETE', url('starters', `/${String(hugos)}?confirm=true`)))).toBe('ok');
+
+      // AN AGENDA ITEM is its speaker's: Ivy changes her team's and the ones that name nobody; Hugo's (put there by the CRM
+      // admin) she reads and leaves; she names nobody outside her team as a speaker.
+      const meeting = Number((await s.rows(`SELECT id FROM ${s.real('meetings')} ORDER BY id`))[0]!['id']);
+      const slot = async (label: string): Promise<number> => Number((await s.rows(`SELECT id FROM ${s.real('meeting_slots')} WHERE label = '${label}'`))[0]!['id']);
+      const dana = await slot('Dana');
+      expect(said(await send('ivy', 'PATCH', url('meeting_slots', `/${String(dana)}`), { values: { minutes: 10 } }))).toBe('ok');
+      expect(said(await send('ivy', 'PATCH', url('meeting_slots', `/${String(dana)}`), { values: { minutes: 5 } }))).toBe('ok');
+      const hugosSlot = Number((await send('tessa', 'POST', url('meeting_slots'), { values: { meeting_id: meeting, label: 'X1 spec: Hugo', who_id: s.id['hugo'], minutes: 5, position: 9 } })).json().data.id);
+      expect(said(await send('ivy', 'PATCH', url('meeting_slots', `/${String(hugosSlot)}`), { values: { minutes: 15 } }))).toMatch(/^40[34]$/);
+      expect(said(await send('ivy', 'DELETE', url('meeting_slots', `/${String(hugosSlot)}?confirm=true`)))).toMatch(/^40[34]$/);
+      expect(said(await send('ivy', 'POST', url('meeting_slots'), { values: { meeting_id: meeting, label: 'X1 spec: Hugo again', who_id: s.id['hugo'], minutes: 5, position: 10 } }))).toMatch(/^403$/);
+      const open = await send('ivy', 'POST', url('meeting_slots'), { values: { meeting_id: meeting, label: 'X1 spec: open floor', minutes: 5, position: 11 } });
+      expect(open.statusCode, open.body).toBe(201);
+      expect(said(await send('ivy', 'DELETE', url('meeting_slots', `/${String(Number((open.json() as { data: { id: number } }).data.id))}?confirm=true`)))).toBe('ok');
+      expect(said(await send('dana', 'PATCH', url('meeting_slots', `/${String(dana)}`), { values: { minutes: 10 } }))).toBe('403');
+      expect(said(await send('tessa', 'DELETE', url('meeting_slots', `/${String(hugosSlot)}?confirm=true`)))).toBe('ok');
+    });
+
     it('answers a rule\'s on/off to whoever may manage automations and to nobody of the app\'s roles (the gap the Nudges page speaks to)', async () => {
       const path = `/api/v1/automations?connectionId=${s.connectionId}`;
       for (const person of ['ivy', 'tessa', 'grace', 'dana']) expect([person, (await get(person, path)).statusCode]).toEqual([person, 403]);
