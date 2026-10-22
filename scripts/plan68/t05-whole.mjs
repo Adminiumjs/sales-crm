@@ -173,15 +173,8 @@ addOnce(needs.indexes, ["crew_id"]);
 
 column("job_visits", { ref: "was_day", type: "date", nullable: true, label: L("Day before the last change, as a rule last read it", "Tag vor der letzten Änderung, wie eine Regel ihn zuletzt las", "Jour avant la dernière modification, tel qu’une règle l’a lu en dernier", "Dag før den seneste ændring, som en regel sidst læste den", "Den před poslední změnou, jak jej naposledy přečetlo pravidlo", "اليوم قبل آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改前的日期", "規則最近讀到的上次變更前的日期") }, "cancel_reason");
 column("job_visits", { ref: "was_crew_id", type: "int", nullable: true, label: L("Crew before the last change, as a rule last read it", "Team vor der letzten Änderung, wie eine Regel es zuletzt las", "Équipe avant la dernière modification, telle qu’une règle l’a lue en dernier", "Hold før den seneste ændring, som en regel sidst læste det", "Četa před poslední změnou, jak ji naposledy přečetlo pravidlo", "الطاقم قبل آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改前的班组", "規則最近讀到的上次變更前的班組") }, "was_day");
-column("job_visits", { ref: "was_state", type: "enum", enum: ["waiting", "booked", "done"], nullable: true, rules: { enumLabels: { labels: { waiting: L("Waiting", "Wartet", "En attente", "Venter", "Čeká", "قيد الانتظار", "待排期", "待排程"), booked: L("Booked", "Gebucht", "Réservée", "Booket", "Zarezervováno", "محجوزة", "已排期", "已排程"), done: L("Done", "Erledigt", "Faite", "Udført", "Hotovo", "تمت", "已完成", "已完成") } } }, label: L("State before the last change, as a rule last read it", "Stand vor der letzten Änderung, wie eine Regel ihn zuletzt las", "État avant la dernière modification, tel qu’une règle l’a lu en dernier", "Tilstand før den seneste ændring, som en regel sidst læste den", "Stav před poslední změnou, jak jej naposledy přečetlo pravidlo", "الحالة قبل آخر تغيير كما قرأتها قاعدة آخر مرة", "规则最近读到的上次更改前的状态", "規則最近讀到的上次變更前的狀態") }, "was_crew_id");
-// Written whenever the day, the crew or the state changes: the one change a rule hears for all three (D17).
-column("job_visits", { ref: "moved_at", type: "timestamptz", nullable: true, rules: { stamp: { set: "now", on: { columns: ["day", "crew_id", "state"] } } }, label: L("Day, crew or state last changed", "Tag, Team oder Stand zuletzt geändert", "Jour, équipe ou état modifié en dernier", "Dag, hold eller tilstand sidst ændret", "Den, četa nebo stav naposledy změněny", "آخر تغيير لليوم أو الطاقم أو الحالة", "日期、班组或状态最近更改于", "日期、班組或狀態最近變更於") }, "was_state");
-// The crew the visit has, as the same rule read it (a number, so the two can be compared: a link is not one).
-column("job_visits", { ref: "now_crew_id", type: "int", nullable: true, label: L("Crew after the last change, as a rule last read it", "Team nach der letzten Änderung, wie eine Regel es zuletzt las", "Équipe après la dernière modification, telle qu’une règle l’a lue en dernier", "Hold efter den seneste ændring, som en regel sidst læste det", "Četa po poslední změně, jak ji naposledy přečetlo pravidlo", "الطاقم بعد آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改后的班组", "規則最近讀到的上次變更後的班組") }, "moved_at");
-// Which change of which visit a rule last noted for a crew it left (its key and the moment of the change): heard twice, noted once.
-column("job_visits", { ref: "leave_key", type: "text", maxLength: 80, nullable: true, label: L("The change a rule last read", "Die Änderung, die eine Regel zuletzt las", "La modification qu’une règle a lue en dernier", "Den ændring, en regel sidst læste", "Změna, kterou pravidlo naposledy přečetlo", "التغيير الذي قرأته قاعدة آخر مرة", "规则最近读到的更改", "規則最近讀到的變更") }, "now_crew_id");
-// 1 when the two differ: the visit was given to another crew, or to none.
-column("job_visits", { ref: "crew_moved", type: "int", nullable: true, rules: { formula: { if: [{ or: [{ lt: [{ coalesce: ["now_crew_id", 0] }, { coalesce: ["was_crew_id", 0] }] }, { gt: [{ coalesce: ["now_crew_id", 0] }, { coalesce: ["was_crew_id", 0] }] }] }, 1, 0] } }, label: L("Crew changed since a rule last read it", "Team geändert, seit eine Regel es zuletzt las", "Équipe changée depuis la dernière lecture d’une règle", "Hold ændret, siden en regel sidst læste det", "Četa změněna od posledního čtení pravidlem", "تغيّر الطاقم منذ آخر قراءة لقاعدة", "自规则上次读取后班组已更改", "自規則上次讀取後班組已變更") }, "now_crew_id");
+// Which change of which visit a rule last noted for the crew it left: a change heard twice is noted once.
+column("job_visits", { ref: "leave_key", type: "text", maxLength: 80, nullable: true, label: L("The change a rule last read", "Die Änderung, die eine Regel zuletzt las", "La modification qu’une règle a lue en dernier", "Den ændring, en regel sidst læste", "Změna, kterou pravidlo naposledy přečetlo", "التغيير الذي قرأته قاعدة آخر مرة", "规则最近读到的更改", "規則最近讀到的變更") }, "was_crew_id");
 
 /* ─── left_visits: a visit that left a crew's today or tomorrow (D17) ─── */
 
@@ -192,7 +185,7 @@ putTable(
     label: L("Visit off a crew’s day sheet", "Einsatz vom Tagesblatt eines Teams genommen", "Intervention retirée de la feuille de route d’une équipe", "Besøg taget af et holds dagsark", "Výjezd vyřazený z denního listu čety", "زيارة خرجت من ورقة يوم الطاقم", "从班组日程单上移走的上门", "從班組日程單上移走的到訪"),
     labelPlural: L("Visits off crews’ day sheets", "Einsätze von Tagesblättern genommen", "Interventions retirées des feuilles de route", "Besøg taget af holdenes dagsark", "Výjezdy vyřazené z denních listů", "زيارات خرجت من أوراق أيام الطواقم", "从班组日程单上移走的上门", "從班組日程單上移走的到訪"),
     keyField: "what",
-    indexes: [["crew_id"], ["visit_id"], ["leave_key"]],
+    indexes: [["crew_id"], ["visit_id"]],
     belongs: [LINK_CREW],
     columns: [
       { ref: "id", type: "int", role: "pk" },
@@ -202,7 +195,7 @@ putTable(
       { ref: "site_name", type: "text", maxLength: 160, nullable: true, label: L("Site name", "Name des Standorts", "Nom du site", "Stedets navn", "Název místa", "اسم الموقع", "现场名称", "現場名稱") },
       { ref: "site_town", type: "text", maxLength: 120, nullable: true, label: L("Site town", "Ort des Standorts", "Ville du site", "Stedets by", "Obec místa", "مدينة الموقع", "现场所在城镇", "現場所在城鎮") },
       { ref: "day", type: "date", nullable: true, label: L("Day it was on", "Tag, an dem er war", "Jour où elle était", "Dagen, det lå på", "Den, na který byl", "اليوم الذي كانت فيه", "原定日期", "原定日期") },
-      { ref: "leave_key", type: "text", maxLength: 80, nullable: true, label: L("The change it is about", "Die Änderung, um die es geht", "La modification concernée", "Den ændring, det drejer sig om", "Změna, o kterou jde", "التغيير المعني", "所涉及的更改", "所涉及的變更") },
+      { ref: "leave_key", type: "text", maxLength: 80, nullable: true, unique: true, label: L("The change it is about", "Die Änderung, um die es geht", "La modification concernée", "Den ændring, det drejer sig om", "Změna, o kterou jde", "التغيير المعني", "所涉及的更改", "所涉及的變更") },
       { ref: "now_day", type: "date", nullable: true, label: L("Day it is on now", "Tag, an dem er jetzt ist", "Jour où elle est maintenant", "Dagen, det ligger på nu", "Den, na který je teď", "اليوم الذي صارت فيه الآن", "现在的日期", "現在的日期") },
       {
         ref: "why",
@@ -288,69 +281,111 @@ crew.tables ??= [];
 
 /* ─── Rules (D17) ─── */
 
-// The manifest takes at most 24 rules (MANIFEST_AUTOMATIONS_MAX): D17 is three. One hears a booked visit's day, crew
-// or state change (the stamp `moved_at` changes with any of them), one hears a visit removed, and one tells the crew.
-manifest.automations = manifest.automations.filter((one) => !["day-sheet-left-day", "day-sheet-left-crew", "day-sheet-left-waiting"].includes(one.key));
+// The manifest takes at most 24 rules (MANIFEST_AUTOMATIONS_MAX): D17 adds three. The day sheet's rules on a booked visit's
+// day and crew (which told the crew it is now for) also note the change for the crew it LEFT; one rule hears a visit going
+// back to waiting, one a visit removed, and one tells the crew a note is for.
+manifest.automations = manifest.automations.filter((one) => !["day-sheet-left-day", "day-sheet-left-crew", "day-sheet-left"].includes(one.key));
 
 const TODAY_OR_TOMORROW = { amount: 1, unit: "days" };
 const trigger = (title) => ({ id: "t", kind: "trigger", title });
-const stop = (id) => ({ id, kind: "stop", title: L("Done", "Fertig", "Terminé", "Færdig", "Hotovo", "تم", "完成", "完成") });
-const write = (id, why, values) => ({
-  id,
+const keyOfChange = "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}";
+const keepWas = {
+  id: "keep-was",
+  kind: "action",
+  title: L("Keep the day and crew the visit had", "Tag und Team festhalten, die der Einsatz hatte", "Garder le jour et l’équipe qu’avait l’intervention", "Gem dagen og holdet, besøget havde", "Uložit den a četu, které výjezd měl", "احفظ اليوم والطاقم اللذين كانا للزيارة", "记下上门原来的日期和班组", "記下到訪原來的日期和班組"),
+  action: { kind: "record.update", values: { was_day: "{{was.day}}", was_crew_id: "{{was.crew_id}}", leave_key: keyOfChange } },
+};
+const wasSoon = { id: "was-soon", kind: "condition", title: L("It was on today or tomorrow", "Er war heute oder morgen", "Elle était aujourd’hui ou demain", "Det lå i dag eller i morgen", "Byl dnes nebo zítra", "كانت اليوم أو غدًا", "原定在今天或明天", "原定在今天或明天"), condition: { left: { field: "was_day" }, op: "within_next", right: TODAY_OR_TOMORROW } };
+const wasCrew = { id: "was-crew", kind: "condition", title: L("…for a crew", "…für ein Team", "…pour une équipe", "…til et hold", "…pro četu", "…لطاقم", "……有班组", "……有班組"), condition: { left: { field: "was_crew_id" }, op: "not_empty" } };
+// A change heard twice (by the day's rule and the crew's, when both moved at once) is noted once.
+const notNoted = { id: "not-noted", kind: "condition", title: L("…and this change is not noted yet", "…und diese Änderung ist noch nicht notiert", "…et ce changement n’est pas encore noté", "…og ændringen er ikke noteret endnu", "…a tato změna ještě není zapsána", "…ولم يُدوَّن هذا التغيير بعد", "……且这次更改尚未记下", "……且這次變更尚未記下"), condition: { left: { count: { table: "left_visits", matchColumn: "leave_key", equalsField: "leave_key" } }, op: "is", right: 0 } };
+const write = (why, values) => ({
+  id: "write",
   kind: "action",
   title: L("Write it down for the crew it left", "Für das Team notieren, das ihn hatte", "L’inscrire pour l’équipe qui l’avait", "Skriv det ned til holdet, der havde det", "Zapsat to pro četu, která jej měla", "دوِّنها للطاقم الذي كانت له", "为原班组记下来", "為原班組記下來"),
   action: { kind: "record.create", table: "left_visits", values: { visit_id: "{{record.id}}", what: "{{record.what}}", site_name: "{{record.site_name}}", site_town: "{{record.site_town}}", why, ...values } },
 });
 const fromWas = { crew_id: "{{was.crew_id}}", day: "{{was.day}}", now_day: "{{record.day}}", leave_key: "{{record.leave_key}}" };
-/** One way the visit left: a branch that writes it down and stops, or goes on to the next question. */
-const leftIf = (why, title, condition) => ({
-  id: `if-${why}`,
+const BOOKED = { left: { field: "state" }, op: "is", right: "booked" };
+/** The notice an existing day-sheet rule sends, wherever its graph now holds it. */
+const tellOf = (rule) => must([...rule.graph.nodes, ...rule.graph.nodes.flatMap((node) => (node.branches ?? []).flatMap((branch) => branch.nodes))].find((node) => node.id === "tell"), `${rule.key}'s notice`);
+/** The rule's own notice as a branch: still only for a visit now on today or tomorrow. */
+const tellIfSoon = (tell) => ({
+  id: "if-soon",
   kind: "branch",
-  title,
-  condition,
+  title: L("Is it on today or tomorrow now?", "Ist er jetzt heute oder morgen?", "Est-elle maintenant aujourd’hui ou demain ?", "Ligger det nu i dag eller i morgen?", "Je teď dnes nebo zítra?", "هل هي الآن اليوم أو غدًا؟", "现在是在今天或明天吗？", "現在是在今天或明天嗎？"),
+  condition: { left: { field: "day" }, op: "within_next", right: TODAY_OR_TOMORROW },
   branches: [
-    { id: `if-${why}-yes`, label: "Yes", nodes: [write(`write-${why}`, why, fromWas), stop(`stop-${why}`)] },
-    { id: `if-${why}-no`, label: "No", nodes: [] },
+    { id: "if-soon-yes", label: "Yes", nodes: [tell] },
+    { id: "if-soon-no", label: "No", nodes: [] },
   ],
 });
+{
+  const moved = must(manifest.automations.find((one) => one.key === "day-sheet-moved"), "rule day-sheet-moved");
+  const tell = tellOf(moved);
+  moved.name = L("A booked visit changes day: tell its crew, and the crew it left", "Gebuchter Einsatz wechselt den Tag: sein Team und das bisherige benachrichtigen", "Une intervention change de jour : prévenir son équipe et l’ancienne", "Et booket besøg skifter dag: giv holdet og det tidligere hold besked", "Výjezd mění den: dát vědět jeho četě i té původní", "زيارة محجوزة تغيّر يومها: أخبر طاقمها والطاقم الذي كانت له", "已排期的上门改了日期：通知其班组和原班组", "已排程的到訪改了日期：通知其班組和原班組");
+  moved.description = L(
+    "When a booked visit is moved onto today or tomorrow, its crew is told at once, also in their quiet hours. When one of today or tomorrow is moved past tomorrow, the crew it was for is told (the last of the day sheet's rules tells them).",
+    "Wird ein gebuchter Einsatz auf heute oder morgen verschoben, erfährt es sein Team sofort, auch in seinen Ruhezeiten. Wird einer von heute oder morgen über morgen hinaus verschoben, erfährt es das Team, das ihn hatte (die letzte Regel des Tagesplans sagt es ihm).",
+    "Quand une intervention réservée passe à aujourd’hui ou demain, son équipe est prévenue tout de suite, même pendant ses heures calmes. Quand une d’aujourd’hui ou de demain passe après demain, l’équipe qui l’avait est prévenue (la dernière règle de la feuille de journée la prévient).",
+    "Når et booket besøg flyttes til i dag eller i morgen, får holdet besked med det samme, også i de stille timer. Når et besøg i dag eller i morgen flyttes til efter i morgen, får holdet, der havde det, besked (dagsplanens sidste regel giver besked).",
+    "Když se zarezervovaný výjezd přesune na dnes nebo zítra, jeho četa se to hned dozví, i v klidových hodinách. Když se výjezd na dnes nebo zítra přesune až za zítřek, dozví se to četa, která jej měla (řekne jí to poslední pravidlo denního listu).",
+    "عند نقل زيارة محجوزة إلى اليوم أو الغد، يُبلَّغ طاقمها فورًا، حتى في ساعات الهدوء. وعند نقل زيارة لليوم أو الغد إلى ما بعد الغد، يُبلَّغ الطاقم الذي كانت له (تُبلغه آخر قواعد ورقة اليوم).",
+    "已排期的上门改到今天或明天时，立即通知其班组，免打扰时段也照常。今天或明天的上门改到明天以后时，通知原来负责的班组（由当日工单的最后一条规则通知）。",
+    "已排程的到訪改到今天或明天時，立即通知其班組，勿擾時段也照常。今天或明天的到訪改到明天以後時，通知原來負責的班組（由當日工單的最後一條規則通知）。",
+  );
+  moved.trigger = { kind: "record", event: "updated", table: "job_visits", changedColumn: "day", when: [BOOKED] };
+  moved.graph = {
+    version: 1,
+    nodes: [
+      trigger("A booked visit moves to another day"),
+      tellIfSoon(tell),
+      keepWas,
+      wasSoon,
+      wasCrew,
+      { id: "now-later", kind: "condition", title: L("…and now it is past tomorrow", "…und jetzt liegt er nach morgen", "…et elle est maintenant après demain", "…og nu ligger det efter i morgen", "…a teď je až za zítřkem", "…وصارت الآن بعد الغد", "……而现在在明天以后", "……而現在在明天以後"), condition: { left: { field: "day" }, op: "more_than_ahead", right: TODAY_OR_TOMORROW } },
+      notNoted,
+      write("day", fromWas),
+    ],
+  };
+}
+{
+  const given = must(manifest.automations.find((one) => one.key === "day-sheet-crew"), "rule day-sheet-crew");
+  const tell = tellOf(given);
+  given.name = L("A booked visit goes to another crew: tell that crew, and the crew it left", "Gebuchter Einsatz geht an ein anderes Team: dieses und das bisherige benachrichtigen", "Une intervention passe à une autre équipe : prévenir celle-ci et l’ancienne", "Et booket besøg går til et andet hold: giv det og det tidligere hold besked", "Výjezd přechází na jinou četu: dát vědět jí i té původní", "زيارة محجوزة تنتقل إلى طاقم آخر: أخبره وأخبر الطاقم السابق", "已排期的上门换了班组：通知新班组和原班组", "已排程的到訪換了班組：通知新班組和原班組");
+  given.description = L(
+    "When a visit booked for today or tomorrow is given to another crew, the crew it is now for is told at once, also in their quiet hours, and the crew it was for is told too (the last of the day sheet's rules tells them).",
+    "Geht ein Einsatz für heute oder morgen an ein anderes Team, erfährt es das neue Team sofort, auch in seinen Ruhezeiten, und das bisherige Team ebenso (die letzte Regel des Tagesplans sagt es ihm).",
+    "Quand une intervention prévue aujourd’hui ou demain passe à une autre équipe, la nouvelle équipe est prévenue tout de suite, même pendant ses heures calmes, et l’ancienne aussi (la dernière règle de la feuille de journée la prévient).",
+    "Når et besøg booket i dag eller i morgen gives til et andet hold, får det nye hold besked med det samme, også i de stille timer, og det tidligere hold også (dagsplanens sidste regel giver besked).",
+    "Když výjezd na dnes nebo zítra přejde na jinou četu, nová četa se to hned dozví, i v klidových hodinách, a původní četa také (řekne jí to poslední pravidlo denního listu).",
+    "عند إسناد زيارة محجوزة اليوم أو غدًا إلى طاقم آخر، يُبلَّغ الطاقم الجديد فورًا، حتى في ساعات الهدوء، ويُبلَّغ الطاقم السابق كذلك (تُبلغه آخر قواعد ورقة اليوم).",
+    "今天或明天已排期的上门交给另一个班组时，立即通知新班组，免打扰时段也照常；原班组也会收到通知（由当日工单的最后一条规则通知）。",
+    "今天或明天已排程的到訪交給另一個班組時，立即通知新班組，勿擾時段也照常；原班組也會收到通知（由當日工單的最後一條規則通知）。",
+  );
+  given.trigger = { kind: "record", event: "updated", table: "job_visits", changedColumn: "crew_id", when: [BOOKED] };
+  given.graph = { version: 1, nodes: [trigger("A booked visit goes to another crew"), tellIfSoon(tell), keepWas, wasSoon, wasCrew, notNoted, write("crew", fromWas)] };
+}
 
 putRule(
   {
-    key: "day-sheet-left",
-    name: L("A visit leaves a crew’s today or tomorrow: note it for that crew", "Ein Einsatz fällt aus dem Heute oder Morgen eines Teams: für dieses Team notieren", "Une intervention quitte l’aujourd’hui ou le demain d’une équipe : la noter pour cette équipe", "Et besøg ryger ud af et holds i dag eller i morgen: notér det til holdet", "Výjezd vypadne z dneška nebo zítřka čety: zapsat to pro tu četu", "زيارة تخرج من يوم الطاقم اليوم أو غدًا: دوِّنها لذلك الطاقم", "上门离开班组的今天或明天：为该班组记下", "到訪離開班組的今天或明天：為該班組記下"),
+    key: "day-sheet-left-waiting",
+    name: L("A visit of today or tomorrow goes back to waiting: note it for its crew", "Einsatz von heute oder morgen wartet wieder: für sein Team notieren", "Une intervention d’aujourd’hui ou de demain repasse en attente : la noter pour son équipe", "Et besøg i dag eller i morgen venter igen: notér det til holdet", "Výjezd na dnes nebo zítra znovu čeká: zapsat to pro jeho četu", "زيارة اليوم أو غدًا تعود للانتظار: دوِّنها لطاقمها", "今天或明天的上门重新等待排期：为其班组记下", "今天或明天的到訪重新等待排程：為其班組記下"),
     description: L(
-      "When a visit booked for today or tomorrow goes back to waiting, is given to another crew or is moved past tomorrow, the crew it was for is told (the rule after the next tells them). The visit keeps the day, crew and state it had, as this rule read them.",
-      "Wartet ein für heute oder morgen gebuchter Einsatz wieder, geht er an ein anderes Team oder wird er über morgen hinaus verschoben, erfährt es das Team, das ihn hatte (die übernächste Regel sagt es ihm). Der Einsatz behält Tag, Team und Stand, wie diese Regel sie las.",
-      "Quand une intervention prévue aujourd’hui ou demain repasse en attente, passe à une autre équipe ou est déplacée après demain, l’équipe qui l’avait est prévenue (la règle d’après la suivante la prévient). L’intervention garde le jour, l’équipe et l’état qu’elle avait, tels que cette règle les a lus.",
-      "Når et besøg booket i dag eller i morgen igen venter, gives til et andet hold eller flyttes til efter i morgen, får holdet, der havde det, besked (reglen efter den næste giver besked). Besøget gemmer dagen, holdet og tilstanden, det havde, som denne regel læste dem.",
-      "Když výjezd zarezervovaný na dnes nebo zítra znovu čeká, přejde na jinou četu nebo se přesune až za zítřek, četa, která jej měla, se to dozví (řekne jí to pravidlo o dvě dál). Výjezd si ponechá den, četu a stav, jak je toto pravidlo přečetlo.",
-      "عند عودة زيارة محجوزة اليوم أو غدًا إلى الانتظار أو إسنادها إلى طاقم آخر أو نقلها إلى ما بعد الغد، يُبلَّغ الطاقم الذي كانت له (تُبلغه القاعدة التي بعد التالية). وتحتفظ الزيارة باليوم والطاقم والحالة كما قرأتها هذه القاعدة.",
-      "今天或明天已排期的上门重新等待、交给另一个班组或改到明天以后时，通知原来负责的班组（由再下一条规则通知）。上门会记下本规则读到的原日期、班组和状态。",
-      "今天或明天已排程的到訪重新等待、交給另一個班組或改到明天以後時，通知原來負責的班組（由再下一條規則通知）。到訪會記下本規則讀到的原日期、班組和狀態。",
+      "When a booked visit of today or tomorrow goes back to waiting for a day, its crew is told (the last of the day sheet's rules tells them).",
+      "Wartet ein gebuchter Einsatz von heute oder morgen wieder auf einen Tag, erfährt es sein Team (die letzte Regel des Tagesplans sagt es ihm).",
+      "Quand une intervention prévue aujourd’hui ou demain repasse en attente d’un jour, son équipe est prévenue (la dernière règle de la feuille de journée la prévient).",
+      "Når et booket besøg i dag eller i morgen igen venter på en dag, får holdet besked (dagsplanens sidste regel giver besked).",
+      "Když zarezervovaný výjezd na dnes nebo zítra znovu čeká na den, jeho četa se to dozví (řekne jí to poslední pravidlo denního listu).",
+      "عند عودة زيارة محجوزة اليوم أو غدًا إلى انتظار يوم، يُبلَّغ طاقمها (تُبلغه آخر قواعد ورقة اليوم).",
+      "今天或明天已排期的上门重新等待排期时，通知其班组（由当日工单的最后一条规则通知）。",
+      "今天或明天已排程的到訪重新等待排程時，通知其班組（由當日工單的最後一條規則通知）。",
     ),
     enabled: true,
     module: "jobs",
-    trigger: { kind: "record", event: "updated", table: "job_visits", changedColumn: "moved_at" },
-    graph: {
-      version: 1,
-      nodes: [
-        trigger("A visit's day, crew or state changes"),
-        {
-          id: "keep-was",
-          kind: "action",
-          title: L("Keep the day, crew and state the visit had", "Tag, Team und Stand festhalten, die der Einsatz hatte", "Garder le jour, l’équipe et l’état qu’avait l’intervention", "Gem dagen, holdet og tilstanden, besøget havde", "Uložit den, četu a stav, které výjezd měl", "احفظ اليوم والطاقم والحالة التي كانت للزيارة", "记下上门原来的日期、班组和状态", "記下到訪原來的日期、班組和狀態"),
-          action: { kind: "record.update", values: { was_day: "{{was.day}}", was_crew_id: "{{was.crew_id}}", was_state: "{{was.state}}", now_crew_id: "{{record.crew_id}}", leave_key: "{{record.id}}|{{record.moved_at}}" } },
-        },
-        { id: "was-booked", kind: "condition", title: L("It was booked", "Er war gebucht", "Elle était réservée", "Det var booket", "Byl zarezervován", "كانت محجوزة", "原已排期", "原已排程"), condition: { left: { field: "was_state" }, op: "is", right: "booked" } },
-        { id: "was-soon", kind: "condition", title: L("…for today or tomorrow", "…für heute oder morgen", "…pour aujourd’hui ou demain", "…til i dag eller i morgen", "…na dnes nebo zítra", "…لليوم أو الغد", "……在今天或明天", "……在今天或明天"), condition: { left: { field: "was_day" }, op: "within_next", right: TODAY_OR_TOMORROW } },
-        { id: "was-crew", kind: "condition", title: L("…for a crew", "…für ein Team", "…pour une équipe", "…til et hold", "…pro četu", "…لطاقم", "……有班组", "……有班組"), condition: { left: { field: "was_crew_id" }, op: "not_empty" } },
-        // A change heard twice is noted once: the note keeps the visit and the moment of the change it is about.
-        { id: "not-noted", kind: "condition", title: L("…and this change is not noted yet", "…und diese Änderung ist noch nicht notiert", "…et ce changement n’est pas encore noté", "…og ændringen er ikke noteret endnu", "…a tato změna ještě není zapsána", "…ولم يُدوَّن هذا التغيير بعد", "……且这次更改尚未记下", "……且這次變更尚未記下"), condition: { left: { count: { table: "left_visits", matchColumn: "leave_key", equalsField: "leave_key" } }, op: "is", right: 0 } },
-        leftIf("waiting", L("Back to waiting for a day?", "Wartet wieder auf einen Tag?", "De nouveau en attente d’un jour ?", "Venter igen på en dag?", "Znovu čeká na den?", "عادت لانتظار يوم؟", "重新等待排期了吗？", "重新等待排程了嗎？"), { left: { field: "state" }, op: "is", right: "waiting" }),
-        leftIf("crew", L("Given to another crew?", "An ein anderes Team gegeben?", "Confiée à une autre équipe ?", "Givet til et andet hold?", "Předán jiné četě?", "أُسندت إلى طاقم آخر؟", "交给另一个班组了吗？", "交給另一個班組了嗎？"), { left: { field: "crew_moved" }, op: "is", right: 1 }),
-        leftIf("day", L("Moved past tomorrow?", "Über morgen hinaus verschoben?", "Déplacée après demain ?", "Flyttet til efter i morgen?", "Přesunut až za zítřek?", "نُقلت إلى ما بعد الغد؟", "改到明天以后了吗？", "改到明天以後了嗎？"), { left: { field: "day" }, op: "more_than_ahead", right: TODAY_OR_TOMORROW }),
-      ],
-    },
+    // Waiting is reached from booked only (`states.moves`): a visit that goes back to waiting was booked.
+    trigger: { kind: "record", event: "updated", table: "job_visits", changedColumn: "state", when: [{ left: { field: "state" }, op: "is", right: "waiting" }] },
+    graph: { version: 1, nodes: [trigger("A booked visit goes back to waiting"), keepWas, wasSoon, wasCrew, notNoted, write("waiting", fromWas)] },
   },
   "day-sheet-moved",
 );
@@ -370,10 +405,10 @@ putRule(
     ),
     enabled: true,
     module: "jobs",
-    trigger: { kind: "record", event: "deleted", table: "job_visits", when: [{ left: { field: "state" }, op: "is", right: "booked" }, { left: { field: "day" }, op: "within_next", right: TODAY_OR_TOMORROW }, { left: { field: "crew_id" }, op: "not_empty" }] },
-    graph: { version: 1, nodes: [trigger("A booked visit of today or tomorrow is removed"), write("write", "removed", { crew_id: "{{record.crew_id}}", day: "{{record.day}}" })] },
+    trigger: { kind: "record", event: "deleted", table: "job_visits", when: [BOOKED, { left: { field: "day" }, op: "within_next", right: TODAY_OR_TOMORROW }, { left: { field: "crew_id" }, op: "not_empty" }] },
+    graph: { version: 1, nodes: [trigger("A booked visit of today or tomorrow is removed"), write("removed", { crew_id: "{{record.crew_id}}", day: "{{record.day}}" })] },
   },
-  "day-sheet-left",
+  "day-sheet-left-waiting",
 );
 
 /** The notice of one way a visit leaves a crew's day, as a branch of the rule that tells the crew. */

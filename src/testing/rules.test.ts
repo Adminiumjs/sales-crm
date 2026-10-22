@@ -75,7 +75,7 @@ describe("the rules the app ships", () => {
   // Jobs on site tells a crew at once that today's or tomorrow's sheet changed (e-mail 10). It arrives with its part, which an
   // update brings switched off; the rule is on, so the day the owner switches the part on the crew is told.
   // A crew the visit LEFT is told too (plan 68 D17): two rules note it for that crew, one tells them.
-  const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left", "day-sheet-left-removed", "day-sheet-left-told"];
+  const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told"];
   // After the job books the aftercare call a signed-off job is owed (rule 16): on, as its part brings it.
   const AFTER = ["aftercare-call"];
   // A customer's yes on a lost deal tells its owner (plan 68 R1a): it tells people, and ships on (D2).

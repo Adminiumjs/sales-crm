@@ -270,11 +270,6 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await s.change('ada', 'job_visits', near, { day: day(1) }))).toBe('ok');
       await settle();
 
-      {
-        const runs = await s.meta.db.selectFrom('adminium_automation_runs' as never).selectAll().execute() as Record<string, unknown>[];
-        console.log('DEBUG runs', JSON.stringify(runs.map((run) => ({ id: run['id'], rule: run['automation_id'], status: run['status'], created: run['created_at'], started: run['started_at'], ev: run['trigger_event'] })).filter((run) => JSON.stringify(run.ev).includes('job_visits')).slice(-14)));
-        console.log('DEBUG left', JSON.stringify(await s.rows(`select * from ${s.t('left_visits')} order by id`)));
-      }
       expect(await told('yusuf')).toEqual(['A visit is no longer yours: Cupboards given', 'A visit left your day sheet: Cupboards moved', 'Your day sheet changed: Cupboards near']);
       expect(await told('rina')).toEqual(['A visit is now yours: Cupboards given', 'A visit is off your day sheet: Cupboards waiting', 'A visit was called off: Cupboards called off']);
       for (const who of ['ada', 'tessa', 'dana', 'grace']) expect(await told(who), who).toEqual([]);

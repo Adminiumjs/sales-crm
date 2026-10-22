@@ -232,11 +232,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       // What a rule last read of the visit's day, crew and state, and when they last changed (plan 68 D17).
       "was_day",
       "was_crew_id",
-      "was_state",
-      "moved_at",
-      "now_crew_id",
       "leave_key",
-      "crew_moved",
       "site_address",
       "site_town",
       "site_phone",
