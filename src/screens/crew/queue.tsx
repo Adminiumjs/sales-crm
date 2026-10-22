@@ -181,16 +181,21 @@ export function useLatest(match: (line: QueueLine) => boolean, states?: QueueLin
   return latest(lines, match, states);
 }
 
-/** People's names, by id: read once a page, for "raised by" and "on whose phone". */
+/** People's names, by id: read once a session (every part that says "raised by" shares the one read). */
+const namesOf = new WeakMap<StaffSession, Promise<Record<string, string>>>();
 export function usePeopleNames(): Record<string, string> {
   const session = useSession();
   const [names, setNames] = useState<Record<string, string>>({});
   useEffect(() => {
     let gone = false;
-    session
-      .people(undefined, 200)
-      .then((people) => !gone && setNames(Object.fromEntries(people.map((person) => [person.id, person.name]))))
-      .catch(() => undefined);
+    let asked = namesOf.get(session);
+    if (asked === undefined) {
+      asked = session.people(undefined, 200).then((people) => Object.fromEntries(people.map((person) => [person.id, person.name])));
+      // A read that did not arrive is asked again by the next part that needs it.
+      asked.catch(() => namesOf.delete(session));
+      namesOf.set(session, asked);
+    }
+    asked.then((found) => !gone && setNames(found)).catch(() => undefined);
     return () => {
       gone = true;
     };

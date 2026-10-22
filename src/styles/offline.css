@@ -308,3 +308,14 @@
 .crm-q-office-words p {
   margin: 0;
 }
+
+/* ── My vehicle: a reading below the last one, said and still savable ───── */
+.crm-field-note[data-tone="warn"] {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 12.5px;
+  line-height: 1.5;
+}

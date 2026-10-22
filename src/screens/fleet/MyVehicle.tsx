@@ -355,7 +355,9 @@ function FillPart({ vehicle, last, unit, onChanged }: { vehicle: Vehicle; last: 
   const reading = highestReading(vehicle.reading ?? vehicle.odometer, keptFills);
   const read = useMemo(() => ({ litres: f.readAmount(litres), cost: f.readAmount(cost), odometer: f.readAmount(odometer) }), [f, litres, cost, odometer]);
   const below = read.odometer !== null && reading !== null && read.odometer < num(reading);
-  const ready = read.litres !== null && read.cost !== null && read.odometer !== null && Number.isInteger(read.odometer) && !below;
+  // A reading below the last one is said, and may still be saved (the design's fill; with no signal the phone may not
+  // know the newest reading).
+  const ready = read.litres !== null && read.cost !== null && read.odometer !== null && Number.isInteger(read.odometer);
   const currency = session.config.currency;
 
   const go = async (): Promise<void> => {
@@ -412,8 +414,8 @@ function FillPart({ vehicle, last, unit, onChanged }: { vehicle: Vehicle; last: 
             </label>
             <input id="crm-fl-my-odo" className="crm-input crm-mono mr-fld" inputMode="numeric" value={odometer} disabled={busy} aria-describedby={below ? "crm-fl-my-below" : undefined} onChange={(event) => setOdometer(event.target.value)} />
             {below && reading !== null && (
-              <p id="crm-fl-my-below" className="crm-field-note" data-tone="danger" role="status">
-                {t("fl.my.fill.below", { reading: `${distanceOf(f, num(reading))} ${unit.short}` })}
+              <p id="crm-fl-my-below" className="crm-field-note" data-tone="warn" role="status">
+                <strong>{t("fl.my.fill.below")}</strong> {t("offline.van.lastReading", { reading: `${distanceOf(f, num(reading))} ${unit.short}` })}
               </p>
             )}
           </div>

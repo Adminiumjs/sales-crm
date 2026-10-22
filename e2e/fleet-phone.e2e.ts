@@ -154,8 +154,9 @@ test("My vehicle: his crew's van only, from My day and his menu; the check befor
     await fill.getByLabel("Litres").fill("35.5");
     await fill.getByLabel("What it cost (GBP)").fill("51.80");
     await fill.getByLabel("Odometer (km)").fill("118,300");
-    await expect(fill.getByText("That is less than the vehicle’s last reading, 118,420 km.")).toBeVisible();
-    await expect(fill.getByTestId("fl-my-fill-go")).toBeDisabled();
+    // Said, and still to be saved (the design's fill, plan 68 S19).
+    await expect(fill.locator("#crm-fl-my-below")).toHaveText("That is less than the vehicle’s last reading Last reading 118,420 km. Check it; you can still save it.");
+    await expect(fill.getByTestId("fl-my-fill-go")).toBeEnabled();
     await fill.getByLabel("Odometer (km)").fill("118,650");
     const sent: { key: string; replayed: boolean | null }[] = [];
     let dropped = false;

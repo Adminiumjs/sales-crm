@@ -460,6 +460,16 @@ export const offline = /*#__PURE__*/ tables({
     "在這支手機上建立，{time}：{litres} 公升，讀數 {reading}。",
     "أُنشئ على هذا الهاتف، {time}: {litres} لتر، القراءة {reading}.",
   ],
+  "offline.van.lastReading": [
+    "Last reading {reading}. Check it; you can still save it.",
+    "Letzter Stand {reading}. Prüfen Sie ihn; speichern können Sie trotzdem.",
+    "Dernier relevé {reading}. Vérifiez-le ; vous pouvez quand même enregistrer.",
+    "Seneste aflæsning {reading}. Tjek den; du kan stadig gemme.",
+    "Poslední stav {reading}. Zkontrolujte ho; uložit můžete i tak.",
+    "上次读数 {reading}。请核对；仍然可以保存。",
+    "上次讀數 {reading}。請核對；仍然可以儲存。",
+    "آخر قراءة {reading}. تحقّق منها؛ ما زال بإمكانك الحفظ.",
+  ],
   "offline.van.distanceLater": ["Distance when sent", "Strecke nach dem Senden", "Distance après l’envoi", "Afstand, når den er sendt", "Vzdálenost po odeslání", "发送后显示里程", "送出後顯示里程", "المسافة بعد الإرسال"],
 
   "offline.office.pill": ["Refused on arrival", "Beim Eingang abgelehnt", "Refusée à l’arrivée", "Afvist ved ankomst", "Odmítnuto po doručení", "送达时被拒", "送達時被拒", "رُفض عند الوصول"],
