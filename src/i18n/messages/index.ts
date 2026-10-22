@@ -37,6 +37,7 @@ import { jobs } from "../strings/jobs.ts";
 import { crew } from "../strings/crew.ts";
 import { hours } from "../strings/hours.ts";
 import { fleet } from "../strings/fleet.ts";
+import { offline } from "../strings/offline.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
 
 /**
@@ -78,6 +79,7 @@ const AREAS = [
   crew satisfies Area<(typeof crew)["en-US"]>,
   hours satisfies Area<(typeof hours)["en-US"]>,
   fleet satisfies Area<(typeof fleet)["en-US"]>,
+  offline satisfies Area<(typeof offline)["en-US"]>,
 ] as const;
 
 /**
@@ -118,4 +120,5 @@ export type MessageKey =
   | keyof (typeof jobs)["en-US"]
   | keyof (typeof crew)["en-US"]
   | keyof (typeof hours)["en-US"]
-  | keyof (typeof fleet)["en-US"];
+  | keyof (typeof fleet)["en-US"]
+  | keyof (typeof offline)["en-US"];

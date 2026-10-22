@@ -1,0 +1,310 @@
+/*
+ * The crew's offline queue (plan 68 S19, `Meridian Sales Offline Queue`): the
+ * pill in the bar, the chip beside what waits, the row on My day, the list
+ * sheet and a line opened, and the office's refused sign-off.
+ */
+
+/* ── the pill in the bar ─────────────────────────────────────────────────── */
+.crm-q-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 32px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.crm-q-pill[data-tone="danger"] {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.crm-q-pill-n {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-q-pill[data-tone="danger"] .crm-q-pill-n {
+  color: var(--danger);
+}
+
+/* ── the chip beside what waits ──────────────────────────────────────────── */
+.crm-q-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.crm-q-chip[data-tone="info"] {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+/* ── the row on My day ───────────────────────────────────────────────────── */
+.crm-q-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  inline-size: 100%;
+  margin-block-start: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.crm-q-row[data-tone="danger"] {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+.crm-q-row[data-tone="danger"] > svg:first-child {
+  color: var(--danger);
+}
+.crm-q-row-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.crm-q-row-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-q-row-sub {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.crm-q-row[data-tone="danger"] .crm-q-row-sub {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ── the list: a sheet from the bottom ───────────────────────────────────── */
+.crm-scrim[data-shape="sheet"]:has(> .crm-sheet[data-dialog="queue"]) {
+  justify-content: center;
+  align-items: flex-end;
+}
+.crm-sheet[data-dialog="queue"] {
+  inline-size: min(560px, 100%);
+  max-block-size: 88vh;
+  border: 1px solid var(--border);
+  border-block-end: 0;
+  border-radius: 22px 22px 0 0;
+}
+.crm-q-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-q-line-btn {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  inline-size: 100%;
+  padding: 11px 12px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.crm-q-line[data-state="refused"] .crm-q-line-btn {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+/* A sent line is greyed with a colour that keeps 4.5:1, never by opacity (M1 §6 b 4). */
+.crm-q-line[data-state="sent"] .crm-q-line-btn {
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+}
+.crm-q-num {
+  inline-size: 26px;
+  block-size: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--surface-3);
+  font-size: 12px;
+  font-weight: 700;
+}
+.crm-q-line[data-state="refused"] .crm-q-num {
+  background: var(--danger);
+  color: #fff;
+}
+.crm-q-line-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.crm-q-line-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.crm-q-line-meta {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-q-line[data-state="sent"] .crm-q-line-meta {
+  color: var(--fg-subtle);
+}
+.crm-q-line .crm-pill[data-tone="danger"] {
+  background: var(--danger);
+  color: #fff;
+}
+.crm-q-foot {
+  margin-block-start: 12px;
+}
+.crm-q-open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.crm-q-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  inline-size: 100%;
+  margin: 0;
+}
+.crm-q-facts dt {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-q-facts dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+.crm-q-h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+.crm-q-holds {
+  margin: 0;
+  padding-inline-start: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.crm-q-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.crm-q-photo {
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--surface-3);
+}
+.crm-q-photo-none {
+  display: inline-block;
+}
+.crm-q-remove {
+  color: var(--danger);
+}
+
+/* ── a refusal where a screen shows it ───────────────────────────────────── */
+.crm-q-refused {
+  inline-size: 100%;
+  font-weight: 600;
+}
+.crm-q-refused-words {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.crm-q-refused-words p {
+  margin: 0;
+}
+
+/* ── a sign-off kept on the phone ────────────────────────────────────────── */
+.crm-q-signed-box {
+  margin-block-start: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-3);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.crm-q-held {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 8px;
+}
+.crm-q-held-one {
+  position: relative;
+}
+.crm-q-held-out {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 4px;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+/* ── the office's refused sign-off ───────────────────────────────────────── */
+.crm-q-office {
+  display: flex;
+  gap: 10px;
+  margin-block-start: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--danger);
+  background: var(--danger-soft);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.crm-q-office > svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+  color: var(--danger);
+}
+.crm-q-office-words {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.crm-q-office-words p {
+  margin: 0;
+}

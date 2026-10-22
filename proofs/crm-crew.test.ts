@@ -265,6 +265,88 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.make('yusuf', 'job_visits', { job_id: at.blueJob, kind: 'drop', what: 'More', hours: 1, crew_size: 1 })).statusCode).toBe(403);
     });
 
+    it("lets his phone write down a sign-off refused on arrival, for his crew's visit and a snag that stops that job alone, once a key; read as sign-offs are, changed by nobody (plan 68 S19)", async () => {
+      const { job } = await wonJob('Floor boxes for bay 3');
+      expect(said(await s.change('ada', 'jobs', job, { site_name: 'Tandem Robotics' }))).toBe('ok');
+      const visitId = await visit(job, 'Test-floor workbenches: return visit', 'blue', 'return');
+      const before = Date.now();
+      const stopper = made(await s.make('ada', 'snags', { visit_id: visitId, text: 'Floor boxes not fixed down in bay 3', stops_sign_off: true, raised_by_id: s.ids['ada'] }));
+      const snagRow = (await s.rows(`select raised_at, raised_on from crm_snags where id = ${String(stopper)}`))[0]!;
+      // The moment a snag is raised is stamped with it.
+      expect(new Date(String(snagRow['raised_at'] instanceof Date ? (snagRow['raised_at'] as Date).toISOString() : snagRow['raised_at'])).getTime()).toBeGreaterThanOrEqual(before - 5_000);
+      const fine = made(await s.make('ada', 'snags', { visit_id: visitId, text: 'A drawer runner sticks', stops_sign_off: false }));
+      const signedAt = new Date(Date.now() - 39 * 60_000).toISOString();
+      const key = 'CrewProofRefusedKey0000000000000001';
+      const record = { visit_id: visitId, signer_name: 'Yusuf Demir', signed_at: signedAt, snag_id: stopper };
+      // His crew's sign-off is refused while the snag stops it: the phone writes down that it was, with a key of its own.
+      expect((await s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: visitId, ...CHECKS, signer_name: 'Yusuf Demir' }, clientKey: 'CrewProofRefusedSignOff0000000001' })).statusCode).toBe(422);
+      const first = await s.send('yusuf', 'POST', url('refused_sign_offs'), { values: record, clientKey: key });
+      const id = made(first);
+      const row = (first.json() as { data: Record<string, unknown> }).data;
+      // The server fills in the rest: the job, the crew and the site from the visit; who sent it and when it reached us;
+      // the snag's words, who raised it and when, from the snag as it is now.
+      expect([Number(row['job_id']), Number(row['crew_id']), row['site_name'], row['by_id'], row['snag_text'], row['snag_by_id']]).toEqual([job, crew['blue'], 'Tandem Robotics', s.ids['yusuf'], 'Floor boxes not fixed down in bay 3', s.ids['ada']]);
+      expect(new Date(String(row['reached_at'])).getTime()).toBeGreaterThanOrEqual(before - 5_000);
+      // As the phone said it (MySQL keeps whole seconds).
+      expect(Math.abs(new Date(String(row['signed_at'])).getTime() - new Date(signedAt).getTime())).toBeLessThan(1_000);
+      expect(row['snag_raised_at']).not.toBeNull();
+      expect(String(row['snag_raised_on']).slice(0, 10)).toBe(String(snagRow['raised_on'] instanceof Date ? (snagRow['raised_on'] as Date).toISOString() : snagRow['raised_on']).slice(0, 10));
+      // Sent again with the same key (an answer lost on its way): the same row, one record.
+      const again = await s.send('yusuf', 'POST', url('refused_sign_offs'), { values: record, clientKey: key });
+      expect(again.statusCode, again.body).toBeLessThan(300);
+      expect([Number((again.json() as { data: { id: number } }).data.id), (again.json() as { replayed?: boolean }).replayed]).toEqual([id, true]);
+      expect(await s.rows(`select id from crm_refused_sign_offs where job_id = ${String(job)}`)).toHaveLength(1);
+
+      // Read as sign-offs are: his crew, the office, the rep whose deal it is; never another crew.
+      for (const who of ['yusuf', 'cal', 'ada', 'dana', 'tessa']) expect((await one(who, 'refused_sign_offs', id)).statusCode, who).toBe(200);
+      expect((await one('rina', 'refused_sign_offs', id)).statusCode).toBe(404);
+      expect(await ids('rina', 'refused_sign_offs')).toEqual([]);
+
+      // Nobody forges one for another crew's job, nor for a snag that does not stop this job's sign-off now.
+      const red = await wonJob('Warehouse desks, second bay');
+      const redVisit = await visit(red.job, 'Warehouse desks, second bay', 'red');
+      const redStopper = made(await s.make('ada', 'snags', { visit_id: redVisit, text: 'Desk legs missing', stops_sign_off: true }));
+      // A stopper of another of his own crew's jobs: his to read, and still not this job's.
+      const other = await wonJob('Studio shelving, top floor');
+      const otherVisit = await visit(other.job, 'Studio shelving, top floor', 'blue');
+      const otherStopper = made(await s.make('ada', 'snags', { visit_id: otherVisit, text: 'Shelf brackets missing', stops_sign_off: true }));
+      expect((await one('yusuf', 'snags', otherStopper)).statusCode).toBe(200);
+      const tries: [string, Record<string, unknown>, number][] = [
+        // Rina, of the Red crew, for Blue's visit; Yusuf for Red's: a visit out of reach is one that is not there.
+        ['rina', record, 409],
+        ['yusuf', { ...record, visit_id: redVisit, snag_id: redStopper }, 409],
+        // His own visit, naming a snag that does not stop it, or another job's stopper: a snag no record may name is one
+        // that is not there for it.
+        ['yusuf', { ...record, snag_id: fine }, 409],
+        ['yusuf', { ...record, snag_id: redStopper }, 409],
+        ['yusuf', { ...record, snag_id: otherStopper }, 409],
+        // What the server fills in is not his to write.
+        ['yusuf', { ...record, job_id: red.job }, 403],
+        ['yusuf', { ...record, by_id: s.ids['cal'] }, 403],
+        ['yusuf', { ...record, reached_at: signedAt }, 403],
+        ['yusuf', { ...record, snag_text: 'Something else' }, 403],
+      ];
+      for (const [i, [who, values, status]] of tries.entries()) {
+        const res = await s.send(who, 'POST', url('refused_sign_offs'), { values, clientKey: `CrewProofForged${String(i).padStart(19, '0')}` });
+        expect(res.statusCode, `${who} ${JSON.stringify(values)}: ${res.body}`).toBe(status);
+      }
+      // Nor the office: it reads one, and writes none.
+      expect((await s.send('ada', 'POST', url('refused_sign_offs'), { values: record, clientKey: 'CrewProofRefusedByAda00000000001' })).statusCode).toBe(403);
+      // Once the snag is put right it stops nothing, and no record names it any more.
+      expect(said(await act('ada', 'snags', stopper, 'put-right', 'open', { put_right_note: 'Fixed down' }))).toBe('ok');
+      expect((await s.send('yusuf', 'POST', url('refused_sign_offs'), { values: record, clientKey: 'CrewProofRefusedKey0000000000000002' })).statusCode).toBe(409);
+      expect(await s.rows(`select id from crm_refused_sign_offs`)).toHaveLength(1);
+      // Nobody changes or removes it: not his crew, not the office.
+      for (const who of ['yusuf', 'cal', 'ada']) {
+        expect((await s.change(who, 'refused_sign_offs', id, { signer_name: 'Somebody else' })).statusCode, who).toBeGreaterThanOrEqual(403);
+        expect((await s.send(who, 'DELETE', url('refused_sign_offs', `/${String(id)}?confirm=true`))).statusCode, who).toBeGreaterThanOrEqual(403);
+      }
+      // The operations manager is told, in the bell, once; the crew and the rep are not.
+      await jobs();
+      const told = async (who: string): Promise<number> => ((await s.get(who, '/api/v1/me/notifications?limit=100')).json() as { data: { items: { title: string }[] } }).data.items.filter((item) => item.title === 'A sign-off was refused on arrival: Tandem Robotics').length;
+      expect([await told('ada'), await told('yusuf'), await told('dana')]).toEqual([1, 0, 0]);
+    });
+
     it("lets him raise and put right his crew's snags only, with the photo of it put right", async () => {
       const photo = await upload('yusuf', 'snags', 'photo');
       const snag = made(await s.send('yusuf', 'POST', url('snags'), { values: { visit_id: at.blueVisit, text: 'A scuffed panel', stops_sign_off: false, raised_by_id: s.ids['yusuf'], photo }, clientKey: 'CrewProofSnagKey000000000000000001' }));

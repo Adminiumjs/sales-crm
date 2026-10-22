@@ -7,6 +7,12 @@
  * his crew's snags: a snag on another crew's visit is not his to read or put
  * right (`proofs/crm-crew.test.ts`).
  *
+ * With no signal a put-right is kept on the phone, photo and all, and sent
+ * when the signal is back (plan 68 S19): the snag reads "Put right" with
+ * "Waiting to send" meanwhile, and keeps its place. One refused on arrival
+ * (somebody put it right first) says who and when. A snag raised on the phone
+ * and not yet sent is listed first, as new.
+ *
  * Address: `my-snags`.
  */
 import { useCallback, useState } from "react";
@@ -18,11 +24,13 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
-import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { useToasts } from "../../ui/toast.tsx";
+import { latest } from "../../offlineQueue.ts";
 import { useJobsScreen } from "../jobs/parts.tsx";
-import { dayKeyOf, discardFiles, fileSrc, isLive, putRight, readSnagCounts, readSnags, truthy, type CrewSnag, type CrewVisit, type SnagState } from "./data.ts";
+import { dayKeyOf, fileSrc, isLive, putRightLine, readSnagCounts, readSnags, truthy, type CrewSnag, type CrewVisit, type SnagState } from "./data.ts";
 import { PhotoField } from "./FileParts.tsx";
-import { NoConnection, useConnection, type Connection } from "./Offline.tsx";
+import { RefusedBox, SignalLine, useReadAgainOnSignal, useSave, WaitChip } from "./Offline.tsx";
+import { useQueue, useQueueLines } from "./queue.tsx";
 
 interface SnagData {
   snags: CrewSnag[];
@@ -36,7 +44,7 @@ const STATES: readonly SnagState[] = ["open", "waiting-part", "put-right"];
 export function MySnags(_props: ScreenProps) {
   const t = useT();
   const { session, f, today, tick } = useJobsScreen();
-  const conn = useConnection();
+  const { lines } = useQueueLines();
   const { load, reload } = useLoad<SnagData>(async () => {
     const [snags, counts] = await Promise.all([readSnags(session), readSnagCounts(session)]);
     const ids = [...new Set(snags.map((snag) => snag.visit_id).filter((id): id is number => id !== null))];
@@ -50,6 +58,9 @@ export function MySnags(_props: ScreenProps) {
     }, [tick, reload]),
   );
   useLive(["snags"], again);
+  useReadAgainOnSignal(load.state === "failed", reload);
+  const fixLine = (snag: Pick<CrewSnag, "id">) => latest(lines, (line) => line.kind === "put-right" && line.meta["snag"] === snag.id);
+  const newSnags = lines.filter((line) => line.kind === "snag" && (line.state === "waiting" || line.state === "sending"));
   const [fixing, setFixing] = useState<CrewSnag | null>(null);
   const canFix = session.can("snags", "update");
 
@@ -57,18 +68,7 @@ export function MySnags(_props: ScreenProps) {
     <div className="crm-cw mr-screen" data-screen="mysnags">
       <h1 className="crm-cw-title">{t("cw.snags.title")}</h1>
       <p className="crm-cw-quiet">{t("cw.snags.sub")}</p>
-      {(conn.down || load.state === "failed") && (
-        <NoConnection
-          tried={conn.tried}
-          busy={conn.busy}
-          onRetry={() => {
-            if (load.state === "failed") {
-              conn.back();
-              reload();
-            } else conn.retry();
-          }}
-        />
-      )}
+      <SignalLine failed={load.state === "failed"} />
       <Loaded load={load} reload={reload} skeleton={<Skeleton rows={3} height={120} />}>
         {(data) => (
           <>
@@ -82,7 +82,31 @@ export function MySnags(_props: ScreenProps) {
                 </div>
               ))}
             </div>
-            {data.snags.length === 0 ? (
+            {newSnags.length > 0 && (
+              <div className="crm-cw-snags" data-testid="cw-new-snags">
+                {newSnags.map((line) => (
+                  <article key={line.id} className="crm-cw-snag mr-card" data-line={line.id} data-state="new">
+                    <div className="crm-cw-snag-words">
+                      <div className="crm-cw-snag-pills">
+                        <span className="crm-pill" data-tone="danger">
+                          <Icon name="circle-dot" size={12} />
+                          {t("offline.snag.new")}
+                        </span>
+                        {line.meta["stops"] === true && (
+                          <span className="crm-pill" data-tone="danger">
+                            {t("cw.snag.stopsShort")}
+                          </span>
+                        )}
+                        <WaitChip line={line} />
+                      </div>
+                      <h2 dir="auto">{String(line.meta["text"] ?? "")}</h2>
+                      <div className="crm-cw-quiet">{String(line.meta["site"] ?? "")}</div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+            {data.snags.length === 0 && newSnags.length === 0 ? (
               <div className="crm-empty" data-testid="cw-snags-empty">
                 <span className="crm-empty-icon">
                   <Icon name="check-check" size={20} />
@@ -95,20 +119,24 @@ export function MySnags(_props: ScreenProps) {
                 {data.snags.map((snag) => {
                   const visit = snag.visit_id === null ? undefined : data.visits.get(snag.visit_id);
                   const due = dayKeyOf(snag.due_on);
-                  const live = isLive(snag);
+                  const kept = fixLine(snag);
+                  // Put right on this phone and not yet sent: it reads put right, and keeps its place.
+                  const waiting = kept !== undefined && kept.state !== "refused";
+                  const live = isLive(snag) && !waiting;
                   const late = live && due !== null && due < today;
                   const fixed = dayKeyOf(snag.put_right_on);
                   const photo = live ? snag.photo : (snag.put_right_photo ?? snag.photo);
                   return (
-                    <article key={snag.id} className="crm-cw-snag mr-card" data-snag={snag.id} data-state={snag.state}>
+                    <article key={snag.id} className="crm-cw-snag mr-card" data-snag={snag.id} data-state={waiting ? "put-right" : snag.state}>
                       <div className="crm-cw-snag-top">
                         {photo !== null ? <img className="crm-cw-thumb" src={fileSrc(photo)} alt={t(live ? "cw.snag.photoAlt" : "cw.snag.fixedAlt", { what: snag.text })} /> : <span className="crm-cw-thumb crm-cw-thumb-none" aria-hidden="true">{t("cw.snag.noPhoto")}</span>}
                         <div className="crm-cw-snag-words">
                           <div className="crm-cw-snag-pills">
                             <span className="crm-pill" data-tone={!live ? "pos" : snag.state === "open" ? "danger" : "warn"}>
                               <Icon name={!live ? "check" : snag.state === "open" ? "circle-dot" : "truck"} size={12} />
-                              {t(`jb.sg.state.${snag.state}`)}
+                              {t(`jb.sg.state.${waiting ? "put-right" : snag.state}`)}
                             </span>
+                            {waiting && <WaitChip line={kept} />}
                             {live && truthy(snag.stops_sign_off) && (
                               <span className="crm-pill" data-tone="danger">
                                 {t("cw.snag.stopsShort")}
@@ -125,8 +153,10 @@ export function MySnags(_props: ScreenProps) {
                             {!live ? t("cw.snag.fixedOn", { day: fixed === null ? "" : f.dayShort(noonOf(fixed)) }) : due === null ? "" : t(late ? "cw.snag.wasDue" : "cw.snag.due", { day: f.dayShort(noonOf(due)) })}
                           </div>
                           {snag.put_right_note !== null && snag.put_right_note !== "" && <p className="crm-cw-note">{snag.put_right_note}</p>}
+                          {waiting && <p className="crm-cw-note">{String(kept.meta["note"] ?? "")}</p>}
                         </div>
                       </div>
+                      {kept?.state === "refused" && <RefusedBox line={kept} />}
                       {live && canFix && (
                         <button type="button" className="crm-cw-bigbtn crm-cw-fixbtn mr-btn" onClick={() => setFixing(snag)}>
                           <Icon name="check" />
@@ -138,7 +168,7 @@ export function MySnags(_props: ScreenProps) {
                 })}
               </div>
             )}
-            {fixing !== null && <PutRight snag={fixing} site={fixing.visit_id === null ? null : (data.visits.get(fixing.visit_id)?.site_name ?? null)} conn={conn} onClose={() => setFixing(null)} onDone={again} />}
+            {fixing !== null && <PutRight snag={fixing} site={fixing.visit_id === null ? null : (data.visits.get(fixing.visit_id)?.site_name ?? null)} onClose={() => setFixing(null)} onDone={again} />}
           </>
         )}
       </Loaded>
@@ -147,43 +177,32 @@ export function MySnags(_props: ScreenProps) {
 }
 
 /** "Put right": what was done, in a line, and a photo of it put right; both asked (D6 Q6, on the phone). */
-function PutRight({ snag, site, conn, onClose, onDone }: { snag: CrewSnag; site: string | null; conn: Connection; onClose: () => void; onDone: () => void }) {
+function PutRight({ snag, site, onClose, onDone }: { snag: CrewSnag; site: string | null; onClose: () => void; onDone: () => void }) {
   const t = useT();
   const toasts = useToasts();
-  const { session } = useJobsScreen();
+  const queue = useQueue();
+  const save = useSave();
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [lost, setLost] = useState(false);
   const onPhotos = useCallback((ids: string[]) => setPhoto(ids[0] ?? null), []);
   const hint = sending ? t("cw.fix.sending") : photo === null && note.trim() === "" ? t("cw.fix.need.both") : photo === null ? t("cw.fix.need.photo") : note.trim() === "" ? t("cw.fix.need.note") : t("cw.fix.ready");
   const ready = photo !== null && note.trim() !== "" && !sending;
-  // A photo kept and never named by the snag is thrown away when the sheet is closed: nothing else would name it.
+  // A photo kept and never named by a put-right is thrown away when the sheet is closed: nothing else would name it.
   const close = (): void => {
-    if (photo !== null) void discardFiles(session, [photo]);
+    if (photo !== null) void queue.drop(photo);
     onClose();
   };
-  const save = async (): Promise<boolean> => {
-    if (!ready || busy || photo === null) return true;
+  const go = async (): Promise<void> => {
+    if (!ready || busy || photo === null) return;
     setBusy(true);
-    const sent = await putRight(session, snag, note, photo);
+    const done = await save(putRightLine(snag, site, note, photo));
     setBusy(false);
-    if (sent.state === "offline") {
-      setLost(true);
-      conn.lost(save);
-      return false;
-    }
-    setLost(false);
-    conn.back();
-    if (sent.state === "refused") {
-      toasts.show(t("ui.refused", { reason: reasonOf(sent.error, t) }), "danger", true);
-      return true;
-    }
-    toasts.show(t("cw.fix.done", { what: snag.text }), "pos");
+    if (done.state === "refused") return;
+    if (done.state === "sent") toasts.show(t("cw.fix.done", { what: snag.text }), "pos");
     onDone();
     onClose();
-    return true;
   };
   return (
     <Dialog
@@ -198,9 +217,9 @@ function PutRight({ snag, site, conn, onClose, onDone }: { snag: CrewSnag; site:
       foot={
         <>
           <span className="crm-cw-hint" role="status" aria-live="polite">
-            {lost ? t("cw.offline") : hint}
+            {hint}
           </span>
-          <button type="button" className="crm-btn crm-btn-primary crm-btn-40 mr-btn" disabled={!ready || busy} onClick={() => void save()}>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-40 mr-btn" disabled={!ready || busy} onClick={() => void go()}>
             <Icon name="check" />
             {busy ? t("ui.saving") : t("cw.fix.go")}
           </button>

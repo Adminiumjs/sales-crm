@@ -13,20 +13,22 @@
  * WHO COUNTS. The server: a day's visits and hours, a snag list's counts. The
  * browser puts a visit under its day and reads a visit's own four ticks.
  *
- * ONLINE ONLY (ruling Q1). Nothing is kept on the phone. A save that cannot
- * be sent says so, and what was typed stays on the screen: the same press,
- * with the same retry key, sends it again once the line is back.
+ * KEPT ON THE PHONE WITH NO SIGNAL (plan 68 S19, replacing ruling Q1's
+ * online-only phone). Each save is a line of the offline queue
+ * (`queue.tsx`): sent at once with signal, else kept with its retry key and
+ * its files and sent in order when the signal is back.
  *
- * SIGNING A JOB OFF IS ONE RECORD. The signature pad and the photo field send
- * their files as the person keeps each (`FileParts.tsx`); then ONE create of
- * the sign-off, with a retry key, names the five checks, the signer's name,
- * the signature and the photos. A lost reply is sent again with the same key
- * and the server answers the row the first one made. Refused, the files are
- * thrown away; a file the server says a record holds (`409 FILE_HELD`) means
- * the record WAS made, and it is read back.
+ * SIGNING A JOB OFF IS ONE RECORD. The signature pad and the photo field keep
+ * their files on the phone (`FileParts.tsx`); the sign-off is ONE create,
+ * with a retry key, naming the five checks, the signer's name, the signature
+ * and the photos, each file sent first, once. A lost reply is sent again with
+ * the same key and the server answers the row the first one made; a file the
+ * server says a record holds (`409 FILE_HELD`) means the record WAS made, and
+ * it is read back by its key (`offlineQueue.ts`).
  */
 import { addDays, weekOf, type Formatters } from "../../lib/format.ts";
-import { LostReply, StaffError, type Condition, type Grouped, type Row, type Saved, type StaffSession } from "../../staffSession.ts";
+import type { NewLine } from "../../offlineQueue.ts";
+import type { Condition, Grouped, Row, StaffSession } from "../../staffSession.ts";
 import { CHECKS, dayKeyOf, num, truthy, type CrewFacts, type Moved, type SignOff, type Snag, type SnagState, type Tick, type Visit } from "../jobs/data.ts";
 
 export { CHECKS, TICKS, dayKeyOf, num, truthy } from "../jobs/data.ts";
@@ -256,111 +258,75 @@ export function telHref(phone: string | null): string | null {
   return `tel:${trimmed.startsWith("+") ? "+" : ""}${digits}`;
 }
 
-/* ─── Saving ─── */
+/* ─── Saving: each save a line of the phone's offline queue (`queue.tsx`, plan 68 S19) ─── */
 
-/**
- * How a save of the crew's ended, in the words the screen needs: saved;
- * refused by the server with its reason; or no connection (nothing could be
- * sent or read back: the screen keeps what was typed, and the same press sends
- * it again with the same key).
- */
-export type Sent<R> = { state: "saved"; row: R; replayed: boolean } | { state: "refused"; error: StaffError } | { state: "offline" };
-
-export function sentOf<R>(saved: Saved<R>): Sent<R> {
-  if (saved.state === "saved") return { state: "saved", row: saved.row, replayed: saved.replayed };
-  if (saved.state === "refused") return { state: "refused", error: saved.error };
-  return { state: "offline" };
-}
-
-/** One of the four ticks, set or taken back. */
-export const setTick = async (session: StaffSession, visit: Pick<CrewVisit, "id">, tick: Tick, on: boolean): Promise<Sent<CrewVisit>> => sentOf(await session.update<CrewVisit>("job_visits", visit.id, { [tick]: on }));
+/** One of the four ticks, set or taken back: a change of the visit, sent at once or kept on the phone. */
+export const tickLine = (visit: Pick<CrewVisit, "id" | "job_id" | "site_name">, tick: Tick, on: boolean): NewLine => ({
+  kind: "tick",
+  meta: { visit: visit.id, job: visit.job_id, site: visit.site_name, tick, on },
+  op: { type: "update", table: "job_visits", id: visit.id, values: { [tick]: on } },
+});
 
 export interface NewSnag {
   visitId: number;
+  jobId: number;
+  site: string;
   text: string;
   stops: boolean;
+  /** The photo, as the phone holds it (`phone_…`). */
   photo: string | null;
 }
 
-/** A snag raised on one of his crew's visits: its job is the visit's, and its crew. */
-export const raiseSnag = async (session: StaffSession, made: NewSnag, key: string): Promise<Sent<CrewSnag>> =>
-  sentOf(
-    await session.create<CrewSnag>(
-      "snags",
-      { visit_id: made.visitId, text: made.text.trim(), stops_sign_off: made.stops, raised_by_id: session.config.user?.id ?? null, ...(made.photo === null ? {} : { photo: made.photo }) },
-      key,
-    ),
-  );
+/** A snag raised on one of his crew's visits: its job is the visit's, and its crew. One create with a key. */
+export const snagLine = (made: NewSnag, by: string | null, key: string): NewLine => ({
+  kind: "snag",
+  meta: { visit: made.visitId, job: made.jobId, site: made.site, text: made.text.trim(), stops: made.stops, photo: made.photo !== null },
+  op: { type: "create", table: "snags", values: { visit_id: made.visitId, text: made.text.trim(), stops_sign_off: made.stops, raised_by_id: by, ...(made.photo === null ? {} : { photo: made.photo }) }, key },
+});
 
 /**
  * "Put right": the line and the photo with the move, in one change that
  * names the state the screen saw (a snag a colleague put right meanwhile is
- * not written over). The record's own button takes the line only; the phone
- * also sends the photo (D6 Q6: the photo is asked on the phone).
+ * refused, not written over). The record's own button takes the line only;
+ * the phone also sends the photo (D6 Q6: the photo is asked on the phone).
  */
-export const putRight = async (session: StaffSession, snag: Pick<CrewSnag, "id" | "state">, note: string, photo: string): Promise<Sent<CrewSnag>> =>
-  sentOf(await session.update<CrewSnag>("snags", snag.id, { state: "put-right", put_right_note: note.trim(), put_right_photo: photo }, { seen: { state: snag.state } }));
+export const putRightLine = (snag: Pick<CrewSnag, "id" | "state" | "text" | "job_id">, site: string | null, note: string, photo: string): NewLine => ({
+  kind: "put-right",
+  meta: { snag: snag.id, job: snag.job_id, site: site ?? "", text: snag.text, note: note.trim(), from: snag.state },
+  op: { type: "update", table: "snags", id: snag.id, values: { state: "put-right", put_right_note: note.trim(), put_right_photo: photo }, seen: { state: snag.state } },
+});
 
 /** What a sign-off is made of on the phone. */
 export interface SignOffDraft {
   visitId: number;
+  jobId: number;
+  site: string;
   checks: readonly boolean[];
   signer: string;
+  /** The files, as the phone holds them (`phone_…`). */
   signature: string;
   photos: readonly string[];
 }
 
-export type SignedOff =
-  | { state: "signed"; row: SignOff; replayed: boolean }
-  /** Refused: a snag that stops it (the server's rule on the job's link), a sign-off already there, or another reason. The files are thrown away. */
-  | { state: "refused"; why: "snag" | "signed" | "other"; error: StaffError }
-  | { state: "offline" };
-
-/** Throw away files no record holds. A `409 FILE_HELD` answers that a record holds one: the sign-off WAS made. Answers whether one was held. */
-export async function discardFiles(session: Pick<StaffSession, "call">, ids: readonly string[]): Promise<"gone" | "held" | "offline"> {
-  let held = false;
-  let lost = false;
-  for (const id of ids) {
-    try {
-      await session.call("DELETE", `/files/${encodeURIComponent(id)}`);
-    } catch (error) {
-      if (error instanceof StaffError && error.status === 409 && error.code === "FILE_HELD") held = true;
-      else if (error instanceof LostReply) lost = true;
-      // 404: already gone (the part threw it away itself, or a second press).
-    }
-  }
-  return held ? "held" : lost ? "offline" : "gone";
-}
-
-/** Why a sign-off was refused, from the server's answer. */
-export function signRefusal(error: StaffError): "snag" | "signed" | "other" {
-  // The sign-off's link to its job names only a job no snag stops (`linkable` on `sign_offs.job_id`): refused as that field's.
-  if (error.status === 422 && error.fields["job_id"] === "not-allowed") return "snag";
-  // One sign-off a job and version: a colleague signed it first.
-  if (error.status === 409 && error.code === "UNIQUE_VIOLATION") return "signed";
-  return "other";
-}
-
-/** The sign-off made with this key, read back. */
-async function signedWith(session: StaffSession, key: string): Promise<SignOff | null> {
-  const page = await session.list<SignOff>("sign_offs", { select: SIGN_COLUMNS, where: { column: "retry_key", op: "eq", value: key }, limit: 1 });
-  return page.rows[0] ?? null;
-}
-
-/** Sign a job off: one create, with a key. Refused, its files are thrown away; one the server says a record holds means it WAS made. */
-export async function signOff(session: StaffSession, draft: SignOffDraft, key: string): Promise<SignedOff> {
+/**
+ * Sign a job off: ONE create, with a key, naming the five checks, the
+ * signer's name, the signature and the photos. Refused, the signature goes
+ * (the customer signs for what is true when they sign) and the checks, the
+ * name and the photos stay on the phone for the next try.
+ */
+export function signOffLine(draft: SignOffDraft, key: string): NewLine {
   const values: Row = { visit_id: draft.visitId, signer_name: draft.signer.trim(), signature: draft.signature, photos: draft.photos.length === 0 ? null : [...draft.photos] };
   CHECKS.forEach((check, i) => (values[check] = draft.checks[i] === true));
-  const saved = await session.create<SignOff>("sign_offs", values, key);
-  if (saved.state === "saved") return { state: "signed", row: saved.row, replayed: saved.replayed };
-  if (saved.state === "unknown") return { state: "offline" };
-  const files = await discardFiles(session, [draft.signature, ...draft.photos]);
-  if (files === "held") {
-    const made = await signedWith(session, key).catch(() => null);
-    if (made !== null) return { state: "signed", row: made, replayed: true };
-  }
-  return { state: "refused", why: signRefusal(saved.error), error: saved.error };
+  return {
+    kind: "sign-off",
+    dropOnRefusal: ["signature"],
+    meta: { visit: draft.visitId, job: draft.jobId, site: draft.site, signer: draft.signer.trim(), checks: draft.checks.filter(Boolean).length, photos: draft.photos.length },
+    op: { type: "create", table: "sign_offs", values, key },
+  };
 }
+
+/** The checks a sign-off line holds, in the columns' order. */
+export const checksOf = (values: Row): boolean[] => CHECKS.map((check) => values[check] === true);
 
 /* ─── Words ─── */
 

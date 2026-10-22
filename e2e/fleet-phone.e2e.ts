@@ -7,7 +7,8 @@
  * Every "may not" is the server's refusal, asked directly as him: another
  * crew's van is not there for him, and nothing he makes can name it. A reply
  * lost on its way back is staged on a fill (the same key answers the row the
- * first one made), and "No connection" on a check. What he reports shows on
+ * first one made), and a check that gets nowhere kept on the phone and sent
+ * by itself (plan 68 S19). What he reports shows on
  * the operations manager's open Vehicles screen without a reload. Everything
  * the spec writes is taken away, so the van's reading is the ledger's again.
  */
@@ -109,18 +110,18 @@ test("My vehicle: his crew's van only, from My day and his menu; the check befor
       expect(refused.status(), `${ref}: ${await refused.text()}`).toBe(409);
     }
 
-    // The check before the day, with no connection first: nothing saved, the ticks kept; then sent.
+    // The check before the day, where nothing gets through though the phone says it has signal (plan 68 S19): kept on the
+    // phone, "No signal" said, nothing saved; sent by itself once a request gets through again.
     const check = page.getByTestId("fl-my-check");
     for (const tick of ["Tyres", "Fluids", "Lights", "Straps"]) await check.getByRole("checkbox", { name: tick }).click();
     await expect(page.getByTestId("fl-my-ticked")).toHaveText("4 of 5 ticked");
     await page.route("**/api/v1/data/**", (route) => (route.request().method() === "POST" && /crm_vehicle_checks$/.test(new URL(route.request().url()).pathname) ? route.abort("internetdisconnected") : route.fallback()));
     await page.getByTestId("fl-my-check-go").click();
-    await expect(page.getByTestId("cw-offline")).toContainText("No connection. Nothing was saved. Try again when you are back online.", { timeout: 15_000 });
-    await expect(check.getByRole("checkbox", { name: "Lights" })).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("cw-signal")).toContainText("No signal. What you save is kept on this phone and sent when you are back online.", { timeout: 15_000 });
+    await expect(page.getByTestId("fl-my-check-kept")).toContainText("4 of 5 checked.");
     expect(await rows(yusuf, data, "vehicle_checks", { column: "day", op: "eq", value: TODAY })).toEqual([]);
     await page.unroute("**/api/v1/data/**");
-    await page.getByTestId("cw-offline").getByRole("button", { name: "Try again" }).click();
-    await expect(page.locator(".crm-toast").last()).toHaveText("Blue van checked, not fine: Tail lift. Report it below so the office knows.");
+    await expect(page.locator(".crm-toast").last()).toHaveText("1 sent.", { timeout: 30_000 });
     await expect(page.getByTestId("fl-my-checked")).toHaveText("Checked Tue, Jul 28 by Yusuf Adeyemi.");
     const checks = await rows<{ by_id: string; tail_lift: boolean; lights: boolean }>(yusuf, data, "vehicle_checks", { column: "day", op: "eq", value: TODAY });
     expect(checks.map((one) => [Boolean(one.lights), Boolean(one.tail_lift)])).toEqual([[true, false]]);
@@ -189,7 +190,7 @@ test("My vehicle: his crew's van only, from My day and his menu; the check befor
     expect(await page.locator("#crm-page").innerText()).not.toMatch(/Marek|Pallet/);
     expect(await narrowEnough(page)).toBe(true);
     await picture(page, "p25-6-yusuf-my-vehicle");
-    expect(problems.filter((line) => !/ERR_CONNECTION_RESET|ERR_INTERNET_DISCONNECTED|ERR_FAILED|Failed to load resource/.test(line))).toEqual([]);
+    expect(problems.filter((line) => !/ERR_CONNECTION_RESET|ERR_INTERNET_DISCONNECTED|ERR_FAILED|Failed to load resource|NetworkError|Failed to fetch/.test(line))).toEqual([]);
   } finally {
     await takeAway(ada, data);
     // The ledger's reading is back: the last fill's.

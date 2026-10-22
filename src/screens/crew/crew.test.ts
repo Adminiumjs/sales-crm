@@ -1,14 +1,14 @@
 /**
  * The crew's phone (P22), what is worked out in the browser: which crews are
  * his, the week, the links a phone hands to its own apps, what a visit
- * offers, and how a sign-off is sent: one create with a key, its files thrown
- * away when it is refused, and a file the server says a record holds read as
- * "it WAS made".
+ * offers, and what each save is as a line of the phone's offline queue: a
+ * sign-off one create with a key, a put-right a change naming what it saw.
  */
 import { describe, expect, it } from "vitest";
 
-import { StaffError, type Saved, type StaffSession } from "../../staffSession.ts";
-import { addressLines, crewsOf, lastShift, discardFiles, fileIds, mapsHref, offersSignOff, signOff, signRefusal, snagOrder, stoppers, telHref, ticksOpen, timeSpan, weekDays, type CrewSnag } from "./data.ts";
+import { StaffError } from "../../staffSession.ts";
+import { addressLines, checksOf, crewsOf, fileIds, lastShift, mapsHref, offersSignOff, putRightLine, signOffLine, snagLine, snagOrder, stoppers, telHref, tickLine, ticksOpen, timeSpan, weekDays, type CrewSnag } from "./data.ts";
+import { recordKey, signWhy } from "./queue.tsx";
 
 const snag = (over: Partial<CrewSnag>): CrewSnag => ({ id: 1, job_id: 7, visit_id: 7, text: "Cable trays", stops_sign_off: false, state: "open", raised_on: "2026-07-21", raised_by_id: null, raised_by_contact_id: null, due_on: "2026-07-27", put_right_on: null, put_right_note: null, code: null, title: null, site: null, photo: null, put_right_photo: null, ...over });
 
@@ -98,9 +98,11 @@ describe("links a phone hands to its own apps", () => {
   });
 });
 
-describe("a sign-off: one create with a key, its files thrown away when refused", () => {
+describe("a save of the phone's: a line of the offline queue (plan 68 S19)", () => {
   const SIG = "file_01SIGNATURE0000000000000A";
   const PHOTO = "file_01PHOTO000000000000000000B";
+  const HELD_SIG = "phone_SIGNATURE000000000000000000A";
+  const HELD_PHOTO = "phone_PHOTO00000000000000000000000B";
 
   it("reads the ids a file column holds, as text or as a list kept as JSON", () => {
     expect(fileIds(SIG)).toEqual([SIG]);
@@ -110,70 +112,29 @@ describe("a sign-off: one create with a key, its files thrown away when refused"
     expect(fileIds("not a file")).toEqual([]);
   });
 
-  it("tells the server's refusals apart: a snag that stops it, a sign-off already there, anything else", () => {
-    expect(signRefusal(new StaffError(422, "VALIDATION_FAILED", "", { fields: { job_id: { code: "not-allowed" } } }))).toBe("snag");
-    expect(signRefusal(new StaffError(409, "UNIQUE_VIOLATION", "", { columns: ["job_id", "version"] }))).toBe("signed");
-    expect(signRefusal(new StaffError(403, "FORBIDDEN", ""))).toBe("other");
+  it("tells the server's refusals of a sign-off apart: a snag that stops it, a sign-off already there, anything else", () => {
+    const of = (error: StaffError) => signWhy({ refusal: { status: error.status, code: error.code, message: "", details: error.details, at: "" } });
+    expect(of(new StaffError(422, "VALIDATION_FAILED", "", { fields: { job_id: { code: "not-allowed" } } }))).toBe("snag");
+    expect(of(new StaffError(409, "UNIQUE_VIOLATION", "", { columns: ["job_id", "version"] }))).toBe("signed");
+    expect(of(new StaffError(403, "FORBIDDEN", ""))).toBe("other");
   });
 
-  /** A session that answers the create as told, and records every call. */
-  function fake(create: Saved, files: Record<string, StaffError | null> = {}, readBack: unknown[] = []) {
-    const calls: string[] = [];
-    let sent: { values: Record<string, unknown>; key: string } | null = null;
-    const session = {
-      create: async (_ref: string, values: Record<string, unknown>, key: string) => {
-        sent = { values, key };
-        calls.push(`create ${key}`);
-        return create;
-      },
-      call: async (method: string, path: string) => {
-        calls.push(`${method} ${path}`);
-        const id = decodeURIComponent(path.split("/").pop() ?? "");
-        const error = files[id];
-        if (error) throw error;
-        return null;
-      },
-      list: async () => {
-        calls.push("list sign_offs");
-        return { rows: readBack, total: readBack.length, next: null };
-      },
-    } as unknown as StaffSession;
-    return { session, calls, sent: () => sent };
-  }
-  const draft = { visitId: 7, checks: [true, true, true, true, true], signer: " Yusuf Demir ", signature: SIG, photos: [PHOTO] };
-
-  it("sends the five checks, the name, the signature and the photos in ONE create carrying the key", async () => {
-    const row = { id: 9, job_id: 7 };
-    const { session, calls, sent } = fake({ state: "saved", row, replayed: true, readBack: false });
-    expect(await signOff(session, draft, "KEY")).toEqual({ state: "signed", row, replayed: true });
-    expect(calls).toEqual(["create KEY"]);
-    expect(sent()?.values).toEqual({ visit_id: 7, signer_name: "Yusuf Demir", signature: SIG, photos: [PHOTO], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true });
+  it("makes a sign-off ONE create carrying its key: the five checks, the name, the signature and the photos; refused, the signature goes", () => {
+    const line = signOffLine({ visitId: 7, jobId: 3, site: "Tandem Robotics", checks: [true, true, true, true, true], signer: " Yusuf Demir ", signature: HELD_SIG, photos: [HELD_PHOTO] }, "KEY");
+    expect(line.op).toEqual({ type: "create", table: "sign_offs", key: "KEY", values: { visit_id: 7, signer_name: "Yusuf Demir", signature: HELD_SIG, photos: [HELD_PHOTO], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true } });
+    expect(line.dropOnRefusal).toEqual(["signature"]);
+    expect(line.meta).toMatchObject({ visit: 7, job: 3, signer: "Yusuf Demir", checks: 5, photos: 1 });
+    expect(line.op.type === "create" && checksOf(line.op.values)).toEqual([true, true, true, true, true]);
   });
 
-  it("throws every file away when the server refuses, and says why", async () => {
-    const refused = new StaffError(422, "VALIDATION_FAILED", "", { fields: { job_id: { code: "not-allowed" } } });
-    const { session, calls } = fake({ state: "refused", error: refused });
-    const done = await signOff(session, draft, "KEY");
-    expect(done).toMatchObject({ state: "refused", why: "snag" });
-    expect(calls).toEqual(["create KEY", `DELETE /files/${SIG}`, `DELETE /files/${PHOTO}`]);
+  it("makes a put-right a change that names the state it saw, and a tick a change of the visit alone", () => {
+    expect(putRightLine(snag({ id: 4, state: "waiting-part" }), "Tandem Robotics", " New top ", HELD_PHOTO).op).toEqual({ type: "update", table: "snags", id: 4, values: { state: "put-right", put_right_note: "New top", put_right_photo: HELD_PHOTO }, seen: { state: "waiting-part" } });
+    expect(tickLine({ id: 7, job_id: 3, site_name: "Tandem Robotics" }, "tick_done", true).op).toEqual({ type: "update", table: "job_visits", id: 7, values: { tick_done: true } });
+    expect(snagLine({ visitId: 7, jobId: 3, site: "Tandem Robotics", text: " Gap ", stops: true, photo: null }, "usr_y", "SNAGKEY").op).toEqual({ type: "create", table: "snags", key: "SNAGKEY", values: { visit_id: 7, text: "Gap", stops_sign_off: true, raised_by_id: "usr_y" } });
   });
 
-  it("reads a file the server says a record holds (409 FILE_HELD) as a sign-off that WAS made, and reads it back by its key", async () => {
-    const refused = new StaffError(409, "UNIQUE_VIOLATION", "");
-    const row = { id: 9, job_id: 7, retry_key: "KEY" };
-    const { session, calls } = fake({ state: "refused", error: refused }, { [SIG]: new StaffError(409, "FILE_HELD", "") }, [row]);
-    expect(await signOff(session, draft, "KEY")).toEqual({ state: "signed", row, replayed: true });
-    expect(calls).toEqual(["create KEY", `DELETE /files/${SIG}`, `DELETE /files/${PHOTO}`, "list sign_offs"]);
-  });
-
-  it("keeps everything when nothing could be sent or read back: no connection, and nothing thrown away", async () => {
-    const { session, calls } = fake({ state: "unknown" });
-    expect(await signOff(session, draft, "KEY")).toEqual({ state: "offline" });
-    expect(calls).toEqual(["create KEY"]);
-  });
-
-  it("answers what a throw-away came to: gone, held by a record, or not sent", async () => {
-    const { session } = fake({ state: "unknown" }, { [SIG]: new StaffError(404, "NOT_FOUND", "") });
-    expect(await discardFiles(session, [SIG, PHOTO])).toBe("gone");
+  it("writes a refused sign-off's record with a key made from the sign-off's own, so the same refusal is one record", () => {
+    expect(recordKey("KEY0000000000000000000000000001")).toBe("REY0000000000000000000000000001");
+    expect(recordKey("KEY0000000000000000000000000001")).not.toBe("KEY0000000000000000000000000001");
   });
 });

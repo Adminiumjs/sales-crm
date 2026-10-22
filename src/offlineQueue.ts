@@ -352,10 +352,13 @@ export function openQueue(options: QueueOptions): Queue {
   let stopping = false;
   const listeners = new Set<() => void>();
   const rounds = new Set<(round: Round) => void>();
+  const order = (): QueueLine[] => [...lines].sort((a, b) => a.seq - b.seq);
+  // What `lines()` answers: the same list until something changes (a screen compares it to know whether to draw again).
+  let sorted: QueueLine[] = [];
   const notify = (): void => {
+    sorted = order();
     for (const listener of listeners) listener();
   };
-  const order = (): QueueLine[] => [...lines].sort((a, b) => a.seq - b.seq);
   const save = async (line: QueueLine): Promise<void> => {
     lines = [...lines.filter((one) => one.id !== line.id), line];
     notify();
@@ -577,7 +580,7 @@ export function openQueue(options: QueueOptions): Queue {
 
   const queue: Queue = {
     ready,
-    lines: () => order(),
+    lines: () => sorted,
     offline: () => !online() || lost,
     kept: () => store.kind,
     subscribe(listener) {

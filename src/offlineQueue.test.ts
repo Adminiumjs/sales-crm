@@ -44,8 +44,8 @@ function fakeServer() {
       const made = [...rows.values()].find((row) => row["retry_key"] === key);
       if (made !== undefined) return { state: "saved", row: made as R, replayed: true, readBack: false };
       for (const value of Object.values(values)) for (const id of Array.isArray(value) ? value : [value]) if (typeof id === "string" && files.has(id)) files.get(id)!.held = true;
-      const row = { ...values, id: next++, retry_key: key };
-      rows.set(row.id, row);
+      const row: Row = { ...values, id: next++, retry_key: key };
+      rows.set(row["id"] as number, row);
       if (state.loseNextReply) {
         state.loseNextReply = false;
         return { state: "unknown" };
@@ -203,7 +203,7 @@ describe("the offline queue", () => {
   });
 
   it("reads a change back before sending it again: one that went before the phone heard is done", async () => {
-    const { server, store, queue } = setUp();
+    const { server, store } = setUp();
     server.table("snags").set(3, { id: 3, state: "put-right", put_right_note: "Fixed" });
     // A line the app was closed on while it was being sent: tried once.
     const line: QueueLine = {

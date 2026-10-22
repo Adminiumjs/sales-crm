@@ -6,15 +6,22 @@
  * sign-off read-only and "Add a snag" (B19).
  *
  * Nothing here is an amount: the crew reads none.
+ *
+ * What waits on the phone shows here as it will be (plan 68 S19): a tick kept
+ * with no signal shows ticked, with "Waiting to send"; a snag raised with no
+ * signal shows in the list; a sign-off kept says so, and one refused on
+ * arrival says why, with the way to the snag and to sign off again.
  */
 import { useT } from "../../i18n/index.tsx";
 import type { Formatters } from "../../lib/format.ts";
 import { noonOf } from "../../lib/format.ts";
 import { Icon } from "../../shell/icons.tsx";
-import { ScreenLink } from "../../shell/nav.tsx";
+import { ScreenLink, useNav } from "../../shell/nav.tsx";
+import { latest } from "../../offlineQueue.ts";
 import { AddSnag } from "./AddSnag.tsx";
 import { addressLines, dayKeyOf, hoursText, isLive, mapsHref, num, offersSignOff, telHref, TICKS, ticksOpen, timeSpan, truthy, type CrewSnag, type CrewVisit, type Moved, type NoteLine, type SignOff, type Tick } from "./data.ts";
-import type { Connection } from "./Offline.tsx";
+import { RefusedBox, WaitChip } from "./Offline.tsx";
+import { useQueueLines } from "./queue.tsx";
 
 export interface VisitFacts {
   visit: CrewVisit;
@@ -24,14 +31,24 @@ export interface VisitFacts {
   moved: Moved | undefined;
 }
 
-export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, onChanged, agent, touch }: { facts: VisitFacts; today: string; f: Formatters; crewName: string | null; busyTick: string | null; onTick: (visit: CrewVisit, tick: Tick, on: boolean) => void; conn: Connection; onChanged: () => void; agent: string; touch: boolean }) {
+export function VisitCard({ facts, today, f, crewName, busyTick, onTick, onChanged, agent, touch }: { facts: VisitFacts; today: string; f: Formatters; crewName: string | null; busyTick: string | null; onTick: (visit: CrewVisit, tick: Tick, on: boolean) => void; onChanged: () => void; agent: string; touch: boolean }) {
   const t = useT();
+  const nav = useNav();
   const { visit, signed, snags, load, moved } = facts;
+  const { lines: queued } = useQueueLines();
+  // A tick kept on the phone stands for the server's until it is sent.
+  const tickLine = (tick: Tick) => latest(queued, (line) => line.kind === "tick" && line.meta["visit"] === visit.id && line.meta["tick"] === tick, ["waiting", "sending"]);
+  const isOn = (tick: Tick): boolean => {
+    const kept = tickLine(tick);
+    return kept === undefined ? truthy(visit[tick]) : kept.meta["on"] !== false;
+  };
+  const newSnags = queued.filter((line) => line.kind === "snag" && (line.state === "waiting" || line.state === "sending") && line.meta["job"] === visit.job_id);
+  const signLine = signed === undefined ? latest(queued, (line) => line.kind === "sign-off" && line.meta["job"] === visit.job_id) : undefined;
   const span = timeSpan(visit.start_time, visit.hours);
   const lines = addressLines(visit);
   const maps = lines.length === 0 ? null : mapsHref(lines, agent, touch);
   const tel = telHref(visit.site_phone);
-  const ticked = TICKS.filter((tick) => truthy(visit[tick])).length;
+  const ticked = TICKS.filter(isOn).length;
   const open = ticksOpen(visit, today);
   const live = snags.filter(isLive);
   const day = dayKeyOf(visit.day);
@@ -140,7 +157,7 @@ export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, o
         </div>
         <div className="crm-cw-ticks">
           {TICKS.map((tick) => {
-            const on = truthy(visit[tick]);
+            const on = isOn(tick);
             const label = t(`jb.tick.${tick}`);
             return (
               <button key={tick} type="button" className="crm-cw-tick mr-btn" data-tick={tick} aria-pressed={on} disabled={!open || busyTick !== null} onClick={() => onTick(visit, tick, !on)}>
@@ -150,6 +167,7 @@ export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, o
                 <span className="crm-cw-tick-words">
                   {label}
                   {busyTick === `${String(visit.id)}:${tick}` && <span className="crm-cw-quiet">{t("ui.saving")}</span>}
+                  <WaitChip line={tickLine(tick)} />
                 </span>
               </button>
             );
@@ -163,9 +181,22 @@ export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, o
           <h3>{t("cw.visit.snags")}</h3>
           <span className="crm-cw-quiet crm-mono">{t("cw.visit.snags.live", { n: f.number(live.length) }, live.length)}</span>
         </div>
-        {live.length === 0 ? (
+        {newSnags.length > 0 && (
+          <ul className="crm-cw-snaglist" data-testid="cw-visit-new-snags">
+            {newSnags.map((line) => (
+              <li key={line.id} data-line={line.id}>
+                <span dir="auto">{String(line.meta["text"] ?? "")}</span>
+                <span className="crm-cw-quiet">
+                  {t("offline.snag.new")}
+                  {line.meta["stops"] === true && ` · ${t("cw.snag.stopsShort")}`} <WaitChip line={line} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {live.length === 0 && newSnags.length === 0 ? (
           <p className="crm-cw-quiet">{t("cw.visit.snags.none")}</p>
-        ) : (
+        ) : live.length === 0 ? null : (
           <ul className="crm-cw-snaglist">
             {live.map((snag) => (
               <li key={snag.id} data-snag={snag.id}>
@@ -190,15 +221,30 @@ export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, o
             <Icon name="file-check" />
             {t("cw.signed.see")}
           </ScreenLink>
-          <AddSnag id={`crm-cw-add-${String(visit.id)}`} visitId={visit.id} site={visit.site_name} withStops={false} conn={conn} onDone={onChanged} />
+          <AddSnag id={`crm-cw-add-${String(visit.id)}`} visitId={visit.id} jobId={visit.job_id} site={visit.site_name} withStops={false} onDone={onChanged} />
+        </div>
+      ) : signLine !== undefined && signLine.state !== "refused" ? (
+        // Signed on this phone, not yet sent: the office gets it when the signal is back.
+        <div className="crm-cw-signed" data-testid="cw-sign-waiting">
+          <div className="crm-cw-signed-line">
+            <Icon name="hourglass" size={16} />
+            <span>{t("offline.card.waiting", { name: String(signLine.meta["signer"] ?? ""), time: f.time(new Date(signLine.madeAt)) })}</span>
+          </div>
+          <ScreenLink to="crewsign" rest={[visit.id]} className="crm-cw-bigbtn mr-gi">
+            <Icon name="file-check" />
+            {t("cw.signed.see")}
+          </ScreenLink>
         </div>
       ) : (
-        offersSignOff(visit, false, today) && (
-          <ScreenLink to="crewsign" rest={[visit.id]} className="crm-cw-signbtn mr-btn">
-            <Icon name="clipboard-check" />
-            {t("cw.sign.open")}
-          </ScreenLink>
-        )
+        <>
+          {signLine !== undefined && <RefusedBox line={signLine} onSnag={() => nav.go("mysnags")} />}
+          {offersSignOff(visit, false, today) && (
+            <ScreenLink to="crewsign" rest={[visit.id]} className="crm-cw-signbtn mr-btn">
+              <Icon name="clipboard-check" />
+              {t("cw.sign.open")}
+            </ScreenLink>
+          )}
+        </>
       )}
     </article>
   );

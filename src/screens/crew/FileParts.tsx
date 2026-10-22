@@ -11,13 +11,20 @@
  *
  * `round` going up mounts the part afresh, empty: after a refused sign-off
  * whose files were thrown away, the pad must not keep showing one.
+ *
+ * FILES STAY ON THE PHONE (plan 68 S19). The parts are given the offline
+ * queue's `fetch`: what they "send" is kept on the phone under a `phone_…` id,
+ * and the queue sends it, first, when the save naming it goes. A part's own
+ * "take it out" throws the phone's copy away.
  */
 import { useMemo } from "react";
 
 import { useT } from "../../i18n/index.tsx";
-import { kitCommon } from "../../kitParts.ts";
+import { kitCommon, mountPart } from "../../kitParts.ts";
+import type { StaffConfig } from "../../staffConnection.ts";
 import { useSession } from "../../session/session.tsx";
 import { KitPart } from "../../ui/kit.tsx";
+import { useQueue } from "./queue.tsx";
 
 interface Target {
   connectionId: string;
@@ -26,12 +33,31 @@ interface Target {
   csrfToken: string;
   locale: string;
   dir: "ltr" | "rtl";
+  fetch: (input: string, init?: RequestInit) => Promise<Response>;
 }
 
 function useTarget(table: string, column: string): Target {
   const session = useSession();
   const config = session.config;
-  return useMemo(() => ({ connectionId: session.connectionId, table: session.tableId(table), column, csrfToken: config.csrfToken ?? "", ...kitCommon(config) }), [session, config, table, column]);
+  const queue = useQueue();
+  const held = useMemo(() => queue.fetchFor((input, init) => fetch(input, init)), [queue]);
+  return useMemo(() => ({ connectionId: session.connectionId, table: session.tableId(table), column, csrfToken: config.csrfToken ?? "", ...kitCommon(config), fetch: held }), [session, config, table, column, held]);
+}
+
+/**
+ * Load the two file parts once, at the start, while there is signal: a part
+ * is a file of its own on the server, and a form opened later with no signal
+ * (Put right on Snags) still draws its photo field.
+ */
+export function warmFileParts(config: StaffConfig): void {
+  if (typeof document === "undefined") return;
+  for (const part of ["photos", "signature"] as const) {
+    const element = document.createElement("div");
+    void mountPart(config, part, element, { connectionId: "", table: "", column: "", csrfToken: "", ...kitCommon(config), onChange: () => undefined, disabled: true }).then(
+      (made) => made.unmount(),
+      () => undefined,
+    );
+  }
 }
 
 function Missing() {

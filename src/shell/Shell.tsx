@@ -34,6 +34,8 @@ import { NothingOn, NotFound, Refused, Waits, type RefusedWhy, type WayHome } fr
 import { canOpen, homeFor, inMenu, LIT_BY, menuFor, routeForPath, ROUTES, USER_MENU, waitsFor, WAITS_FOR, type MenuFacts, type PartId, type RouteKey, type ShownGroup } from "./routes.ts";
 import { isBuilt, SCREENS } from "./screens.tsx";
 import { PageBoundary } from "../ui/boundary.tsx";
+import { QueueListProvider, QueuePill, useGuardedSignOut } from "../screens/crew/Offline.tsx";
+import { QueueProvider } from "../screens/crew/queue.tsx";
 import { LoadFailed } from "../ui/load.tsx";
 
 const NARROW = 900;
@@ -137,7 +139,18 @@ function Brand({ small }: { small?: boolean }) {
   );
 }
 
+/** The frame, inside the phone's offline queue (plan 68 S19): its pill in the bar, its list, and a sign-out that asks first. */
 export function Shell() {
+  return (
+    <QueueProvider app="crm">
+      <QueueListProvider>
+        <Frame />
+      </QueueListProvider>
+    </QueueProvider>
+  );
+}
+
+function Frame() {
   const t = useT();
   const session = useSession();
   const nav = useNav();
@@ -214,7 +227,9 @@ export function Shell() {
 
   const listed = groups.flatMap((group) => group.items.map((item) => item.route));
   const current = here === null ? null : listed.includes(here.route) ? here.route : ((LIT_BY[here.route] ?? []).find((route) => listed.includes(route)) ?? here.route);
-  const leave = useCallback(() => void signOut(), [signOut]);
+  // Saves still on the phone are thrown away by a sign-out: it asks first (plan 68 S19, CD-3).
+  const guarded = useGuardedSignOut(signOut);
+  const leave = guarded.leave;
   return (
     <FindingProvider groups={groups} home={home} current={here?.route ?? null} facts={facts} onTheme={theme.toggle} onSignOut={leave}>
     <div className="crm-shell">
@@ -239,6 +254,7 @@ export function Shell() {
           <SearchBox narrow={narrow} />
           <div className="crm-top-end">
             {!narrow && <JumpButton />}
+            <QueuePill />
             <Bell />
             <button type="button" className="crm-icon-btn mr-gi" aria-label={t(theme.dark ? "shell.theme.light" : "shell.theme.dark")} onClick={theme.toggle}>
               <Icon name={theme.dark ? "sun" : "moon"} />
@@ -277,7 +293,7 @@ export function Shell() {
                         </ScreenLink>
                       ))}
                       <ShortcutsItem onGo={() => { setUserMenu(false); chip.current?.focus(); }} />
-                      <button type="button" role="menuitem" className="crm-user-item crm-user-out mr-row" onClick={() => void signOut()}>
+                      <button type="button" role="menuitem" className="crm-user-item crm-user-out mr-row" onClick={leave}>
                         <Icon name="log-out" size={15} />
                         <span>{t("shell.signOut")}</span>
                       </button>
@@ -322,7 +338,7 @@ export function Shell() {
                   <span className="crm-user-role">{who.role}</span>
                 </span>
               </div>
-              <button type="button" className="crm-user-item crm-user-out mr-row" onClick={() => void signOut()}>
+              <button type="button" className="crm-user-item crm-user-out mr-row" onClick={leave}>
                 <Icon name="log-out" />
                 <span>{t("shell.signOut")}</span>
               </button>
@@ -330,6 +346,7 @@ export function Shell() {
           </div>
         </div>
       )}
+      {guarded.dialog}
     </div>
     </FindingProvider>
   );
