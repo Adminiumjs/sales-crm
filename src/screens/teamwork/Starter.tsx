@@ -10,19 +10,25 @@
  * The first-year target is the starter's own figure once somebody sets it.
  * Until then the screen offers half the average full target, worked out from
  * the server's average of this year's targets.
+ *
+ * A NEW STARTER (T04) is made here by the sales manager or the CRM admin: a
+ * name, the first day and the patch she takes on, and, in the same save, the
+ * steps of the starter before her, none ticked (the server makes all or none).
+ * "Her patch" is the server's count of the companies in that territory.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { noonOf, type Formatters } from "../../lib/format.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
-import type { StaffSession } from "../../staffSession.ts";
+import { newClientKey, type StaffSession } from "../../staffSession.ts";
+import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
-import { Avatar, countOf, Empty, NOBODY, num, readWho, truthy, useF, type Who } from "./common.tsx";
+import { Avatar, childLink, countOf, Empty, NOBODY, num, readWho, truthy, useF, type Who } from "./common.tsx";
 
 type Phase = "before" | "week" | "month";
 const PHASES: readonly Phase[] = ["before", "week", "month"];
@@ -35,6 +41,10 @@ interface StarterRow extends Record<string, unknown> {
   manager_id: string;
   first_year_target?: number | string | null;
   user_id: string | null;
+  /** The territory she takes on (T04), its name and whose it is now; empty when none is said. */
+  patch?: number | null;
+  patch_name?: string | null;
+  patch_owner?: string | null;
 }
 interface StepRow extends Record<string, unknown> {
   id: number;
@@ -51,14 +61,18 @@ interface StarterData {
   byPhase: Record<Phase, { all: number; done: number }>;
   /** The server's average of this year's targets the reader reaches; null when she reads none. */
   meanTarget: number | null;
+  /** How many companies are in her patch, as the server counts them; null with no patch, or for a reader of no companies. */
+  patchCompanies: number | null;
 }
 
-const readStarters = (session: StaffSession): Promise<StarterRow[]> => session.list<StarterRow>("starters", { order: ["starts_on", "id"], limit: 50 }).then((page) => page.rows);
+const readStarters = (session: StaffSession): Promise<StarterRow[]> =>
+  session.list<StarterRow>("starters", { order: ["starts_on", "id"], lookup: ["patch_name:patch.name", "patch_owner:patch.owner_id"], limit: 50 }).then((page) => page.rows);
 
 async function readStarter(session: StaffSession, starter: StarterRow, year: number): Promise<StarterData> {
   const mine = { column: "starter_id", op: "eq" as const, value: starter.id };
   const phase = (one: Phase, done: boolean | null) => countOf(session, "starter_steps", { and: [mine, { column: "phase", op: "eq", value: one }, ...(done === null ? [] : [{ column: "done", op: "eq" as const, value: done }])] });
-  const [steps, before, beforeDone, week, weekDone, month, monthDone, done, mean] = await Promise.all([
+  const patch = starter.patch ?? null;
+  const [steps, before, beforeDone, week, weekDone, month, monthDone, done, mean, patchCompanies] = await Promise.all([
     session.list<StepRow>("starter_steps", { select: ["id", "phase", "text", "owner_id", "for_starter", "done"], where: mine, order: ["id"], limit: 200, count: "exact" }),
     phase("before", null),
     phase("before", true),
@@ -70,8 +84,9 @@ async function readStarter(session: StaffSession, starter: StarterRow, year: num
     session.can("targets", "read") && session.can("starters", "update")
       ? session.figure<{ value: number | null }>({ table: "targets", shape: "single-metric", filters: [{ column: "year", op: "eq", value: year }], aggregations: [{ fn: "avg", column: "amount", alias: "v" }] }).then((answer) => answer.value, () => null)
       : Promise.resolve(null),
+    patch !== null && session.can("companies", "read") ? countOf(session, "companies", { column: "territory_id", op: "eq", value: patch }) : Promise.resolve(null),
   ]);
-  return { steps: steps.rows, total: Number(steps.total ?? steps.rows.length), done, byPhase: { before: { all: before, done: beforeDone }, week: { all: week, done: weekDone }, month: { all: month, done: monthDone } }, meanTarget: mean };
+  return { steps: steps.rows, total: Number(steps.total ?? steps.rows.length), done, byPhase: { before: { all: before, done: beforeDone }, week: { all: week, done: weekDone }, month: { all: month, done: monthDone } }, meanTarget: mean, patchCompanies };
 }
 
 export function Starter(_: ScreenProps) {
@@ -93,6 +108,8 @@ export function Starter(_: ScreenProps) {
   );
   useLive(["starters", "starter_steps"], again);
   const today = f.dayKey(now);
+  const canMake = session.can("starters", "create");
+  const [making, setMaking] = useState(false);
 
   return (
     <div className="crm-screen crm-starter mr-screen" data-screen="starter">
@@ -100,27 +117,54 @@ export function Starter(_: ScreenProps) {
         {(starters) => {
           // Whoever starts next; when everybody has started, the one who started last.
           const starter = starters.find((one) => one.id === picked) ?? starters.find((one) => String(one.starts_on).slice(0, 10) >= today) ?? starters[starters.length - 1] ?? null;
+          const adder = canMake ? (
+            <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-testid="st-new" onClick={() => setMaking(true)}>
+              <Icon name="user-round-plus" size={14} />
+              {t("starter.new")}
+            </button>
+          ) : null;
+          // The steps a new starter begins with: the last one's (whoever starts latest), none ticked.
+          const before = [...starters].sort((a, b) => String(b.starts_on).localeCompare(String(a.starts_on)) || b.id - a.id)[0] ?? null;
+          const dialog = making && (
+            <NewStarter
+              from={before}
+              today={today}
+              onClose={() => setMaking(false)}
+              onMade={(id) => {
+                setPicked(id);
+                again();
+              }}
+            />
+          );
           if (starter === null)
             return (
               <>
                 <div className="crm-screen-head">
                   <h1>{t("starter.h1")}</h1>
+                  {adder !== null && <div className="crm-screen-actions">{adder}</div>}
                 </div>
                 <Empty icon="user-round-plus" title={t("starter.none")} body={t("starter.none.body")} />
+                {dialog}
               </>
             );
           return (
             <>
-              {starters.length > 1 && (
-                <div className="crm-chips" role="group" aria-label={t("starter.pick")}>
-                  {starters.map((one) => (
-                    <button key={one.id} type="button" className="crm-chip-btn mr-chip" aria-pressed={one.id === starter.id} onClick={() => setPicked(one.id)}>
-                      {one.name}
-                    </button>
-                  ))}
+              {(starters.length > 1 || adder !== null) && (
+                <div className="crm-st-top">
+                  {starters.length > 1 && (
+                    <div className="crm-chips" role="group" aria-label={t("starter.pick")}>
+                      {starters.map((one) => (
+                        <button key={one.id} type="button" className="crm-chip-btn mr-chip" aria-pressed={one.id === starter.id} onClick={() => setPicked(one.id)}>
+                          {one.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {adder}
                 </div>
               )}
               <One key={starter.id} starter={starter} who={who} f={f} now={now} round={round} onChanged={again} />
+              {dialog}
             </>
           );
         }}
@@ -201,6 +245,17 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
                 </div>
                 <div className="crm-stat-sub">{left === 0 ? t("starter.stat.before.none") : t("starter.stat.before.left", { count: f.number(left) }, left)}</div>
               </div>
+              {starter.patch !== null && starter.patch !== undefined && (
+                <div className="crm-stat" data-testid="st-patch">
+                  <div className="crm-stat-label">{t("starter.stat.patch")}</div>
+                  <div className="crm-stat-value crm-mono">{data.patchCompanies === null ? "—" : f.number(data.patchCompanies)}</div>
+                  <div className="crm-stat-sub">
+                    {starter.patch_owner !== null && starter.patch_owner !== undefined && who.names[starter.patch_owner] !== undefined
+                      ? t("starter.stat.patch.from", { patch: starter.patch_name ?? "", name: firstName(who.names[starter.patch_owner] ?? "") })
+                      : t("starter.stat.patch.sub", { patch: starter.patch_name ?? "" })}
+                  </div>
+                </div>
+              )}
               {(stored !== null || canSet) && (
                 <div className="crm-stat" data-testid="st-target">
                   <div className="crm-stat-label">{t("starter.stat.target")}</div>
@@ -264,5 +319,109 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
         );
       }}
     </Loaded>
+  );
+}
+
+interface Territory extends Record<string, unknown> {
+  id: number;
+  name: string;
+}
+
+/**
+ * Somebody who joins: a name, the first day and the patch she takes on. The steps of the starter before her come with
+ * her in the same save, none ticked, when the reader may make steps; the server makes the starter and every step, or
+ * nothing. Whose starter she is: the reader's.
+ */
+function NewStarter({ from, today, onClose, onMade }: { from: StarterRow | null; today: string; onClose: () => void; onMade: (id: number) => void }) {
+  const t = useT();
+  const session = useSession();
+  const toasts = useToasts();
+  const me = session.config.user?.id ?? "";
+  const [name, setName] = useState("");
+  const [day, setDay] = useState("");
+  const [patch, setPatch] = useState("");
+  const canSteps = from !== null && session.can("starter_steps", "create");
+  const [copy, setCopy] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const key = useRef(newClientKey());
+  const { load: places } = useLoad(() => (session.can("territories", "read") ? session.list<Territory>("territories", { select: ["id", "name"], order: ["name", "id"], limit: 200 }).then((page) => page.rows) : Promise.resolve([] as Territory[])), [session]);
+  const { load: steps } = useLoad(
+    () => (canSteps && from !== null ? session.list<StepRow>("starter_steps", { select: ["id", "phase", "text", "owner_id", "for_starter", "done"], where: { column: "starter_id", op: "eq", value: from.id }, order: ["id"], limit: 200 }).then((page) => page.rows) : Promise.resolve([] as StepRow[])),
+    [session, from?.id, canSteps],
+  );
+  const theirs = steps.state === "ready" ? steps.data : [];
+  const ready = name.trim() !== "" && /^\d{4}-\d{2}-\d{2}$/.test(day) && (!canSteps || !copy || steps.state === "ready");
+  const go = async (): Promise<void> => {
+    if (!ready || busy) return;
+    setBusy(true);
+    const link = copy && theirs.length > 0 ? await childLink(session, "starter_steps", "starter_id", "starters").catch(() => null) : null;
+    if (copy && theirs.length > 0 && link === null) {
+      setBusy(false);
+      return setError(t("ui.unknown"));
+    }
+    const children = link !== null ? { [link]: theirs.map((step) => ({ values: { phase: step.phase, text: step.text, owner_id: truthy(step.for_starter) ? null : step.owner_id, for_starter: truthy(step.for_starter), done: false } })) } : undefined;
+    const saved = await session.create<StarterRow>("starters", { name: name.trim(), starts_on: day, manager_id: me, patch: patch === "" ? null : Number(patch) }, key.current, children === undefined ? {} : { children });
+    setBusy(false);
+    if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
+    if (saved.state === "unknown") return setError(t("ui.unknown"));
+    toasts.show(children === undefined ? t("starter.new.toast", { name: name.trim() }) : t("starter.new.toast.steps", { name: name.trim(), count: theirs.length }, theirs.length), "pos");
+    onMade(Number(saved.row.id));
+    onClose();
+  };
+  return (
+    <Dialog
+      shape="box"
+      name="st-new"
+      icon="user-round-plus"
+      title={t("starter.new")}
+      subtitle={t("starter.new.sub")}
+      onClose={onClose}
+      busy={busy}
+      foot={
+        <>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
+            {t("ui.cancel")}
+          </button>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-go disabled={!ready || busy} onClick={() => void go()}>
+            {busy ? t("ui.saving") : t("starter.new.go")}
+          </button>
+        </>
+      }
+    >
+      <fieldset className="crm-fields" disabled={busy}>
+        <label className="crm-label" htmlFor="crm-st-name">
+          {t("starter.new.name")}
+        </label>
+        <input id="crm-st-name" data-autofocus className="crm-input mr-fld" maxLength={120} autoComplete="off" value={name} onChange={(event) => (setName(event.target.value), setError(null))} />
+        <label className="crm-label" htmlFor="crm-st-day">
+          {t("starter.new.day")}
+        </label>
+        <input id="crm-st-day" className="crm-input crm-mono mr-fld" type="date" min={today} value={day} onChange={(event) => (setDay(event.target.value), setError(null))} />
+        <label className="crm-label" htmlFor="crm-st-patch">
+          {t("starter.new.patch")}
+        </label>
+        <select id="crm-st-patch" className="crm-input mr-fld" value={patch} onChange={(event) => (setPatch(event.target.value), setError(null))}>
+          <option value="">{t("starter.new.patch.none")}</option>
+          {(places.state === "ready" ? places.data : []).map((place) => (
+            <option key={place.id} value={String(place.id)}>
+              {place.name}
+            </option>
+          ))}
+        </select>
+        {canSteps && from !== null && (
+          <label className="crm-check crm-st-copy">
+            <input type="checkbox" checked={copy} onChange={(event) => setCopy(event.target.checked)} />
+            <span>{steps.state === "ready" ? t("starter.new.copy", { name: firstName(from.name), count: theirs.length }, theirs.length) : t("starter.new.copy.reading", { name: firstName(from.name) })}</span>
+          </label>
+        )}
+      </fieldset>
+      {error !== null && (
+        <div className="crm-form-error" role="alert">
+          <Icon name="triangle-alert" size={15} />
+          <span>{error}</span>
+        </div>
+      )}
+    </Dialog>
   );
 }

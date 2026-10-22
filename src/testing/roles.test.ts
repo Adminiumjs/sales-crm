@@ -1041,10 +1041,10 @@ describe("what a role is kept from, column by column", () => {
     }
   });
 
-  it("shows a rep a new starter, and not the target she was given", () => {
+  it("shows a rep a new starter and her patch, and not the target she was given", () => {
     // A rep reads their own target and nobody else's.
     expect(limitOf("rep", "targets")?.rows).toEqual({ read: { reach: "own" } });
-    expect(limitOf("rep", "starters")?.readable).toEqual(["name", "starts_on", "manager_id", "user_id"]);
+    expect(limitOf("rep", "starters")?.readable).toEqual(["name", "starts_on", "manager_id", "user_id", "patch"]);
   });
 
   it("lets the marketer put an enquiry in the inbox, and not hand it to anybody", () => {

@@ -8,7 +8,9 @@ import { describe, expect, it } from "vitest";
 
 import { LostReply, StaffError, type StaffSession } from "../../staffSession.ts";
 import { coverState, dayOf, makeCover, workingDays } from "./cover.ts";
-import { all, alsoIn, num, truthy } from "./data.ts";
+import { areaRow } from "./coaching.ts";
+import { all, alsoIn, num, relationIn, sessionLinked, truthy } from "./data.ts";
+import { raisedOf, sessionRow, TOPICS } from "./notes.ts";
 import { coverOf, leftOf, yearDay } from "./targets.ts";
 
 describe("a cover on a day", () => {
@@ -124,5 +126,44 @@ describe("the one action list", () => {
     const a = { column: "a", op: "eq" as const, value: 1 };
     expect(all([a])).toBe(a);
     expect(all([a, a])).toEqual({ and: [a, a] });
+  });
+});
+
+describe("T04: the Team screens' left-out pieces", () => {
+  const pair = { id: 4, manager_id: "ivy", rep_id: "dana", next_at: null };
+  it("saves a session with every drawn tick, yes or no, what else was raised one line each, and its length", () => {
+    const row = sessionRow(pair, { held_on: "2026-07-28", notes: "Spec", covered: ["biggest", "late"], raised: [" The August cover ", "", "Leeds"], minutes: 30 });
+    expect(row).toEqual({ one_to_one_id: 4, manager_id: "ivy", rep_id: "dana", held_on: "2026-07-28", notes: "Spec", cover_sitting: false, cover_biggest: true, cover_target: false, cover_late: true, raised: "The August cover\nLeeds", minutes: 30 });
+    expect(TOPICS.length).toBe(4);
+  });
+  it("keeps nothing raised as empty, and reads a kept one back line by line", () => {
+    expect(sessionRow(pair, { held_on: "2026-07-28", notes: "x", covered: [], raised: ["  "], minutes: null })).toMatchObject({ raised: null, minutes: null });
+    expect(raisedOf({ raised: "A\n\n B \n" })).toEqual(["A", "B"]);
+    expect(raisedOf({ raised: null })).toEqual([]);
+  });
+  it("knows an install of the first stage has no session link: by the parts it holds, whatever is switched on", () => {
+    const parts = (modules: Record<string, boolean> | null) => ({ config: { modules } }) as unknown as StaffSession;
+    expect(sessionLinked(parts({ selling: true, quotes: true, accounts: true, team: true, inbox: true, supply: false }))).toBe(false);
+    expect(sessionLinked(parts({ selling: true, team: true, jobs: false }))).toBe(true);
+    expect(sessionLinked(parts({ selling: true, team: true, showroom: true }))).toBe(true);
+    expect(sessionLinked(parts(null))).toBe(true);
+  });
+  it("finds the link a child row is written through in the server's schema, by the tables' stored names", () => {
+    const model = {
+      tables: [
+        { id: "public.crm_threads", name: "crm_threads" },
+        { id: "public.crm_thread_members", name: "crm_thread_members" },
+      ],
+      relations: [
+        { id: "fk:public.crm_thread_members(user_id)->public.crm_threads(id)", through: null, from: { tableId: "public.crm_thread_members", columns: ["user_id"] }, to: { tableId: "public.crm_threads", columns: ["id"] } },
+        { id: "fk:public.crm_thread_members(thread_id)->public.crm_threads(id)", through: null, from: { tableId: "public.crm_thread_members", columns: ["thread_id"] }, to: { tableId: "public.crm_threads", columns: ["id"] } },
+      ],
+    };
+    expect(relationIn(model, "crm_thread_members", "thread_id", "crm_threads")).toBe("fk:public.crm_thread_members(thread_id)->public.crm_threads(id)");
+    expect(relationIn(model, "crm_messages", "thread_id", "crm_threads")).toBeNull();
+  });
+  it("saves an area with an empty line as no line and no measure as no number", () => {
+    expect(areaRow({ title: " Get on site sooner ", why: "  ", good_looks_like: "Inside five days", measure: "" })).toEqual({ title: "Get on site sooner", why: null, good_looks_like: "Inside five days", measure: null });
+    expect(areaRow({ title: "A", why: "B", good_looks_like: "", measure: "late" })).toMatchObject({ measure: "late", good_looks_like: null });
   });
 });

@@ -23,6 +23,8 @@ export interface Slot extends Record<string, unknown> {
   who_id: string | null;
   minutes: number;
   position: number;
+  /** Ticked off in the meeting (T04): yes or no, no on an install updated from before it. */
+  covered: unknown;
 }
 export interface Decision extends Record<string, unknown> {
   id: number;
@@ -77,7 +79,7 @@ export async function readMeeting(session: StaffSession, now: Date, f: Formatter
   const zero = Promise.resolve({ value: 0 });
   const settings = session.can("settings", "read") ? session.list<{ sitting_stale_days: number | null }>("settings", { select: ["sitting_stale_days"], limit: 1 }).then((page) => page.rows[0]?.sitting_stale_days ?? null, () => null) : Promise.resolve(null);
   const [slots, decisions, actions, weighted, count, monthWeighted, monthCount, closed, staleDays, byOwner, list] = await Promise.all([
-    session.list<Slot>("meeting_slots", { select: ["id", "label", "who_id", "minutes", "position"], where: mine, order: ["position", "id"], limit: 50 }),
+    session.list<Slot>("meeting_slots", { select: ["id", "label", "who_id", "minutes", "position", "covered"], where: mine, order: ["position", "id"], limit: 50 }),
     session.list<Decision>("meeting_decisions", { select: ["id", "text", "who_id", "state"], where: mine, order: ["id"], limit: 50 }),
     session.can("actions", "read") ? session.list<Action>("actions", { select: ACTION_COLUMNS, where: mine, order: ["id"], limit: 200 }).then((page) => page.rows) : Promise.resolve([] as Action[]),
     deals ? one([open], "sum", "weighted_value") : zero,

@@ -1507,3 +1507,160 @@
     max-inline-size: 92%;
   }
 }
+
+/* ── T04 (S5): the Team screens' writes and their left-out pieces ─────────── */
+.crm-mt-bar {
+  display: flex;
+  gap: 3px;
+  block-size: 6px;
+  margin-block-start: 10px;
+}
+.crm-mt-bar > span {
+  flex: 1 0 0;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+.crm-mt-bar > [data-part="done"] {
+  background: var(--accent);
+}
+.crm-mt-slot > .crm-tw-tick {
+  margin-block-start: 2px;
+}
+.crm-mt-slot[data-covered="1"] .crm-mt-slot-main > strong {
+  color: var(--fg-subtle);
+  text-decoration: line-through;
+}
+.crm-mt-decide {
+  display: inline-flex;
+  gap: 6px;
+}
+.crm-no-raise li > .crm-tw-tick {
+  align-self: flex-start;
+  margin-block-start: 3px;
+}
+.crm-no-raise li[data-on="1"] > span {
+  color: var(--fg-subtle);
+  text-decoration: line-through;
+}
+.crm-no-raise li > .crm-icon-btn {
+  align-self: center;
+}
+.crm-no-raise-note {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+}
+.crm-no-session-head .crm-no-session-mins {
+  margin-inline-start: 0;
+}
+.crm-no-covered {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.crm-no-covered li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  overflow-wrap: anywhere;
+}
+.crm-no-covered li > svg {
+  flex-shrink: 0;
+  color: var(--pos);
+  transform: translateY(1px);
+}
+.crm-no-covered li[data-topic="raised"] > svg {
+  color: var(--accent);
+}
+.crm-no-session-actions {
+  margin-block-start: 8px;
+  padding-block-start: 6px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-no-mins {
+  max-inline-size: 140px;
+}
+.crm-co-area-words {
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-co-why {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.crm-co-live {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  max-inline-size: 140px;
+  text-align: end;
+}
+.crm-co-live strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.crm-co-live span {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  text-wrap: pretty;
+}
+.crm-co-good {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-block-start: 12px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.crm-co-good > svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--accent);
+}
+.crm-co-new {
+  margin-block-start: 14px;
+}
+.crm-st-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-end: 14px;
+}
+.crm-st-top > .crm-chips {
+  margin: 0;
+}
+.crm-st-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+@media (max-width: 560px) {
+  .crm-co-area-head {
+    flex-wrap: wrap;
+  }
+  .crm-co-live {
+    align-items: flex-start;
+    text-align: start;
+    max-inline-size: none;
+    flex-basis: 100%;
+    padding-inline-start: 33px;
+  }
+}

@@ -12,6 +12,7 @@
  * WHO COUNTS. Nothing here adds rows up. A count is the total the server
  * answers for a list, cut to the rows the reader reaches.
  */
+import stages from "../../../stage.json";
 import type { Condition, Saved, StaffSession } from "../../staffSession.ts";
 
 export type Names = Record<string, string>;
@@ -63,6 +64,8 @@ export interface Action extends Record<string, unknown> {
   one_to_one_id: number | null;
   meeting_id: number | null;
   coaching_area_id: number | null;
+  /** The one-to-one session it came from, where the install keeps that (`sessionLinked`). */
+  session_id?: number | null;
 }
 
 export const ACTION_COLUMNS = ["id", "text", "owner_id", "set_by_id", "due_on", "done", "done_at", "source", "one_to_one_id", "meeting_id", "coaching_area_id"];
@@ -79,3 +82,59 @@ export function alsoIn(action: Pick<Action, "one_to_one_id" | "meeting_id" | "co
 /** Tick an action, or take the tick off: one write to the one row, naming what the screen saw. */
 export const tickAction = (session: StaffSession, action: Pick<Action, "id" | "done">, done: boolean): Promise<Saved<Action>> =>
   session.update<Action>("actions", action.id, { done }, { seen: { done: truthy(action.done) } });
+
+/**
+ * Whether an action keeps the session it came from (`actions.session_id`). The link came with the app's second stage
+ * (`stage.json`), so an install of the first stage has no such column: it is asked by the parts the install holds, a
+ * part of a later stage being one the first stage has not (switched on or off). A server that does not say has them all.
+ */
+export function sessionLinked(session: Pick<StaffSession, "config">): boolean {
+  const parts = session.config.modules;
+  if (parts === null || parts === undefined) return true;
+  const first = new Set<string>((stages.stages as Record<string, string[]>)["1"] ?? []);
+  return Object.keys(parts).some((part) => !first.has(part));
+}
+
+interface ModelTable {
+  id: string;
+  name: string;
+}
+interface ModelRelation {
+  id: string;
+  through: unknown;
+  from: { tableId: string; columns: string[] };
+  to: { tableId: string; columns: string[] };
+}
+export interface Model {
+  tables: ModelTable[];
+  relations: ModelRelation[];
+}
+
+/**
+ * The link a child table's rows hang on a parent by (`thread_members.thread_id` to `threads`), as the server names it
+ * in its schema: the key a save sends the child rows under, beside a new row (a conversation and its people, a
+ * starter and her steps). Tables are found by their stored names; null where the schema has no such link.
+ */
+export function relationIn(model: Model, child: string, column: string, parent: string): string | null {
+  const childId = model.tables.find((table) => table.name === child)?.id;
+  const parentId = model.tables.find((table) => table.name === parent)?.id;
+  if (childId === undefined || parentId === undefined) return null;
+  const found = model.relations.find((relation) => relation.through === null && relation.from.tableId === childId && relation.to.tableId === parentId && relation.from.columns.length === 1 && relation.from.columns[0] === column);
+  return found?.id ?? null;
+}
+
+const models = new WeakMap<object, Promise<Model>>();
+
+/**
+ * The same, asked of the server: the staff config names a table by its stored name only, while a link is named by the
+ * schema's table ids (which carry the database's schema). The schema is read once per page and person.
+ */
+export async function childLink(session: Pick<StaffSession, "tableId" | "call" | "connectionId">, child: string, column: string, parent: string): Promise<string | null> {
+  let model = models.get(session);
+  if (model === undefined) {
+    model = session.call<{ model: Model }>("GET", `/connections/${encodeURIComponent(session.connectionId)}/schema?raw=true`).then((reply) => reply.model);
+    models.set(session, model);
+    model.catch(() => models.delete(session));
+  }
+  return relationIn(await model, session.tableId(child), column, session.tableId(parent));
+}

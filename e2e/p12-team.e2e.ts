@@ -223,7 +223,7 @@ test("One-to-one notes: the ledger's record for Dana and Priya; a new session wi
   await expect(page.getByTestId("notes-next")).toContainText("09:00");
   await expect(page.getByTestId("notes-next")).toContainText("in 2 days");
   await expect(page.locator(".crm-no-session")).toHaveCount(3);
-  await expect(page.locator(".crm-no-session").first().locator(".crm-no-session-head")).toHaveText("Thu, Jul 1612 days ago");
+  await expect(page.locator(".crm-no-session").first().locator(".crm-no-session-head")).toHaveText("Thu, Jul 1612 days ago30 minutes");
   await expect(page.locator(".crm-no-session").nth(2).locator(".crm-no-session-head")).toContainText("40 days ago");
   await expect(page.getByTestId("notes-open-count")).toHaveText("2 of 5");
   await expect(page.getByTestId("notes-open").locator(".crm-tw-action")).toHaveCount(5);
@@ -296,8 +296,11 @@ test("One-to-one notes: the ledger's record for Dana and Priya; a new session wi
   expect(made.find((action) => action.text.includes("layout"))!.due_on?.slice(0, 10)).toBe("2026-07-31");
   await expect(page.getByTestId("notes-open").locator(".crm-tw-action", { hasText: "Spec: send Fernway the full-floor layout" })).toContainText("Priya · due Fri, Jul 31");
 
+  // The session lists the two actions it set (T04: an action keeps its session).
+  await expect(page.locator(".crm-no-session").first().getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveCount(2);
+  expect(made.every((action) => (action as { session_id?: number | null }).session_id !== null)).toBe(true);
   // Ticked here, it is done on the server and moves under "Ticked off".
-  await tick(page, "Spec: Ivy rings the Fernway buyer").click();
+  await tick(page.getByTestId("notes-open"), "Spec: Ivy rings the Fernway buyer").click();
   await expect(page.locator(".crm-toast")).toHaveText("Done.");
   await expect(page.getByTestId("notes-open-count")).toHaveText("2 of 4");
   await expect(page.getByTestId("notes-done").getByRole("checkbox", { name: "Spec: Ivy rings the Fernway buyer" })).toBeChecked();
@@ -394,7 +397,9 @@ test("the three action lists are one list: ticked in One-to-one notes, it is tic
   await page.goto(`${STAFF}one-to-ones`);
   await page.locator(".crm-tw-people").getByRole("button", { name: "Priya" }).click();
   await expect(page.getByTestId("notes-open-count")).toHaveText("1 of 2");
-  await tick(page, SHARED).click();
+  // The row is listed under the session that set it too (T04): it is ticked in "Still open".
+  await expect(page.locator(".crm-no-session").getByRole("checkbox", { name: SHARED, exact: true })).toHaveCount(1);
+  await tick(page.getByTestId("notes-open"), SHARED).click();
   await expect(page.locator(".crm-toast")).toHaveText("Done.");
   await expect(page.getByTestId("notes-open-count")).toHaveText("0 of 2");
   await expect(page.getByTestId("notes-open")).toContainText("Nothing outstanding. Rare and worth saying out loud.");

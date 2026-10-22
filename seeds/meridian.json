@@ -8321,7 +8321,8 @@
        "zh-TW": "Cobalt Legal 四樓花了整整半小時。Ines 希望第二次看場後修改配置圖。\n\n談定不再先拿隔音間折扣開場，改為交出隔音測試報告。",
        "ar-EG": "الدور الرابع في Cobalt Legal استغرق نصف الساعة كلها. تريد Ines تعديل المخطط بعد الزيارة الثانية.\n\nاتفقنا على عدم البدء بالخصم على الكبائن وتسليم ورقة اختبار العزل الصوتي بدلًا منه."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:dana:2026-07-02",
@@ -8349,7 +8350,8 @@
        "zh-TW": "有一半的進行中案件在兩家公司手上。我們聊了這算不算該明講的風險。\n\nDana 希望 Fernway 那次拜訪多一個人幫忙。Ivy 會去。",
        "ar-EG": "نصف الأعمال المفتوحة عند شركتين. ناقشنا هل هذا خطر يستحق الذكر.\n\nتريد Dana شخصًا آخر معها في زيارة Fernway. ستذهب Ivy."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:dana:2026-06-18",
@@ -8377,7 +8379,8 @@
        "zh-TW": "第一次談的是整年，而不是單季。目標談定為 140,000。\n\nDana 做配置圖比做追蹤快。我們盯的是待辦清單，不是圖面。",
        "ar-EG": "أول حديث عن السنة بدل الربع. اتُّفق على هدف 140,000.\n\nDana أسرع في المخططات منها في المتابعات. نراقب قائمة المتابعات لا الرسومات."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:priya:2026-07-16",
@@ -8405,7 +8408,8 @@
        "zh-TW": "Priya 在書面資料上占優勢。設施部門的人很重視印出來的隔音報告。\n\n談定由她寫下做法，讓其他人可以照著做。",
        "ar-EG": "Priya تكسب صفقاتها بالعروض المطبوعة. مسؤولو المرافق يأخذون ورقة العزل الصوتي المطبوعة بجدية.\n\nاتفقنا أن تكتب كيف تفعل ذلك ليحذو الآخرون حذوها."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:priya:2026-07-02",
@@ -8433,7 +8437,8 @@
        "zh-TW": "Juno Analytics 在一次不錯的會談後沒了動靜。Priya 沒有每週追，這樣是對的。\n\n聊了她八月的休假，以及誰代理哪些事。",
        "ar-EG": "Juno Analytics توقفت عن الرد بعد اجتماع جيد. Priya لا تتابع أسبوعيًا، وهذا صحيح.\n\nتحدثنا عن إجازتها في أغسطس ومن يغطي ماذا."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:sam:2026-07-17",
@@ -8461,7 +8466,8 @@
        "zh-TW": "Low Orbit 回來了。就是去年十月只要報價數字的那位採購。\n\nSam 要求任何數字送出前先現場拜訪。同意。",
        "ar-EG": "عادت Low Orbit. نفس المشتري الذي أراد رقمًا فقط في أكتوبر الماضي.\n\nيطلب Sam زيارة موقع قبل إرسال أي رقم. تمت الموافقة."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:sam:2026-07-03",
@@ -8489,7 +8495,8 @@
        "zh-TW": "Sam 有兩個案子在初步接觸卡太久。原因是第一次拜訪太慢，不是商機不好。\n\n我們把他的首訪目標改為五個工作天。",
        "ar-EG": "صفقتان من صفقات Sam بقيتا في الاستكشاف مدة طويلة. السبب بطء الزيارة الأولى لا ضعف العميل المحتمل.\n\nنقلنا هدف الزيارة الأولى لديه إلى خمسة أيام عمل."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:leo:2026-07-17",
@@ -8517,7 +8524,8 @@
        "zh-TW": "Leo 週五會把 Harbor & Finch 正式交接給 Dana。Callum 八月會沒消息，所以時間點很重要。\n\n他自己的客戶是刻意縮小的，因為要負責里茲展會的後續追蹤。",
        "ar-EG": "سيسلّم Leo حساب Harbor & Finch إلى Dana تسليمًا كاملًا يوم الجمعة. Callum يختفي في أغسطس فالتوقيت مهم.\n\nقائمة عملائه أصغر بقرار منه لأنه يتولى متابعات معرض ليدز."
       }
-     }
+     },
+     "minutes": 30
     },
     {
      "@label": "oosess:leo:2026-07-03",
@@ -8545,7 +8553,8 @@
        "zh-TW": "展會名單值得跟進，但不是全部。Leo 要挑六個。\n\n聊了什麼樣的詢問才算好，免得收件匣一直塞滿只問價格的詢問。",
        "ar-EG": "قائمة المعرض تستحق العمل عليها، لكن ليس كلها. سيختار Leo ستة.\n\nتحدثنا عن شكل الاستفسار الجيد حتى لا يمتلئ صندوق الوارد بطلبات السعر فقط."
       }
-     }
+     },
+     "minutes": 30
     }
    ]
   },
@@ -8648,7 +8657,32 @@
        "ar-EG": "المتابعات في يوم استحقاقها"
       }
      },
-     "position": 0
+     "position": 0,
+     "why": {
+      "@t": {
+       "en-US": "Three of her deals slipped a week because nobody came back on time.",
+       "de-DE": "Drei ihrer Deals sind eine Woche verrutscht, weil sich niemand rechtzeitig gemeldet hat.",
+       "fr-FR": "Trois de ses affaires ont glissé d’une semaine faute de relance à temps.",
+       "da-DK": "Tre af hendes handler gled en uge, fordi ingen vendte tilbage i tide.",
+       "cs-CZ": "Tři její obchody se posunuly o týden, protože se nikdo včas neozval.",
+       "ar-EG": "تأخرت ثلاث من صفقاتها أسبوعًا لأن أحدًا لم يعاود الاتصال في الوقت المحدد.",
+       "zh-CN": "她有三个商机拖了一周，因为没人按时回访。",
+       "zh-TW": "她有三個商機拖了一週，因為沒人準時回訪。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "Nothing past due on a Friday afternoon.",
+       "de-DE": "Freitagnachmittag ist nichts überfällig.",
+       "fr-FR": "Rien en retard le vendredi après-midi.",
+       "da-DK": "Intet forfaldent en fredag eftermiddag.",
+       "cs-CZ": "V pátek odpoledne nic po termínu.",
+       "ar-EG": "لا شيء متأخر بعد ظهر يوم الجمعة.",
+       "zh-CN": "周五下午没有任何逾期。",
+       "zh-TW": "週五下午沒有任何逾期。"
+      }
+     },
+     "measure": "late"
     },
     {
      "@label": "area:dana:1",
@@ -8673,7 +8707,32 @@
        "ar-EG": "اطلب القرار مبكرًا"
       }
      },
-     "position": 1
+     "position": 1,
+     "why": {
+      "@t": {
+       "en-US": "Her deals sit in Proposal longer than anyone else’s.",
+       "de-DE": "Ihre Deals bleiben länger im Angebot als die aller anderen.",
+       "fr-FR": "Ses affaires restent en Proposition plus longtemps que celles des autres.",
+       "da-DK": "Hendes handler står længere i Tilbud end alle andres.",
+       "cs-CZ": "Její obchody zůstávají v Nabídce déle než u kohokoli jiného.",
+       "ar-EG": "تبقى صفقاتها في مرحلة العرض أطول من صفقات أي شخص آخر.",
+       "zh-CN": "她的商机在“方案”阶段停留得比谁都久。",
+       "zh-TW": "她的商機在「提案」階段停留得比誰都久。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "Ask who signs and when, at the first meeting.",
+       "de-DE": "Beim ersten Termin fragen, wer unterschreibt und wann.",
+       "fr-FR": "Demander qui signe et quand, dès le premier rendez-vous.",
+       "da-DK": "Spørg ved første møde, hvem der skriver under og hvornår.",
+       "cs-CZ": "Na první schůzce se zeptat, kdo podepisuje a kdy.",
+       "ar-EG": "اسأل من يوقّع ومتى، في الاجتماع الأول.",
+       "zh-CN": "第一次见面就问清谁签字、什么时候签。",
+       "zh-TW": "第一次見面就問清誰簽字、什麼時候簽。"
+      }
+     },
+     "measure": "cycle"
     },
     {
      "@label": "area:priya:0",
@@ -8698,7 +8757,32 @@
        "ar-EG": "دوّن ما ينجح"
       }
      },
-     "position": 0
+     "position": 0,
+     "why": {
+      "@t": {
+       "en-US": "Her paper proposals win. Nobody else knows how she builds them.",
+       "de-DE": "Ihre Angebote auf Papier gewinnen. Niemand sonst weiß, wie sie sie aufbaut.",
+       "fr-FR": "Ses propositions papier gagnent. Personne d’autre ne sait comment elle les construit.",
+       "da-DK": "Hendes tilbud på papir vinder. Ingen andre ved, hvordan hun bygger dem op.",
+       "cs-CZ": "Její papírové nabídky vyhrávají. Nikdo jiný neví, jak je staví.",
+       "ar-EG": "عروضها الورقية تفوز، ولا أحد غيرها يعرف كيف تبنيها.",
+       "zh-CN": "她的纸质方案能赢单，但没人知道她是怎么做的。",
+       "zh-TW": "她的紙本提案能贏單，但沒人知道她是怎麼做的。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "One page the others can copy.",
+       "de-DE": "Eine Seite, die die anderen übernehmen können.",
+       "fr-FR": "Une page que les autres peuvent reprendre.",
+       "da-DK": "Én side, de andre kan kopiere.",
+       "cs-CZ": "Jedna stránka, kterou ostatní převezmou.",
+       "ar-EG": "صفحة واحدة يمكن للآخرين نسخها.",
+       "zh-CN": "一页纸，别人照着就能做。",
+       "zh-TW": "一頁紙，別人照著就能做。"
+      }
+     },
+     "measure": "win_rate"
     },
     {
      "@label": "area:priya:1",
@@ -8723,7 +8807,32 @@
        "ar-EG": "اطلب العمل الأكبر"
       }
      },
-     "position": 1
+     "position": 1,
+     "why": {
+      "@t": {
+       "en-US": "Her average deal is the smallest on the team, and not because of her patch.",
+       "de-DE": "Ihr durchschnittlicher Deal ist der kleinste im Team, und das liegt nicht an ihrem Gebiet.",
+       "fr-FR": "Son affaire moyenne est la plus petite de l’équipe, et pas à cause de son secteur.",
+       "da-DK": "Hendes gennemsnitlige handel er teamets mindste, og det skyldes ikke hendes distrikt.",
+       "cs-CZ": "Její průměrný obchod je v týmu nejmenší, a není to kvůli její oblasti.",
+       "ar-EG": "متوسط صفقاتها هو الأصغر في الفريق، وليس بسبب منطقتها.",
+       "zh-CN": "她的平均商机金额是团队里最小的，这跟她的区域无关。",
+       "zh-TW": "她的平均商機金額是團隊裡最小的，這跟她的區域無關。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "Quote the whole floor, not the corner of it.",
+       "de-DE": "Das ganze Stockwerk anbieten, nicht nur eine Ecke davon.",
+       "fr-FR": "Chiffrer tout l’étage, pas seulement un coin.",
+       "da-DK": "Giv tilbud på hele etagen, ikke kun et hjørne af den.",
+       "cs-CZ": "Nacenit celé patro, ne jen jeho roh.",
+       "ar-EG": "قدّم عرضًا للطابق كله، لا لزاوية منه.",
+       "zh-CN": "报整层楼的价，而不只是一个角落。",
+       "zh-TW": "報整層樓的價，而不只是一個角落。"
+      }
+     },
+     "measure": "average"
     },
     {
      "@label": "area:sam:0",
@@ -8748,7 +8857,32 @@
        "ar-EG": "انزل إلى الموقع أسرع"
       }
      },
-     "position": 0
+     "position": 0,
+     "why": {
+      "@t": {
+       "en-US": "Two deals sat in Discovery for weeks waiting on a first visit.",
+       "de-DE": "Zwei Deals standen wochenlang in der Erkundung und warteten auf einen ersten Besuch.",
+       "fr-FR": "Deux affaires sont restées des semaines en Découverte, en attente d’une première visite.",
+       "da-DK": "To handler stod i ugevis i Afdækning og ventede på et første besøg.",
+       "cs-CZ": "Dva obchody stály týdny ve Zjišťování a čekaly na první návštěvu.",
+       "ar-EG": "بقيت صفقتان في مرحلة الاستكشاف أسابيع بانتظار الزيارة الأولى.",
+       "zh-CN": "有两个商机在“了解需求”阶段等了好几周的首次上门。",
+       "zh-TW": "有兩個商機在「了解需求」階段等了好幾週的首次到場。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "On site inside five working days.",
+       "de-DE": "Innerhalb von fünf Arbeitstagen vor Ort.",
+       "fr-FR": "Sur place en cinq jours ouvrés.",
+       "da-DK": "På stedet inden for fem arbejdsdage.",
+       "cs-CZ": "Na místě do pěti pracovních dnů.",
+       "ar-EG": "في الموقع خلال خمسة أيام عمل.",
+       "zh-CN": "五个工作日内到现场。",
+       "zh-TW": "五個工作天內到現場。"
+      }
+     },
+     "measure": "first_stage"
     },
     {
      "@label": "area:sam:1",
@@ -8773,7 +8907,31 @@
        "ar-EG": "عاين الدور قبل أي رقم"
       }
      },
-     "position": 1
+     "position": 1,
+     "why": {
+      "@t": {
+       "en-US": "Low Orbit went cold last year on a figure given over the phone.",
+       "de-DE": "Low Orbit ist letztes Jahr wegen einer am Telefon genannten Zahl abgesprungen.",
+       "fr-FR": "Low Orbit s’est refroidi l’an dernier sur un chiffre donné par téléphone.",
+       "da-DK": "Low Orbit kølnede sidste år på et tal givet over telefonen.",
+       "cs-CZ": "Low Orbit loni vychladl kvůli číslu řečenému po telefonu.",
+       "ar-EG": "فترت Low Orbit العام الماضي بسبب رقم أُعطي عبر الهاتف.",
+       "zh-CN": "去年 Low Orbit 就是因为电话里报了个数而冷掉的。",
+       "zh-TW": "去年 Low Orbit 就是因為電話裡報了個數而冷掉的。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "Nobody gets a number without a walk-round.",
+       "de-DE": "Niemand bekommt eine Zahl ohne Begehung.",
+       "fr-FR": "Pas de chiffre sans visite des lieux.",
+       "da-DK": "Ingen får et tal uden en rundgang.",
+       "cs-CZ": "Nikdo nedostane číslo bez obhlídky.",
+       "ar-EG": "لا أحد يحصل على رقم دون جولة في المكان.",
+       "zh-CN": "不实地看过，谁也不报数。",
+       "zh-TW": "不實地看過，誰也不報數。"
+      }
+     }
     },
     {
      "@label": "area:leo:0",
@@ -8798,7 +8956,32 @@
        "ar-EG": "حافظ على قائمة عملائك أثناء العمل على قائمة المعرض"
       }
      },
-     "position": 0
+     "position": 0,
+     "why": {
+      "@t": {
+       "en-US": "Covering the enquiries has cost him his own deals.",
+       "de-DE": "Die Anfragen abzudecken hat ihn seine eigenen Deals gekostet.",
+       "fr-FR": "Couvrir les demandes lui a coûté ses propres affaires.",
+       "da-DK": "At dække forespørgslerne har kostet ham hans egne handler.",
+       "cs-CZ": "Pokrývání poptávek ho stálo jeho vlastní obchody.",
+       "ar-EG": "تغطية الاستفسارات كلفته صفقاته الخاصة.",
+       "zh-CN": "忙着接询盘，让他丢了自己的商机。",
+       "zh-TW": "忙著接詢問，讓他丟了自己的商機。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "Four deals of his own in play by October.",
+       "de-DE": "Bis Oktober vier eigene Deals im Spiel.",
+       "fr-FR": "Quatre affaires à lui en cours d’ici octobre.",
+       "da-DK": "Fire af hans egne handler i spil inden oktober.",
+       "cs-CZ": "Do října čtyři vlastní obchody ve hře.",
+       "ar-EG": "أربع صفقات خاصة به قيد العمل بحلول أكتوبر.",
+       "zh-CN": "到十月手上有四个自己的商机。",
+       "zh-TW": "到十月手上有四個自己的商機。"
+      }
+     },
+     "measure": "deals"
     },
     {
      "@label": "area:leo:1",
@@ -8823,7 +9006,31 @@
        "ar-EG": "سلّم الصفقات بشكل منظم"
       }
      },
-     "position": 1
+     "position": 1,
+     "why": {
+      "@t": {
+       "en-US": "The last handover left Dana chasing the contact for a week.",
+       "de-DE": "Nach der letzten Übergabe musste Dana dem Kontakt eine Woche hinterherlaufen.",
+       "fr-FR": "La dernière passation a laissé Dana courir après le contact pendant une semaine.",
+       "da-DK": "Den seneste overdragelse fik Dana til at jagte kontakten i en uge.",
+       "cs-CZ": "Po posledním předání Dana týden naháněla kontakt.",
+       "ar-EG": "تركت عملية التسليم الأخيرة Dana تلاحق جهة الاتصال لأسبوع.",
+       "zh-CN": "上次交接让 Dana 追了联系人一个星期。",
+       "zh-TW": "上次交接讓 Dana 追了聯絡人一個星期。"
+      }
+     },
+     "good_looks_like": {
+      "@t": {
+       "en-US": "The next person needs no more than the note.",
+       "de-DE": "Die nächste Person braucht nicht mehr als die Notiz.",
+       "fr-FR": "La personne suivante n’a besoin que de la note.",
+       "da-DK": "Den næste har ikke brug for mere end noten.",
+       "cs-CZ": "Další člověk nepotřebuje nic víc než poznámku.",
+       "ar-EG": "لا يحتاج الشخص التالي إلى أكثر من الملاحظة.",
+       "zh-CN": "下一个人只看交接备注就够了。",
+       "zh-TW": "下一個人只看交接備註就夠了。"
+      }
+     }
     }
    ]
   },
@@ -10135,6 +10342,9 @@
      },
      "manager_id": {
       "@person": "ivy"
+     },
+     "patch": {
+      "@ref": "terr:1"
      }
     }
    ]

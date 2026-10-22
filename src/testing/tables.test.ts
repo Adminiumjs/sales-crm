@@ -155,9 +155,11 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   reps: { nullable: ["tint", "hours_from", "hours_to", "landing"] },
   targets: { nullable: [] },
   one_to_ones: { nullable: ["next_at"] },
-  one_to_one_sessions: { nullable: ["notes"] },
+  // T04 (S5): something else raised and how long it ran, empty on an updated install; the four ticks default to no.
+  one_to_one_sessions: { nullable: ["notes", "raised", "minutes"] },
   coaching_plans: { nullable: ["review_on", "runs_to"] },
-  coaching_areas: { nullable: [] },
+  // T04 (S5): why, what good looks like and its live number, empty on an updated install.
+  coaching_areas: { nullable: ["why", "good_looks_like", "measure"] },
   // An action keeps the one-to-one session it came from (F19), as well as the pair, the meeting and the coaching area.
   actions: { nullable: ["due_on", "done_at", "one_to_one_id", "session_id", "meeting_id", "coaching_area_id"] },
   meetings: { nullable: [] },
@@ -166,7 +168,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   threads: { nullable: ["title"] },
   thread_members: { nullable: ["read_at"] },
   messages: { nullable: [] },
-  starters: { nullable: ["first_year_target", "user_id"] },
+  starters: { nullable: ["first_year_target", "user_id", "patch"] },
   starter_steps: { nullable: ["owner_id"] },
   covers: { nullable: ["ends_on", "note"] },
   cover_notes: { nullable: [] },
