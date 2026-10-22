@@ -554,7 +554,7 @@ for (const [dialect, reachable] of LEGS) {
       }
       if (otherJob !== undefined) await gone('dana', 'jobs', otherJob);
       const starter = (await get('dana', 'starters', '?limit=1')).json() as { data: Record<string, unknown>[] };
-      t('25 a rep reads a starter\'s name and day, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'starts_on', 'user_id']);
+      t('25 a rep reads a starter\'s name, day and patch, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'patch', 'starts_on', 'user_id']);
       const step = (await ids(`SELECT id FROM ${s.real('starter_steps')}`))[0]!;
       t('26 a rep ticks a starter\'s step and does not reword it', [said(await patch('dana', 'starter_steps', step, { done: true })), refused(await patch('dana', 'starter_steps', step, { text: 'Skip this' }))], ['ok', '403']);
       t('27 a rep does not change a setting', refused(await patch('dana', 'settings', 1, { approval_threshold_pct: 90 })), '403');
@@ -1379,13 +1379,13 @@ for (const [dialect, reachable] of LEGS) {
 
       // A ONE-TO-ONE SESSION keeps what was covered, what else was raised and how long it ran: the manager's to write.
       const pair = await one(`SELECT id, manager_id, rep_id FROM ${s.real('one_to_ones')} WHERE rep_id = '${s.id['dana']!}'`);
-      const session = { one_to_one_id: pair['id'], manager_id: pair['manager_id'], rep_id: pair['rep_id'], held_on: '2026-07-28', notes: 'T04 spec: the session', cover_biggest: true, cover_late: true, raise: 'T04 spec: the August cover', minutes: 30 };
+      const session = { one_to_one_id: pair['id'], manager_id: pair['manager_id'], rep_id: pair['rep_id'], held_on: '2026-07-28', notes: 'T04 spec: the session', cover_biggest: true, cover_late: true, raised: 'T04 spec: the August cover', minutes: 30 };
       expect(said(await post('dana', 'one_to_one_sessions', session))).toMatch(/^403/);
       expect(said(await post('ivy', 'one_to_one_sessions', { ...session, minutes: 300 }))).toMatch(/^4/);
       const held = await post('ivy', 'one_to_one_sessions', session);
       expect(held.statusCode, held.body).toBe(201);
-      const kept = await one(`SELECT cover_sitting, cover_biggest, cover_target, cover_late, raise, minutes FROM ${s.real('one_to_one_sessions')} WHERE id = ${String(made(held))}`);
-      expect([yesOf(kept['cover_sitting']), yesOf(kept['cover_biggest']), yesOf(kept['cover_target']), yesOf(kept['cover_late']), kept['raise'], Number(kept['minutes'])]).toEqual([false, true, false, true, 'T04 spec: the August cover', 30]);
+      const kept = await one(`SELECT cover_sitting, cover_biggest, cover_target, cover_late, raised, minutes FROM ${s.real('one_to_one_sessions')} WHERE id = ${String(made(held))}`);
+      expect([yesOf(kept['cover_sitting']), yesOf(kept['cover_biggest']), yesOf(kept['cover_target']), yesOf(kept['cover_late']), kept['raised'], Number(kept['minutes'])]).toEqual([false, true, false, true, 'T04 spec: the August cover', 30]);
       // An action it sets keeps it, and the rep reads which session it came from.
       const action = await post('ivy', 'actions', { text: 'T04 spec: send the layout', owner_id: s.id['dana'], source: 'one-to-one', one_to_one_id: pair['id'], session_id: made(held) });
       expect(action.statusCode, action.body).toBe(201);

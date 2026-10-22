@@ -227,7 +227,7 @@ test("One-to-one notes: what to cover ticked off and something else raised, kept
   await expect(first.getByTestId("notes-covered").locator("li")).toHaveText(["The deal longest in its stage", "Follow-ups past due", "Spec: the August cover"]);
   await expect(first.getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveText(/Spec: brief Sam on Cobalt Legal/);
   const session = (await rows<Record<string, unknown>>(ivy, data, "one_to_one_sessions", { column: "notes", op: "like", value: "Spec: %" }))[0]!;
-  expect([isYes(session["cover_sitting"]), isYes(session["cover_biggest"]), isYes(session["cover_target"]), isYes(session["cover_late"]), session["raise"], Number(session["minutes"])]).toEqual([true, false, false, true, "Spec: the August cover", 30]);
+  expect([isYes(session["cover_sitting"]), isYes(session["cover_biggest"]), isYes(session["cover_target"]), isYes(session["cover_late"]), session["raised"], Number(session["minutes"])]).toEqual([true, false, false, true, "Spec: the August cover", 30]);
   const action = (await rows<{ session_id: number | null }>(ivy, data, "actions", { column: "text", op: "eq", value: "Spec: brief Sam on Cobalt Legal" }))[0]!;
   expect(action.session_id).toBe(session["id"]);
 

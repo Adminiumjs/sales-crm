@@ -133,13 +133,13 @@ describe("T04: the Team screens' left-out pieces", () => {
   const pair = { id: 4, manager_id: "ivy", rep_id: "dana", next_at: null };
   it("saves a session with every drawn tick, yes or no, what else was raised one line each, and its length", () => {
     const row = sessionRow(pair, { held_on: "2026-07-28", notes: "Spec", covered: ["biggest", "late"], raised: [" The August cover ", "", "Leeds"], minutes: 30 });
-    expect(row).toEqual({ one_to_one_id: 4, manager_id: "ivy", rep_id: "dana", held_on: "2026-07-28", notes: "Spec", cover_sitting: false, cover_biggest: true, cover_target: false, cover_late: true, raise: "The August cover\nLeeds", minutes: 30 });
+    expect(row).toEqual({ one_to_one_id: 4, manager_id: "ivy", rep_id: "dana", held_on: "2026-07-28", notes: "Spec", cover_sitting: false, cover_biggest: true, cover_target: false, cover_late: true, raised: "The August cover\nLeeds", minutes: 30 });
     expect(TOPICS.length).toBe(4);
   });
   it("keeps nothing raised as empty, and reads a kept one back line by line", () => {
-    expect(sessionRow(pair, { held_on: "2026-07-28", notes: "x", covered: [], raised: ["  "], minutes: null })).toMatchObject({ raise: null, minutes: null });
-    expect(raisedOf({ raise: "A\n\n B \n" })).toEqual(["A", "B"]);
-    expect(raisedOf({ raise: null })).toEqual([]);
+    expect(sessionRow(pair, { held_on: "2026-07-28", notes: "x", covered: [], raised: ["  "], minutes: null })).toMatchObject({ raised: null, minutes: null });
+    expect(raisedOf({ raised: "A\n\n B \n" })).toEqual(["A", "B"]);
+    expect(raisedOf({ raised: null })).toEqual([]);
   });
   it("knows an install of the first stage has no session link: by the parts it holds, whatever is switched on", () => {
     const parts = (modules: Record<string, boolean> | null) => ({ config: { modules } }) as unknown as StaffSession;

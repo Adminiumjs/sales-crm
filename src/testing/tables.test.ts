@@ -156,7 +156,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   targets: { nullable: [] },
   one_to_ones: { nullable: ["next_at"] },
   // T04 (S5): something else raised and how long it ran, empty on an updated install; the four ticks default to no.
-  one_to_one_sessions: { nullable: ["notes", "raise", "minutes"] },
+  one_to_one_sessions: { nullable: ["notes", "raised", "minutes"] },
   coaching_plans: { nullable: ["review_on", "runs_to"] },
   // T04 (S5): why, what good looks like and its live number, empty on an updated install.
   coaching_areas: { nullable: ["why", "good_looks_like", "measure"] },

@@ -37,11 +37,11 @@ export interface Session extends Record<string, unknown> {
   cover_target?: unknown;
   cover_late?: unknown;
   /** Something else raised, one line each; empty on a session written before 0.2.2. */
-  raise?: string | null;
+  raised?: string | null;
   /** How long it ran; empty when nobody said. */
   minutes?: number | string | null;
 }
-const SESSION_COLUMNS = ["id", "one_to_one_id", "held_on", "notes", ...TOPICS.map(topicColumn), "raise", "minutes"];
+const SESSION_COLUMNS = ["id", "one_to_one_id", "held_on", "notes", ...TOPICS.map(topicColumn), "raised", "minutes"];
 export interface Raise {
   kind: "sitting" | "biggest" | "target" | "late";
   deal?: string;
@@ -131,14 +131,14 @@ export function sessionRow(pair: OneToOne, values: SessionValues): Record<string
     held_on: values.held_on,
     notes: values.notes,
     ...Object.fromEntries(TOPICS.map((topic) => [topicColumn(topic), values.covered.includes(topic)])),
-    raise: raised.length === 0 ? null : raised.join("\n"),
+    raised: raised.length === 0 ? null : raised.join("\n"),
     minutes: values.minutes,
   };
 }
 
 /** The lines a session raised, as kept: one each. */
-export const raisedOf = (one: Pick<Session, "raise">): string[] =>
-  (one.raise ?? "")
+export const raisedOf = (one: Pick<Session, "raised">): string[] =>
+  (one.raised ?? "")
     .split(/\n+/)
     .map((line) => line.trim())
     .filter((line) => line !== "");

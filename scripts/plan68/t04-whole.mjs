@@ -4,7 +4,7 @@
  *
  *  - `meeting_slots.covered`: a running-order tick (yes/no, no by default);
  *  - `one_to_one_sessions`: the four drawn "what to cover" ticks (`cover_sitting`, `cover_biggest`, `cover_target`,
- *    `cover_late`, yes/no, no by default), "something else to raise" (`raise`, text, empty) and how long it ran
+ *    `cover_late`, yes/no, no by default), "something else to raise" (`raised`, text, empty; not `raise`, a word SQLite keeps for itself) and how long it ran
  *    (`minutes`, a number, empty);
  *  - `coaching_areas`: "why" (`why`), "what good looks like" (`good_looks_like`), both text and empty, and which live
  *    number the area is measured by (`measure`, empty: no number);
@@ -63,8 +63,8 @@ for (const [ref, label] of TOPICS) {
   addColumn("one_to_one_sessions", { ref, type: "bool", default: false, label }, after);
   after = ref;
 }
-addColumn("one_to_one_sessions", { ref: "raise", type: "text", nullable: true, label: L("Something else to raise", "Was sonst noch anzusprechen ist", "Autre chose à aborder", "Andet at tage op", "Co dalšího probrat", "شيء آخر للطرح", "其他要提的事", "其他要提的事"), rules: { validation: { maxLength: 400 } } }, "cover_late");
-addColumn("one_to_one_sessions", { ref: "minutes", type: "int", nullable: true, label: L("Minutes", "Minuten", "Minutes", "Minutter", "Minuty", "الدقائق", "分钟", "分鐘"), rules: { validation: { min: 5, max: 240 } } }, "raise");
+addColumn("one_to_one_sessions", { ref: "raised", type: "text", nullable: true, label: L("Something else to raise", "Was sonst noch anzusprechen ist", "Autre chose à aborder", "Andet at tage op", "Co dalšího probrat", "شيء آخر للطرح", "其他要提的事", "其他要提的事"), rules: { validation: { maxLength: 400 } } }, "cover_late");
+addColumn("one_to_one_sessions", { ref: "minutes", type: "int", nullable: true, label: L("Minutes", "Minuten", "Minutes", "Minutter", "Minuty", "الدقائق", "分钟", "分鐘"), rules: { validation: { min: 5, max: 240 } } }, "raised");
 
 /* ─── A coaching area: why, what good looks like, and its live number ──────── */
 
