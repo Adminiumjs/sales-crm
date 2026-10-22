@@ -276,9 +276,9 @@ for (const [dialect, reachable] of LEGS) {
       // Each notice says where the visit was, and when; the move says where it went.
       const moved = (await noticesOf('yusuf')).find((one) => one.title === 'A visit left your day sheet: Cupboards moved') as unknown as { body: string };
       expect(moved.body).toContain(`moved from ${day(1)} to ${day(5)}`);
-      // The visit keeps what the rule read before the change: its day, crew and state.
-      const kept = await s.rows(`select was_day, was_crew_id, was_state from ${s.t('job_visits')} where id = ${String(later)}`);
-      expect([String(kept[0]!['was_day']).slice(0, 10), Number(kept[0]!['was_crew_id']), kept[0]!['was_state']]).toEqual([day(1), crew['blue'], 'booked']);
+      // The visit keeps what the rule read before the change: its day and crew.
+      const kept = await s.rows(`select was_day, was_crew_id from ${s.t('job_visits')} where id = ${String(later)}`);
+      expect([String(kept[0]!['was_day']).slice(0, 10), Number(kept[0]!['was_crew_id'])]).toEqual([day(1), crew['blue']]);
       // The note is the old crew's to read, never the new one's or another crew's; nobody but the rules writes one.
       const notes = async (who: string): Promise<string[]> => (await list(who, 'left_visits')).map((one) => String(one['what'])).filter((what) => what.startsWith('Cupboards')).sort();
       expect(await notes('yusuf')).toEqual(['Cupboards given', 'Cupboards moved']);

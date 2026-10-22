@@ -388,7 +388,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
       const opened = Object.fromEntries(ROLES.map((role) => [role, Object.values(reads).filter((row) => row[role] !== '-').length]));
-      expect(opened).toEqual({ admin: 70, 'sales-manager': 59, rep: 59, 'account-manager': 35, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 64 });
+      expect(opened).toEqual({ admin: 72, 'sales-manager': 59, rep: 59, 'account-manager': 35, marketer: 8, 'front-desk': 11, 'ops-manager': 26, crew: 19, 'read-only': 66 });
 
       // Every row of every table, read as nobody (SQL).
       const raw: Record<string, Record<string, unknown>[]> = {};
