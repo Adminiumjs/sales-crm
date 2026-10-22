@@ -229,6 +229,13 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "note",
       "stock_ready_on",
       "cancel_reason",
+      // What a rule last read of the visit's day, crew and state, and when they last changed (plan 68 D17).
+      "was_day",
+      "was_crew_id",
+      "was_state",
+      "moved_at",
+      "now_crew_id",
+      "crew_moved",
       "site_address",
       "site_town",
       "site_phone",
@@ -255,15 +262,20 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   // What a note comes to (kept from its lines) and whether it needs sorting: short, damaged or unsigned, until the office sorts it.
   delivery_notes: { nullable: ["crew_id", "taken_by_id", "signed_by_contact_id", "signed_name", "note", "short", "sorted_on", "needs_sorting"] },
   delivery_note_lines: { nullable: ["crew_id"] },
+  // A visit that left a crew's today or tomorrow, for that crew (plan 68 D17): written by the rules only.
+  left_visits: { nullable: ["visit_id", "site_name", "site_town", "day", "now_day"] },
   waste_removals: { nullable: ["carrier", "note_number"] },
   // After the job
   feedback: { nullable: ["text", "theme", "replied_at", "fix_written"] },
   complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "answer", "fairness", "answered_at", "settled_at"] },
   warranty_claims: { nullable: ["contact_id", "part", "cover", "cover_years", "supplier_name", "supplier", "paid_by"] },
   // Supply
-  deal_stock_needs: { nullable: ["qty", "item"] },
+  // The visit a need's stock goes on, and that visit's crew (kept by the server): empty until a visit takes it (S14).
+  deal_stock_needs: { nullable: ["qty", "item", "visit_id", "crew_id"] },
   // Vehicles and crew
-  vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to", "last_fill_reading", "reading"] },
+  vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to", "hired_from", "hired_to", "last_fill_reading", "reading"] },
+  // A crew's vehicle for a day (S14, D16): the vehicle's plate and name kept on the row.
+  van_days: { nullable: ["plate", "vehicle_name"] },
   vehicle_checks: { nullable: [] },
   vehicle_faults: { nullable: ["raised_by_id", "fixed_on", "photo"] },
   fuel_fills: { nullable: ["prev_odometer", "distance"] },
@@ -303,8 +315,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
-/** How many tables the manifest holds: the 72 of the app's ten parts, the price list, and the weekdays a crew works. */
-const TABLE_COUNT = 75;
+/** How many tables the manifest holds: the 74 of the app's ten parts, the price list, and the weekdays a crew works. */
+const TABLE_COUNT = 77;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -454,7 +466,7 @@ describe("the manifest holds the tables listed here, and no other", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
 
-  it("has seventy-three of them", () => {
+  it("has seventy-seven of them", () => {
     expect(tables).toHaveLength(TABLE_COUNT);
     expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });
@@ -815,7 +827,9 @@ describe("a crew reaches its own work, and a rep the work on their deals", () =>
     expect(byRef.get("jobs")?.belongs).toEqual([{ via: "deal_id" }]);
     expect(byRef.get("feedback")?.belongs).toEqual([{ via: "job_id" }]);
     expect(byRef.get("warranty_claims")?.belongs).toEqual([{ via: "job_id" }]);
-    expect(byRef.get("deal_stock_needs")?.belongs).toEqual([{ via: "deal_id" }]);
+    // …and the crew of the visit its stock goes on, by the copy of that visit's crew (S14, "What to load").
+    expect(byRef.get("deal_stock_needs")?.belongs).toEqual([{ via: "deal_id" }, CREW_WAY]);
+    expect(byRef.get("deal_stock_needs")?.columns.find((column) => column.ref === "crew_id")?.rules?.copy).toEqual(follows("visit_id", "crew_id"));
     expect(byRef.get("time_sheet_lines")?.belongs).toEqual([{ via: "sheet_id" }]);
   });
 

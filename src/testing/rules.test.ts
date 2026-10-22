@@ -74,13 +74,14 @@ describe("the rules the app ships", () => {
   const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "approval-refused", "week-rep", "week-manager"];
   // Jobs on site tells a crew at once that today's or tomorrow's sheet changed (e-mail 10). It arrives with its part, which an
   // update brings switched off; the rule is on, so the day the owner switches the part on the crew is told.
-  const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved"];
+  // A crew the visit LEFT is told too (plan 68 D17): two rules note it for that crew, one tells them.
+  const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left", "day-sheet-left-removed", "day-sheet-left-told"];
   // After the job books the aftercare call a signed-off job is owed (rule 16): on, as its part brings it.
   const AFTER = ["aftercare-call"];
   // A customer's yes on a lost deal tells its owner (plan 68 R1a): it tells people, and ships on (D2).
   const YES = ["quote-yes-on-lost"];
 
-  it("are twenty-one: six the app works by, a late yes, three that tell a crew and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
+  it("are twenty-four (the most a manifest takes): six the app works by, a late yes, six that tell a crew and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
     expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...AFTER]);
     for (const one of m.automations) {
       expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || YES.includes(one.key) || CREW.includes(one.key) || AFTER.includes(one.key));

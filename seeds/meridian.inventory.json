@@ -567,6 +567,18 @@
      "item": {
       "@ref": "inv:item:s10"
      }
+    },
+    {
+     "deal_id": {
+      "@ref": "deal:h5"
+     },
+     "item": {
+      "@ref": "inv:item:s8"
+     },
+     "qty": 2,
+     "visit_id": {
+      "@ref": "jobvisit:j5"
+     }
     }
    ]
   }

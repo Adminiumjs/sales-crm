@@ -12901,6 +12901,210 @@
         ]
       },
       {
+        "ref": "van_days",
+        "module": "fleet",
+        "label": {
+          "en-US": "Vehicle for a crew’s day",
+          "de-DE": "Fahrzeug für den Tag eines Teams",
+          "fr-FR": "Véhicule de la journée d’une équipe",
+          "da-DK": "Køretøj til et holds dag",
+          "cs-CZ": "Vozidlo na den čety",
+          "ar-EG": "مركبة يوم الطاقم",
+          "zh-CN": "班组当天的车辆",
+          "zh-TW": "班組當天的車輛"
+        },
+        "labelPlural": {
+          "en-US": "Vehicles for crews’ days",
+          "de-DE": "Fahrzeuge für die Tage der Teams",
+          "fr-FR": "Véhicules des journées d’équipe",
+          "da-DK": "Køretøjer til holdenes dage",
+          "cs-CZ": "Vozidla na dny čet",
+          "ar-EG": "مركبات أيام الطواقم",
+          "zh-CN": "班组每天的车辆",
+          "zh-TW": "班組每天的車輛"
+        },
+        "unique": [
+          [
+            "crew_id",
+            "day"
+          ]
+        ],
+        "indexes": [
+          [
+            "vehicle_id"
+          ],
+          [
+            "day"
+          ]
+        ],
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          }
+        ],
+        "occupies": {
+          "resource": "vehicle_id",
+          "day": "day"
+        },
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "crew_id",
+            "type": "fk",
+            "references": "crews",
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Team",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Četa",
+              "ar-EG": "الطاقم",
+              "zh-CN": "班组",
+              "zh-TW": "班組"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "rules": {
+              "notBefore": {
+                "column": "hired_from",
+                "via": "vehicle_id"
+              },
+              "notAfter": {
+                "column": "hired_to",
+                "via": "vehicle_id"
+              }
+            },
+            "label": {
+              "en-US": "Day",
+              "de-DE": "Tag",
+              "fr-FR": "Jour",
+              "da-DK": "Dag",
+              "cs-CZ": "Den",
+              "ar-EG": "اليوم",
+              "zh-CN": "日期",
+              "zh-TW": "日期"
+            }
+          },
+          {
+            "ref": "vehicle_id",
+            "type": "fk",
+            "references": "vehicles",
+            "label": {
+              "en-US": "Vehicle",
+              "de-DE": "Fahrzeug",
+              "fr-FR": "Véhicule",
+              "da-DK": "Køretøj",
+              "cs-CZ": "Vozidlo",
+              "ar-EG": "المركبة",
+              "zh-CN": "车辆",
+              "zh-TW": "車輛"
+            }
+          },
+          {
+            "ref": "plate",
+            "type": "text",
+            "maxLength": 20,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "vehicle_id",
+                "from": "plate",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Number plate",
+              "de-DE": "Kennzeichen",
+              "fr-FR": "Immatriculation",
+              "da-DK": "Nummerplade",
+              "cs-CZ": "SPZ",
+              "ar-EG": "رقم اللوحة",
+              "zh-CN": "车牌",
+              "zh-TW": "車牌"
+            }
+          },
+          {
+            "ref": "vehicle_name",
+            "type": "text",
+            "maxLength": 80,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "vehicle_id",
+                "from": "name",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Vehicle name",
+              "de-DE": "Fahrzeugname",
+              "fr-FR": "Nom du véhicule",
+              "da-DK": "Køretøjets navn",
+              "cs-CZ": "Název vozidla",
+              "ar-EG": "اسم المركبة",
+              "zh-CN": "车辆名称",
+              "zh-TW": "車輛名稱"
+            }
+          },
+          {
+            "ref": "hired",
+            "type": "bool",
+            "default": false,
+            "rules": {
+              "copy": {
+                "via": "vehicle_id",
+                "from": "hired",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Hired",
+              "de-DE": "Gemietet",
+              "fr-FR": "En location",
+              "da-DK": "Lejet",
+              "cs-CZ": "Najaté",
+              "ar-EG": "مستأجرة",
+              "zh-CN": "租用",
+              "zh-TW": "租用"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de nouvel essai",
+              "da-DK": "Genforsøgsnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة المحاولة",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
+          }
+        ]
+      },
+      {
         "ref": "job_visits",
         "module": "jobs",
         "label": {
@@ -13354,6 +13558,193 @@
             }
           },
           {
+            "ref": "was_day",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Day before the last change, as a rule last read it",
+              "de-DE": "Tag vor der letzten Änderung, wie eine Regel ihn zuletzt las",
+              "fr-FR": "Jour avant la dernière modification, tel qu’une règle l’a lu en dernier",
+              "da-DK": "Dag før den seneste ændring, som en regel sidst læste den",
+              "cs-CZ": "Den před poslední změnou, jak jej naposledy přečetlo pravidlo",
+              "ar-EG": "اليوم قبل آخر تغيير كما قرأته قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的上次更改前的日期",
+              "zh-TW": "規則最近讀到的上次變更前的日期"
+            }
+          },
+          {
+            "ref": "was_crew_id",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Crew before the last change, as a rule last read it",
+              "de-DE": "Team vor der letzten Änderung, wie eine Regel es zuletzt las",
+              "fr-FR": "Équipe avant la dernière modification, telle qu’une règle l’a lue en dernier",
+              "da-DK": "Hold før den seneste ændring, som en regel sidst læste det",
+              "cs-CZ": "Četa před poslední změnou, jak ji naposledy přečetlo pravidlo",
+              "ar-EG": "الطاقم قبل آخر تغيير كما قرأته قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的上次更改前的班组",
+              "zh-TW": "規則最近讀到的上次變更前的班組"
+            }
+          },
+          {
+            "ref": "was_state",
+            "type": "enum",
+            "enum": [
+              "waiting",
+              "booked",
+              "done"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "waiting": {
+                    "en-US": "Waiting",
+                    "de-DE": "Wartet",
+                    "fr-FR": "En attente",
+                    "da-DK": "Venter",
+                    "cs-CZ": "Čeká",
+                    "ar-EG": "قيد الانتظار",
+                    "zh-CN": "待排期",
+                    "zh-TW": "待排程"
+                  },
+                  "booked": {
+                    "en-US": "Booked",
+                    "de-DE": "Gebucht",
+                    "fr-FR": "Réservée",
+                    "da-DK": "Booket",
+                    "cs-CZ": "Zarezervováno",
+                    "ar-EG": "محجوزة",
+                    "zh-CN": "已排期",
+                    "zh-TW": "已排程"
+                  },
+                  "done": {
+                    "en-US": "Done",
+                    "de-DE": "Erledigt",
+                    "fr-FR": "Faite",
+                    "da-DK": "Udført",
+                    "cs-CZ": "Hotovo",
+                    "ar-EG": "تمت",
+                    "zh-CN": "已完成",
+                    "zh-TW": "已完成"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State before the last change, as a rule last read it",
+              "de-DE": "Stand vor der letzten Änderung, wie eine Regel ihn zuletzt las",
+              "fr-FR": "État avant la dernière modification, tel qu’une règle l’a lu en dernier",
+              "da-DK": "Tilstand før den seneste ændring, som en regel sidst læste den",
+              "cs-CZ": "Stav před poslední změnou, jak jej naposledy přečetlo pravidlo",
+              "ar-EG": "الحالة قبل آخر تغيير كما قرأتها قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的上次更改前的状态",
+              "zh-TW": "規則最近讀到的上次變更前的狀態"
+            }
+          },
+          {
+            "ref": "moved_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "columns": [
+                    "day",
+                    "crew_id",
+                    "state"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Day, crew or state last changed",
+              "de-DE": "Tag, Team oder Stand zuletzt geändert",
+              "fr-FR": "Jour, équipe ou état modifié en dernier",
+              "da-DK": "Dag, hold eller tilstand sidst ændret",
+              "cs-CZ": "Den, četa nebo stav naposledy změněny",
+              "ar-EG": "آخر تغيير لليوم أو الطاقم أو الحالة",
+              "zh-CN": "日期、班组或状态最近更改于",
+              "zh-TW": "日期、班組或狀態最近變更於"
+            }
+          },
+          {
+            "ref": "now_crew_id",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Crew after the last change, as a rule last read it",
+              "de-DE": "Team nach der letzten Änderung, wie eine Regel es zuletzt las",
+              "fr-FR": "Équipe après la dernière modification, telle qu’une règle l’a lue en dernier",
+              "da-DK": "Hold efter den seneste ændring, som en regel sidst læste det",
+              "cs-CZ": "Četa po poslední změně, jak ji naposledy přečetlo pravidlo",
+              "ar-EG": "الطاقم بعد آخر تغيير كما قرأته قاعدة آخر مرة",
+              "zh-CN": "规则最近读到的上次更改后的班组",
+              "zh-TW": "規則最近讀到的上次變更後的班組"
+            }
+          },
+          {
+            "ref": "crew_moved",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "or": [
+                      {
+                        "lt": [
+                          {
+                            "coalesce": [
+                              "now_crew_id",
+                              0
+                            ]
+                          },
+                          {
+                            "coalesce": [
+                              "was_crew_id",
+                              0
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "gt": [
+                          {
+                            "coalesce": [
+                              "now_crew_id",
+                              0
+                            ]
+                          },
+                          {
+                            "coalesce": [
+                              "was_crew_id",
+                              0
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Crew changed since a rule last read it",
+              "de-DE": "Team geändert, seit eine Regel es zuletzt las",
+              "fr-FR": "Équipe changée depuis la dernière lecture d’une règle",
+              "da-DK": "Hold ændret, siden en regel sidst læste det",
+              "cs-CZ": "Četa změněna od posledního čtení pravidlem",
+              "ar-EG": "تغيّر الطاقم منذ آخر قراءة لقاعدة",
+              "zh-CN": "自规则上次读取后班组已更改",
+              "zh-TW": "自規則上次讀取後班組已變更"
+            }
+          },
+          {
             "ref": "tick_loaded",
             "type": "bool",
             "default": false,
@@ -13576,6 +13967,229 @@
               "ar-EG": "مفتاح إعادة الإرسال",
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
+            }
+          }
+        ]
+      },
+      {
+        "ref": "left_visits",
+        "module": "jobs",
+        "label": {
+          "en-US": "Visit off a crew’s day sheet",
+          "de-DE": "Einsatz vom Tagesblatt eines Teams genommen",
+          "fr-FR": "Intervention retirée de la feuille de route d’une équipe",
+          "da-DK": "Besøg taget af et holds dagsark",
+          "cs-CZ": "Výjezd vyřazený z denního listu čety",
+          "ar-EG": "زيارة خرجت من ورقة يوم الطاقم",
+          "zh-CN": "从班组日程单上移走的上门",
+          "zh-TW": "從班組日程單上移走的到訪"
+        },
+        "labelPlural": {
+          "en-US": "Visits off crews’ day sheets",
+          "de-DE": "Einsätze von Tagesblättern genommen",
+          "fr-FR": "Interventions retirées des feuilles de route",
+          "da-DK": "Besøg taget af holdenes dagsark",
+          "cs-CZ": "Výjezdy vyřazené z denních listů",
+          "ar-EG": "زيارات خرجت من أوراق أيام الطواقم",
+          "zh-CN": "从班组日程单上移走的上门",
+          "zh-TW": "從班組日程單上移走的到訪"
+        },
+        "keyField": "what",
+        "indexes": [
+          [
+            "crew_id"
+          ],
+          [
+            "visit_id"
+          ]
+        ],
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          }
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "crew_id",
+            "type": "fk",
+            "references": "crews",
+            "label": {
+              "en-US": "Crew it left",
+              "de-DE": "Team, das ihn hatte",
+              "fr-FR": "Équipe qui l’avait",
+              "da-DK": "Holdet, der havde det",
+              "cs-CZ": "Četa, která jej měla",
+              "ar-EG": "الطاقم الذي كانت له",
+              "zh-CN": "原班组",
+              "zh-TW": "原班組"
+            }
+          },
+          {
+            "ref": "visit_id",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "上门",
+              "zh-TW": "到訪"
+            }
+          },
+          {
+            "ref": "what",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "What is done",
+              "de-DE": "Was gemacht wird",
+              "fr-FR": "Ce qui est fait",
+              "da-DK": "Hvad der laves",
+              "cs-CZ": "Co se dělá",
+              "ar-EG": "ما يُنجز",
+              "zh-CN": "工作内容",
+              "zh-TW": "工作內容"
+            }
+          },
+          {
+            "ref": "site_name",
+            "type": "text",
+            "maxLength": 160,
+            "nullable": true,
+            "label": {
+              "en-US": "Site name",
+              "de-DE": "Name des Standorts",
+              "fr-FR": "Nom du site",
+              "da-DK": "Stedets navn",
+              "cs-CZ": "Název místa",
+              "ar-EG": "اسم الموقع",
+              "zh-CN": "现场名称",
+              "zh-TW": "現場名稱"
+            }
+          },
+          {
+            "ref": "site_town",
+            "type": "text",
+            "maxLength": 120,
+            "nullable": true,
+            "label": {
+              "en-US": "Site town",
+              "de-DE": "Ort des Standorts",
+              "fr-FR": "Ville du site",
+              "da-DK": "Stedets by",
+              "cs-CZ": "Obec místa",
+              "ar-EG": "مدينة الموقع",
+              "zh-CN": "现场所在城镇",
+              "zh-TW": "現場所在城鎮"
+            }
+          },
+          {
+            "ref": "day",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Day it was on",
+              "de-DE": "Tag, an dem er war",
+              "fr-FR": "Jour où elle était",
+              "da-DK": "Dagen, det lå på",
+              "cs-CZ": "Den, na který byl",
+              "ar-EG": "اليوم الذي كانت فيه",
+              "zh-CN": "原定日期",
+              "zh-TW": "原定日期"
+            }
+          },
+          {
+            "ref": "now_day",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Day it is on now",
+              "de-DE": "Tag, an dem er jetzt ist",
+              "fr-FR": "Jour où elle est maintenant",
+              "da-DK": "Dagen, det ligger på nu",
+              "cs-CZ": "Den, na který je teď",
+              "ar-EG": "اليوم الذي صارت فيه الآن",
+              "zh-CN": "现在的日期",
+              "zh-TW": "現在的日期"
+            }
+          },
+          {
+            "ref": "why",
+            "type": "enum",
+            "enum": [
+              "day",
+              "crew",
+              "waiting",
+              "removed"
+            ],
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "day": {
+                    "en-US": "Moved to a later day",
+                    "de-DE": "Auf einen späteren Tag verschoben",
+                    "fr-FR": "Déplacée à un jour plus tard",
+                    "da-DK": "Flyttet til en senere dag",
+                    "cs-CZ": "Přesunut na pozdější den",
+                    "ar-EG": "نُقلت إلى يوم لاحق",
+                    "zh-CN": "改到更晚的日期",
+                    "zh-TW": "改到更晚的日期"
+                  },
+                  "crew": {
+                    "en-US": "Given to another crew",
+                    "de-DE": "An ein anderes Team gegeben",
+                    "fr-FR": "Confiée à une autre équipe",
+                    "da-DK": "Givet til et andet hold",
+                    "cs-CZ": "Předán jiné četě",
+                    "ar-EG": "أُسندت إلى طاقم آخر",
+                    "zh-CN": "交给了另一个班组",
+                    "zh-TW": "交給了另一個班組"
+                  },
+                  "waiting": {
+                    "en-US": "Back to waiting for a day",
+                    "de-DE": "Wartet wieder auf einen Tag",
+                    "fr-FR": "De nouveau en attente d’un jour",
+                    "da-DK": "Venter igen på en dag",
+                    "cs-CZ": "Znovu čeká na den",
+                    "ar-EG": "عادت لانتظار يوم",
+                    "zh-CN": "重新等待排期",
+                    "zh-TW": "重新等待排程"
+                  },
+                  "removed": {
+                    "en-US": "Called off",
+                    "de-DE": "Abgesagt",
+                    "fr-FR": "Annulée",
+                    "da-DK": "Aflyst",
+                    "cs-CZ": "Zrušen",
+                    "ar-EG": "أُلغيت",
+                    "zh-CN": "已取消",
+                    "zh-TW": "已取消"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Why",
+              "de-DE": "Warum",
+              "fr-FR": "Pourquoi",
+              "da-DK": "Hvorfor",
+              "cs-CZ": "Proč",
+              "ar-EG": "السبب",
+              "zh-CN": "原因",
+              "zh-TW": "原因"
             }
           }
         ]
@@ -16513,6 +17127,14 @@
         "belongs": [
           {
             "via": "deal_id"
+          },
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
           }
         ],
         "indexes": [
@@ -16521,6 +17143,12 @@
           ],
           [
             "item"
+          ],
+          [
+            "visit_id"
+          ],
+          [
+            "crew_id"
           ]
         ],
         "columns": [
@@ -16579,6 +17207,45 @@
               "ar-EG": "الكمية",
               "zh-CN": "数量",
               "zh-TW": "數量"
+            }
+          },
+          {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "nullable": true,
+            "label": {
+              "en-US": "Goes on visit",
+              "de-DE": "Kommt mit zum Einsatz",
+              "fr-FR": "Part avec l’intervention",
+              "da-DK": "Kommer med på besøget",
+              "cs-CZ": "Jede s výjezdem",
+              "ar-EG": "يُحمَّل مع الزيارة",
+              "zh-CN": "随此次上门装车",
+              "zh-TW": "隨此次到訪裝車"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "crew_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Crew of that visit",
+              "de-DE": "Team dieses Einsatzes",
+              "fr-FR": "Équipe de cette intervention",
+              "da-DK": "Holdet på det besøg",
+              "cs-CZ": "Četa toho výjezdu",
+              "ar-EG": "طاقم تلك الزيارة",
+              "zh-CN": "那次上门的班组",
+              "zh-TW": "那次到訪的班組"
             }
           },
           {
@@ -16814,6 +17481,36 @@
               "ar-EG": "مستأجرة",
               "zh-CN": "租赁车辆",
               "zh-TW": "租賃車輛"
+            }
+          },
+          {
+            "ref": "hired_from",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Hired from",
+              "de-DE": "Gemietet ab",
+              "fr-FR": "Loué à partir du",
+              "da-DK": "Lejet fra",
+              "cs-CZ": "Najato od",
+              "ar-EG": "مستأجرة من",
+              "zh-CN": "租用开始",
+              "zh-TW": "租用開始"
+            }
+          },
+          {
+            "ref": "hired_to",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Hired until",
+              "de-DE": "Gemietet bis",
+              "fr-FR": "Loué jusqu’au",
+              "da-DK": "Lejet til",
+              "cs-CZ": "Najato do",
+              "ar-EG": "مستأجرة حتى",
+              "zh-CN": "租用结束",
+              "zh-TW": "租用結束"
             }
           },
           {
@@ -20768,7 +21465,15 @@
         "page:@crm-approvals:view",
         "table:@jobs:read_pii",
         "table:@crew_members:read_pii",
-        "table:@job_visits:read_pii"
+        "table:@job_visits:read_pii",
+        "table:@van_days:read",
+        "table:@van_days:create",
+        "table:@van_days:update",
+        "table:@van_days:delete",
+        "page:@crm-van-days:view",
+        "table:@left_visits:read",
+        "table:@left_visits:delete",
+        "page:@crm-left-visits:view"
       ],
       "limits": {
         "saved_views": {
@@ -23518,7 +24223,14 @@
         "page:@crm-certificates:view",
         "page:@crm-subcontractors:view",
         "page:@crm-insurance-incidents:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "table:@van_days:read",
+        "table:@van_days:create",
+        "table:@van_days:update",
+        "table:@van_days:delete",
+        "page:@crm-van-days:view",
+        "table:@left_visits:read",
+        "page:@crm-left-visits:view"
       ],
       "limits": {
         "jobs": {
@@ -23555,7 +24267,24 @@
             "day",
             "start_time",
             "crew_id",
-            "vehicle_id",
+            "hours",
+            "crew_size",
+            "note",
+            "stock_ready_on",
+            "state",
+            "cancel_reason",
+            "tick_loaded",
+            "tick_arrived",
+            "tick_done",
+            "tick_cleared"
+          ],
+          "creatable": [
+            "job_id",
+            "kind",
+            "what",
+            "day",
+            "start_time",
+            "crew_id",
             "hours",
             "crew_size",
             "note",
@@ -23698,7 +24427,8 @@
           "writable": [
             "deal_id",
             "item",
-            "qty"
+            "qty",
+            "visit_id"
           ]
         },
         "deals": {
@@ -23739,7 +24469,9 @@
             "inspection_due",
             "service_due",
             "tax_to",
-            "hired"
+            "hired",
+            "hired_from",
+            "hired_to"
           ],
           "creatable": [
             "name",
@@ -23749,7 +24481,9 @@
             "inspection_due",
             "service_due",
             "tax_to",
-            "hired"
+            "hired",
+            "hired_from",
+            "hired_to"
           ]
         },
         "subcontractors": {
@@ -23771,6 +24505,18 @@
             "insurance_until",
             "certificate",
             "email"
+          ]
+        },
+        "van_days": {
+          "writable": [
+            "crew_id",
+            "day",
+            "vehicle_id"
+          ],
+          "creatable": [
+            "crew_id",
+            "day",
+            "vehicle_id"
           ]
         }
       },
@@ -23949,7 +24695,13 @@
         "page:@crm-time-sheets:view",
         "page:@crm-time-sheet-lines:view",
         "page:@crm-certificates:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "table:@van_days:read",
+        "page:@crm-van-days:view",
+        "table:@left_visits:read",
+        "page:@crm-left-visits:view",
+        "table:@deal_stock_needs:read",
+        "page:@crm-deal-stock-needs:view"
       ],
       "limits": {
         "job_visits": {
@@ -24181,8 +24933,53 @@
               "reach": "own"
             }
           }
+        },
+        "van_days": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "left_visits": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
+        },
+        "deal_stock_needs": {
+          "readable": [
+            "id",
+            "deal_id",
+            "item",
+            "qty",
+            "visit_id",
+            "crew_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
         }
-      }
+      },
+      "tables": [
+        {
+          "addOn": "inventory",
+          "table": "items",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "name",
+              "unit"
+            ]
+          }
+        }
+      ]
     },
     {
       "key": "read-only",
@@ -24347,7 +25144,11 @@
         "page:@crm-insurance-incidents:view",
         "page:@crm-settings:view",
         "page:@crm-overview:view",
-        "page:@crm-approvals:view"
+        "page:@crm-approvals:view",
+        "table:@van_days:read",
+        "page:@crm-van-days:view",
+        "table:@left_visits:read",
+        "page:@crm-left-visits:view"
       ],
       "limits": {
         "saved_views": {
@@ -26855,6 +27656,806 @@
                 "zh-TW": "{{record.site_name}}，{{record.site_town}}：現改為 {{record.day}}。其餘見「我的一天」。"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "key": "day-sheet-left",
+      "name": {
+        "en-US": "A visit leaves a crew’s today or tomorrow: note it for that crew",
+        "de-DE": "Ein Einsatz fällt aus dem Heute oder Morgen eines Teams: für dieses Team notieren",
+        "fr-FR": "Une intervention quitte l’aujourd’hui ou le demain d’une équipe : la noter pour cette équipe",
+        "da-DK": "Et besøg ryger ud af et holds i dag eller i morgen: notér det til holdet",
+        "cs-CZ": "Výjezd vypadne z dneška nebo zítřka čety: zapsat to pro tu četu",
+        "ar-EG": "زيارة تخرج من يوم الطاقم اليوم أو غدًا: دوِّنها لذلك الطاقم",
+        "zh-CN": "上门离开班组的今天或明天：为该班组记下",
+        "zh-TW": "到訪離開班組的今天或明天：為該班組記下"
+      },
+      "description": {
+        "en-US": "When a visit booked for today or tomorrow goes back to waiting, is given to another crew or is moved past tomorrow, the crew it was for is told (the rule after the next tells them). The visit keeps the day, crew and state it had, as this rule read them.",
+        "de-DE": "Wartet ein für heute oder morgen gebuchter Einsatz wieder, geht er an ein anderes Team oder wird er über morgen hinaus verschoben, erfährt es das Team, das ihn hatte (die übernächste Regel sagt es ihm). Der Einsatz behält Tag, Team und Stand, wie diese Regel sie las.",
+        "fr-FR": "Quand une intervention prévue aujourd’hui ou demain repasse en attente, passe à une autre équipe ou est déplacée après demain, l’équipe qui l’avait est prévenue (la règle d’après la suivante la prévient). L’intervention garde le jour, l’équipe et l’état qu’elle avait, tels que cette règle les a lus.",
+        "da-DK": "Når et besøg booket i dag eller i morgen igen venter, gives til et andet hold eller flyttes til efter i morgen, får holdet, der havde det, besked (reglen efter den næste giver besked). Besøget gemmer dagen, holdet og tilstanden, det havde, som denne regel læste dem.",
+        "cs-CZ": "Když výjezd zarezervovaný na dnes nebo zítra znovu čeká, přejde na jinou četu nebo se přesune až za zítřek, četa, která jej měla, se to dozví (řekne jí to pravidlo o dvě dál). Výjezd si ponechá den, četu a stav, jak je toto pravidlo přečetlo.",
+        "ar-EG": "عند عودة زيارة محجوزة اليوم أو غدًا إلى الانتظار أو إسنادها إلى طاقم آخر أو نقلها إلى ما بعد الغد، يُبلَّغ الطاقم الذي كانت له (تُبلغه القاعدة التي بعد التالية). وتحتفظ الزيارة باليوم والطاقم والحالة كما قرأتها هذه القاعدة.",
+        "zh-CN": "今天或明天已排期的上门重新等待、交给另一个班组或改到明天以后时，通知原来负责的班组（由再下一条规则通知）。上门会记下本规则读到的原日期、班组和状态。",
+        "zh-TW": "今天或明天已排程的到訪重新等待、交給另一個班組或改到明天以後時，通知原來負責的班組（由再下一條規則通知）。到訪會記下本規則讀到的原日期、班組和狀態。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "job_visits",
+        "changedColumn": "moved_at"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A visit's day, crew or state changes"
+          },
+          {
+            "id": "keep-was",
+            "kind": "action",
+            "title": {
+              "en-US": "Keep the day, crew and state the visit had",
+              "de-DE": "Tag, Team und Stand festhalten, die der Einsatz hatte",
+              "fr-FR": "Garder le jour, l’équipe et l’état qu’avait l’intervention",
+              "da-DK": "Gem dagen, holdet og tilstanden, besøget havde",
+              "cs-CZ": "Uložit den, četu a stav, které výjezd měl",
+              "ar-EG": "احفظ اليوم والطاقم والحالة التي كانت للزيارة",
+              "zh-CN": "记下上门原来的日期、班组和状态",
+              "zh-TW": "記下到訪原來的日期、班組和狀態"
+            },
+            "action": {
+              "kind": "record.update",
+              "values": {
+                "was_day": "{{was.day}}",
+                "was_crew_id": "{{was.crew_id}}",
+                "was_state": "{{was.state}}",
+                "now_crew_id": "{{record.crew_id}}"
+              }
+            }
+          },
+          {
+            "id": "was-booked",
+            "kind": "condition",
+            "title": {
+              "en-US": "It was booked",
+              "de-DE": "Er war gebucht",
+              "fr-FR": "Elle était réservée",
+              "da-DK": "Det var booket",
+              "cs-CZ": "Byl zarezervován",
+              "ar-EG": "كانت محجوزة",
+              "zh-CN": "原已排期",
+              "zh-TW": "原已排程"
+            },
+            "condition": {
+              "left": {
+                "field": "was_state"
+              },
+              "op": "is",
+              "right": "booked"
+            }
+          },
+          {
+            "id": "was-soon",
+            "kind": "condition",
+            "title": {
+              "en-US": "…for today or tomorrow",
+              "de-DE": "…für heute oder morgen",
+              "fr-FR": "…pour aujourd’hui ou demain",
+              "da-DK": "…til i dag eller i morgen",
+              "cs-CZ": "…na dnes nebo zítra",
+              "ar-EG": "…لليوم أو الغد",
+              "zh-CN": "……在今天或明天",
+              "zh-TW": "……在今天或明天"
+            },
+            "condition": {
+              "left": {
+                "field": "was_day"
+              },
+              "op": "within_next",
+              "right": {
+                "amount": 1,
+                "unit": "days"
+              }
+            }
+          },
+          {
+            "id": "was-crew",
+            "kind": "condition",
+            "title": {
+              "en-US": "…for a crew",
+              "de-DE": "…für ein Team",
+              "fr-FR": "…pour une équipe",
+              "da-DK": "…til et hold",
+              "cs-CZ": "…pro četu",
+              "ar-EG": "…لطاقم",
+              "zh-CN": "……有班组",
+              "zh-TW": "……有班組"
+            },
+            "condition": {
+              "left": {
+                "field": "was_crew_id"
+              },
+              "op": "not_empty"
+            }
+          },
+          {
+            "id": "if-waiting",
+            "kind": "branch",
+            "title": {
+              "en-US": "Back to waiting for a day?",
+              "de-DE": "Wartet wieder auf einen Tag?",
+              "fr-FR": "De nouveau en attente d’un jour ?",
+              "da-DK": "Venter igen på en dag?",
+              "cs-CZ": "Znovu čeká na den?",
+              "ar-EG": "عادت لانتظار يوم؟",
+              "zh-CN": "重新等待排期了吗？",
+              "zh-TW": "重新等待排程了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "state"
+              },
+              "op": "is",
+              "right": "waiting"
+            },
+            "branches": [
+              {
+                "id": "if-waiting-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "write-waiting",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Write it down for the crew it left",
+                      "de-DE": "Für das Team notieren, das ihn hatte",
+                      "fr-FR": "L’inscrire pour l’équipe qui l’avait",
+                      "da-DK": "Skriv det ned til holdet, der havde det",
+                      "cs-CZ": "Zapsat to pro četu, která jej měla",
+                      "ar-EG": "دوِّنها للطاقم الذي كانت له",
+                      "zh-CN": "为原班组记下来",
+                      "zh-TW": "為原班組記下來"
+                    },
+                    "action": {
+                      "kind": "record.create",
+                      "table": "left_visits",
+                      "values": {
+                        "visit_id": "{{record.id}}",
+                        "what": "{{record.what}}",
+                        "site_name": "{{record.site_name}}",
+                        "site_town": "{{record.site_town}}",
+                        "why": "waiting",
+                        "crew_id": "{{was.crew_id}}",
+                        "day": "{{was.day}}",
+                        "now_day": "{{record.day}}"
+                      }
+                    }
+                  },
+                  {
+                    "id": "stop-waiting",
+                    "kind": "stop",
+                    "title": {
+                      "en-US": "Done",
+                      "de-DE": "Fertig",
+                      "fr-FR": "Terminé",
+                      "da-DK": "Færdig",
+                      "cs-CZ": "Hotovo",
+                      "ar-EG": "تم",
+                      "zh-CN": "完成",
+                      "zh-TW": "完成"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-waiting-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
+          },
+          {
+            "id": "if-crew",
+            "kind": "branch",
+            "title": {
+              "en-US": "Given to another crew?",
+              "de-DE": "An ein anderes Team gegeben?",
+              "fr-FR": "Confiée à une autre équipe ?",
+              "da-DK": "Givet til et andet hold?",
+              "cs-CZ": "Předán jiné četě?",
+              "ar-EG": "أُسندت إلى طاقم آخر؟",
+              "zh-CN": "交给另一个班组了吗？",
+              "zh-TW": "交給另一個班組了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "crew_moved"
+              },
+              "op": "is",
+              "right": 1
+            },
+            "branches": [
+              {
+                "id": "if-crew-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "write-crew",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Write it down for the crew it left",
+                      "de-DE": "Für das Team notieren, das ihn hatte",
+                      "fr-FR": "L’inscrire pour l’équipe qui l’avait",
+                      "da-DK": "Skriv det ned til holdet, der havde det",
+                      "cs-CZ": "Zapsat to pro četu, která jej měla",
+                      "ar-EG": "دوِّنها للطاقم الذي كانت له",
+                      "zh-CN": "为原班组记下来",
+                      "zh-TW": "為原班組記下來"
+                    },
+                    "action": {
+                      "kind": "record.create",
+                      "table": "left_visits",
+                      "values": {
+                        "visit_id": "{{record.id}}",
+                        "what": "{{record.what}}",
+                        "site_name": "{{record.site_name}}",
+                        "site_town": "{{record.site_town}}",
+                        "why": "crew",
+                        "crew_id": "{{was.crew_id}}",
+                        "day": "{{was.day}}",
+                        "now_day": "{{record.day}}"
+                      }
+                    }
+                  },
+                  {
+                    "id": "stop-crew",
+                    "kind": "stop",
+                    "title": {
+                      "en-US": "Done",
+                      "de-DE": "Fertig",
+                      "fr-FR": "Terminé",
+                      "da-DK": "Færdig",
+                      "cs-CZ": "Hotovo",
+                      "ar-EG": "تم",
+                      "zh-CN": "完成",
+                      "zh-TW": "完成"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-crew-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
+          },
+          {
+            "id": "if-day",
+            "kind": "branch",
+            "title": {
+              "en-US": "Moved past tomorrow?",
+              "de-DE": "Über morgen hinaus verschoben?",
+              "fr-FR": "Déplacée après demain ?",
+              "da-DK": "Flyttet til efter i morgen?",
+              "cs-CZ": "Přesunut až za zítřek?",
+              "ar-EG": "نُقلت إلى ما بعد الغد؟",
+              "zh-CN": "改到明天以后了吗？",
+              "zh-TW": "改到明天以後了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "day"
+              },
+              "op": "more_than_ahead",
+              "right": {
+                "amount": 1,
+                "unit": "days"
+              }
+            },
+            "branches": [
+              {
+                "id": "if-day-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "write-day",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Write it down for the crew it left",
+                      "de-DE": "Für das Team notieren, das ihn hatte",
+                      "fr-FR": "L’inscrire pour l’équipe qui l’avait",
+                      "da-DK": "Skriv det ned til holdet, der havde det",
+                      "cs-CZ": "Zapsat to pro četu, která jej měla",
+                      "ar-EG": "دوِّنها للطاقم الذي كانت له",
+                      "zh-CN": "为原班组记下来",
+                      "zh-TW": "為原班組記下來"
+                    },
+                    "action": {
+                      "kind": "record.create",
+                      "table": "left_visits",
+                      "values": {
+                        "visit_id": "{{record.id}}",
+                        "what": "{{record.what}}",
+                        "site_name": "{{record.site_name}}",
+                        "site_town": "{{record.site_town}}",
+                        "why": "day",
+                        "crew_id": "{{was.crew_id}}",
+                        "day": "{{was.day}}",
+                        "now_day": "{{record.day}}"
+                      }
+                    }
+                  },
+                  {
+                    "id": "stop-day",
+                    "kind": "stop",
+                    "title": {
+                      "en-US": "Done",
+                      "de-DE": "Fertig",
+                      "fr-FR": "Terminé",
+                      "da-DK": "Færdig",
+                      "cs-CZ": "Hotovo",
+                      "ar-EG": "تم",
+                      "zh-CN": "完成",
+                      "zh-TW": "完成"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-day-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "day-sheet-left-removed",
+      "name": {
+        "en-US": "A visit of today or tomorrow is called off: note it for its crew",
+        "de-DE": "Einsatz von heute oder morgen wird abgesagt: für sein Team notieren",
+        "fr-FR": "Une intervention d’aujourd’hui ou de demain est annulée : la noter pour son équipe",
+        "da-DK": "Et besøg i dag eller i morgen aflyses: notér det til holdet",
+        "cs-CZ": "Výjezd na dnes nebo zítra je zrušen: zapsat to pro jeho četu",
+        "ar-EG": "إلغاء زيارة اليوم أو غدًا: دوِّنها لطاقمها",
+        "zh-CN": "今天或明天的上门被取消：为其班组记下",
+        "zh-TW": "今天或明天的到訪被取消：為其班組記下"
+      },
+      "description": {
+        "en-US": "When a booked visit of today or tomorrow is called off (removed), its crew is told (the next rule tells them).",
+        "de-DE": "Wird ein gebuchter Einsatz von heute oder morgen abgesagt (entfernt), erfährt es sein Team (die nächste Regel sagt es ihm).",
+        "fr-FR": "Quand une intervention prévue aujourd’hui ou demain est annulée (supprimée), son équipe est prévenue (la règle suivante la prévient).",
+        "da-DK": "Når et booket besøg i dag eller i morgen aflyses (fjernes), får holdet besked (den næste regel giver besked).",
+        "cs-CZ": "Když je zarezervovaný výjezd na dnes nebo zítra zrušen (odstraněn), jeho četa se to dozví (řekne jí to další pravidlo).",
+        "ar-EG": "عند إلغاء زيارة محجوزة اليوم أو غدًا (حذفها)، يُبلَّغ طاقمها (تُبلغه القاعدة التالية).",
+        "zh-CN": "今天或明天已排期的上门被取消（删除）时，通知其班组（由下一条规则通知）。",
+        "zh-TW": "今天或明天已排程的到訪被取消（刪除）時，通知其班組（由下一條規則通知）。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "deleted",
+        "table": "job_visits",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "booked"
+          },
+          {
+            "left": {
+              "field": "day"
+            },
+            "op": "within_next",
+            "right": {
+              "amount": 1,
+              "unit": "days"
+            }
+          },
+          {
+            "left": {
+              "field": "crew_id"
+            },
+            "op": "not_empty"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A booked visit of today or tomorrow is removed"
+          },
+          {
+            "id": "write",
+            "kind": "action",
+            "title": {
+              "en-US": "Write it down for the crew it left",
+              "de-DE": "Für das Team notieren, das ihn hatte",
+              "fr-FR": "L’inscrire pour l’équipe qui l’avait",
+              "da-DK": "Skriv det ned til holdet, der havde det",
+              "cs-CZ": "Zapsat to pro četu, která jej měla",
+              "ar-EG": "دوِّنها للطاقم الذي كانت له",
+              "zh-CN": "为原班组记下来",
+              "zh-TW": "為原班組記下來"
+            },
+            "action": {
+              "kind": "record.create",
+              "table": "left_visits",
+              "values": {
+                "visit_id": "{{record.id}}",
+                "what": "{{record.what}}",
+                "site_name": "{{record.site_name}}",
+                "site_town": "{{record.site_town}}",
+                "why": "removed",
+                "crew_id": "{{record.crew_id}}",
+                "day": "{{record.day}}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "day-sheet-left-told",
+      "name": {
+        "en-US": "A visit left a crew’s today or tomorrow: tell that crew",
+        "de-DE": "Ein Einsatz ist aus dem Heute oder Morgen eines Teams gefallen: diesem Team Bescheid geben",
+        "fr-FR": "Une intervention a quitté l’aujourd’hui ou le demain d’une équipe : prévenir cette équipe",
+        "da-DK": "Et besøg er røget ud af et holds i dag eller i morgen: giv det hold besked",
+        "cs-CZ": "Výjezd vypadl z dneška nebo zítřka čety: dát vědět té četě",
+        "ar-EG": "خرجت زيارة من يوم الطاقم اليوم أو غدًا: أخبر ذلك الطاقم",
+        "zh-CN": "上门离开了班组的今天或明天：通知该班组",
+        "zh-TW": "到訪離開了班組的今天或明天：通知該班組"
+      },
+      "description": {
+        "en-US": "The crew a visit of today or tomorrow left is told at once, also in their quiet hours: moved later, given to another crew, back to waiting, or called off. Nobody else is told.",
+        "de-DE": "Das Team, aus dessen Heute oder Morgen ein Einsatz gefallen ist, erfährt es sofort, auch in seinen Ruhezeiten: verschoben, an ein anderes Team gegeben, wartet wieder oder abgesagt. Sonst niemand.",
+        "fr-FR": "L’équipe dont une intervention d’aujourd’hui ou de demain est partie est prévenue tout de suite, même pendant ses heures calmes : déplacée, confiée à une autre équipe, remise en attente ou annulée. Personne d’autre.",
+        "da-DK": "Holdet, som et besøg i dag eller i morgen er røget ud hos, får besked med det samme, også i de stille timer: flyttet, givet til et andet hold, venter igen eller aflyst. Ingen andre.",
+        "cs-CZ": "Četa, které výjezd na dnes nebo zítra vypadl, se to hned dozví, i v klidových hodinách: přesunut, předán jiné četě, znovu čeká nebo zrušen. Nikdo jiný.",
+        "ar-EG": "يُبلَّغ الطاقم الذي خرجت منه زيارة اليوم أو غدًا فورًا، حتى في ساعات الهدوء: نُقلت أو أُسندت إلى طاقم آخر أو عادت للانتظار أو أُلغيت. ولا أحد غيره.",
+        "zh-CN": "今天或明天的上门离开了哪个班组，就立即通知那个班组，免打扰时段也照常：改期、换班组、重新等待或取消。不通知其他人。",
+        "zh-TW": "今天或明天的到訪離開了哪個班組，就立即通知那個班組，勿擾時段也照常：改期、換班組、重新等待或取消。不通知其他人。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "created",
+        "table": "left_visits"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A visit is off a crew's day sheet"
+          },
+          {
+            "id": "if-day",
+            "kind": "branch",
+            "title": {
+              "en-US": "Moved to a later day?",
+              "de-DE": "Auf einen späteren Tag verschoben?",
+              "fr-FR": "Déplacée à un jour plus tard ?",
+              "da-DK": "Flyttet til en senere dag?",
+              "cs-CZ": "Přesunut na pozdější den?",
+              "ar-EG": "نُقلت إلى يوم لاحق؟",
+              "zh-CN": "改到更晚的日期了吗？",
+              "zh-TW": "改到更晚的日期了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "why"
+              },
+              "op": "is",
+              "right": "day"
+            },
+            "branches": [
+              {
+                "id": "if-day-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "tell-day",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Tell that crew at once",
+                      "de-DE": "Diesem Team sofort Bescheid geben",
+                      "fr-FR": "Prévenir cette équipe tout de suite",
+                      "da-DK": "Giv det hold besked med det samme",
+                      "cs-CZ": "Hned dát vědět té četě",
+                      "ar-EG": "أخبر ذلك الطاقم فورًا",
+                      "zh-CN": "立即通知该班组",
+                      "zh-TW": "立即通知該班組"
+                    },
+                    "action": {
+                      "kind": "notification",
+                      "to": {
+                        "roles": [
+                          "crew"
+                        ]
+                      },
+                      "urgent": true,
+                      "title": {
+                        "en-US": "A visit left your day sheet: {{record.what}}",
+                        "de-DE": "Ein Einsatz ist von Ihrem Tagesblatt: {{record.what}}",
+                        "fr-FR": "Une intervention quitte votre feuille de route : {{record.what}}",
+                        "da-DK": "Et besøg er røget af jeres dagsark: {{record.what}}",
+                        "cs-CZ": "Výjezd zmizel z vašeho denního listu: {{record.what}}",
+                        "ar-EG": "خرجت زيارة من ورقة يومكم: {{record.what}}",
+                        "zh-CN": "一次上门已从你们的日程单移走：{{record.what}}",
+                        "zh-TW": "一次到訪已從你們的日程單移走：{{record.what}}"
+                      },
+                      "body": {
+                        "en-US": "{{record.site_name}}, {{record.site_town}}: moved from {{record.day}} to {{record.now_day}}. Open My day for the rest.",
+                        "de-DE": "{{record.site_name}}, {{record.site_town}}: vom {{record.day}} auf den {{record.now_day}} verschoben. Den Rest finden Sie unter Mein Tag.",
+                        "fr-FR": "{{record.site_name}}, {{record.site_town}} : déplacée du {{record.day}} au {{record.now_day}}. Le reste est dans Ma journée.",
+                        "da-DK": "{{record.site_name}}, {{record.site_town}}: flyttet fra {{record.day}} til {{record.now_day}}. Resten står under Min dag.",
+                        "cs-CZ": "{{record.site_name}}, {{record.site_town}}: přesunut z {{record.day}} na {{record.now_day}}. Zbytek najdete v Můj den.",
+                        "ar-EG": "{{record.site_name}}، {{record.site_town}}: نُقلت من {{record.day}} إلى {{record.now_day}}. التفاصيل في يومي.",
+                        "zh-CN": "{{record.site_name}}，{{record.site_town}}：从 {{record.day}} 改到 {{record.now_day}}。其余见“我的一天”。",
+                        "zh-TW": "{{record.site_name}}，{{record.site_town}}：從 {{record.day}} 改到 {{record.now_day}}。其餘見「我的一天」。"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-day-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
+          },
+          {
+            "id": "if-crew",
+            "kind": "branch",
+            "title": {
+              "en-US": "Given to another crew?",
+              "de-DE": "An ein anderes Team gegeben?",
+              "fr-FR": "Confiée à une autre équipe ?",
+              "da-DK": "Givet til et andet hold?",
+              "cs-CZ": "Předán jiné četě?",
+              "ar-EG": "أُسندت إلى طاقم آخر؟",
+              "zh-CN": "交给另一个班组了吗？",
+              "zh-TW": "交給另一個班組了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "why"
+              },
+              "op": "is",
+              "right": "crew"
+            },
+            "branches": [
+              {
+                "id": "if-crew-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "tell-crew",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Tell that crew at once",
+                      "de-DE": "Diesem Team sofort Bescheid geben",
+                      "fr-FR": "Prévenir cette équipe tout de suite",
+                      "da-DK": "Giv det hold besked med det samme",
+                      "cs-CZ": "Hned dát vědět té četě",
+                      "ar-EG": "أخبر ذلك الطاقم فورًا",
+                      "zh-CN": "立即通知该班组",
+                      "zh-TW": "立即通知該班組"
+                    },
+                    "action": {
+                      "kind": "notification",
+                      "to": {
+                        "roles": [
+                          "crew"
+                        ]
+                      },
+                      "urgent": true,
+                      "title": {
+                        "en-US": "A visit is no longer yours: {{record.what}}",
+                        "de-DE": "Ein Einsatz gehört nicht mehr Ihnen: {{record.what}}",
+                        "fr-FR": "Une intervention n’est plus pour vous : {{record.what}}",
+                        "da-DK": "Et besøg er ikke længere jeres: {{record.what}}",
+                        "cs-CZ": "Výjezd už není váš: {{record.what}}",
+                        "ar-EG": "زيارة لم تعد لكم: {{record.what}}",
+                        "zh-CN": "这次上门不再由你们负责：{{record.what}}",
+                        "zh-TW": "這次到訪不再由你們負責：{{record.what}}"
+                      },
+                      "body": {
+                        "en-US": "{{record.site_name}}, {{record.site_town}}, on {{record.day}}: given to another crew. Open My day for the rest.",
+                        "de-DE": "{{record.site_name}}, {{record.site_town}}, am {{record.day}}: an ein anderes Team gegeben. Den Rest finden Sie unter Mein Tag.",
+                        "fr-FR": "{{record.site_name}}, {{record.site_town}}, le {{record.day}} : confiée à une autre équipe. Le reste est dans Ma journée.",
+                        "da-DK": "{{record.site_name}}, {{record.site_town}}, den {{record.day}}: givet til et andet hold. Resten står under Min dag.",
+                        "cs-CZ": "{{record.site_name}}, {{record.site_town}}, {{record.day}}: předán jiné četě. Zbytek najdete v Můj den.",
+                        "ar-EG": "{{record.site_name}}، {{record.site_town}}، يوم {{record.day}}: أُسندت إلى طاقم آخر. التفاصيل في يومي.",
+                        "zh-CN": "{{record.site_name}}，{{record.site_town}}，{{record.day}}：已交给另一个班组。其余见“我的一天”。",
+                        "zh-TW": "{{record.site_name}}，{{record.site_town}}，{{record.day}}：已交給另一個班組。其餘見「我的一天」。"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-crew-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
+          },
+          {
+            "id": "if-waiting",
+            "kind": "branch",
+            "title": {
+              "en-US": "Back to waiting for a day?",
+              "de-DE": "Wartet wieder auf einen Tag?",
+              "fr-FR": "De nouveau en attente d’un jour ?",
+              "da-DK": "Venter igen på en dag?",
+              "cs-CZ": "Znovu čeká na den?",
+              "ar-EG": "عادت لانتظار يوم؟",
+              "zh-CN": "重新等待排期了吗？",
+              "zh-TW": "重新等待排程了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "why"
+              },
+              "op": "is",
+              "right": "waiting"
+            },
+            "branches": [
+              {
+                "id": "if-waiting-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "tell-waiting",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Tell that crew at once",
+                      "de-DE": "Diesem Team sofort Bescheid geben",
+                      "fr-FR": "Prévenir cette équipe tout de suite",
+                      "da-DK": "Giv det hold besked med det samme",
+                      "cs-CZ": "Hned dát vědět té četě",
+                      "ar-EG": "أخبر ذلك الطاقم فورًا",
+                      "zh-CN": "立即通知该班组",
+                      "zh-TW": "立即通知該班組"
+                    },
+                    "action": {
+                      "kind": "notification",
+                      "to": {
+                        "roles": [
+                          "crew"
+                        ]
+                      },
+                      "urgent": true,
+                      "title": {
+                        "en-US": "A visit is off your day sheet: {{record.what}}",
+                        "de-DE": "Ein Einsatz ist von Ihrem Tagesblatt genommen: {{record.what}}",
+                        "fr-FR": "Une intervention est retirée de votre feuille de route : {{record.what}}",
+                        "da-DK": "Et besøg er taget af jeres dagsark: {{record.what}}",
+                        "cs-CZ": "Výjezd je vyřazen z vašeho denního listu: {{record.what}}",
+                        "ar-EG": "أُخرجت زيارة من ورقة يومكم: {{record.what}}",
+                        "zh-CN": "一次上门已从你们的日程单撤下：{{record.what}}",
+                        "zh-TW": "一次到訪已從你們的日程單撤下：{{record.what}}"
+                      },
+                      "body": {
+                        "en-US": "{{record.site_name}}, {{record.site_town}}, on {{record.day}}: waiting for a new day. Open My day for the rest.",
+                        "de-DE": "{{record.site_name}}, {{record.site_town}}, am {{record.day}}: wartet auf einen neuen Tag. Den Rest finden Sie unter Mein Tag.",
+                        "fr-FR": "{{record.site_name}}, {{record.site_town}}, le {{record.day}} : en attente d’un nouveau jour. Le reste est dans Ma journée.",
+                        "da-DK": "{{record.site_name}}, {{record.site_town}}, den {{record.day}}: venter på en ny dag. Resten står under Min dag.",
+                        "cs-CZ": "{{record.site_name}}, {{record.site_town}}, {{record.day}}: čeká na nový den. Zbytek najdete v Můj den.",
+                        "ar-EG": "{{record.site_name}}، {{record.site_town}}، يوم {{record.day}}: بانتظار يوم جديد. التفاصيل في يومي.",
+                        "zh-CN": "{{record.site_name}}，{{record.site_town}}，{{record.day}}：等待重新排期。其余见“我的一天”。",
+                        "zh-TW": "{{record.site_name}}，{{record.site_town}}，{{record.day}}：等待重新排程。其餘見「我的一天」。"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-waiting-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
+          },
+          {
+            "id": "if-removed",
+            "kind": "branch",
+            "title": {
+              "en-US": "Called off?",
+              "de-DE": "Abgesagt?",
+              "fr-FR": "Annulée ?",
+              "da-DK": "Aflyst?",
+              "cs-CZ": "Zrušen?",
+              "ar-EG": "أُلغيت؟",
+              "zh-CN": "取消了吗？",
+              "zh-TW": "取消了嗎？"
+            },
+            "condition": {
+              "left": {
+                "field": "why"
+              },
+              "op": "is",
+              "right": "removed"
+            },
+            "branches": [
+              {
+                "id": "if-removed-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "tell-removed",
+                    "kind": "action",
+                    "title": {
+                      "en-US": "Tell that crew at once",
+                      "de-DE": "Diesem Team sofort Bescheid geben",
+                      "fr-FR": "Prévenir cette équipe tout de suite",
+                      "da-DK": "Giv det hold besked med det samme",
+                      "cs-CZ": "Hned dát vědět té četě",
+                      "ar-EG": "أخبر ذلك الطاقم فورًا",
+                      "zh-CN": "立即通知该班组",
+                      "zh-TW": "立即通知該班組"
+                    },
+                    "action": {
+                      "kind": "notification",
+                      "to": {
+                        "roles": [
+                          "crew"
+                        ]
+                      },
+                      "urgent": true,
+                      "title": {
+                        "en-US": "A visit was called off: {{record.what}}",
+                        "de-DE": "Ein Einsatz wurde abgesagt: {{record.what}}",
+                        "fr-FR": "Une intervention a été annulée : {{record.what}}",
+                        "da-DK": "Et besøg er aflyst: {{record.what}}",
+                        "cs-CZ": "Výjezd byl zrušen: {{record.what}}",
+                        "ar-EG": "أُلغيت زيارة: {{record.what}}",
+                        "zh-CN": "一次上门已取消：{{record.what}}",
+                        "zh-TW": "一次到訪已取消：{{record.what}}"
+                      },
+                      "body": {
+                        "en-US": "{{record.site_name}}, {{record.site_town}}, on {{record.day}}: off your day sheet. Open My day for the rest.",
+                        "de-DE": "{{record.site_name}}, {{record.site_town}}, am {{record.day}}: von Ihrem Tagesblatt genommen. Den Rest finden Sie unter Mein Tag.",
+                        "fr-FR": "{{record.site_name}}, {{record.site_town}}, le {{record.day}} : retirée de votre feuille de route. Le reste est dans Ma journée.",
+                        "da-DK": "{{record.site_name}}, {{record.site_town}}, den {{record.day}}: taget af jeres dagsark. Resten står under Min dag.",
+                        "cs-CZ": "{{record.site_name}}, {{record.site_town}}, {{record.day}}: vyřazen z vašeho denního listu. Zbytek najdete v Můj den.",
+                        "ar-EG": "{{record.site_name}}، {{record.site_town}}، يوم {{record.day}}: خرجت من ورقة يومكم. التفاصيل في يومي.",
+                        "zh-CN": "{{record.site_name}}，{{record.site_town}}，{{record.day}}：已从你们的日程单撤下。其余见“我的一天”。",
+                        "zh-TW": "{{record.site_name}}，{{record.site_town}}，{{record.day}}：已從你們的日程單撤下。其餘見「我的一天」。"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "if-removed-no",
+                "label": "No",
+                "nodes": []
+              }
+            ]
           }
         ]
       }
@@ -39746,6 +41347,33 @@
       "module": "jobs"
     },
     {
+      "ref": "crm-left-visits",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.left_visits",
+        "fallback": "Visits off crews’ day sheets"
+      },
+      "titles": {
+        "de-DE": "Einsätze von Tagesblättern genommen",
+        "fr-FR": "Interventions retirées des feuilles de route",
+        "da-DK": "Besøg taget af holdenes dagsark",
+        "cs-CZ": "Výjezdy vyřazené z denních listů",
+        "ar-EG": "زيارات خرجت من أوراق أيام الطواقم",
+        "zh-CN": "从班组日程单上移走的上门",
+        "zh-TW": "從班組日程單上移走的到訪"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "calendar-x",
+        "order": 11,
+        "offRail": true
+      },
+      "bindings": {
+        "rows": "left_visits"
+      },
+      "module": "jobs"
+    },
+    {
       "ref": "crm-feedback",
       "template": "page-crud",
       "title": {
@@ -40093,6 +41721,33 @@
       },
       "bindings": {
         "rows": "insurance_incidents"
+      },
+      "module": "fleet"
+    },
+    {
+      "ref": "crm-van-days",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.van_days",
+        "fallback": "Vehicles for crews’ days"
+      },
+      "titles": {
+        "de-DE": "Fahrzeuge für die Tage der Teams",
+        "fr-FR": "Véhicules des journées d’équipe",
+        "da-DK": "Køretøjer til holdenes dage",
+        "cs-CZ": "Vozidla na dny čet",
+        "ar-EG": "مركبات أيام الطواقم",
+        "zh-CN": "班组每天的车辆",
+        "zh-TW": "班組每天的車輛"
+      },
+      "nav": {
+        "group": "fleet",
+        "icon": "calendar-days",
+        "order": 10,
+        "offRail": true
+      },
+      "bindings": {
+        "rows": "van_days"
       },
       "module": "fleet"
     },

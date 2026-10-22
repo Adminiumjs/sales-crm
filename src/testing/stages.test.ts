@@ -126,7 +126,7 @@ describe("stage 1, the first release", () => {
   it("holds six parts, 47 tables, and offers no Field crew", () => {
     expect(doc.modules.map((part) => part.id)).toEqual(["selling", "quotes", "accounts", "team", "inbox", "supply"]);
     expect(doc.requiredSchema.tables.length).toBe(47);
-    expect(gone.length).toBe(28);
+    expect(gone.length).toBe(30);
     expect(doc.roles.map((role) => role.key)).toEqual(["admin", "sales-manager", "rep", "account-manager", "marketer", "front-desk", "ops-manager", "read-only"]);
     expect(one.cut.roles).toEqual(["crew"]);
     // Each role keeps only the parts this stage has; the operations manager is left with Supply, the front desk with the Inbox.
@@ -146,7 +146,7 @@ describe("stage 1, the first release", () => {
     // The columns of kept tables that point into a later part (a follow-up's job; how many jobs a deal has; an e-mail's
     // visit to a job), the two settings only Jobs on site reads, and an action's link to its session, which comes with
     // stage 2 (`stage.json`): the released stage does not move.
-    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"] });
+    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"], deal_stock_needs: ["visit_id", "crew_id"] });
     expect(JSON.stringify(doc)).not.toContain('"session_id"');
     expect(Object.values((doc as unknown as { outbox: { links: Record<string, string> } }).outbox.links)).not.toContain("booking_id");
     // …and the showroom's three e-mails: no kind, no template.
@@ -161,7 +161,7 @@ describe("stage 1, the first release", () => {
     for (const role of doc.roles) for (const permission of role.permissions) if (permission.startsWith("page:@")) expect(pages.has(permission.split(":")[1]!.slice(1)), `${role.key}: ${permission}`).toBe(true);
     // The rules of Jobs on site (a won deal makes its job; a crew is told its day sheet changed) are not here to run.
     expect(doc.automations.map((rule) => rule.key)).not.toContain("deal-won-job");
-    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "aftercare-call"]);
+    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left", "day-sheet-left-removed", "day-sheet-left-told", "aftercare-call"]);
     // Nor are the delivery e-mails, their templates, or the operations manager's read of won deals.
     expect(Object.keys((doc as unknown as { outbox: { kinds: Record<string, string> } }).outbox.kinds).filter((kind) => kind.startsWith("delivery-"))).toEqual([]);
     expect(JSON.stringify(doc).includes("crm-delivery-")).toBe(false);
