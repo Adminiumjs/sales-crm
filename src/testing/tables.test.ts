@@ -829,7 +829,7 @@ describe("a crew reaches its own work, and a rep the work on their deals", () =>
     expect(byRef.get("warranty_claims")?.belongs).toEqual([{ via: "job_id" }]);
     // …and the crew of the visit its stock goes on, by the copy of that visit's crew (S14, "What to load").
     expect(byRef.get("deal_stock_needs")?.belongs).toEqual([{ via: "deal_id" }, CREW_WAY]);
-    expect(byRef.get("deal_stock_needs")?.columns.find((column) => column.ref === "crew_id")?.rules?.copy).toEqual(follows("visit_id", "crew_id"));
+    expect((byRef.get("deal_stock_needs")?.columns.find((column) => column.ref === "crew_id")?.rules as { copy?: unknown } | undefined)?.copy).toEqual(follows("visit_id", "crew_id"));
     expect(byRef.get("time_sheet_lines")?.belongs).toEqual([{ via: "sheet_id" }]);
   });
 

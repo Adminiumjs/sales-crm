@@ -45,6 +45,8 @@ import {
   type VisitKind,
 } from "./data.ts";
 import { dayWords, hoursOf } from "./parts.tsx";
+import { VanDayField } from "./VanDayField.tsx";
+import { dropIfEmpty, putVanDay, readDayFacts, refusalOf, rowOf, writesVanDays, type DayRefusal, type VanDay } from "./vandays.ts";
 
 export type VisitBooking = { mode: "book"; visit: Visit; day?: string } | { mode: "move"; visit: Visit; day?: string } | { mode: "cancel"; visit: Visit } | { mode: "add"; jobId?: number };
 
@@ -99,9 +101,26 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
   const crew = facts.crews.find((one) => one.id === crewId) ?? null;
   const changed = !isMove || visit === null || day !== wasDay || start !== startOf(visit.start_time) || crewId !== visit.crew_id || hoursN !== num(visit.hours) || sizeN !== (visit.crew_size ?? 0) || note.trim() !== (visit.note ?? "");
   const filled = Number.isFinite(hoursN) && hoursN > 0 && Number.isInteger(sizeN) && sizeN > 0 && /^\d{2}:\d{2}$/.test(start) && (!isAdd || (jobId !== null && what.trim() !== ""));
-  const ready = isCancel ? why.trim().length > 2 : filled && changed && (!booking_ || (check !== null && check.refusal === null));
 
   useEffect(() => setError(null), [day, crewId, start, hours]);
+
+  // The crew's vehicle for the day (plan 68 S14): its row that day, else the one picked for this crew, else its own (CD-9).
+  const vans = writesVanDays(session);
+  const { load: dayLoad } = useLoad(() => (vans && validDay ? readDayFacts(session, day) : Promise.resolve(null)), [session, vans, validDay, day]);
+  const dayFacts = dayLoad.state === "ready" ? dayLoad.data : null;
+  const [pick, setPick] = useState<{ crewId: number | null; vehicle: number } | null>(null);
+  const [changingDay, setChangingDay] = useState(false);
+  const [vanRefused, setVanRefused] = useState<DayRefusal | null>(null);
+  useEffect(() => (setChangingDay(false), setVanRefused(null)), [crewId, day]);
+  const dayRow = dayFacts === null ? undefined : rowOf(dayFacts.days, crewId, day);
+  const picked = pick !== null && pick.crewId === crewId ? pick.vehicle : null;
+  const vehicleId = dayFacts === null ? null : changingDay ? (picked ?? dayRow?.vehicle_id ?? null) : dayRow !== undefined ? dayRow.vehicle_id : (picked ?? (crewId === null ? null : (dayFacts.own.get(crewId) ?? null)));
+  const vanRefusal = vanRefused ?? (dayFacts === null || !booking_ ? null : refusalOf(dayFacts, vehicleId, crewId, day));
+  const vanReady = !vans || isCancel || !booking_ || (dayLoad.state === "ready" && vanRefusal === null);
+  const here = visit !== null && visit.state === "booked" && visit.crew_id === crewId && wasDay === day ? 1 : 0;
+  // A new vehicle for the crew's day is a change of its own, though the visit's fields stay as they were.
+  const vanChanged = dayRow !== undefined && vehicleId !== null && vehicleId !== dayRow.vehicle_id;
+  const ready = isCancel ? why.trim().length > 2 : filled && (changed || vanChanged) && (!booking_ || (check !== null && check.refusal === null));
 
   const refusalWords = (refusal: Refusal): string => {
     const label = visit?.code ?? job?.code ?? "";
@@ -118,7 +137,7 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
   const toldLine = told === "none" ? null : mails === "unknown" ? t("jb.bk.told.unknown") : mails === "off" ? t("jb.bk.told.off") : told === "same" ? t("jb.bk.told.same") : t(`jb.bk.told.${told}`);
 
   const go = async (): Promise<void> => {
-    if (!ready || busy) return;
+    if (!ready || !vanReady || busy) return;
     setError(null);
     setBusy(true);
     const slow = setTimeout(() => setChecking(true), 1200);
@@ -146,6 +165,8 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
       const done = await cancelVisit(session, visit, why.trim());
       end();
       if (!said(done)) return;
+      // Its crew's vehicle that day goes with the crew's last visit then (CD-8).
+      if (visit.state === "booked") await dropIfEmpty(session, visit.crew_id, wasDay).catch(() => undefined);
       toasts.show(t("jb.toast.cancelled", { site: visit.site_name, job: visit.code ?? "" }), "plain");
       onDone();
       return onClose();
@@ -169,8 +190,23 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
       }
     }
     if (target === null) return end();
+    // The crew's vehicle for that day first: one crew a vehicle a day is the server's to hold, and its refusal names who has it.
+    let made: VanDay | null = null;
+    if (vans && dayFacts !== null && crewId !== null && vehicleId !== null && (dayRow === undefined || dayRow.vehicle_id !== vehicleId)) {
+      const put = await putVanDay(session, dayFacts, crewId, day, vehicleId);
+      if ("refused" in put) {
+        end();
+        if (put.refused.kind === "other") said(put.refused.error as Saved<unknown>);
+        else setVanRefused(put.refused);
+        return;
+      }
+      made = put.made;
+    }
     const saved = target.state === "booked" ? await moveVisit(session, target, draft) : await bookVisit(session, target, draft);
     end();
+    if (saved.state === "refused" && made !== null) await session.remove("van_days", made.id).catch(() => undefined);
+    // A visit that left its crew's day takes that day's vehicle with it when it was the last one (CD-8).
+    if (saved.state === "saved" && target.state === "booked" && (target.crew_id !== crewId || dayKeyOf(target.day) !== day)) await dropIfEmpty(session, target.crew_id, dayKeyOf(target.day)).catch(() => undefined);
     if (!said(saved)) {
       // An added visit that could not be booked is there, waiting: say so, and the list shows it.
       if (isAdd) onDone();
@@ -201,7 +237,7 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
           <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
             {t(isCancel ? "jb.bk.keep" : "ui.close")}
           </button>
-          <button type="button" className={`crm-btn crm-btn-44 crm-btn-wide mr-btn ${isCancel ? "crm-btn-danger" : "crm-btn-primary"}`} data-go disabled={!ready || busy} onClick={() => void go()}>
+          <button type="button" className={`crm-btn crm-btn-44 crm-btn-wide mr-btn ${isCancel ? "crm-btn-danger" : "crm-btn-primary"}`} data-go disabled={!ready || !vanReady || busy} onClick={() => void go()}>
             {busy ? t("ui.saving") : t(isCancel ? "jb.bk.go.cancel" : isMove ? "jb.bk.go.move" : isAdd && !booking_ ? "jb.bk.go.add" : "jb.bk.go.book")}
           </button>
         </>
@@ -354,6 +390,24 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
               <input id="crm-jb-size" className="crm-input crm-mono mr-fld" type="number" min={1} max={20} step={1} value={size} onChange={(event) => setSize(event.target.value)} />
             </div>
           </div>
+
+          {vans && booking_ && dayFacts !== null && (
+            <VanDayField
+              facts={dayFacts}
+              crews={facts}
+              crewId={crewId}
+              day={day}
+              today={today}
+              here={here}
+              value={vehicleId}
+              changing={changingDay}
+              onPick={(vehicle) => (setPick({ crewId, vehicle }), setVanRefused(null), setError(null))}
+              onChange={() => (setChangingDay(true), setPick(dayRow === undefined ? null : { crewId, vehicle: dayRow.vehicle_id }))}
+              refusal={vanRefusal}
+              f={f}
+              disabled={busy}
+            />
+          )}
 
           <label className="crm-label" htmlFor="crm-jb-note">
             {t("jb.bk.note")}

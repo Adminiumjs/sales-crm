@@ -15,6 +15,8 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import { AddSnag } from "./AddSnag.tsx";
 import { addressLines, dayKeyOf, hoursText, isLive, mapsHref, num, offersSignOff, telHref, TICKS, ticksOpen, timeSpan, truthy, type CrewSnag, type CrewVisit, type Moved, type NoteLine, type SignOff, type Tick } from "./data.ts";
 import type { Connection } from "./Offline.tsx";
+import { LoadLists } from "../jobs/LoadLists.tsx";
+import type { Loads } from "../jobs/vandays.ts";
 
 export interface VisitFacts {
   visit: CrewVisit;
@@ -22,6 +24,8 @@ export interface VisitFacts {
   snags: CrewSnag[];
   load: NoteLine[] | undefined;
   moved: Moved | undefined;
+  /** What to load, the stock for the job and the delivery note's lines (plan 68 S14); where read, it is what "On the vehicle" shows. */
+  loads?: Loads | undefined;
 }
 
 export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, onChanged, agent, touch }: { facts: VisitFacts; today: string; f: Formatters; crewName: string | null; busyTick: string | null; onTick: (visit: CrewVisit, tick: Tick, on: boolean) => void; conn: Connection; onChanged: () => void; agent: string; touch: boolean }) {
@@ -119,7 +123,9 @@ export function VisitCard({ facts, today, f, crewName, busyTick, onTick, conn, o
 
       <section className="crm-cw-sec" data-testid="cw-load">
         <h3>{t("cw.visit.load")}</h3>
-        {load === undefined || load.length === 0 ? (
+        {facts.loads !== undefined ? (
+          <LoadLists loads={facts.loads} visitId={visit.id} day={day} f={f} />
+        ) : load === undefined || load.length === 0 ? (
           <p className="crm-cw-quiet">{t("cw.visit.load.none")}</p>
         ) : (
           <ul className="crm-cw-load">

@@ -22,7 +22,9 @@ import { Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { crewPeople, type CrewFacts } from "../jobs/data.ts";
 import { useCrewFacts, useJobsScreen } from "../jobs/parts.tsx";
-import { crewsOf, dayKeyOf, hoursText, readDayFigures, readLoads, readMoves, readSignOffs, readSnags, readWeek, setTick, weekDays, type CrewVisit, type Tick } from "./data.ts";
+import { crewsOf, dayKeyOf, hoursText, readDayFigures, readMoves, readSignOffs, readSnags, readWeek, setTick, weekDays, type CrewVisit, type Tick } from "./data.ts";
+import { readLoadLists, readVanDays } from "../jobs/vandays.ts";
+import { DayVehicle } from "./DayVehicle.tsx";
 import { NoConnection, useConnection } from "./Offline.tsx";
 import { VisitCard, type VisitFacts } from "./VisitCard.tsx";
 
@@ -32,6 +34,8 @@ interface DayData {
   cards: VisitFacts[];
   /** The next day from tomorrow on with a visit of his, when the shown day has none. */
   next: string | null;
+  /** His crew's vehicle that day, as the office put it on (plan 68 S14). */
+  vans: Awaited<ReturnType<typeof readVanDays>>;
 }
 
 const isDay = (value: string | undefined): value is string => value !== undefined && /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -51,19 +55,20 @@ export function MyDay({ rest }: ScreenProps) {
     const [week, figures] = await Promise.all([readWeek(session, day), readDayFigures(session, day)]);
     const shown = week.filter((visit) => dayKeyOf(visit.day) === day);
     const jobs = [...new Set(shown.map((visit) => visit.job_id))];
-    const [snags, signed, loads, moves, after] = await Promise.all([
+    const [snags, signed, loads, moves, after, vans] = await Promise.all([
       readSnags(session, jobs),
       readSignOffs(session, jobs),
-      readLoads(session, shown.map((visit) => visit.id)),
+      readLoadLists(session, shown.map((visit) => visit.id)),
       readMoves(session, shown),
       shown.length > 0
         ? Promise.resolve(null)
         : session
             .list<CrewVisit>("job_visits", { select: ["id", "day"], where: { and: [{ column: "state", op: "eq", value: "booked" }, { column: "day", op: "gt", value: day }] }, order: ["day", "start_time"], limit: 1 })
             .then((page) => dayKeyOf(page.rows[0]?.day) ?? null),
+      readVanDays(session, day, day).catch(() => []),
     ]);
-    const cards = shown.map((visit) => ({ visit, signed: signed.get(visit.job_id), snags: snags.filter((snag) => snag.job_id === visit.job_id), load: loads.get(visit.id), moved: moves.get(visit.id) }));
-    return { week, figures, cards, next: after };
+    const cards = shown.map((visit) => ({ visit, signed: signed.get(visit.job_id), snags: snags.filter((snag) => snag.job_id === visit.job_id), load: undefined, loads, moved: moves.get(visit.id) }));
+    return { week, figures, cards, next: after, vans };
   }, [session, day]);
 
   const again = useCoalesced(
@@ -72,7 +77,7 @@ export function MyDay({ rest }: ScreenProps) {
       reload();
     }, [tick, reload]),
   );
-  useLive(["job_visits", "snags", "sign_offs", "delivery_notes", "delivery_note_lines"], again);
+  useLive(["job_visits", "snags", "sign_offs", "delivery_notes", "delivery_note_lines", ...(session.part("fleet") && session.can("van_days", "read") ? ["van_days"] : [])], again);
 
   // A read that did not arrive is said as no connection; the last day read stays on screen meanwhile.
   const failed = load.state === "failed" || factsLoad.state === "failed";
@@ -155,6 +160,7 @@ export function MyDay({ rest }: ScreenProps) {
           </button>
         ))}
       </div>
+      {load.state === "ready" && facts !== null && <DayVehicle vans={load.data.vans} facts={facts} mine={mine} />}
       {session.part("fleet") && session.can("vehicles", "read") && (
         // Vehicles and crew (P25): his vehicle's check before the day, a fault and a fuel fill, one press away.
         <ScreenLink to="myvan" className="crm-cw-back crm-fl-myday mr-gi">

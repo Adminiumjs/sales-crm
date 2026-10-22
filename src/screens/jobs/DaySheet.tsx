@@ -18,9 +18,12 @@ import { useNav } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
-import { useToasts } from "../../ui/toast.tsx";
+import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { crewPeople, dayHoursOf, dayKeyOf, ofDay, readBooked, readDayHours, startOf, TICKS, truthy, weekColumns, type CrewFacts, type Tick, type Visit } from "./data.ts";
-import { CrewChips, DayChips, dayLong, hoursOf, mondayOf, useCrewFacts, useJobsScreen, WeekBar } from "./parts.tsx";
+import { LoadLists } from "./LoadLists.tsx";
+import { CrewChips, DayChips, dayLong, dayWords, hoursOf, mondayOf, useCrewFacts, useJobsScreen, WeekBar } from "./parts.tsx";
+import { plateOf, VehiclePick } from "./VehiclePick.tsx";
+import { hasVanDays, putVanDay, readDayFacts, readLoadLists, refusalOf, rowOf, truthyHired, writesVanDays, type DayFacts, type DayRefusal, type Loads, type VanDay } from "./vandays.ts";
 
 /** The day and crew a sheet opens on: the address's, else the next day with a visit booked, and its first crew. */
 export function pickSheet(rest: string[], booked: readonly Visit[], crews: CrewFacts, today: string): { day: string; crewId: number | null } {
@@ -98,6 +101,15 @@ function Sheet({ day, crewId, visits, crews, onOther, onPrint, onDone, printing,
   const { load: hoursLoad } = useLoad(() => (crewId === null ? Promise.resolve(0) : readDayHours(session, day, crewId)), [session, day, crewId, ids]);
   const hours = hoursLoad.state === "ready" ? hoursLoad.data : null;
   const other = crews.crews.find((one) => one.id !== crewId);
+  // The crew's vehicle that day, and what to load on each visit (plan 68 S14).
+  const vans = hasVanDays(session);
+  const { load: vanLoad, reload: reloadVan } = useLoad(() => (vans ? readDayFacts(session, day) : Promise.resolve(null)), [session, vans, day, ids]);
+  const { load: loadsLoad, reload: reloadLoads } = useLoad(() => readLoadLists(session, visits.map((visit) => visit.id)), [session, ids]);
+  useLive(vans ? ["van_days", "vehicles", "deal_stock_needs", "delivery_notes", "delivery_note_lines"] : ["delivery_notes", "delivery_note_lines"], useCoalesced(useCallback(() => (reloadVan(), reloadLoads()), [reloadVan, reloadLoads])));
+  const dayFacts = vanLoad.state === "ready" ? vanLoad.data : null;
+  const loads = loadsLoad.state === "ready" ? loadsLoad.data : null;
+  const vanDay = dayFacts === null ? undefined : rowOf(dayFacts.days, crewId, day);
+  const [changing, setChanging] = useState(false);
   if (crew === undefined) return null;
   return (
     <section className="crm-jb-sheet" aria-labelledby="crm-jb-sheet-h" data-testid="jb-sheet" data-day={day} data-crew={crewId}>
@@ -125,9 +137,11 @@ function Sheet({ day, crewId, visits, crews, onOther, onPrint, onDone, printing,
         </div>
       </div>
 
+      {dayFacts !== null && <SheetVehicle facts={dayFacts} crewName={crew.name} crewId={crewId} day={day} row={vanDay} canChange={writesVanDays(session)} onChange={() => setChanging(true)} />}
+
       <ol className="crm-jb-stops">
         {visits.map((visit, i) => (
-          <SheetVisit key={visit.id} n={i + 1} visit={visit} canTick={session.can("job_visits", "update")} onDone={onDone} />
+          <SheetVisit key={visit.id} n={i + 1} visit={visit} loads={loads} canTick={session.can("job_visits", "update")} onDone={onDone} />
         ))}
       </ol>
 
@@ -154,12 +168,13 @@ function Sheet({ day, crewId, visits, crews, onOther, onPrint, onDone, printing,
           {t("jb.ds.print")}
         </button>
       </div>
-      {printing && <PrintLayout day={day} crewId={crewId} visits={visits} crews={crews} hours={hours} onClose={onPrinted} />}
+      {printing && <PrintLayout day={day} crewId={crewId} visits={visits} crews={crews} hours={hours} vanDay={vanDay} loads={loads} onClose={onPrinted} />}
+      {changing && dayFacts !== null && crewId !== null && <DayVehicleDialog facts={dayFacts} crews={crews} crewId={crewId} day={day} row={vanDay} onClose={() => setChanging(false)} onDone={() => (reloadVan(), onDone())} />}
     </section>
   );
 }
 
-function SheetVisit({ n, visit, canTick, onDone }: { n: number; visit: Visit; canTick: boolean; onDone: () => void }) {
+function SheetVisit({ n, visit, loads, canTick, onDone }: { n: number; visit: Visit; loads: Loads | null; canTick: boolean; onDone: () => void }) {
   const t = useT();
   const toasts = useToasts();
   const { session, f } = useJobsScreen();
@@ -223,6 +238,7 @@ function SheetVisit({ n, visit, canTick, onDone }: { n: number; visit: Visit; ca
           </div>
         )}
       </div>
+      {loads !== null && <LoadLists loads={loads} visitId={visit.id} day={dayKeyOf(visit.day)} f={f} />}
       <div className="crm-jb-ticks" role="group" aria-label={t("jb.ds.ticksLabel")}>
         {TICKS.map((tick) => {
           const on = truthy(visit[tick]);
@@ -249,7 +265,7 @@ function SheetVisit({ n, visit, canTick, onDone }: { n: number; visit: Visit; ca
 }
 
 /** The sheet as it prints: plain lines, the four ticks as boxes to tick by hand. */
-function PrintLayout({ day, crewId, visits, crews, hours, onClose }: { day: string; crewId: number | null; visits: Visit[]; crews: CrewFacts; hours: number | null; onClose: () => void }) {
+function PrintLayout({ day, crewId, visits, crews, hours, vanDay, loads, onClose }: { day: string; crewId: number | null; visits: Visit[]; crews: CrewFacts; hours: number | null; vanDay: VanDay | undefined; loads: Loads | null; onClose: () => void }) {
   const t = useT();
   const { f } = useJobsScreen();
   const crew = crews.crews.find((one) => one.id === crewId);
@@ -275,8 +291,10 @@ function PrintLayout({ day, crewId, visits, crews, hours, onClose }: { day: stri
     >
       <div className="crm-jb-print" data-testid="jb-print-layout">
         <h1>{t("jb.ds.print.title", { day: dayLong(f, day) })}</h1>
-        <p>
-          {crew?.name ?? ""} · {crewLine(crews, crewId)}
+        <p data-testid="jb-print-crew">
+          {vanDay === undefined
+            ? `${crew?.name ?? ""} · ${crewLine(crews, crewId)}`
+            : t(truthyHired(vanDay) ? "vandays.print.crew.hired" : "vandays.print.crew", { crew: crew?.name ?? "", people: crewPeople(crews, crewId).map((person) => person.name).filter((name) => name !== "").join(", "), plate: vanDay.plate ?? vanDay.vehicle_name ?? "" })}
         </p>
         <p>{`${t("jb.ds.visits", { count: f.number(visits.length) }, visits.length)}${hours === null ? "" : ` · ${t("jb.hours", { n: hoursOf(f, hours) })}`}`}</p>
         {visits.length === 0 && <p>{t("jb.ds.print.empty")}</p>}
@@ -287,6 +305,7 @@ function PrintLayout({ day, crewId, visits, crews, hours, onClose }: { day: stri
               <div dir="auto">{[visit.code, visit.title, visit.what].filter((part) => part !== null && part !== "").join(" · ")}</div>
               <div dir="auto">{[visit.site_address, visit.site_town].filter((part) => part !== null && part !== "").join(", ")}</div>
               <div dir="auto">{[visit.ask_for === null ? null : t("jb.ds.print.ask", { who: visit.ask_for }), visit.site_phone, visit.access_note].filter((part) => part !== null && part !== "").join(" · ")}</div>
+              {loads !== null && <LoadLists loads={loads} visitId={visit.id} day={dayKeyOf(visit.day)} f={f} print />}
               <div className="crm-jb-print-ticks">{TICKS.map((tick) => `[ ] ${t(`jb.tick.${tick}`)}`).join("   ")}</div>
             </li>
           ))}
@@ -296,3 +315,122 @@ function PrintLayout({ day, crewId, visits, crews, hours, onClose }: { day: stri
   );
 }
 
+
+/** The crew's vehicle that day, on the sheet's head: its plate and name, "Hired", and "Change" for the office (M3 2a–2d). */
+function SheetVehicle({ facts, crewName, crewId, day, row, canChange, onChange }: { facts: DayFacts; crewName: string; crewId: number | null; day: string; row: VanDay | undefined; canChange: boolean; onChange: () => void }) {
+  const t = useT();
+  const { f } = useJobsScreen();
+  const own = crewId === null ? undefined : facts.own.get(crewId);
+  return (
+    <div className="crm-vd-sheet" data-testid="vd-sheet-vehicle" data-vehicle={row?.vehicle_id ?? ""}>
+      <div className="crm-vd-sheet-row">
+        <Icon name="truck" size={16} />
+        {row === undefined ? (
+          <span className="crm-jb-quiet">{t("vandays.ds.noVehicle")}</span>
+        ) : (
+          <>
+            <span className="crm-mono crm-vd-sheet-plate" dir="ltr">
+              {row.plate ?? ""}
+            </span>
+            <span className="crm-vd-sheet-name">{row.vehicle_name ?? ""}</span>
+            {truthyHired(row) && (
+              <span className="crm-pill" data-tone="info" data-testid="vd-hired">
+                {t("vandays.ds.hired")}
+              </span>
+            )}
+          </>
+        )}
+        {canChange && (
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi crm-vd-sheet-change" data-testid="vd-sheet-change" aria-label={t("vandays.ds.change.aria", { crew: crewName, day: dayWords(f, day) })} onClick={onChange}>
+            <Icon name="pencil" size={14} />
+            {t("vandays.ds.change")}
+          </button>
+        )}
+      </div>
+      {row !== undefined && own !== undefined && own !== row.vehicle_id && (
+        <p className="crm-vd-notown" data-testid="vd-not-own">
+          {t("vandays.ds.notOwn", { plate: plateOf(facts.vehicles.find((one) => one.id === own)) })}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** "Vehicle for {crew}, {day}": one vehicle for all of the crew's visits that day (M3 2e/2f). Save stays off until another is picked. */
+function DayVehicleDialog({ facts, crews, crewId, day, row, onClose, onDone }: { facts: DayFacts; crews: CrewFacts; crewId: number; day: string; row: VanDay | undefined; onClose: () => void; onDone: () => void }) {
+  const t = useT();
+  const toasts = useToasts();
+  const { session, f } = useJobsScreen();
+  const crewName = crews.crews.find((one) => one.id === crewId)?.name ?? "";
+  const [value, setValue] = useState<number | null>(row?.vehicle_id ?? facts.own.get(crewId) ?? null);
+  const [refused, setRefused] = useState<DayRefusal | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const refusal = refused ?? refusalOf(facts, value, crewId, day);
+  const plate = (id: number | null) => plateOf(facts.vehicles.find((one) => one.id === id));
+  const ready = value !== null && value !== row?.vehicle_id && refusal === null;
+  const go = async (): Promise<void> => {
+    if (!ready || busy || value === null) return;
+    setBusy(true);
+    setError(null);
+    const put = await putVanDay(session, facts, crewId, day, value);
+    setBusy(false);
+    if ("refused" in put) {
+      if (put.refused.kind !== "other") return setRefused(put.refused);
+      const saved = put.refused.error;
+      return setError(saved.state === "refused" ? t("ui.refused", { reason: reasonOf(saved.error, t) }) : t("ui.unknown"));
+    }
+    toasts.show(t("vandays.dlg.saved", { crew: crewName, plate: plate(value), day: dayWords(f, day) }), "pos");
+    onDone();
+    onClose();
+  };
+  const name = (id: number | null) => crews.crews.find((one) => one.id === id)?.name ?? "";
+  const words = (one: DayRefusal): string =>
+    one.kind === "with"
+      ? one.crewId === null
+        ? t("vandays.isWith.other", { plate: plate(one.vehicleId), day: dayWords(f, day) })
+        : t("vandays.isWith", { plate: plate(one.vehicleId), crew: name(one.crewId), day: dayWords(f, day) })
+      : one.kind === "hiredTo"
+        ? t("vandays.hiredTo", { plate: plate(one.vehicleId), day: dayWords(f, one.to) })
+        : one.kind === "hiredFrom"
+          ? t("vandays.hiredFrom", { plate: plate(one.vehicleId), day: dayWords(f, one.from) })
+          : "";
+  return (
+    <Dialog
+      shape="box"
+      name="vd-day-vehicle"
+      icon="truck"
+      title={t("vandays.dlg.title", { crew: crewName, day: dayWords(f, day) })}
+      subtitle={t("vandays.dlg.sub")}
+      onClose={onClose}
+      busy={busy}
+      foot={
+        <>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
+            {t("ui.close")}
+          </button>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 crm-btn-wide mr-btn" data-go disabled={!ready || busy} onClick={() => void go()}>
+            {busy ? t("ui.saving") : t("vandays.dlg.save")}
+          </button>
+        </>
+      }
+    >
+      <label className="crm-label" htmlFor="crm-vd-day-pick">
+        {t("vandays.field")}
+      </label>
+      <VehiclePick id="crm-vd-day-pick" facts={facts} crews={crews} crewId={crewId} crewName={crewName} day={day} value={value} onPick={(id) => (setValue(id), setRefused(null))} f={f} open disabled={busy} />
+      {refusal !== null && refusal.kind !== "other" && (
+        <div className="crm-form-error" role="alert" data-testid="vd-refusal" data-kind={refusal.kind}>
+          <Icon name="circle-slash" size={15} />
+          <span>{words(refusal)}</span>
+        </div>
+      )}
+      {error !== null && (
+        <div className="crm-form-error" role="alert">
+          <Icon name="triangle-alert" size={15} />
+          <span>{error}</span>
+        </div>
+      )}
+    </Dialog>
+  );
+}

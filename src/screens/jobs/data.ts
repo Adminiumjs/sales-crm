@@ -418,6 +418,9 @@ export async function lastMove(session: StaffSession, id: number): Promise<Moved
     if (before === undefined || before === null) continue;
     // A booking writes the day onto a visit that had none: that is not a move.
     if (!("day" in before || "start_time" in before || "crew_id" in before)) continue;
+    // Nor is a write that changed none of the three (a rule keeping what the visit had, plan 68 D17): an entry may hold the whole row.
+    const after = changes?.after;
+    if (after !== undefined && after !== null && ["day", "start_time", "crew_id"].every((column) => !(column in after) || String(dayKeyOf(before[column]) ?? before[column] ?? "") === String(dayKeyOf(after[column]) ?? after[column] ?? ""))) continue;
     const was = dayKeyOf(before["day"]);
     if ("day" in before && was === null) continue;
     const at = new Date(typeof entry.createdAt === "number" ? entry.createdAt : /^\d+$/.test(entry.createdAt) ? Number(entry.createdAt) : entry.createdAt);

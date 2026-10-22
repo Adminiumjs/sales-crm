@@ -58,6 +58,7 @@ if (SURFACE_SIDE === "customer") {
     import("./styles/crew.css"),
     import("./styles/hours.css"),
     import("./styles/fleet.css"),
+    import("./styles/vandays.css"),
   ]).then(([{ default: App }]) => {
     root.render(
       <StrictMode>

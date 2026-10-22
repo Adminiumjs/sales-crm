@@ -239,6 +239,57 @@ for (const [dialect, reachable] of LEGS) {
       for (const id of [soon, later]) expect(said(await remove('ada', 'job_visits', id))).toBe('ok');
     });
 
+    it('tells the crew a visit of today or tomorrow LEFT, each of the four ways, and nobody else; a later visit tells nobody (D17)', async () => {
+      const { job } = await wonJob('Ward linen cupboards');
+      const titles = async (who: string): Promise<string[]> => (await noticesOf(who)).map((one) => one.title).filter((title) => /Cupboards/.test(title)).sort();
+      const before = Object.fromEntries(await Promise.all(['yusuf', 'rina', 'ada', 'tessa', 'dana', 'grace'].map(async (who) => [who, await titles(who)] as const)));
+      const told = async (who: string): Promise<string[]> => (await titles(who)).filter((title) => !before[who]!.includes(title));
+      const settle = async (): Promise<void> => {
+        // The rule that notes the visit for its old crew, then the one that tells that crew: two turns of the queue.
+        await jobs();
+        await jobs();
+      };
+      // Moved from tomorrow to a later day: its crew is told, and keeps the day and crew it had, as the rule read them.
+      const later = await visit(job, 'Cupboards moved', { day: day(1), crew: 'blue' });
+      expect(said(await s.change('ada', 'job_visits', later, { day: day(5) }))).toBe('ok');
+      // Given from today to another crew: the crew it was for is told (the new crew hears "now yours", as before).
+      const given = await visit(job, 'Cupboards given', { day: day(0), crew: 'blue' });
+      expect(said(await s.change('ada', 'job_visits', given, { crew_id: crew['red'] }))).toBe('ok');
+      // Back to waiting from tomorrow; and called off (removed) from tomorrow: Red's.
+      const waits = await visit(job, 'Cupboards waiting', { day: day(1), crew: 'red' });
+      expect(said(await act('ada', 'job_visits', waits, 'back-to-waiting', 'booked'))).toBe('ok');
+      const gone = await visit(job, 'Cupboards called off', { day: day(1), crew: 'red' });
+      expect(said(await s.change('ada', 'job_visits', gone, { cancel_reason: 'The ward is shut' }))).toBe('ok');
+      expect(said(await remove('ada', 'job_visits', gone))).toBe('ok');
+      // Nobody is told of a visit of a later day that moves, changes crew or goes back to waiting; nor of one moved inside the two days.
+      const far = await visit(job, 'Cupboards far off', { day: day(5), crew: 'blue' });
+      expect(said(await s.change('ada', 'job_visits', far, { day: day(6) }))).toBe('ok');
+      expect(said(await s.change('ada', 'job_visits', far, { crew_id: crew['red'] }))).toBe('ok');
+      expect(said(await act('ada', 'job_visits', far, 'back-to-waiting', 'booked'))).toBe('ok');
+      const near = await visit(job, 'Cupboards near', { day: day(0), crew: 'blue' });
+      expect(said(await s.change('ada', 'job_visits', near, { day: day(1) }))).toBe('ok');
+      await settle();
+
+      expect(await told('yusuf')).toEqual(['A visit is no longer yours: Cupboards given', 'A visit left your day sheet: Cupboards moved', 'Your day sheet changed: Cupboards near']);
+      expect(await told('rina')).toEqual(['A visit is now yours: Cupboards given', 'A visit is off your day sheet: Cupboards waiting', 'A visit was called off: Cupboards called off']);
+      for (const who of ['ada', 'tessa', 'dana', 'grace']) expect(await told(who), who).toEqual([]);
+      // Each notice says where the visit was, and when; the move says where it went.
+      const moved = (await noticesOf('yusuf')).find((one) => one.title === 'A visit left your day sheet: Cupboards moved') as unknown as { body: string };
+      expect(moved.body).toContain(`moved from ${day(1)} to ${day(5)}`);
+      // The visit keeps what the rule read before the change: its day, crew and state.
+      const kept = await s.rows(`select was_day, was_crew_id, was_state from ${s.t('job_visits')} where id = ${String(later)}`);
+      expect([String(kept[0]!['was_day']).slice(0, 10), Number(kept[0]!['was_crew_id']), kept[0]!['was_state']]).toEqual([day(1), crew['blue'], 'booked']);
+      // The note is the old crew's to read, never the new one's or another crew's; nobody but the rules writes one.
+      const notes = async (who: string): Promise<string[]> => (await list(who, 'left_visits')).map((one) => String(one['what'])).sort();
+      expect(await notes('yusuf')).toEqual(['Cupboards given', 'Cupboards moved']);
+      expect(await notes('rina')).toEqual(['Cupboards called off', 'Cupboards waiting']);
+      expect((await notes('ada')).filter((what) => what.startsWith('Cupboards'))).toEqual(['Cupboards called off', 'Cupboards given', 'Cupboards moved', 'Cupboards waiting']);
+      for (const who of ['ada', 'tessa', 'yusuf']) expect((await s.make(who, 'left_visits', { crew_id: crew['blue'], what: 'Typed', why: 'day' })).statusCode, who).toBe(403);
+      expect((await s.get('dana', url('left_visits', '?limit=5'))).statusCode).toBe(403);
+      for (const id of [later, given, waits, far, near]) expect(said(await remove('ada', 'job_visits', id))).toBe('ok');
+      await settle();
+    });
+
     it('keeps a sign-off as it was made: nobody changes or removes it, and a correction is a new row with the next version', async () => {
       const { job } = await wonJob('Library shelving');
       const first = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, check_2: true, signer_name: 'Ana Belova' }));

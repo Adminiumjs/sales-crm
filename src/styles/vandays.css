@@ -1,0 +1,278 @@
+/*
+ * A crew's vehicle for the day, a hired vehicle's days, and what to load
+ * (plan 68 S14): the booking dialog's listbox, the Day sheet's vehicle row and
+ * its two lists per visit, Vehicles' hire line, and My day's vehicle card.
+ * Tokens only; the print layout stays black on white in both themes (CD-12).
+ */
+
+/* ── "Vehicle for the day" ────────────────────────────────────────────────── */
+.crm-vd-field {
+  grid-column: 1 / -1;
+  margin-block-start: 10px;
+}
+.crm-vd-pick {
+  position: relative;
+}
+.crm-vd-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  min-block-size: 48px;
+  block-size: auto;
+  padding-block: 6px;
+  text-align: start;
+  cursor: pointer;
+}
+.crm-vd-value > svg {
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+}
+.crm-vd-value-words {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  flex: 1;
+  line-height: 1.35;
+}
+.crm-vd-plate {
+  font-weight: 700;
+}
+.crm-vd-sub {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+:lang(ar) .crm-vd-sub {
+  font-family: inherit;
+}
+.crm-vd-sub[data-tone="danger"] {
+  color: var(--danger);
+}
+.crm-vd-list {
+  position: absolute;
+  z-index: 5;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 4px);
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.crm-vd-list:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent);
+}
+.crm-vd-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.crm-vd-option[data-active="1"] {
+  background: var(--accent-soft);
+}
+.crm-vd-option[aria-selected="true"] > svg {
+  color: var(--accent);
+}
+.crm-vd-option[aria-disabled="true"] {
+  cursor: not-allowed;
+  color: var(--fg-subtle);
+}
+.crm-vd-option[aria-disabled="true"] .crm-vd-sub {
+  color: var(--danger);
+}
+.crm-vd-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+}
+.crm-vd-line > svg {
+  color: var(--fg-subtle);
+}
+.crm-vd-line > span {
+  flex: 1;
+  min-inline-size: 200px;
+}
+
+/* ── the Day sheet's vehicle and its lists ───────────────────────────────── */
+.crm-vd-sheet {
+  margin-block-start: 12px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-vd-sheet-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.crm-vd-sheet-row > svg {
+  color: var(--fg-subtle);
+}
+.crm-vd-sheet-plate {
+  font-size: 13px;
+  font-weight: 700;
+}
+.crm-vd-sheet-name {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.crm-vd-sheet-change {
+  margin-inline-start: auto;
+}
+.crm-pill[data-tone="info"] {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.crm-vd-notown {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-vd-loads {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin-block-start: 10px;
+}
+@media (max-width: 560px) {
+  .crm-vd-loads {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.crm-vd-load-head {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin-block-end: 4px;
+}
+.crm-vd-load ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-vd-load li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block: 3px;
+  font-size: 13px;
+}
+.crm-vd-none {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+
+/* ── the print layout: paper, in both themes ─────────────────────────────── */
+.crm-jb-print {
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+}
+.crm-jb-print .crm-vd-load-head,
+.crm-jb-print .crm-vd-none {
+  color: #333;
+}
+
+/* ── Vehicles: a hired vehicle's days and where it goes ───────────────────── */
+.crm-vd-adds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.crm-vd-hire {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-block-start: 10px;
+}
+.crm-vd-hire-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.crm-vd-hire-line > svg {
+  color: var(--info);
+}
+.crm-vd-where ul,
+.crm-vd-given ul {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-vd-where li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block: 3px;
+  font-size: 13px;
+}
+.crm-vd-given {
+  margin-block-start: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  font-size: 13px;
+}
+.crm-vd-upper {
+  text-transform: uppercase;
+}
+
+/* ── My day: the crew's vehicle that day ──────────────────────────────────── */
+.crm-vd-my {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block-start: 12px;
+  padding: 12px 14px;
+}
+.crm-vd-my-tile {
+  inline-size: 38px;
+  block-size: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.crm-vd-my-tile[data-hired="1"] {
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-vd-my-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-vd-my-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--info);
+}
