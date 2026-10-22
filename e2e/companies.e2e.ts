@@ -147,9 +147,10 @@ test("every figure on a company's card is what the server answers that person, a
       }
     }
     if (person === "grace") expect(deals.reduce((total, deal) => total + Number(deal.amount), 0)).toBe(286_300);
-    // Who is offered a change: Read-only and the marketer none.
+    // Who is offered a change: Read-only and the marketer none; Dana the five that are hers (her accounts and where she has
+    // an open deal); the account manager none of the nine (no account of the sample is his, and none is nobody's: plan 68 X3).
     await expect(page.getByRole("button", { name: "New company" }), person).toHaveCount(person === "hugo" ? 1 : person === "dana" ? 1 : 0);
-    await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "grace" || person === "lena" ? 0 : 9);
+    await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "dana" ? 5 : 0);
     await page.close();
   }
 });

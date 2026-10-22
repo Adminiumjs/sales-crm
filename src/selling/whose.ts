@@ -51,7 +51,9 @@ export async function openOwnersAt(session: StaffSession, companies: readonly nu
   const page = await session.list<{ company_id: number | null; owner_id: string | null }>("deal_marks", {
     select: ["id", "company_id", "owner_id"],
     where: { and: [{ column: "state", op: "eq", value: "open" }, { column: "company_id", op: "in", value: [...companies] }] },
-    limit: 500,
+    // A list's most (the server's); with more open deals than that at a page of companies, the rest are not read here, and
+    // a company they make somebody's may be offered and refused by the server.
+    limit: 200,
   });
   for (const row of page.rows) {
     if (row.company_id === null) continue;
