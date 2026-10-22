@@ -7,14 +7,16 @@
  *    crew's sign-off by a direct call (the sign-off's link to its job names
  *    only a job no stopping snag holds);
  *  - a job of the spec's own, from its visit: the five checks, the customer's
- *    name, the signature (typed, the keyboard's way) and a photo, each file
- *    sent as it is kept. A snag that stops it is raised by the office while
- *    his page is open and not listening, so his press reaches the server and
- *    is REFUSED: the screen says which snag, and the two files are thrown away
- *    (DELETE, gone). He puts the snag right (a line and a photo), signs again;
- *    with no connection the screen says so and keeps what was typed; once
- *    back, the reply to the create is lost, the same create goes again with the
- *    same key, and ONE sign-off is made;
+ *    name, the signature (typed, the keyboard's way) and a photo, each kept on
+ *    the phone until the sign-off goes (plan 68 S19). A snag that stops it is
+ *    raised by the office while his page is open and not listening, so his
+ *    press reaches the server and is REFUSED: the screen says which snag, the
+ *    server's copies of the two files are thrown away (DELETE, gone), the
+ *    checks, the name and the photo stay on the phone and the signature does
+ *    not. He puts the snag right (a line and a photo), signs again with no
+ *    signal: kept on the phone, nothing saved; once back, the reply to the
+ *    create is lost, the same create goes again with the same key, and ONE
+ *    sign-off is made;
  *  - a return visit to that job shows the sign-off read-only, its signature
  *    and photo drawn from the files.
  *
@@ -88,7 +90,8 @@ async function takeAway(data: Data, tessa: APIRequestContext): Promise<void> {
       const under = async (ref: string): Promise<void> => {
         for (const row of await rows<{ id: number }>(me, data, ref, { column: "job_id", op: "eq", value: job.id })) expect((await me.delete(data(ref, `/${String(row.id)}?confirm=true`), { headers })).status(), ref).toBeLessThan(300);
       };
-      for (const ref of ["sign_offs", "snags", "delivery_notes"]) await under(ref);
+      // A refused sign-off's record names its snag (plan 68 S19): it goes first.
+      for (const ref of ["sign_offs", "refused_sign_offs", "snags", "delivery_notes"]) await under(ref);
       // What the signed job set off or may hold from a later part: the aftercare call its sign-off books (rule 16, once the
       // sign-off moves the job to signed off), and a time sheet's line on its visit (stage 3). A table this stage lacks is passed over.
       for (const ref of ["follow_ups", "time_sheet_lines"]) {
@@ -212,20 +215,26 @@ test("a job signed off from its visit as one request: refused with its files thr
       await expect(page.getByTestId("cw-sign-hint")).toHaveText("Ready to sign off.");
     };
     await fill();
-    await expect.poll(() => files.filter((one) => one.method === "POST" && one.status === 201).length).toBe(2);
+    // Kept on the phone until the sign-off goes: nothing has been sent yet.
+    expect(files).toEqual([]);
 
     // The office raises a snag that stops it, from her own session; his open page does not hear of it.
     const snag = await ada.post(data("snags"), { data: { values: { visit_id: fitting, text: "Spec crew: a bench rocks on the slope", stops_sign_off: true } }, headers: adaHeaders });
     expect(snag.status(), await snag.text()).toBe(201);
     const snagId = ((await snag.json()) as { data: { id: number } }).data.id;
     await page.getByTestId("cw-sign-go").click();
-    await expect(page.getByTestId("cw-refused")).toHaveText("Not signed off: “Spec crew: a bench rocks on the slope” stops it. Put it right first. The signature and the photos were thrown away: the customer signs again.");
+    await expect(page.getByTestId("queue-refused")).toContainText(/^Not signed off: a snag that stops it was raised: “Spec crew: a bench rocks on the slope” \(\d{2}:\d{2}\)\. Put it right, then the customer signs again\./);
+    await expect(page.getByTestId("cw-refused-kept")).toHaveText("The five checks and the 1 photo are still on this phone. The signature was not kept: the customer signs for what is true when they sign.");
     expect(await rows(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId })).toEqual([]);
-    // Both files were thrown away, and are gone.
+    // Both files went up with it and the server's copies were thrown away, and are gone.
+    await expect.poll(() => files.filter((one) => one.method === "POST" && one.status === 201).length).toBe(2);
     await expect.poll(() => files.filter((one) => one.method === "DELETE" && one.status !== null && one.status < 300).length).toBe(2);
     for (const gone of files.filter((one) => one.method === "DELETE")) expect((await context.request.get(`${new URL(gone.url).pathname}/content`)).status()).toBe(404);
-    // The pad and the field start again, empty.
+    // The pad starts again, empty; the checks, the name and the photo are still there.
     await expect(page.getByTestId("cw-sign-customer").getByRole("button", { name: "Keep this signature" })).toBeVisible();
+    await expect(page.locator('button[data-check][aria-checked="true"]')).toHaveCount(5);
+    await expect(page.getByLabel("Their name")).toHaveValue("Petra Holm");
+    await expect(page.getByTestId("cw-held-photos").locator("img")).toHaveCount(1);
     await expect(page.getByTestId("cw-sign-hint")).toHaveText("“Spec crew: a bench rocks on the slope” stops the sign-off. Put it right first.");
     await picture(page, "p22-7-yusuf-refused");
 
@@ -242,16 +251,21 @@ test("a job signed off from its visit as one request: refused with its files thr
     const fixed = (await rows<{ state: string; put_right_note: string; put_right_photo: string | null }>(context.request, data, "snags", { column: "id", op: "eq", value: snagId }))[0]!;
     expect([fixed.state, fixed.put_right_note, fixed.put_right_photo?.startsWith("file_")]).toEqual(["put-right", "Levelled the feet", true]);
 
-    // Back to the sign-off. With no connection, the press says so, saves nothing and keeps what was typed.
+    // Back to the sign-off: the checks, the name and the photo kept from the refused one; he signs again, with no signal.
     await page.goto(`${STAFF}sign-off-the-job/${String(fitting)}`);
-    await fill();
-    await page.route("**/api/v1/data/**", (route) => (route.request().method() === "POST" && /crm_sign_offs$/.test(new URL(route.request().url()).pathname) ? route.abort("internetdisconnected") : route.fallback()));
-    await page.getByTestId("cw-sign-go").click();
-    await expect(page.getByTestId("cw-offline")).toContainText("No connection. Nothing was saved. Try again when you are back online.");
+    await expect(page.locator('button[data-check][aria-checked="true"]')).toHaveCount(5);
     await expect(page.getByLabel("Their name")).toHaveValue("Petra Holm");
+    const pad = page.getByTestId("cw-sign-customer");
+    await pad.getByRole("button", { name: "Type the name instead" }).click();
+    await pad.getByLabel("Name, as the signature").fill("Petra Holm");
+    await context.setOffline(true);
+    await pad.getByRole("button", { name: "Keep this signature" }).click();
     await expect(page.getByTestId("cw-sign-hint")).toHaveText("Ready to sign off.");
+    await page.getByTestId("cw-sign-go").click();
+    await expect(page.locator(".crm-toast").last()).toHaveText("Kept on this phone. It goes when you have signal.");
+    await expect(page.getByTestId("cw-sign-kept")).toBeVisible();
+    await expect(page.getByTestId("cw-kept-line")).toHaveText("Waiting to send: the office gets it when this phone has signal.");
     expect(await rows(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId })).toEqual([]);
-    await page.unroute("**/api/v1/data/**");
 
     // Back online, and the reply to the create is lost on its way: the same create, with the same key, answers the first one's row.
     const sent: { key: string; replayed: boolean | null }[] = [];
@@ -269,8 +283,8 @@ test("a job signed off from its visit as one request: refused with its files thr
       sent.push({ key, replayed: ((await response.json()) as { replayed?: boolean }).replayed === true });
       await route.fulfill({ response });
     });
-    await page.getByTestId("cw-offline").getByRole("button", { name: "Try again" }).click();
-    await expect(page.locator(".crm-toast").last()).toHaveText("Signed off: Spec crew: Canteen.");
+    await context.setOffline(false);
+    await expect(page.locator(".crm-toast").last()).toHaveText("1 sent.", { timeout: 30_000 });
     await page.unroute("**/api/v1/data/**");
     expect(sent.length).toBe(2);
     expect(sent[1]).toEqual({ key: sent[0]!.key, replayed: true });
@@ -297,7 +311,7 @@ test("a job signed off from its visit as one request: refused with its files thr
     await expect.poll(() => page.getByTestId("cw-photos").locator("img").first().evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     await expect(page.getByTestId("cw-sign-go")).toHaveCount(0);
     await picture(page, "p22-8-yusuf-return-visit");
-    expect(problems.filter((line) => !/ERR_CONNECTION_RESET|ERR_INTERNET_DISCONNECTED|ERR_FAILED|Failed to load resource/.test(line))).toEqual([]);
+    expect(problems.filter((line) => !/ERR_CONNECTION_RESET|ERR_INTERNET_DISCONNECTED|ERR_FAILED|Failed to load resource|NetworkError|Failed to fetch/.test(line))).toEqual([]);
   } finally {
     // The win sets off more than one run of "a deal is won: its job is made" (the deal is written again by the stage rules),
     // each a minute after its write. One still waiting when the deal is taken away runs on whatever row SQLite numbers the

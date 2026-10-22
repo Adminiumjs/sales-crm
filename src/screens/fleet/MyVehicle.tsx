@@ -6,9 +6,10 @@
  * The server holds him to his crew's vehicle: he reads that one alone, and a
  * check, a fault or a fill for any other is refused as a vehicle that is not
  * there (`proofs/crm-fleet.test.ts`). Each is ONE create with a retry key:
- * a lost reply is sent again with the same key (the line "No connection" and
- * its "Try again", as on My day), and the server answers the row the first
- * one made. Nothing is kept on the phone (ruling Q1, online only).
+ * a lost reply is sent again with the same key, and the server answers the
+ * row the first one made. With no signal it is kept on the phone, photo and
+ * all, and sent when the signal is back (plan 68 S19, `vanLines.ts`); the
+ * screen shows it meanwhile with "Waiting to send".
  *
  * A fill's distance is the server's (the fill's reading less the vehicle's
  * reading before it); the phone shows what came back.
@@ -19,12 +20,15 @@ import { useT } from "../../i18n/index.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { newClientKey } from "../../staffSession.ts";
+import { latest } from "../../offlineQueue.ts";
 import { Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { fileSrc } from "../crew/data.ts";
 import { PhotoField } from "../crew/FileParts.tsx";
-import { NoConnection, useConnection, type Connection } from "../crew/Offline.tsx";
-import { addCheck, addFault, addFill, CHECK_TICKS, dayKeyOf, num, readChecksOn, readFills, readOpenFaults, readVehicles, truthy, type Check, type CheckTick, type Fault, type Fill, type Vehicle } from "./data.ts";
+import { SignalLine, useReadAgainOnSignal, useSave, WaitChip } from "../crew/Offline.tsx";
+import { useQueueLines } from "../crew/queue.tsx";
+import { checkLine, faultLine, fillLine, highestReading } from "./vanLines.ts";
+import { CHECK_TICKS, dayKeyOf, num, readChecksOn, readFills, readOpenFaults, readVehicles, truthy, type Check, type CheckTick, type Fault, type Fill, type Vehicle } from "./data.ts";
 import { dayWords, distanceOf, oneDecimal, useFleetScreen, useFleetSettings, useUnitWords } from "./parts.tsx";
 
 interface VanData {
@@ -38,7 +42,6 @@ interface VanData {
 export function MyVehicle({ rest }: ScreenProps) {
   const t = useT();
   const { session, f, today, tick } = useFleetScreen();
-  const conn = useConnection();
   const { load: settingsLoad } = useFleetSettings(session);
   const unit = useUnitWords(settingsLoad.state === "ready" ? settingsLoad.data.unit : "km");
   const { load, reload } = useLoad<VanData>(async () => {
@@ -55,24 +58,14 @@ export function MyVehicle({ rest }: ScreenProps) {
   const wanted = rest[0] !== undefined && /^\d+$/.test(rest[0]) ? Number(rest[0]) : null;
   const [picked, setPicked] = useState<number | null>(wanted);
   const failed = load.state === "failed";
+  useReadAgainOnSignal(failed, reload);
 
   return (
     <div className="crm-cw crm-fl-phone mr-screen" data-screen="myvan">
       <div className="crm-cw-head">
         <h1>{t("fl.my.title")}</h1>
       </div>
-      {(conn.down || failed) && (
-        <NoConnection
-          tried={conn.tried}
-          busy={conn.busy}
-          onRetry={() => {
-            if (failed) {
-              reload();
-              conn.back();
-            } else conn.retry();
-          }}
-        />
-      )}
+      <SignalLine failed={failed} />
       {load.state === "loading" ? (
         <Skeleton rows={3} height={160} />
       ) : load.state === "refused" ? (
@@ -108,7 +101,6 @@ export function MyVehicle({ rest }: ScreenProps) {
                   fills={load.data.fills.filter((fill) => fill.vehicle_id === vehicle.id)}
                   names={load.data.names}
                   unit={unit}
-                  conn={conn}
                   onChanged={again}
                 />
               </>
@@ -121,7 +113,7 @@ export function MyVehicle({ rest }: ScreenProps) {
   );
 }
 
-function Van({ vehicle, checks, faults, fills, names, unit, conn, onChanged }: { vehicle: Vehicle; checks: Check[]; faults: Fault[]; fills: Fill[]; names: Record<string, string>; unit: { short: string; per100: string }; conn: Connection; onChanged: () => void }) {
+function Van({ vehicle, checks, faults, fills, names, unit, onChanged }: { vehicle: Vehicle; checks: Check[]; faults: Fault[]; fills: Fill[]; names: Record<string, string>; unit: { short: string; per100: string }; onChanged: () => void }) {
   const t = useT();
   const { f } = useFleetScreen();
   const reading = vehicle.reading ?? vehicle.odometer;
@@ -144,9 +136,9 @@ function Van({ vehicle, checks, faults, fills, names, unit, conn, onChanged }: {
           <div className="crm-fl-quiet">{t("fl.my.reading")}</div>
         </div>
       </div>
-      <CheckPart vehicle={vehicle} done={checks} names={names} conn={conn} onChanged={onChanged} />
-      <FaultPart vehicle={vehicle} faults={faults} conn={conn} onChanged={onChanged} />
-      <FillPart vehicle={vehicle} last={fills[0] ?? null} unit={unit} conn={conn} onChanged={onChanged} />
+      <CheckPart vehicle={vehicle} done={checks} names={names} onChanged={onChanged} />
+      <FaultPart vehicle={vehicle} faults={faults} onChanged={onChanged} />
+      <FillPart vehicle={vehicle} last={fills[0] ?? null} unit={unit} onChanged={onChanged} />
     </>
   );
 }
@@ -154,10 +146,14 @@ function Van({ vehicle, checks, faults, fills, names, unit, conn, onChanged }: {
 const NO_TICKS: Record<CheckTick, boolean> = { tyres: false, fluids: false, lights: false, straps: false, tail_lift: false };
 
 /** The walk-round before the day: the five ticks, saved as one check. Once somebody of the crew has checked the van today, the phone says who. */
-function CheckPart({ vehicle, done, names, conn, onChanged }: { vehicle: Vehicle; done: Check[]; names: Record<string, string>; conn: Connection; onChanged: () => void }) {
+function CheckPart({ vehicle, done, names, onChanged }: { vehicle: Vehicle; done: Check[]; names: Record<string, string>; onChanged: () => void }) {
   const t = useT();
   const toasts = useToasts();
+  const save = useSave();
+  const { lines } = useQueueLines();
   const { session, f, today } = useFleetScreen();
+  // A walk-round kept on the phone today, not yet sent.
+  const keptCheck = latest(lines, (line) => line.kind === "check" && line.meta["vehicle"] === vehicle.id && line.meta["day"] === today, ["waiting", "sending"]);
   const [ticks, setTicks] = useState<Record<CheckTick, boolean>>(NO_TICKS);
   const [key, setKey] = useState(() => newClientKey());
   const [busy, setBusy] = useState(false);
@@ -166,26 +162,17 @@ function CheckPart({ vehicle, done, names, conn, onChanged }: { vehicle: Vehicle
   const last = done[0] ?? null;
   const count = CHECK_TICKS.filter((tick) => ticks[tick]).length;
 
-  const save = async (): Promise<boolean> => {
+  const go = async (): Promise<void> => {
     setBusy(true);
-    const saved = await addCheck(session, vehicle.id, today, ticks, key);
+    const done = await save(checkLine(vehicle, today, ticks, key));
     setBusy(false);
-    if (saved.state === "unknown") {
-      conn.lost(save);
-      return false;
-    }
-    conn.back();
-    if (saved.state === "refused") {
-      toasts.show(t("ui.refused", { reason: reasonOf(saved.error, t) }), "danger", true);
-      return true;
-    }
+    if (done.state === "refused") return;
     const missing = CHECK_TICKS.filter((tick) => !ticks[tick]);
-    toasts.show(missing.length === 0 ? t("fl.my.check.saved", { vehicle: vehicle.name }) : t("fl.my.check.savedMissing", { vehicle: vehicle.name, list: missing.map((tick) => t(`fl.tick.${tick}`)).join(", ") }), missing.length === 0 ? "pos" : "plain", missing.length > 0);
+    if (done.state === "sent") toasts.show(missing.length === 0 ? t("fl.my.check.saved", { vehicle: vehicle.name }) : t("fl.my.check.savedMissing", { vehicle: vehicle.name, list: missing.map((tick) => t(`fl.tick.${tick}`)).join(", ") }), missing.length === 0 ? "pos" : "plain", missing.length > 0);
     setTicks(NO_TICKS);
     setKey(newClientKey());
     setAgain(false);
     onChanged();
-    return true;
   };
 
   return (
@@ -194,7 +181,28 @@ function CheckPart({ vehicle, done, names, conn, onChanged }: { vehicle: Vehicle
         <Icon name="clipboard-check" size={16} />
         {t("fl.my.check")}
       </h2>
-      {last !== null && !again ? (
+      {keptCheck !== undefined && !again ? (
+        <>
+          <p className="crm-fl-my-done" data-testid="fl-my-check-kept">
+            <Icon name="hourglass" size={14} />
+            {t("offline.van.checkedAt", { time: f.time(new Date(keptCheck.madeAt)), n: f.number(Number(keptCheck.meta["ticked"] ?? 0)), all: f.number(CHECK_TICKS.length) })} <WaitChip line={keptCheck} />
+          </p>
+          <ul className="crm-fl-ticks">
+            {CHECK_TICKS.map((tick) => {
+              const on = (keptCheck.meta["ticks"] as Record<string, boolean> | undefined)?.[tick] === true;
+              return (
+                <li key={tick} className="crm-fl-tick" data-on={on ? "1" : "0"} data-tick={tick}>
+                  <span className="crm-fl-tickbox" aria-hidden="true">
+                    {on && <Icon name="check" size={11} />}
+                  </span>
+                  <span>{t(`fl.tick.${tick}`)}</span>
+                  <span className="mr-sr-only">{on ? t("fl.tick.on") : t("fl.tick.off")}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : last !== null && !again ? (
         <>
           <p className="crm-fl-my-done" data-testid="fl-my-checked">
             <Icon name="check" size={14} />
@@ -235,7 +243,7 @@ function CheckPart({ vehicle, done, names, conn, onChanged }: { vehicle: Vehicle
             <span className="crm-cw-quiet crm-mono" data-testid="fl-my-ticked">
               {t("fl.my.ticked", { n: f.number(count), of: f.number(CHECK_TICKS.length) })}
             </span>
-            <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="fl-my-check-go" disabled={busy} onClick={() => void save()}>
+            <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="fl-my-check-go" disabled={busy} onClick={() => void go()}>
               <Icon name="check" />
               {busy ? t("ui.saving") : t("fl.my.check.go")}
             </button>
@@ -249,10 +257,13 @@ function CheckPart({ vehicle, done, names, conn, onChanged }: { vehicle: Vehicle
 }
 
 /** A fault reported with a photo: one create with a key. The faults not yet fixed are listed under it. */
-function FaultPart({ vehicle, faults, conn, onChanged }: { vehicle: Vehicle; faults: Fault[]; conn: Connection; onChanged: () => void }) {
+function FaultPart({ vehicle, faults, onChanged }: { vehicle: Vehicle; faults: Fault[]; onChanged: () => void }) {
   const t = useT();
   const toasts = useToasts();
+  const save = useSave();
+  const { lines } = useQueueLines();
   const { session, f } = useFleetScreen();
+  const keptFaults = lines.filter((line) => line.kind === "fault" && line.meta["vehicle"] === vehicle.id && (line.state === "waiting" || line.state === "sending"));
   const [text, setText] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -262,27 +273,18 @@ function FaultPart({ vehicle, faults, conn, onChanged }: { vehicle: Vehicle; fau
   const canReport = session.can("vehicle_faults", "create");
   const onPhotos = useCallback((ids: string[]) => setPhoto(ids[0] ?? null), []);
 
-  const save = async (): Promise<boolean> => {
-    if (text.trim() === "" || sending) return true;
+  const go = async (): Promise<void> => {
+    if (text.trim() === "" || sending || busy) return;
     setBusy(true);
-    const saved = await addFault(session, vehicle.id, text, photo, key);
+    const done = await save(faultLine(vehicle, text, photo, key));
     setBusy(false);
-    if (saved.state === "unknown") {
-      conn.lost(save);
-      return false;
-    }
-    conn.back();
-    if (saved.state === "refused") {
-      toasts.show(t("ui.refused", { reason: reasonOf(saved.error, t) }), "danger", true);
-      return true;
-    }
-    toasts.show(t("fl.my.fault.saved", { vehicle: vehicle.name }), "pos");
+    if (done.state === "refused") return;
+    if (done.state === "sent") toasts.show(t("fl.my.fault.saved", { vehicle: vehicle.name }), "pos");
     setText("");
     setPhoto(null);
     setKey(newClientKey());
     setRound((n) => n + 1);
     onChanged();
-    return true;
   };
 
   return (
@@ -291,6 +293,18 @@ function FaultPart({ vehicle, faults, conn, onChanged }: { vehicle: Vehicle; fau
         <Icon name="triangle-alert" size={16} />
         {t("fl.my.fault")}
       </h2>
+      {keptFaults.length > 0 && (
+        <ul className="crm-fl-faults" data-testid="fl-my-faults-kept">
+          {keptFaults.map((line) => (
+            <li key={line.id} className="crm-fl-fault" data-line={line.id}>
+              <span className="crm-fl-fault-text">
+                <span dir="auto">{String(line.meta["text"] ?? "")}</span>
+                <span className="crm-fl-quiet"> · {t("offline.line.made", { time: f.time(new Date(line.madeAt)) })}</span> <WaitChip line={line} />
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       {faults.length > 0 && (
         <ul className="crm-fl-faults" data-testid="fl-my-faults">
           {faults.map((fault) => (
@@ -312,7 +326,7 @@ function FaultPart({ vehicle, faults, conn, onChanged }: { vehicle: Vehicle; fau
           <textarea id="crm-fl-my-fault-text" className="crm-input crm-textarea mr-fld" rows={2} value={text} maxLength={300} disabled={busy} onChange={(event) => setText(event.target.value)} />
           <PhotoField table="vehicle_faults" column="photo" label={t("fl.my.fault.photo")} max={1} round={round} onChange={onPhotos} onBusy={setSending} disabled={busy} />
           <div className="crm-cw-add-foot">
-            <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="fl-my-fault-go" disabled={busy || sending || text.trim() === ""} onClick={() => void save()}>
+            <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="fl-my-fault-go" disabled={busy || sending || text.trim() === ""} onClick={() => void go()}>
               <Icon name="send" />
               {busy ? t("ui.saving") : t("fl.my.fault.go")}
             </button>
@@ -324,44 +338,44 @@ function FaultPart({ vehicle, faults, conn, onChanged }: { vehicle: Vehicle; fau
 }
 
 /** A fuel fill: litres, what it cost and the reading, saved as one create with a key; the server measures the distance from the reading before it. */
-function FillPart({ vehicle, last, unit, conn, onChanged }: { vehicle: Vehicle; last: Fill | null; unit: { short: string; per100: string }; conn: Connection; onChanged: () => void }) {
+function FillPart({ vehicle, last, unit, onChanged }: { vehicle: Vehicle; last: Fill | null; unit: { short: string; per100: string }; onChanged: () => void }) {
   const t = useT();
   const toasts = useToasts();
+  const save = useSave();
+  const { lines } = useQueueLines();
   const { session, f, today } = useFleetScreen();
+  const keptFills = lines.filter((line) => line.kind === "fill" && line.meta["vehicle"] === vehicle.id && (line.state === "waiting" || line.state === "sending"));
   const [litres, setLitres] = useState("");
   const [cost, setCost] = useState("");
   const [odometer, setOdometer] = useState("");
   const [key, setKey] = useState(() => newClientKey());
   const [busy, setBusy] = useState(false);
   const canFill = session.can("fuel_fills", "create");
-  const reading = vehicle.reading ?? vehicle.odometer;
+  // The highest reading known: the server's, or a fill still waiting on this phone.
+  const reading = highestReading(vehicle.reading ?? vehicle.odometer, keptFills);
   const read = useMemo(() => ({ litres: f.readAmount(litres), cost: f.readAmount(cost), odometer: f.readAmount(odometer) }), [f, litres, cost, odometer]);
   const below = read.odometer !== null && reading !== null && read.odometer < num(reading);
-  const ready = read.litres !== null && read.cost !== null && read.odometer !== null && Number.isInteger(read.odometer) && !below;
+  // A reading below the last one is said, and may still be saved (the design's fill; with no signal the phone may not
+  // know the newest reading).
+  const ready = read.litres !== null && read.cost !== null && read.odometer !== null && Number.isInteger(read.odometer);
   const currency = session.config.currency;
 
-  const save = async (): Promise<boolean> => {
-    if (!ready) return true;
+  const go = async (): Promise<void> => {
+    if (!ready || busy) return;
     setBusy(true);
-    const saved = await addFill(session, { vehicleId: vehicle.id, day: today, litres: Math.round(read.litres! * 10) / 10, cost: read.cost!, odometer: read.odometer! }, key);
+    const done = await save(fillLine(vehicle, { vehicleId: vehicle.id, day: today, litres: Math.round(read.litres! * 10) / 10, cost: read.cost!, odometer: read.odometer! }, key));
     setBusy(false);
-    if (saved.state === "unknown") {
-      conn.lost(save);
-      return false;
+    if (done.state === "refused") return;
+    if (done.state === "sent") {
+      const row = done.line.row as Fill | null;
+      const distance = row === null || row.distance === null ? null : num(row.distance);
+      toasts.show(distance === null || distance <= 0 ? t("fl.my.fill.saved", { vehicle: vehicle.name }) : t("fl.my.fill.savedDistance", { vehicle: vehicle.name, distance: `${distanceOf(f, distance)} ${unit.short}` }), "pos");
     }
-    conn.back();
-    if (saved.state === "refused") {
-      toasts.show(t("ui.refused", { reason: reasonOf(saved.error, t) }), "danger", true);
-      return true;
-    }
-    const distance = saved.row.distance === null ? null : num(saved.row.distance);
-    toasts.show(distance === null || distance <= 0 ? t("fl.my.fill.saved", { vehicle: vehicle.name }) : t("fl.my.fill.savedDistance", { vehicle: vehicle.name, distance: `${distanceOf(f, distance)} ${unit.short}` }), "pos");
     setLitres("");
     setCost("");
     setOdometer("");
     setKey(newClientKey());
     onChanged();
-    return true;
   };
 
   return (
@@ -370,6 +384,11 @@ function FillPart({ vehicle, last, unit, conn, onChanged }: { vehicle: Vehicle; 
         <Icon name="fuel" size={16} />
         {t("fl.my.fill")}
       </h2>
+      {keptFills.map((line) => (
+        <p key={line.id} className="crm-cw-quiet" data-testid="fl-my-fill-kept" data-line={line.id}>
+          {t("offline.van.fillMade", { time: f.time(new Date(line.madeAt)), litres: oneDecimal(f, Number(line.meta["litres"] ?? 0)), reading: `${distanceOf(f, Number(line.meta["odometer"] ?? 0))} ${unit.short}` })} {t("offline.van.distanceLater")} <WaitChip line={line} />
+        </p>
+      ))}
       {last !== null && (
         <p className="crm-cw-quiet" data-testid="fl-my-lastfill">
           {t("fl.my.fill.last", { day: dayWords(f, dayKeyOf(last.day)!), litres: oneDecimal(f, num(last.litres)), reading: `${distanceOf(f, num(last.odometer))} ${unit.short}` })}
@@ -395,13 +414,13 @@ function FillPart({ vehicle, last, unit, conn, onChanged }: { vehicle: Vehicle; 
             </label>
             <input id="crm-fl-my-odo" className="crm-input crm-mono mr-fld" inputMode="numeric" value={odometer} disabled={busy} aria-describedby={below ? "crm-fl-my-below" : undefined} onChange={(event) => setOdometer(event.target.value)} />
             {below && reading !== null && (
-              <p id="crm-fl-my-below" className="crm-field-note" data-tone="danger" role="status">
-                {t("fl.my.fill.below", { reading: `${distanceOf(f, num(reading))} ${unit.short}` })}
+              <p id="crm-fl-my-below" className="crm-field-note" data-tone="warn" role="status">
+                <strong>{t("fl.my.fill.below")}</strong> {t("offline.van.lastReading", { reading: `${distanceOf(f, num(reading))} ${unit.short}` })}
               </p>
             )}
           </div>
           <div className="crm-cw-add-foot crm-fl-my-wide">
-            <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="fl-my-fill-go" disabled={busy || !ready} onClick={() => void save()}>
+            <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="fl-my-fill-go" disabled={busy || !ready} onClick={() => void go()}>
               <Icon name="fuel" />
               {busy ? t("ui.saving") : t("fl.my.fill.go")}
             </button>

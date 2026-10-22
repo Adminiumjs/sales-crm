@@ -11,7 +11,9 @@
  * names it, and the newest stands.
  *
  * What the office does here: adds a snag (one that stops the sign-off or not),
- * and keeps a job's site (`SiteDialog`). Addresses: `sign-off/<job>`.
+ * and keeps a job's site (`SiteDialog`). Addresses: `sign-off/<job>`, and
+ * `sign-off/refused/<record>` from the bell (a sign-off refused on arrival,
+ * plan 68 S19: `crew/RefusedOffice.tsx`).
  */
 import { useCallback, useState } from "react";
 
@@ -26,6 +28,8 @@ import { useToasts } from "../../ui/toast.tsx";
 import { CHECKS, crewPeople, dayKeyOf, num, readJobs, readSignOffs, readSnags, readSnagsByJob, signatureSrc, truthy, type CrewFacts, type Job, type SignOff, type Snag, type Visit, VISIT_LOOKUPS } from "./data.ts";
 import { hoursOf, useCrewFacts, useJobsScreen } from "./parts.tsx";
 import { SiteDialog } from "./SiteDialog.tsx";
+import { RefusedOnArrival, useRefusals, type RefusedSignOff } from "../crew/RefusedOffice.tsx";
+import { usePeopleNames } from "../crew/queue.tsx";
 
 interface SignData {
   jobs: Job[];
@@ -64,6 +68,7 @@ export function SignOffScreen({ rest }: ScreenProps) {
   );
   useLive(["jobs", "sign_offs", "snags", "job_visits"], again);
   const [site, setSite] = useState<Job | null>(null);
+  const refusals = useRefusals(session);
 
   return (
     <div className="crm-screen crm-jb mr-screen" data-screen="signoff">
@@ -74,7 +79,8 @@ export function SignOffScreen({ rest }: ScreenProps) {
               const installOf = (jobId: number): Visit | undefined => data.installs.find((visit) => visit.job_id === jobId);
               // Newest install first; a job not signed off yet is picked first.
               const order = [...data.jobs].sort((a, b) => (dayKeyOf(installOf(b.id)?.day) ?? "").localeCompare(dayKeyOf(installOf(a.id)?.day) ?? "") || b.id - a.id);
-              const asked = rest[0] !== undefined && /^\d+$/.test(rest[0]) ? Number(rest[0]) : null;
+              // From the bell, a refused sign-off's record: its job.
+              const asked = rest[0] === "refused" && rest[1] !== undefined && /^\d+$/.test(rest[1]) ? (refusals.byId(Number(rest[1]))?.job_id ?? null) : rest[0] !== undefined && /^\d+$/.test(rest[0]) ? Number(rest[0]) : null;
               const job = order.find((one) => one.id === asked) ?? order.find((one) => !data.signed.has(one.id)) ?? order[0];
               return (
                 <>
@@ -110,7 +116,7 @@ export function SignOffScreen({ rest }: ScreenProps) {
                     </div>
                   ) : (
                     <div className="crm-jb-so">
-                      <JobSignOff job={job} install={installOf(job.id)} signOff={data.signed.get(job.id) ?? null} snags={data.snags.filter((snag) => snag.job_id === job.id)} counts={data.byJob[String(job.id)] ?? { all: 0, live: 0 }} crews={crews} onDone={again} />
+                      <JobSignOff job={job} install={installOf(job.id)} signOff={data.signed.get(job.id) ?? null} refused={data.signed.has(job.id) ? undefined : refusals.of(job.id)} snags={data.snags.filter((snag) => snag.job_id === job.id)} counts={data.byJob[String(job.id)] ?? { all: 0, live: 0 }} crews={crews} onDone={again} />
                       <aside className="crm-jb-so-side">
                         <section className="crm-jb-panel" aria-labelledby="crm-jb-ask-h">
                           <h2 id="crm-jb-ask-h" className="crm-jb-fact-head">
@@ -155,9 +161,15 @@ export function SignOffScreen({ rest }: ScreenProps) {
                                           {one.site_name} · {counts.all === 0 ? t("jb.so.snags.none") : t("jb.so.snags.count", { all: f.number(counts.all), live: f.number(counts.live) }, counts.all)}
                                         </span>
                                       </span>
-                                      <span className="crm-pill" data-tone={data.signed.has(one.id) ? "pos" : "warn"}>
-                                        {t(data.signed.has(one.id) ? "jb.so.state.signed" : "jb.so.state.open")}
-                                      </span>
+                                      {!data.signed.has(one.id) && refusals.of(one.id) !== undefined ? (
+                                        <span className="crm-pill" data-tone="danger" data-testid="jb-so-other-refused">
+                                          {t("offline.state.refused")}
+                                        </span>
+                                      ) : (
+                                        <span className="crm-pill" data-tone={data.signed.has(one.id) ? "pos" : "warn"}>
+                                          {t(data.signed.has(one.id) ? "jb.so.state.signed" : "jb.so.state.open")}
+                                        </span>
+                                      )}
                                     </button>
                                   </li>
                                 );
@@ -180,8 +192,10 @@ export function SignOffScreen({ rest }: ScreenProps) {
 
 const CHECK_KEYS = ["count", "damage", "keys", "clean", "show"] as const;
 
-function JobSignOff({ job, install, signOff, snags, counts, crews, onDone }: { job: Job; install: Visit | undefined; signOff: SignOff | null; snags: Snag[]; counts: { all: number; live: number }; crews: CrewFacts; onDone: () => void }) {
+function JobSignOff({ job, install, signOff, refused, snags, counts, crews, onDone }: { job: Job; install: Visit | undefined; signOff: SignOff | null; refused: RefusedSignOff | undefined; snags: Snag[]; counts: { all: number; live: number }; crews: CrewFacts; onDone: () => void }) {
   const t = useT();
+  const nav = useNav();
+  const names = usePeopleNames();
   const toasts = useToasts();
   const { session, f } = useJobsScreen();
   const [text, setText] = useState("");
@@ -224,8 +238,8 @@ function JobSignOff({ job, install, signOff, snags, counts, crews, onDone }: { j
             {job.site_name}
             {job.town !== null && job.town !== "" ? ` · ${job.town}` : ""}
           </div>
-          <span className="crm-pill" data-tone={signOff !== null ? "pos" : "warn"} data-testid="jb-so-state">
-            {t(signOff !== null ? "jb.so.state.signed" : stopper !== undefined ? "jb.so.state.refused" : job.state === "installed" ? "jb.so.state.waiting" : "jb.so.state.open")}
+          <span className="crm-pill" data-tone={signOff !== null ? "pos" : refused !== undefined ? "danger" : "warn"} data-testid="jb-so-state">
+            {refused !== undefined ? t("offline.office.pill") : t(signOff !== null ? "jb.so.state.signed" : stopper !== undefined ? "jb.so.state.refused" : job.state === "installed" ? "jb.so.state.waiting" : "jb.so.state.open")}
           </span>
         </div>
         <div className="crm-jb-so-end">
@@ -318,7 +332,7 @@ function JobSignOff({ job, install, signOff, snags, counts, crews, onDone }: { j
         <div className="crm-jb-so-block-head">
           <h3 id="crm-jb-photos-h">{t("jb.so.photos")}</h3>
         </div>
-        <p className="crm-jb-quiet">{t(signOff === null ? "jb.so.photos.later" : "jb.so.photos.none")}</p>
+        <p className="crm-jb-quiet">{refused !== undefined ? t("offline.office.noPhotos") : t(signOff === null ? "jb.so.photos.later" : "jb.so.photos.none")}</p>
       </section>
 
       <section className="crm-jb-so-block" aria-labelledby="crm-jb-who-h">
@@ -344,6 +358,7 @@ function JobSignOff({ job, install, signOff, snags, counts, crews, onDone }: { j
           </div>
         ) : (
           <div className="crm-jb-unsigned">
+            {refused !== undefined && <RefusedOnArrival record={refused} names={names} f={f} onOpenSnag={session.can("snags", "read") ? () => nav.go("snags") : undefined} />}
             <p className="crm-jb-hint" data-tone={stopper !== undefined ? "danger" : undefined} data-testid="jb-so-hint">
               {stopper !== undefined ? t("jb.so.stopped", { what: stopper.text }) : t("jb.so.onPhone")}
             </p>

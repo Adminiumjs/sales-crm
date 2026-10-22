@@ -22,8 +22,10 @@ import { Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { crewPeople, type CrewFacts } from "../jobs/data.ts";
 import { useCrewFacts, useJobsScreen } from "../jobs/parts.tsx";
-import { crewsOf, dayKeyOf, hoursText, readDayFigures, readLoads, readMoves, readSignOffs, readSnags, readWeek, setTick, weekDays, type CrewVisit, type Tick } from "./data.ts";
-import { NoConnection, useConnection } from "./Offline.tsx";
+import { latest } from "../../offlineQueue.ts";
+import { crewsOf, dayKeyOf, hoursText, readDayFigures, readLoads, readMoves, readSignOffs, readSnags, readWeek, tickLine, weekDays, type CrewVisit, type Tick } from "./data.ts";
+import { QueueRow, SignalLine, useQueueList, useReadAgainOnSignal, useSave } from "./Offline.tsx";
+import { useQueue } from "./queue.tsx";
 import { VisitCard, type VisitFacts } from "./VisitCard.tsx";
 
 interface DayData {
@@ -42,7 +44,9 @@ export function MyDay({ rest }: ScreenProps) {
   const nav = useNav();
   const toasts = useToasts();
   const { session, f, today, tick } = useJobsScreen();
-  const conn = useConnection();
+  const queue = useQueue();
+  const list = useQueueList();
+  const save = useSave();
   const { load: factsLoad, reload: reloadFacts } = useCrewFacts(session);
   const day = isDay(rest[0]) ? rest[0] : today;
   const me = session.config.user?.id ?? null;
@@ -77,22 +81,26 @@ export function MyDay({ rest }: ScreenProps) {
   // A read that did not arrive is said as no connection; the last day read stays on screen meanwhile.
   const failed = load.state === "failed" || factsLoad.state === "failed";
   const [busyTick, setBusyTick] = useState<string | null>(null);
+  // A tick is kept on the phone with no signal and sent when it is back (plan 68 S19). Taking back a tick that only waits
+  // on the phone takes its line off the phone, and asks first (CD-3).
   const press = useCallback(
-    async (visit: CrewVisit, which: Tick, on: boolean): Promise<boolean> => {
+    async (visit: CrewVisit, which: Tick, on: boolean): Promise<void> => {
+      const waiting = latest(queue.lines(), (line) => line.kind === "tick" && line.meta["visit"] === visit.id && line.meta["tick"] === which, ["waiting"]);
+      if (waiting !== undefined) return list.confirmRemove(waiting, again);
       setBusyTick(`${String(visit.id)}:${which}`);
-      const sent = await setTick(session, visit, which, on);
+      const done = await save(tickLine(visit, which, on));
       setBusyTick(null);
-      if (sent.state === "offline") {
-        conn.lost(() => press(visit, which, on));
-        return false;
-      }
-      conn.back();
-      if (sent.state === "refused") toasts.show(t("ui.refused", { reason: reasonOf(sent.error, t) }), "danger", true);
-      else toasts.show(t(on ? "cw.ticks.saved" : "cw.ticks.taken", { tick: t(`jb.tick.${which}`) }), "pos");
+      if (done.state === "sent") toasts.show(t(on ? "cw.ticks.saved" : "cw.ticks.taken", { tick: t(`jb.tick.${which}`) }), "pos");
       again();
-      return true;
     },
-    [session, conn, toasts, t, again],
+    [queue, list, save, toasts, t, again],
+  );
+  useReadAgainOnSignal(
+    failed,
+    useCallback(() => {
+      reloadFacts();
+      reload();
+    }, [reloadFacts, reload]),
   );
 
   const agent = typeof navigator === "undefined" ? "" : navigator.userAgent;
@@ -169,19 +177,8 @@ export function MyDay({ rest }: ScreenProps) {
         </button>
       )}
 
-      {(conn.down || failed) && (
-        <NoConnection
-          tried={conn.tried}
-          busy={conn.busy}
-          onRetry={() => {
-            if (failed) {
-              reloadFacts();
-              reload();
-              conn.back();
-            } else conn.retry();
-          }}
-        />
-      )}
+      <SignalLine failed={failed} />
+      <QueueRow />
 
       {load.state === "loading" || factsLoad.state === "loading" ? (
         <Skeleton rows={2} height={220} />
@@ -207,7 +204,7 @@ export function MyDay({ rest }: ScreenProps) {
             </div>
             <div className="crm-cw-visits">
               {load.data.cards.map((card) => (
-                <VisitCard key={card.visit.id} facts={card} today={today} f={f} crewName={crewOf(card.visit)} busyTick={busyTick} onTick={(visit, which, on) => void press(visit, which, on)} conn={conn} onChanged={again} agent={agent} touch={touch} />
+                <VisitCard key={card.visit.id} facts={card} today={today} f={f} crewName={crewOf(card.visit)} busyTick={busyTick} onTick={(visit, which, on) => void press(visit, which, on)} onChanged={again} agent={agent} touch={touch} />
               ))}
             </div>
           </>

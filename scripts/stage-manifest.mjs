@@ -119,6 +119,12 @@ export function stageManifest(whole, stages, stage) {
   }
   const groups = new Set([...doc.pages, ...(doc.navLinks ?? [])].map((entry) => entry.nav?.group));
   doc.navGroups = (doc.navGroups ?? []).filter((group) => groups.has(group.key));
+  // Where a record of a table that went opens: nowhere (a refused sign-off, before Jobs on site).
+  for (const side of doc.frontends ?? []) {
+    if (side.records === undefined) continue;
+    for (const ref of Object.keys(side.records)) if (goneTables.has(ref)) delete side.records[ref];
+    if (Object.keys(side.records).length === 0) delete side.records;
+  }
 
   if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id));
   if (doc.outbox?.producers !== undefined) doc.outbox.producers = doc.outbox.producers.filter((producer) => partOf(producer) && !goneTables.has(producer.onChange?.table));

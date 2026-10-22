@@ -240,6 +240,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
   // A correction names the sign-off it corrects; its version is one more (F19).
   sign_offs: { nullable: ["visit_id", "crew_id", "signature", "photos", "copy_sent_to", "corrects_id", "corrects_version", "version"] },
+  // A sign-off refused on arrival, as the crew's phone writes it when the refusal comes back (plan 68 S19): the snag's words,
+  // who raised it and when are copied from it as the record is written; a snag from before 0.2.2 has no moment.
+  refused_sign_offs: { nullable: ["crew_id", "site_name", "snag_text", "snag_by_id", "snag_raised_at", "snag_raised_on"] },
   snags: {
     nullable: [
       "visit_id",
@@ -247,6 +250,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "severity",
       "raised_by_id",
       "raised_by_contact_id",
+      // The moment it was raised (plan 68 S19): empty on a snag from before 0.2.2.
+      "raised_at",
       "due_days",
       "put_right_on",
       "put_right_note",
@@ -305,8 +310,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
 };
 
-/** How many tables the manifest holds: the 72 of the app's ten parts, the price list, and the weekdays a crew works. */
-const TABLE_COUNT = 75;
+/** How many tables the manifest holds: the 73 of the app's ten parts, the price list, and the weekdays a crew works. */
+const TABLE_COUNT = 76;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -456,7 +461,7 @@ describe("the manifest holds the tables listed here, and no other", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
 
-  it("has seventy-three of them", () => {
+  it("has seventy-six of them", () => {
     expect(tables).toHaveLength(TABLE_COUNT);
     expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });

@@ -77,13 +77,15 @@ describe("the rules the app ships", () => {
   const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved"];
   // After the job books the aftercare call a signed-off job is owed (rule 16): on, as its part brings it.
   const AFTER = ["aftercare-call"];
+  // A sign-off refused on arrival tells the operations manager (plan 68 S19): on, as its part brings it.
+  const OFFICE = ["sign-off-refused"];
   // A customer's yes on a lost deal tells its owner (plan 68 R1a): it tells people, and ships on (D2).
   const YES = ["quote-yes-on-lost"];
 
-  it("are twenty-one: six the app works by, a late yes, three that tell a crew and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
-    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...AFTER]);
+  it("are twenty-two: six the app works by, a late yes, three that tell a crew, one that tells the office of a refused sign-off and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
+    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...OFFICE, ...AFTER]);
     for (const one of m.automations) {
-      expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || YES.includes(one.key) || CREW.includes(one.key) || AFTER.includes(one.key));
+      expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || YES.includes(one.key) || CREW.includes(one.key) || OFFICE.includes(one.key) || AFTER.includes(one.key));
       expect(inAll(one.name), `${one.key} name`).toBe(true);
       expect(inAll(one.description), `${one.key} description`).toBe(true);
     }
@@ -416,11 +418,12 @@ describe("the e-mails the app ships", () => {
 
   it("opens a record from a notice in the app's own screen: a deal, a quote, a company, a contact, a site visit", () => {
     const staffSide = m.frontends.find((side) => side.side === "staff")!;
-    expect(staffSide.records).toEqual({ deals: "/deals/{id}", quotes: "/quotes/{id}", companies: "/companies/{id}", contacts: "/contacts/{id}", site_visits: "/visits/notes/{id}" });
+    expect(staffSide.records).toEqual({ deals: "/deals/{id}", quotes: "/quotes/{id}", companies: "/companies/{id}", contacts: "/contacts/{id}", site_visits: "/visits/notes/{id}", refused_sign_offs: "/sign-off/refused/{id}" });
     // Every rule that tells people is about one of them, about a follow-up (which has no screen of its own), or about a
-    // visit to a job, told to its crew (whose phone screens arrive with the crew's part of stage 2, P22).
+    // visit to a job, told to its crew (whose phone screens arrive with the crew's part of stage 2, P22), or about a sign-off
+    // refused on arrival, which opens the office's Sign-off at its job (plan 68 S19).
     const told = new Set(m.automations.filter((one) => steps(one.key).some((step) => step.kind === "notification")).map((one) => one.trigger.table ?? one.trigger.forEach?.table));
-    expect([...told].sort()).toEqual(["deals", "follow_ups", "job_visits", "quotes"]);
+    expect([...told].sort()).toEqual(["deals", "follow_ups", "job_visits", "quotes", "refused_sign_offs"]);
   });
 
   it("read the same variables in every language", () => {

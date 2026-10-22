@@ -7,12 +7,19 @@
  * their signature. "Sign off" says beside it what is still needed; while a
  * snag that stops the sign-off is open it names that snag and nothing else.
  *
- * ONE REQUEST. The signature pad and the photo field send their files as the
- * person keeps each; "Sign off" then makes ONE sign-off with a retry key
- * (`data.ts`, `signOff`). A lost reply is sent again with the same key and
- * answers the row the first one made. Refused (a snag that stops it was
- * raised meanwhile, or a colleague signed first), the files are thrown away
- * and the screen says why and which snag; the customer signs again.
+ * ONE REQUEST, KEPT ON THE PHONE WITH NO SIGNAL (plan 68 S19). The signature
+ * pad and the photo field keep their files on the phone; "Sign off" makes ONE
+ * sign-off with a retry key, its files sent first (`data.ts`, `signOffLine`;
+ * `offlineQueue.ts`). With no signal it waits on the phone, and this page
+ * says it is signed on this phone and the office gets it when there is
+ * signal.
+ *
+ * Refused (a snag that stops it was raised meanwhile, or a colleague signed
+ * first), at once or when it arrives: the page says why and names the snag;
+ * the five checks, the name and the photos stay on the phone for the next try
+ * and the signature does not (the customer signs for what is true when they
+ * sign). The office learns of a refusal for a snag from the record the phone
+ * writes (`queue.tsx`).
  *
  * Signed: the sign-off as it was made, read-only (its signature and photos
  * shown from the files), and "Add a snag". Nobody changes a sign-off.
@@ -23,18 +30,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
+import { latest, type QueueLine } from "../../offlineQueue.ts";
 import { Icon } from "../../shell/icons.tsx";
-import { ScreenLink } from "../../shell/nav.tsx";
+import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import { NoRecord } from "../../shell/pages.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
-import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { useToasts } from "../../ui/toast.tsx";
 import { useJobsScreen } from "../jobs/parts.tsx";
 import { AddSnag } from "./AddSnag.tsx";
-import { CHECKS, dayKeyOf, discardFiles, fileIds, fileSrc, isLive, readSignOffs, readSnags, signOff, stoppers, truthy, type CrewSnag, type CrewVisit, type SignOff } from "./data.ts";
+import { CHECKS, checksOf, dayKeyOf, fileIds, fileSrc, isLive, readSignOffs, readSnags, signOffLine, stoppers, truthy, type CrewSnag, type CrewVisit, type SignOff } from "./data.ts";
 import { PhotoField, SignaturePad } from "./FileParts.tsx";
-import { NoConnection, useConnection, type Connection } from "./Offline.tsx";
+import { RefusedBox, SignalLine, useReadAgainOnSignal, useSave, WaitChip } from "./Offline.tsx";
+import { useHeldSrc, useQueue, useQueueLines } from "./queue.tsx";
 
 /** The five checks' words: the office's own (P20), in the order the columns are. */
 const CHECK_WORDS: readonly MessageKey[] = ["jb.check.count", "jb.check.damage", "jb.check.keys", "jb.check.clean", "jb.check.show"];
@@ -48,7 +57,7 @@ interface JobData {
 export function SignOffJob({ rest }: ScreenProps) {
   const t = useT();
   const { session, f, tick } = useJobsScreen();
-  const conn = useConnection();
+  const { lines } = useQueueLines();
   const id = rest[0] !== undefined && /^\d{1,15}$/.test(rest[0]) ? Number(rest[0]) : null;
   const { load, reload } = useLoad<JobData>(async () => {
     if (id === null) return { visit: null, snags: [], signed: null };
@@ -64,6 +73,7 @@ export function SignOffJob({ rest }: ScreenProps) {
     }, [tick, reload]),
   );
   useLive(["snags", "sign_offs", "job_visits"], again);
+  useReadAgainOnSignal(load.state === "failed", reload);
 
   return (
     <div className="crm-cw mr-screen" data-screen="crewsign">
@@ -71,39 +81,35 @@ export function SignOffJob({ rest }: ScreenProps) {
         <Icon name="chevron-left" size={16} className="crm-cw-flip" />
         {t("cw.day.title")}
       </ScreenLink>
-      {(conn.down || load.state === "failed") && (
-        <NoConnection
-          tried={conn.tried}
-          busy={conn.busy}
-          onRetry={() => {
-            if (load.state === "failed") {
-              conn.back();
-              reload();
-            } else conn.retry();
-          }}
-        />
-      )}
+      <SignalLine failed={load.state === "failed"} />
       <Loaded load={load} reload={reload} skeleton={<Skeleton rows={3} height={160} />}>
-        {(data) =>
-          data.visit === null ? (
-            <NoRecord home={{ route: "myday", item: null }} />
-          ) : data.signed !== null ? (
-            <Signed visit={data.visit} signed={data.signed} snags={data.snags} conn={conn} onDone={again} />
-          ) : (
-            <OpenSignOff visit={data.visit} snags={data.snags} conn={conn} onDone={again} f={f} />
-          )
-        }
+        {(data) => {
+          if (data.visit === null) return <NoRecord home={{ route: "myday", item: null }} />;
+          if (data.signed !== null) return <Signed visit={data.visit} signed={data.signed} snags={data.snags} onDone={again} />;
+          const job = data.visit.job_id;
+          const kept = latest(lines, (line) => line.kind === "sign-off" && line.meta["job"] === job);
+          // Just sent, and the page not yet read again: the signed page is on its way.
+          const sent = latest(lines, (line) => line.kind === "sign-off" && line.meta["job"] === job, ["sent"]);
+          if (kept === undefined && sent !== undefined && sent.sentAt !== null && Date.now() - new Date(sent.sentAt).getTime() < 60_000) return <Skeleton rows={3} height={160} />;
+          if (kept !== undefined && kept.state !== "refused") return <KeptSignOff visit={data.visit} line={kept} snags={data.snags} onDone={again} />;
+          return <OpenSignOff key={kept?.id ?? "fresh"} visit={data.visit} snags={data.snags} refused={kept} onDone={again} f={f} />;
+        }}
       </Loaded>
     </div>
   );
 }
 
-function Header({ visit, kicker }: { visit: CrewVisit; kicker: string }) {
+function Header({ visit, kicker, tile }: { visit: CrewVisit; kicker: string; tile?: "hourglass" }) {
   const { f } = useJobsScreen();
   const t = useT();
   const day = dayKeyOf(visit.day);
   return (
     <div className="crm-cw-sohead">
+      {tile !== undefined && (
+        <span className="crm-cw-done-mark" aria-hidden="true">
+          <Icon name={tile} size={22} />
+        </span>
+      )}
       <div className="crm-cw-kicker">{kicker}</div>
       <h1>{visit.site_name}</h1>
       <div className="crm-cw-quiet">
@@ -115,7 +121,7 @@ function Header({ visit, kicker }: { visit: CrewVisit; kicker: string }) {
 }
 
 /** A sign-off as it was made: read, never changed. */
-function Signed({ visit, signed, snags, conn, onDone }: { visit: CrewVisit; signed: SignOff; snags: CrewSnag[]; conn: Connection; onDone: () => void }) {
+function Signed({ visit, signed, snags, onDone }: { visit: CrewVisit; signed: SignOff; snags: CrewSnag[]; onDone: () => void }) {
   const t = useT();
   const { f } = useJobsScreen();
   const signature = fileIds(signed.signature)[0] ?? null;
@@ -137,31 +143,8 @@ function Signed({ visit, signed, snags, conn, onDone }: { visit: CrewVisit; sign
           {t("cw.signed.noSignature")}
         </p>
       )}
-      <h2 className="crm-cw-h2">{t("cw.signed.checked")}</h2>
-      <ul className="crm-cw-checked">
-        {CHECKS.map((check, i) => (
-          <li key={check} data-on={truthy(signed[check]) ? "1" : "0"}>
-            <span className="crm-cw-box" aria-hidden="true">
-              {truthy(signed[check]) && <Icon name="check" size={13} />}
-            </span>
-            <span>{t(CHECK_WORDS[i]!)}</span>
-            {!truthy(signed[check]) && <span className="crm-cw-quiet">{t("cw.signed.notTicked")}</span>}
-          </li>
-        ))}
-      </ul>
-      {live.length > 0 && (
-        <>
-          <h2 className="crm-cw-h2">{t("cw.signed.live")}</h2>
-          <ul className="crm-cw-snaglist">
-            {live.map((snag) => (
-              <li key={snag.id}>
-                <span>{snag.text}</span>
-                <span className="crm-cw-quiet">{t(`jb.sg.state.${snag.state}`)}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <CheckedList on={CHECKS.map((check) => truthy(signed[check]))} />
+      <LiveSnags live={live} />
       <h2 className="crm-cw-h2">{t("cw.sign.photos")}</h2>
       {photos.length === 0 ? (
         <p className="crm-cw-quiet">{t("cw.signed.noPhotos")}</p>
@@ -172,7 +155,7 @@ function Signed({ visit, signed, snags, conn, onDone }: { visit: CrewVisit; sign
           ))}
         </div>
       )}
-      <AddSnag id="crm-cw-add-signed" visitId={visit.id} site={visit.site_name} withStops={false} conn={conn} onDone={onDone} />
+      <AddSnag id="crm-cw-add-signed" visitId={visit.id} jobId={visit.job_id} site={visit.site_name} withStops={false} onDone={onDone} />
       <ScreenLink to="myday" className="crm-cw-bigbtn mr-gi">
         <Icon name="sun" />
         {t("cw.sign.backToDay")}
@@ -181,86 +164,185 @@ function Signed({ visit, signed, snags, conn, onDone }: { visit: CrewVisit; sign
   );
 }
 
-type Outcome = { kind: "snag"; snag: string | null } | { kind: "signed" } | { kind: "other"; reason: string } | null;
-
-function OpenSignOff({ visit, snags, conn, onDone, f }: { visit: CrewVisit; snags: CrewSnag[]; conn: Connection; onDone: () => void; f: ReturnType<typeof useJobsScreen>["f"] }) {
+function CheckedList({ on }: { on: readonly boolean[] }) {
   const t = useT();
+  return (
+    <>
+      <h2 className="crm-cw-h2">{t("cw.signed.checked")}</h2>
+      <ul className="crm-cw-checked">
+        {CHECKS.map((check, i) => (
+          <li key={check} data-on={on[i] === true ? "1" : "0"}>
+            <span className="crm-cw-box" aria-hidden="true">
+              {on[i] === true && <Icon name="check" size={13} />}
+            </span>
+            <span>{t(CHECK_WORDS[i]!)}</span>
+            {on[i] !== true && <span className="crm-cw-quiet">{t("cw.signed.notTicked")}</span>}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function LiveSnags({ live }: { live: readonly CrewSnag[] }) {
+  const t = useT();
+  if (live.length === 0) return null;
+  return (
+    <>
+      <h2 className="crm-cw-h2">{t("cw.signed.live")}</h2>
+      <ul className="crm-cw-snaglist">
+        {live.map((snag) => (
+          <li key={snag.id}>
+            <span>{snag.text}</span>
+            <span className="crm-cw-quiet">{t(`jb.sg.state.${snag.state}`)}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** One of the phone's photos, with the button that takes it out of the next sign-off. */
+function HeldPhoto({ id, n, onOut, disabled }: { id: string; n: number; onOut?: (() => void) | undefined; disabled?: boolean }) {
+  const t = useT();
+  const { f } = useJobsScreen();
+  const src = useHeldSrc(id);
+  return (
+    <div className="crm-q-held-one">
+      {src === null ? <span className="crm-q-photo crm-q-photo-none" aria-hidden="true" /> : <img className="crm-q-photo" src={src} alt={t("cw.signed.photoAlt", { n: f.number(n) })} />}
+      {onOut !== undefined && (
+        <button type="button" className="crm-q-held-out mr-gi" aria-label={t("offline.so.takeOut", { n: f.number(n) })} disabled={disabled} onClick={onOut}>
+          <Icon name="x" size={13} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+const lineValues = (line: QueueLine): Record<string, unknown> => (line.op.type === "act" ? (line.op.values ?? {}) : line.op.values);
+const heldPhotos = (line: QueueLine | undefined): string[] => {
+  const photos = line === undefined ? null : lineValues(line)["photos"];
+  return Array.isArray(photos) ? photos.filter((id): id is string => typeof id === "string" && id.startsWith("phone_")) : [];
+};
+
+/** Signed on this phone, waiting for signal: what it holds, and that the office gets it when the phone has signal. */
+function KeptSignOff({ visit, line, snags, onDone }: { visit: CrewVisit; line: QueueLine; snags: CrewSnag[]; onDone: () => void }) {
+  const t = useT();
+  const { f } = useJobsScreen();
+  const values = lineValues(line);
+  const made = new Date(line.madeAt);
+  const photos = heldPhotos(line);
+  return (
+    <div className="crm-cw-done" data-testid="cw-sign-kept">
+      <Header visit={visit} kicker={t("offline.so.waitingHead")} tile="hourglass" />
+      <p className="crm-q-signed-box" data-testid="cw-kept-by">
+        {t("offline.so.signedBy", { name: String(values["signer_name"] ?? ""), day: f.dayLong(made), time: f.time(made) })} <WaitChip line={line} />
+      </p>
+      <CheckedList on={checksOf(values)} />
+      <LiveSnags live={snags.filter(isLive)} />
+      <h2 className="crm-cw-h2">{t("cw.sign.photos")}</h2>
+      {photos.length === 0 ? (
+        <p className="crm-cw-quiet">{t("cw.signed.noPhotos")}</p>
+      ) : (
+        <div className="crm-q-held" data-testid="cw-kept-photos">
+          {photos.map((id, i) => (
+            <HeldPhoto key={id} id={id} n={i + 1} />
+          ))}
+        </div>
+      )}
+      <p className="crm-cw-quiet" data-testid="cw-kept-line">
+        {t("offline.so.waitingLine")}
+      </p>
+      <AddSnag id="crm-cw-add-kept" visitId={visit.id} jobId={visit.job_id} site={visit.site_name} withStops={false} onDone={onDone} />
+      <ScreenLink to="myday" className="crm-cw-bigbtn mr-gi">
+        <Icon name="sun" />
+        {t("cw.sign.backToDay")}
+      </ScreenLink>
+    </div>
+  );
+}
+
+function OpenSignOff({ visit, snags, refused, onDone, f }: { visit: CrewVisit; snags: CrewSnag[]; refused: QueueLine | undefined; onDone: () => void; f: ReturnType<typeof useJobsScreen>["f"] }) {
+  const t = useT();
+  const nav = useNav();
   const toasts = useToasts();
-  const { session } = useJobsScreen();
-  const [checks, setChecks] = useState<boolean[]>(() => CHECKS.map(() => false));
-  const [signer, setSigner] = useState("");
+  const queue = useQueue();
+  const save = useSave();
+  const { lines } = useQueueLines();
+  // After a refusal the five checks, the name and the photos are still on the phone; the signature is not.
+  const was = refused === undefined ? null : lineValues(refused);
+  const [checks, setChecks] = useState<boolean[]>(() => (was === null ? CHECKS.map(() => false) : checksOf(was)));
+  const [signer, setSigner] = useState(() => (was === null ? "" : String(was["signer_name"] ?? "")));
+  const [held, setHeld] = useState<string[]>(() => heldPhotos(refused));
   const [signature, setSignature] = useState<string | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [photosBusy, setPhotosBusy] = useState(false);
   const [round, setRound] = useState(0);
   const [key, setKey] = useState(() => newClientKey());
   const [busy, setBusy] = useState(false);
-  const [outcome, setOutcome] = useState<Outcome>(null);
   const live = snags.filter(isLive);
-  const stop = stoppers(snags, visit.job_id)[0];
+  // A snag that stops it, as the server has it, or raised on this phone and still waiting to go.
+  const waitingStop = lines.find((line) => line.kind === "snag" && line.state !== "sent" && line.state !== "refused" && line.meta["job"] === visit.job_id && line.meta["stops"] === true);
+  const stop = stoppers(snags, visit.job_id)[0]?.text ?? (waitingStop === undefined ? undefined : String(waitingStop.meta["text"] ?? ""));
   const ticked = checks.filter(Boolean).length;
   const suggest = visit.ask_for !== null && visit.ask_for.trim() !== "" && signer.trim() === "" ? visit.ask_for.trim() : null;
+  const max = Math.max(0, 6 - held.length);
 
-  // Files kept and not yet named by a sign-off are thrown away when the person leaves without signing: nothing else would name them.
+  // Files kept on the phone and not yet named by a sign-off are thrown away when the person leaves without signing: nothing
+  // else would name them. One a kept sign-off names stays (the queue answers "held").
   const pending = useRef<string[]>([]);
   pending.current = [...(signature === null ? [] : [signature]), ...photos];
   useEffect(
     () => () => {
-      if (pending.current.length > 0) void discardFiles(session, pending.current);
+      for (const one of pending.current) void queue.drop(one);
     },
-    [session],
+    [queue],
   );
 
   const needed: string[] = [];
   if (ticked < CHECKS.length) needed.push(t("cw.sign.need.checks", { n: f.number(CHECKS.length - ticked) }, CHECKS.length - ticked));
   if (signer.trim() === "") needed.push(t("cw.sign.need.name"));
   if (signature === null) needed.push(t("cw.sign.need.signature"));
-  const hint = stop !== undefined ? t("cw.sign.stopped", { snag: stop.text }) : photosBusy ? t("cw.sign.photosBusy") : needed.length > 0 ? t("cw.sign.needed", { list: needed.join(t("cw.sign.listJoin")) }) : t("cw.sign.ready");
+  const hint = stop !== undefined ? t("cw.sign.stopped", { snag: stop }) : photosBusy ? t("cw.sign.photosBusy") : needed.length > 0 ? t("cw.sign.needed", { list: needed.join(t("cw.sign.listJoin")) }) : t("cw.sign.ready");
   const ready = stop === undefined && !photosBusy && needed.length === 0;
 
-  const onSignature = useCallback((id: string | null) => {
-    setSignature(id);
-    setOutcome(null);
-  }, []);
+  const onSignature = useCallback((id: string | null) => setSignature(id), []);
   const onPhotos = useCallback((ids: string[]) => setPhotos(ids), []);
 
-  const press = async (): Promise<boolean> => {
-    if (!ready || signature === null || busy) return true;
+  const press = async (): Promise<void> => {
+    if (!ready || signature === null || busy) return;
     setBusy(true);
-    setOutcome(null);
-    const done = await signOff(session, { visitId: visit.id, checks, signer, signature, photos }, key);
+    const line = signOffLine({ visitId: visit.id, jobId: visit.job_id, site: visit.site_name, checks, signer, signature, photos: [...held, ...photos] }, key);
+    const done = await save(line, { keepRefused: true });
+    // The refused try this one takes over: its photos are this one's now.
+    if (refused !== undefined) await queue.remove(refused.id);
+    pending.current = [];
     setBusy(false);
-    if (done.state === "offline") {
-      // Kept as typed, the files and the key with it: "Try again" sends the same sign-off.
-      conn.lost(press);
-      return false;
-    }
-    conn.back();
-    if (done.state === "signed") {
-      pending.current = [];
+    if (done.state === "sent") {
       setSignature(null);
       setPhotos([]);
       toasts.show(t("cw.sign.done", { site: visit.site_name }), "pos");
       onDone();
-      return true;
+      return;
     }
-    // Refused: the files were thrown away. The pad and the field start again, empty; a new key for the next try.
-    setSignature(null);
-    setPhotos([]);
-    setRound((n) => n + 1);
-    setKey(newClientKey());
-    if (done.why === "snag") {
-      const fresh = await readSnags(session, [visit.job_id]).catch(() => snags);
-      setOutcome({ kind: "snag", snag: stoppers(fresh, visit.job_id)[0]?.text ?? null });
-    } else if (done.why === "signed") setOutcome({ kind: "signed" });
-    else setOutcome({ kind: "other", reason: reasonOf(done.error, t) });
-    onDone();
-    return true;
+    if (done.state === "refused") {
+      // The page draws again from the refused line: the checks, the name and the photos kept, the signature not.
+      setKey(newClientKey());
+      setRound((n) => n + 1);
+      onDone();
+    }
   };
 
+  const keptCount = held.length;
   return (
     <div className="crm-cw-so" data-testid="cw-sign-open">
       <Header visit={visit} kicker={t("cw.sign.title")} />
+
+      {refused !== undefined && (
+        <RefusedBox line={refused} onSnag={refused.meta["stopped"] === undefined ? undefined : () => nav.go("mysnags")}>
+          <p data-testid="cw-refused-kept">{keptCount === 0 ? t("offline.so.keptNoPhotos") : t("offline.so.keptPhotos", { n: f.number(keptCount) }, keptCount)}</p>
+        </RefusedBox>
+      )}
 
       <section className="crm-cw-sec" aria-labelledby="crm-cw-checks-h">
         <div className="crm-cw-sec-head">
@@ -301,7 +383,7 @@ function OpenSignOff({ visit, snags, conn, onDone, f }: { visit: CrewVisit; snag
             ))}
           </ul>
         )}
-        <AddSnag id="crm-cw-add-open" visitId={visit.id} site={visit.site_name} withStops conn={conn} onDone={onDone} />
+        <AddSnag id="crm-cw-add-open" visitId={visit.id} jobId={visit.job_id} site={visit.site_name} withStops onDone={onDone} />
       </section>
 
       <section className="crm-cw-sec" aria-labelledby="crm-cw-photos-h" data-testid="cw-sign-photos">
@@ -309,7 +391,14 @@ function OpenSignOff({ visit, snags, conn, onDone, f }: { visit: CrewVisit; snag
           {t("cw.sign.photos")}
         </h2>
         <p className="crm-cw-quiet">{t("cw.sign.photos.hint")}</p>
-        <PhotoField table="sign_offs" column="photos" label={t("cw.sign.photos.label")} max={6} round={round} onChange={onPhotos} onBusy={setPhotosBusy} disabled={busy} />
+        {held.length > 0 && (
+          <div className="crm-q-held" role="group" aria-label={t("offline.so.heldPhotos")} data-testid="cw-held-photos">
+            {held.map((id, i) => (
+              <HeldPhoto key={id} id={id} n={i + 1} disabled={busy} onOut={() => setHeld((now) => now.filter((one) => one !== id))} />
+            ))}
+          </div>
+        )}
+        {max > 0 && <PhotoField table="sign_offs" column="photos" label={t("cw.sign.photos.label")} max={max} round={round} onChange={onPhotos} onBusy={setPhotosBusy} disabled={busy} />}
       </section>
 
       <section className="crm-cw-sec" aria-labelledby="crm-cw-customer-h" data-testid="cw-sign-customer">
@@ -328,16 +417,6 @@ function OpenSignOff({ visit, snags, conn, onDone, f }: { visit: CrewVisit; snag
         )}
         <SignaturePad table="sign_offs" column="signature" label={t("cw.sign.signature")} round={round} onChange={onSignature} disabled={busy} />
       </section>
-
-      {outcome !== null && (
-        <div className="crm-cw-refused" role="alert" data-testid="cw-refused">
-          <Icon name="circle-alert" size={16} />
-          <span>
-            {outcome.kind === "snag" ? (outcome.snag === null ? t("cw.sign.refused.snagAny") : t("cw.sign.refused.snag", { snag: outcome.snag })) : outcome.kind === "signed" ? t("cw.sign.refused.signed") : t("ui.refused", { reason: outcome.reason })}{" "}
-            {t("cw.sign.refused.files")}
-          </span>
-        </div>
-      )}
 
       <div className="crm-cw-signfoot">
         <button type="button" className="crm-cw-signbtn mr-btn" disabled={!ready || busy} onClick={() => void press()} data-testid="cw-sign-go">

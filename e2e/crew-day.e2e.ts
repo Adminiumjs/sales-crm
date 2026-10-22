@@ -1,6 +1,6 @@
 /**
  * P22, the field crew's phone (stage 2): My day, a visit and its ticks, the
- * crew's Snags, his own profile and his Jump, "No connection", and a live
+ * crew's Snags, his own profile and his Jump, a tick kept on the phone when nothing gets through, and a live
  * change from the office. Signed in as Yusuf Adeyemi (Blue crew, with Cal
  * Brennan), on a phone 390 wide. Run on a stand of stage 2 (`CRM_STAND_STAGE=2`).
  *
@@ -145,33 +145,32 @@ test("live, two people: the office moves his visit while his day is open, and hi
   }
 });
 
-test("No connection: a tick that cannot be sent says so plainly, saves nothing, keeps the screen, and goes once the line is back", async ({ as, data }) => {
+test("Nothing gets through: a tick is kept on the phone and said so, nothing is saved, and it goes by itself once a request gets through (plan 68 S19)", async ({ as, data }) => {
   const context = await as("f_yusuf", PHONE);
   const page = await context.newPage();
   try {
     await page.goto(`${STAFF}my-day/2026-08-04`);
     const card = page.locator(`[data-visit="${String(RETURN_VISIT)}"]`);
     await expect(card.getByTestId("cw-ticked")).toHaveText("0 of 4 ticked");
-    // The line goes: every request to Adminium is dropped.
-    await page.route("**/api/v1/**", (route) => route.abort("internetdisconnected"));
+    // The line goes, though the phone says it has signal: every save to Adminium is dropped.
+    await page.route("**/api/v1/data/**", (route) => (route.request().method() === "GET" ? route.fallback() : route.abort("internetdisconnected")));
     await card.getByRole("button", { name: "Arrived" }).click();
-    const line = page.getByTestId("cw-offline");
-    await expect(line).toContainText("No connection. Nothing was saved. Try again when you are back online.");
-    // What was read stays on the screen; nothing was saved.
+    await expect(page.getByTestId("cw-signal")).toContainText("No signal. What you save is kept on this phone and sent when you are back online.", { timeout: 15_000 });
+    await expect(page.locator(".crm-toast").last()).toHaveText("Kept on this phone. It goes when you have signal.");
+    // What was read stays on the screen; the tick shows as it will be, waiting; nothing was saved.
     await expect(card.locator("h2")).toHaveText("Cobalt Legal");
-    await expect(card.getByTestId("cw-ticked")).toHaveText("0 of 4 ticked");
-    await line.getByRole("button", { name: "Try again" }).click();
-    await expect(line).toContainText("Still no connection.");
+    await expect(card.getByTestId("cw-ticked")).toHaveText("1 of 4 ticked");
+    await expect(card.locator('button[data-tick="tick_arrived"]').getByTestId("queue-chip")).toHaveText("Waiting to send");
     expect((await rows<{ tick_arrived: boolean }>(context.request, data, "job_visits", { column: "id", op: "eq", value: RETURN_VISIT }))[0]!.tick_arrived).toBe(false);
     await picture(page, "p22-3-yusuf-no-connection");
-    // Back online: the same press goes.
-    await page.unroute("**/api/v1/**");
-    await line.getByRole("button", { name: "Try again" }).click();
-    await expect(page.getByTestId("cw-offline")).toHaveCount(0);
+    // Requests get through again: it goes by itself, once.
+    await page.unroute("**/api/v1/data/**");
+    await expect(page.locator(".crm-toast").last()).toHaveText("1 sent.", { timeout: 30_000 });
+    await expect(page.getByTestId("cw-signal")).toHaveCount(0);
     await expect(card.getByTestId("cw-ticked")).toHaveText("1 of 4 ticked");
     expect((await rows<{ tick_arrived: boolean }>(context.request, data, "job_visits", { column: "id", op: "eq", value: RETURN_VISIT }))[0]!.tick_arrived).toBe(true);
   } finally {
-    await page.unroute("**/api/v1/**").catch(() => undefined);
+    await page.unroute("**/api/v1/data/**").catch(() => undefined);
     await context.request.patch(data("job_visits", `/${String(RETURN_VISIT)}`), { data: { values: { tick_arrived: false } }, headers: await csrf(context.request) });
   }
 });

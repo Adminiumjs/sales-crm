@@ -299,7 +299,7 @@ for (const [dialect, reachable] of LEGS) {
       // A records page per table the role reads, the Pipeline board for the five roles that open the deals list, and the
       // console's Overview and Approvals for the CRM admin, the sales manager and Read-only (P17). A page kept off the
       // rail is still one of the role's pages: it is listed with the section, and only not drawn.
-      expect(counts).toEqual({ admin: 74, 'sales-manager': 62, rep: 60, 'account-manager': 36, marketer: 8, 'front-desk': 11, 'ops-manager': 25, crew: 16, 'read-only': 68 });
+      expect(counts).toEqual({ admin: 75, 'sales-manager': 63, rep: 61, 'account-manager': 37, marketer: 8, 'front-desk': 11, 'ops-manager': 26, crew: 17, 'read-only': 69 });
     });
 
     it('nobody reads a private table but the two people of a row: not the CRM admin, not Read-only, not the Super Admin', async () => {
@@ -356,7 +356,7 @@ for (const [dialect, reachable] of LEGS) {
         ['shows', 'all all all - all all - - all'],
         ['showroom_spaces samples display_pieces showroom_bookings sample_loans sample_chases', 'all all all - - all - - all'],
         ['jobs feedback complaints warranty_claims', 'all team own all - - all - all'],
-        ['job_visits sign_offs snags', 'all team own all - - all own all'],
+        ['job_visits sign_offs refused_sign_offs snags', 'all team own all - - all own all'],
         ['delivery_notes delivery_note_lines', 'all - - all - - all own all'],
         ['crews crew_members crew_days', 'all - - - - - all all all'],
         // P25: a crew member reads the vehicle his crew is given, and its faults; a check and a fill also through that vehicle.
@@ -385,7 +385,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
       const opened = Object.fromEntries(ROLES.map((role) => [role, Object.values(reads).filter((row) => row[role] !== '-').length]));
-      expect(opened).toEqual({ admin: 70, 'sales-manager': 59, rep: 59, 'account-manager': 35, marketer: 8, 'front-desk': 11, 'ops-manager': 24, crew: 16, 'read-only': 64 });
+      expect(opened).toEqual({ admin: 71, 'sales-manager': 60, rep: 60, 'account-manager': 36, marketer: 8, 'front-desk': 11, 'ops-manager': 25, crew: 17, 'read-only': 65 });
 
       // Every row of every table, read as nobody (SQL).
       const raw: Record<string, Record<string, unknown>[]> = {};

@@ -13,8 +13,10 @@
  *
  * The totals are the server's, kept on his sheet as the lines are written.
  *
- * Online only (ruling Q1): a save that cannot be sent says so and keeps what
- * was typed; the same press sends it again, a new row with the same key.
+ * With no signal a day, a change and "Send for sign-off" are kept on the
+ * phone and sent when the signal is back, in order (plan 68 S19,
+ * `hourLines.ts`): a week made on this phone is sent before its days. The
+ * days waiting show with "Waiting to send"; the totals stay the server's.
  *
  * Address: `my-hours` (the week just gone), `my-hours/<a day of the week>`.
  */
@@ -25,14 +27,17 @@ import { addDays, noonOf } from "../../lib/format.ts";
 import { Icon } from "../../shell/icons.tsx";
 import { useNav } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
-import { newClientKey, type Saved } from "../../staffSession.ts";
+import { newClientKey } from "../../staffSession.ts";
+import { latest, type LineRef } from "../../offlineQueue.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
-import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { useToasts } from "../../ui/toast.tsx";
 import { readWeek, type CrewVisit } from "../crew/data.ts";
-import { NoConnection, useConnection, type Connection } from "../crew/Offline.tsx";
+import { SignalLine, useReadAgainOnSignal, useSave, useWhy, WaitChip } from "../crew/Offline.tsx";
+import { useQueue, useQueueLines } from "../crew/queue.tsx";
+import { dayLine, dayChangeLine, sendWeekLine, sheetLine } from "./hourLines.ts";
 import { dayWords, useJobsScreen } from "../jobs/parts.tsx";
-import { addLine, changeLine, dayKeyOf, daysOf, editable, lastWorkingDay, makeSheet, mondayOf, num, readHours, readHoursSettings, readLines, readWeekSheets, sendSheet, weekAsked, type LineDraft, type Sheet, type SheetLine } from "./data.ts";
+import { dayKeyOf, daysOf, editable, lastWorkingDay, mondayOf, num, readHours, readHoursSettings, readLines, readWeekSheets, weekAsked, type LineDraft, type Sheet, type SheetLine } from "./data.ts";
 
 interface Mine {
   sheet: Sheet | null;
@@ -51,7 +56,8 @@ export function MyHours({ rest }: ScreenProps) {
   const nav = useNav();
   const toasts = useToasts();
   const { session, f, today, tick } = useJobsScreen();
-  const conn = useConnection();
+  const save = useSave();
+  const { lines: queued } = useQueueLines();
   const me = session.config.user?.id ?? null;
   const monday = weekAsked(rest, today);
   const thisWeek = mondayOf(today);
@@ -74,23 +80,25 @@ export function MyHours({ rest }: ScreenProps) {
     }, [tick, reload]),
   );
   useLive(["time_sheets", "time_sheet_lines"], again);
+  useReadAgainOnSignal(load.state === "failed", reload);
   const [editing, setEditing] = useState<SheetLine | "new" | null>(null);
   const [sending, setSending] = useState(false);
+  // What waits on this phone for this week: the week made here, its days, and its sending.
+  const ofWeek = (kind: string) => queued.filter((line) => line.kind === kind && line.meta["monday"] === monday && (line.state === "waiting" || line.state === "sending"));
+  const keptSheet = ofWeek("sheet")[0];
+  const keptDays = [...ofWeek("day"), ...ofWeek("day-change")].sort((a, b) => a.seq - b.seq);
+  const keptSend = latest(queued, (line) => line.kind === "send-week" && line.meta["monday"] === monday, ["waiting", "sending"]);
 
-  const send = async (sheet: Sheet): Promise<boolean> => {
-    if (sending) return true;
+  const send = async (sheet: Sheet | null): Promise<void> => {
+    if (sending) return;
+    const target = sheet !== null ? sheet.id : keptSheet !== undefined ? { $line: keptSheet.id } : null;
+    if (target === null) return;
     setSending(true);
-    const saved = await sendSheet(session, sheet);
+    const from = sheet?.state ?? "open";
+    const done = await save(sendWeekLine(target, monday, from), { kept: t("offline.kept.office") });
     setSending(false);
-    if (saved.state === "unknown") {
-      conn.lost(() => send(sheet));
-      return false;
-    }
-    conn.back();
-    if (saved.state === "refused") toasts.show(t("ui.refused", { reason: saved.error.code === "STATE_MOVE_REFUSED" && saved.error.status === 409 ? t("hr.mh.send.empty") : reasonOf(saved.error, t) }), "danger", true);
-    else toasts.show(t(sheet.state === "sent-back" ? "hr.mh.again.done" : "hr.mh.send.done"), "pos");
+    if (done.state === "sent") toasts.show(t(from === "sent-back" ? "hr.mh.again.done" : "hr.mh.send.done"), "pos");
     again();
-    return true;
   };
 
   return (
@@ -112,24 +120,14 @@ export function MyHours({ rest }: ScreenProps) {
           </span>
         )}
       </div>
-      {(conn.down || load.state === "failed") && (
-        <NoConnection
-          tried={conn.tried}
-          busy={conn.busy}
-          onRetry={() => {
-            if (load.state === "failed") {
-              conn.back();
-              reload();
-            } else conn.retry();
-          }}
-        />
-      )}
+      <SignalLine failed={load.state === "failed"} />
       <Loaded load={load} reload={reload} skeleton={<Skeleton rows={4} height={84} />}>
         {(data) => {
           const { sheet } = data;
-          const mine = sheet === null || editable(sheet.state);
+          // A week being sent from this phone is no longer his to write.
+          const mine = (sheet === null || editable(sheet.state)) && keptSend === undefined;
           // A week still to come is nobody's to write yet; this week and those before are.
-          const canWrite = mine && monday <= thisWeek && session.can("time_sheet_lines", "create") && (sheet !== null || session.can("time_sheets", "create"));
+          const canWrite = mine && monday <= thisWeek && session.can("time_sheet_lines", "create") && (sheet !== null || keptSheet !== undefined || session.can("time_sheets", "create"));
           const ended = today > data.lastDay;
           const visitOf = (id: number | null): CrewVisit | undefined => (id === null ? undefined : data.visits.find((visit) => visit.id === id));
           return (
@@ -170,7 +168,37 @@ export function MyHours({ rest }: ScreenProps) {
                   );
                 })}
               </ul>
-              {data.lines.length === 0 && (
+              {keptDays.length > 0 && (
+                <ul className="crm-hr-days" data-testid="hr-mh-kept">
+                  {keptDays.map((line) => {
+                    const day = String(line.meta["day"] ?? monday);
+                    return (
+                      <li key={line.id} className="crm-hr-day-row mr-card" data-line={line.id} data-day={day} data-kept="1">
+                        <div className="crm-hr-dayno" aria-hidden="true">
+                          <div className="crm-hr-dow">{f.weekdayShort(noonOf(day))}</div>
+                          <div className="crm-mono crm-hr-num">{f.number(Number(day.slice(8, 10)))}</div>
+                        </div>
+                        <div className="crm-hr-day-words">
+                          <span className="mr-sr-only">{f.dayLong(noonOf(day))}</span>
+                          <div className="crm-hr-what" dir="auto">
+                            {String(line.meta["what"] ?? "")}
+                          </div>
+                          <div className="crm-hr-split">
+                            <span>
+                              {t("hr.mh.onSite")} <b className="crm-mono">{t("hr.h", { n: f.number(num(line.meta["hours"])) })}</b>
+                            </span>
+                            <span>
+                              {t("hr.mh.travel")} <b className="crm-mono">{t("hr.h", { n: f.number(num(line.meta["travel"])) })}</b>
+                            </span>
+                          </div>
+                          <WaitChip line={line} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {data.lines.length === 0 && keptDays.length === 0 && (
                 <div className="crm-empty" data-testid="hr-mh-empty">
                   <span className="crm-empty-icon">
                     <Icon name="clock" size={20} />
@@ -205,7 +233,7 @@ export function MyHours({ rest }: ScreenProps) {
                   </div>
                 </div>
               </div>
-              <StateCard data={data} ended={ended} sending={sending} canSend={sheet !== null && editable(sheet.state) && session.can("time_sheets", "update")} onSend={() => sheet !== null && void send(sheet)} />
+              <StateCard data={data} ended={ended} sending={sending} kept={keptSend} days={data.lines.length + keptDays.length} canSend={(sheet !== null ? editable(sheet.state) : keptSheet !== undefined) && keptSend === undefined && session.can("time_sheets", "update")} onSend={() => void send(sheet)} />
               {editing !== null && (
                 <LineDialog
                   monday={monday}
@@ -213,7 +241,7 @@ export function MyHours({ rest }: ScreenProps) {
                   sheet={sheet}
                   line={editing === "new" ? null : editing}
                   visits={data.visits}
-                  conn={conn}
+                  keptSheet={keptSheet?.id ?? null}
                   onClose={() => setEditing(null)}
                   onDone={again}
                 />
@@ -227,17 +255,22 @@ export function MyHours({ rest }: ScreenProps) {
 }
 
 /** Where the week stands, in the design's four lines, and the button that moves it on. */
-function StateCard({ data, ended, sending, canSend, onSend }: { data: Mine; ended: boolean; sending: boolean; canSend: boolean; onSend: () => void }) {
+function StateCard({ data, ended, sending, kept, days, canSend, onSend }: { data: Mine; ended: boolean; sending: boolean; kept: ReturnType<typeof latest>; days: number; canSend: boolean; onSend: () => void }) {
   const t = useT();
   const { f } = useJobsScreen();
   const { sheet } = data;
   const state = sheet?.state ?? "none";
   const sentAt = sheet?.sent_at ? new Date(sheet.sent_at) : null;
   const signedAt = sheet?.signed_at ? new Date(sheet.signed_at) : null;
-  const ready = canSend && ended && data.lines.length > 0 && !sending;
+  const ready = canSend && ended && days > 0 && !sending;
   return (
-    <div className="crm-hr-card mr-card" data-testid="hr-mh-card" data-state={state}>
-      {(state === "none" || state === "open") && <p>{t(data.lines.length === 0 ? "hr.mh.line.empty" : ended ? "hr.mh.line.ended" : "hr.mh.line.notYet")}</p>}
+    <div className="crm-hr-card mr-card" data-testid="hr-mh-card" data-state={kept !== undefined ? "kept" : state}>
+      {kept !== undefined && (
+        <p data-testid="hr-mh-kept-send">
+          {t("offline.so.waitingLine")} <WaitChip line={kept} />
+        </p>
+      )}
+      {kept === undefined && (state === "none" || state === "open") && <p>{t(days === 0 ? "hr.mh.line.empty" : ended ? "hr.mh.line.ended" : "hr.mh.line.notYet")}</p>}
       {state === "sent" && <p data-testid="hr-mh-sent">{sentAt === null ? t("hr.mh.line.sent") : t("hr.mh.line.sentAt", { day: f.dayLong(sentAt), time: f.time(sentAt) })}</p>}
       {state === "signed-off" && (
         <p className="crm-hr-signed" data-testid="hr-mh-signed">
@@ -266,10 +299,13 @@ function StateCard({ data, ended, sending, canSend, onSend }: { data: Mine; ende
 }
 
 /** A day of the week, written or changed: what, on site, travel, and the visit it was if it was one. The first day makes the week's sheet. */
-function LineDialog({ monday, me, sheet, line, visits, conn, onClose, onDone }: { monday: string; me: string | null; sheet: Sheet | null; line: SheetLine | null; visits: CrewVisit[]; conn: Connection; onClose: () => void; onDone: () => void }) {
+function LineDialog({ monday, me, sheet, line, visits, keptSheet, onClose, onDone }: { monday: string; me: string | null; sheet: Sheet | null; line: SheetLine | null; visits: CrewVisit[]; keptSheet: string | null; onClose: () => void; onDone: () => void }) {
   const t = useT();
   const toasts = useToasts();
-  const { session, f } = useJobsScreen();
+  const queue = useQueue();
+  const save = useSave();
+  const why = useWhy();
+  const { f } = useJobsScreen();
   const id = useId();
   const days = useMemo(() => daysOf(monday), [monday]);
   const [day, setDay] = useState(line === null ? days[0]! : (dayKeyOf(line.day) ?? days[0]!));
@@ -278,8 +314,7 @@ function LineDialog({ monday, me, sheet, line, visits, conn, onClose, onDone }: 
   const [travel, setTravel] = useState(line === null ? "" : String(num(line.travel_hours)));
   const [visitId, setVisitId] = useState<number | null>(line?.visit_id ?? null);
   const [busy, setBusy] = useState(false);
-  const [lost, setLost] = useState(false);
-  // One key for the week's sheet and one for the line, kept while the same press is sent again.
+  // One key for the week's sheet and one for the line, made once for this dialog.
   const [keys] = useState(() => ({ sheet: newClientKey(), line: newClientKey() }));
   const [made, setMade] = useState<Sheet | null>(sheet);
   const onHours = readHours(hours);
@@ -287,46 +322,38 @@ function LineDialog({ monday, me, sheet, line, visits, conn, onClose, onDone }: 
   const ready = what.trim() !== "" && onHours !== null && onTravel !== null && !busy;
   const ofDay = visits.filter((visit) => dayKeyOf(visit.day) === day);
 
-  const save = async (): Promise<boolean> => {
-    if (!ready || me === null || onHours === null || onTravel === null) return true;
+  const go = async (): Promise<void> => {
+    if (!ready || me === null || onHours === null || onTravel === null) return;
     setBusy(true);
     const draft: LineDraft = { day, what, hours: onHours, travel: onTravel, visitId };
-    let target = made;
-    if (target === null) {
-      const saved = await makeSheet(session, me, monday, keys.sheet);
-      if (!(await settled(saved, () => setMade(saved.state === "saved" ? saved.row : null)))) return false;
-      if (saved.state !== "saved") return true;
-      target = saved.row;
+    // The week's sheet: the server's, one made on this phone and still waiting, or made now (with the first day).
+    let target: number | LineRef;
+    if (made !== null) target = made.id;
+    else if (keptSheet !== null) target = { $line: keptSheet };
+    else {
+      const week = await queue.add(sheetLine(me, monday, keys.sheet));
+      if (week.state === "refused") {
+        setBusy(false);
+        toasts.show(why(week.line), "danger", true);
+        await queue.remove(week.line.id);
+        onDone();
+        return;
+      }
+      if (week.state === "sent") {
+        setMade(week.line.row as Sheet);
+        target = Number(week.line.row?.["id"]);
+      } else target = { $line: week.line.id };
     }
-    const saved = line === null ? await addLine(session, target.id, draft, keys.line) : await changeLine(session, line, draft);
-    if (!(await settled(saved, () => undefined))) return false;
-    if (saved.state === "saved") {
-      toasts.show(t(line === null ? "hr.mh.line.added" : "hr.mh.line.changed", { day: f.dayShort(noonOf(day)) }), "pos");
-      onDone();
-      onClose();
-    }
-    return true;
-  };
-  /** How a save ended: no connection keeps the dialog and its words; a refusal says why; a save goes on. */
-  async function settled<R>(saved: Saved<R>, keep: () => void): Promise<boolean> {
-    if (saved.state === "unknown") {
-      setBusy(false);
-      setLost(true);
-      conn.lost(save);
-      return false;
-    }
-    setLost(false);
-    conn.back();
-    if (saved.state === "refused") {
-      setBusy(false);
-      toasts.show(t("ui.refused", { reason: saved.error.code === "RECORD_LOCKED" ? t("hr.mh.locked") : reasonOf(saved.error, t) }), "danger", true);
-      onDone();
-      return true;
-    }
-    keep();
+    const done = await save(line === null ? dayLine(target, monday, draft, keys.line) : dayChangeLine(line, monday, draft), { kept: t("offline.kept.office") });
     setBusy(false);
-    return true;
-  }
+    if (done.state === "refused") {
+      onDone();
+      return;
+    }
+    if (done.state === "sent") toasts.show(t(line === null ? "hr.mh.line.added" : "hr.mh.line.changed", { day: f.dayShort(noonOf(day)) }), "pos");
+    onDone();
+    onClose();
+  };
 
   return (
     <Dialog
@@ -341,9 +368,9 @@ function LineDialog({ monday, me, sheet, line, visits, conn, onClose, onDone }: 
       foot={
         <>
           <span className="crm-cw-hint" role="status" aria-live="polite">
-            {lost ? t("cw.offline") : what.trim() === "" ? t("hr.mh.need.what") : onHours === null || onTravel === null ? t("hr.mh.need.hours") : ""}
+            {what.trim() === "" ? t("hr.mh.need.what") : onHours === null || onTravel === null ? t("hr.mh.need.hours") : ""}
           </span>
-          <button type="button" className="crm-btn crm-btn-primary crm-btn-40 mr-btn" data-testid="hr-line-save" disabled={!ready} onClick={() => void save()}>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-40 mr-btn" data-testid="hr-line-save" disabled={!ready} onClick={() => void go()}>
             <Icon name="check" />
             {busy ? t("ui.saving") : t(line === null ? "hr.mh.add.go" : "hr.mh.change.go")}
           </button>
