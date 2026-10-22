@@ -489,11 +489,16 @@ for (const [dialect, reachable] of LEGS) {
           fileId,
           connectionId: s.connectionId,
           table: s.t('companies'),
-          mapping: { columns: [{ from: 'Name', to: 'name' }, { from: 'Town', to: 'town' }, { from: 'Country', to: 'country' }, { from: 'Place', to: 'place' }] },
-          options: { mode: 'skip', matchColumn: 'name' },
+          mapping: { columns: [{ from: 'Number', to: 'customer_no' }, { from: 'Name', to: 'name' }, { from: 'Town', to: 'town' }, { from: 'Country', to: 'country' }, { from: 'Place', to: 'place' }] },
+          // Below the CRM admin a list is matched on the customer number, the column no two companies share: a writer
+          // held to some rows matches on no other kind (plan 68 X3 holds a rep to her own companies).
+          options: { mode: 'skip', matchColumn: 'customer_no' },
         });
-      // Three companies as a sheet pastes them, tabs between the cells: the first is one of the sample's nine.
-      const paste = 'Name\tTown\tCountry\tPlace\nCobalt Legal\tSomewhere else\tGB\t\nQuayside Print\tYork\tGB\t53.9590,-1.0815\nOrchard Dental\tDurham\tGB\thttps://www.google.com/maps/@54.7753,-1.5849,15z\n';
+      // Three companies as a sheet pastes them, tabs between the cells: the first is one of the sample's nine, which the
+      // CRM admin gives its customer number first.
+      const cobalt = Number((await one(`SELECT id FROM ${s.real('companies')} WHERE name = 'Cobalt Legal'`))['id']);
+      expect(said(await patch('tessa', 'companies', cobalt, { customer_no: 'G3-COBALT' }))).toBe('ok');
+      const paste = 'Number\tName\tTown\tCountry\tPlace\nG3-COBALT\tCobalt Legal\tSomewhere else\tGB\t\nG3-QUAY\tQuayside Print\tYork\tGB\t53.9590,-1.0815\nG3-ORCH\tOrchard Dental\tDurham\tGB\thttps://www.google.com/maps/@54.7753,-1.5849,15z\n';
 
       // WHO BRINGS A LIST IN (F14): a rep, the sales manager and the CRM admin, for companies and contacts. Nobody else.
       for (const person of ['hugo', 'grace', 'lena']) {
@@ -533,6 +538,13 @@ for (const [dialect, reachable] of LEGS) {
       const durham = await one(`SELECT id FROM ${s.real('companies')} WHERE name = 'Orchard Dental'`);
       expect(await stored('companies', 'place', york['id'])).toEqual({ lat: 53.959, lng: -1.0815, by: 'exact' });
       expect(await stored('companies', 'place', durham['id'])).toEqual({ lat: 54.7753, lng: -1.5849, by: 'exact' });
+      // A rep matching on the name is refused by the server, whose word it is (a writer held to some rows of the table).
+      const again = await upload('dana', paste);
+      const byName = await send('dana', 'POST', '/api/v1/imports', { fileId: (again.json() as { data: { fileId: string } }).data.fileId, connectionId: s.connectionId, table: s.t('companies'), mapping: { columns: [{ from: 'Name', to: 'name' }] }, options: { mode: 'skip', matchColumn: 'name' } });
+      expect(byName.statusCode, byName.body).toBe(201);
+      const byNameId = (byName.json() as { data: { import: { id: string } } }).data.import.id;
+      expect(said(await get('dana', `/api/v1/imports/${byNameId}/preview`))).toBe('422 VALIDATION_FAILED');
+      expect(said(await patch('tessa', 'companies', cobalt, { customer_no: null }))).toBe('ok');
     });
 
     it('a company is placed by a town of the list or by an exact point, and never by a made-up town', async () => {

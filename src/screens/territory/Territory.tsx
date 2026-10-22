@@ -120,6 +120,8 @@ export function Territory(_props: ScreenProps) {
       const say = live.current.t;
       const id = Number(pinId);
       const company = live.current.data?.companies.find((one) => one.id === id);
+      // Somebody else's company (plan 68 X3): not sent, and the map says why.
+      if (company !== undefined && !company.changeable) return { refused: say("ui.refused.notYours") };
       const sent = { lat: at.lat, lng: at.lng };
       let saved = await session.update("companies", id, { place: sent });
       // A lost reply is read back by the client, which cannot tell one position from another: look for ourselves, and send once more if it is not there.
@@ -137,14 +139,15 @@ export function Territory(_props: ScreenProps) {
   const saveArea = useCallback(
     async (territoryId: number, geometry: AreaGeometry): Promise<void | Refused> => {
       const say = live.current.t;
+      if (live.current.data?.territories.find((one) => one.id === territoryId)?.changeable === false) return { refused: say("ui.refused.notYours") };
       let saved = await session.update("territories", territoryId, { area: geometry });
       if (saved.state === "saved" && saved.readBack && !sameJson(saved.row["area"], geometry)) saved = await session.update("territories", territoryId, { area: geometry });
       if (saved.state === "refused") return { refused: reasonOf(saved.error, say) };
       if (saved.state === "unknown" || (saved.readBack && !sameJson(saved.row["area"], geometry))) return { refused: say("ui.unknown") };
       const inside = strangersIn(territoryId, geometry, (live.current.data?.companies ?? []).map(placedOf));
       const no = declined.current.get(territoryId) ?? new Set<number>();
-      // Only somebody who may change companies is asked, and only about companies they have not already said no to.
-      if (canPlace && inside.some((company) => !no.has(company.id))) setAsking(territoryId);
+      // Only somebody who may change companies is asked, only about the ones she may change, and only about those she has not already said no to.
+      if (canPlace && inside.some((company) => company.company.changeable && !no.has(company.id))) setAsking(territoryId);
       again();
     },
     [session, canPlace, again],
@@ -296,14 +299,16 @@ export function Territory(_props: ScreenProps) {
           const noTerritory = loaded.companies.filter((company) => company.territoryId === null || !byId.has(company.territoryId));
           const targetRow = territoryOf(target);
           const askingRow = territoryOf(asking);
-          const askingAbout = askingRow === null ? [] : strangersIn(askingRow.id, askingRow.area, placed).map((one) => one.company);
+          const askingAbout = askingRow === null ? [] : strangersIn(askingRow.id, askingRow.area, placed).map((one) => one.company).filter((company) => company.changeable);
           const whereNow = (company: Company): string => (company.territoryId !== null && byId.has(company.territoryId) ? byId.get(company.territoryId)!.name : t("terr.none"));
           const editLine =
             !editing || status !== "ready"
               ? null
               : targetRow === null
                 ? t("terr.edit.pick")
-                : targetRow.area === null
+                : !targetRow.changeable
+                  ? t("terr.edit.notOurs", { name: targetRow.name })
+                  : targetRow.area === null
                   ? t(loaded.companies.some((company) => company.territoryId === targetRow.id && company.spot !== null) ? "terr.edit.draw" : "terr.edit.drawOnly", { name: targetRow.name })
                   : t("terr.edit.reshape", { name: targetRow.name });
           return (
@@ -312,7 +317,7 @@ export function Territory(_props: ScreenProps) {
                 {editLine !== null && (
                   <div className="crm-terr-bar" role="status">
                     <span>{editLine}</span>
-                    {targetRow !== null && targetRow.area === null && loaded.companies.some((company) => company.territoryId === targetRow.id && company.spot !== null) && (
+                    {targetRow !== null && targetRow.changeable && targetRow.area === null && loaded.companies.some((company) => company.territoryId === targetRow.id && company.spot !== null) && (
                       <button type="button" className="crm-btn crm-btn-ghost mr-gi" data-testid="terr-start-area" onClick={() => void startArea(targetRow, loaded.companies)}>
                         <Icon name="map" size={14} />
                         {t("terr.edit.start")}
@@ -435,7 +440,7 @@ export function Territory(_props: ScreenProps) {
                             <div className="crm-terr-inside" data-testid="terr-inside">
                               <Icon name="triangle-alert" size={14} />
                               <span>{t("terr.row.inside", { list: inside.map((company) => t("terr.row.insideOne", { company: company.name, territory: whereNow(company) })).join(", ") })}</span>
-                              {editing && canPlace && (
+                              {editing && canPlace && inside.some((company) => company.changeable) && (
                                 <button type="button" className="crm-terr-inside-btn mr-lnk" onClick={() => setAsking(territory.id)}>
                                   {t("terr.row.insideMove")}
                                 </button>
@@ -447,7 +452,7 @@ export function Territory(_props: ScreenProps) {
                               {t("terr.row.strayed", { list: strayed.map((company) => company.name).join(", ") })}
                             </div>
                           )}
-                          {editing && isTarget && (
+                          {editing && isTarget && territory.changeable && (
                             <div className="crm-terr-fields">
                               <label>
                                 {t("terr.edit.name")}
@@ -502,7 +507,7 @@ export function Territory(_props: ScreenProps) {
                           </RecordName>
                           <span className="crm-terr-unplaced-addr">{addressOf({ address_lines: company.addressLines, town: company.town, region: company.region, postal_code: company.postalCode, country: company.country }, locale)}</span>
                         </span>
-                        {canPlace && status === "ready" && !editing && (
+                        {company.changeable && status === "ready" && !editing && (
                           <button type="button" className="crm-btn crm-btn-ghost mr-gi" aria-pressed={placing === company.id} onClick={() => setPlacing((now) => (now === company.id ? null : company.id))}>
                             <Icon name="map-pin" size={14} />
                             {t(placing === company.id ? "terr.unplaced.placing" : "terr.unplaced.place")}

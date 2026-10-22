@@ -807,6 +807,15 @@ test("New starter: the ledger's three of twelve; a step ticked and put back; the
   expect((await dana.patch(data("starter_steps", `/${String(step.id)}`), { data: { values: { text: "Spec: no" } }, headers })).status()).toBe(403);
   expect((await dana.patch(data("starter_steps", `/${String(step.id)}`), { data: { values: { done: true } }, headers })).status()).toBe(200);
   expect((await dana.patch(data("starter_steps", `/${String(step.id)}`), { data: { values: { done: false } }, headers })).status()).toBe(200);
+  // …her own step only (plan 68 X1): Leo's "Walk the catalogue" is shown to her, not offered, and refused by the server.
+  const leos = (await rows<{ id: number }>(dana, data, "starter_steps", { column: "text", op: "eq", value: "Walk the catalogue" }))[0]!;
+  expect([403, 404]).toContain((await dana.patch(data("starter_steps", `/${String(leos.id)}`), { data: { values: { done: true } }, headers })).status());
+  const danaPage = await danaContext.newPage();
+  await danaPage.goto(`${STAFF}new-starter`);
+  await expect(danaPage.getByRole("checkbox", { name: "Sit in on three calls" })).toBeEnabled();
+  await expect(danaPage.getByRole("checkbox", { name: "Walk the catalogue" })).toBeDisabled();
+  await expect(danaPage.getByRole("checkbox", { disabled: false })).toHaveCount(1);
+  await danaPage.close();
   expect(Object.keys((await rows<Record<string, unknown>>(dana, data, "starters"))[0]!)).not.toContain("first_year_target");
   const starter = (await rows<{ id: number }>(dana, data, "starters"))[0]!;
   expect((await dana.patch(data("starters", `/${String(starter.id)}`), { data: { values: { name: "Spec: no" } }, headers })).status()).toBe(403);

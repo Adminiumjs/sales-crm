@@ -2,8 +2,9 @@
  * NEW STARTER (ledger screen 30): somebody who joins soon, and what has to
  * happen before the first day, in the first week and in the first month.
  *
- * The steps are ticked by who may change them (the manager, the CRM admin;
- * a rep ticks a step and changes nothing else of it: the server holds each).
+ * The steps are ticked by who may change them: a rep her own steps, the
+ * manager her team's starters' and steps, the CRM admin any (plan 68 X1; a
+ * rep ticks a step and changes nothing else of it: the server holds each).
  * "3 of 12 done" and each group's count are totals the server answers; the
  * share done is those two divided.
  *
@@ -20,6 +21,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { noonOf, type Formatters } from "../../lib/format.ts";
+import { readUs } from "../../selling/whose.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
@@ -182,8 +184,12 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
   const away = f.dayDiff(now, starts);
   const { load, reload } = useLoad(() => readStarter(session, starter, Number(f.dayKey(now).slice(0, 4))), [session, starter.id, round]);
   const [busy, setBusy] = useState<number | "target" | null>(null);
+  // Whose a step is: its owner's, and its starter's manager's (with who leads them). Others are shown, not offered.
+  const { load: usLoad } = useLoad(() => readUs(session), [session]);
+  const ours = (person: string | null): boolean => usLoad.state === "ready" && (usLoad.data === "anybody" || (person !== null && usLoad.data.has(person)));
   const canTick = session.can("starter_steps", "update");
-  const canSet = session.can("starters", "update");
+  const mayTick = (step: StepRow): boolean => canTick && (ours(step.owner_id) || ours(starter.manager_id));
+  const canSet = session.can("starters", "update") && ours(starter.manager_id);
 
   const tick = async (step: StepRow): Promise<void> => {
     if (busy !== null) return;
@@ -296,7 +302,7 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
                         const owner = truthy(step.for_starter) ? starter.name : step.owner_id === null ? "" : (who.names[step.owner_id] ?? "");
                         return (
                           <li key={step.id} className="crm-st-step" data-done={done ? "1" : "0"} data-step={step.id}>
-                            <button type="button" className="crm-tw-tick mr-gi" role="checkbox" aria-checked={done} aria-label={step.text} disabled={!canTick || busy !== null} onClick={() => void tick(step)}>
+                            <button type="button" className="crm-tw-tick mr-gi" role="checkbox" aria-checked={done} aria-label={step.text} disabled={!mayTick(step) || busy !== null} onClick={() => void tick(step)}>
                               {done && <Icon name="check" size={13} />}
                             </button>
                             <span className="crm-st-step-text">{step.text}</span>

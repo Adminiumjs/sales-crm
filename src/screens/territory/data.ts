@@ -13,6 +13,7 @@
  * other than the territory's owner. A rep's value is therefore her own
  * deals' value, and the screen says so where the two counts differ.
  */
+import { mayChangeCompany, mayChangeTerritory, openOwnersAt, readUs } from "../../selling/whose.ts";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { areaOf, spotOf, type AreaGeometry, type Spot } from "./geometry.ts";
 
@@ -26,6 +27,8 @@ export interface Territory {
   area: AreaGeometry | null;
   /** Its place among the map's eight colours: the territory's order by id, so a colour stays a territory's while others come and go. */
   colour: number;
+  /** Whether the reader may change it: her team's, or nobody's (plan 68 X3; the server holds every write). */
+  changeable: boolean;
 }
 
 export interface Company {
@@ -42,6 +45,8 @@ export interface Company {
   /** The open deals of this company the reader can open, and what they come to; null when the reader reads no deals. */
   open: number | null;
   openValue: number | null;
+  /** Whether the reader may change it (its pin, its territory): hers, her team's, or nobody's (plan 68 X3). */
+  changeable: boolean;
 }
 
 export interface Figures {
@@ -74,6 +79,7 @@ interface TerritoryRow extends Record<string, unknown> {
   area: unknown;
 }
 interface CompanyRow extends Record<string, unknown> {
+  account_owner_id?: string | null;
   id: number;
   name: string;
   address_lines: string | null;
@@ -121,7 +127,7 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
   const [territoryPage, companyPage, people, reps] = await Promise.all([
     session.list<TerritoryRow>("territories", { select: ["id", "name", "owner_id", "area"], order: ["id"], limit: LISTED }),
     session.list<CompanyRow>("companies", {
-      select: ["id", "name", "address_lines", "town", "region", "postal_code", "country", "territory_id", "place"],
+      select: ["id", "name", "address_lines", "town", "region", "postal_code", "country", "territory_id", "place", "account_owner_id"],
       order: ["name", "id"],
       limit: LISTED,
       count: "exact",
@@ -138,7 +144,11 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
     session.can("reps", "read") ? session.list<{ user_id: string }>("reps", { select: ["user_id"], order: ["id"], limit: LISTED }).catch(() => null) : Promise.resolve(null),
   ]);
 
-  const territories: Territory[] = territoryPage.rows.map((row, index) => ({ id: row.id, name: row.name, ownerId: row.owner_id, area: areaOf(row.area), colour: index }));
+  // Who "we" are, and whose the open deals at each company are: what the server's rule for a change reads (plan 68 X3).
+  const [mayTerritories, mayCompanies] = [session.can("territories", "update"), session.can("companies", "update")];
+  const us = mayTerritories || mayCompanies ? await readUs(session) : new Set<string>();
+  const openOwners = mayCompanies && us !== "anybody" ? await openOwnersAt(session, companyPage.rows.map((row) => row.id)).catch(() => null) : {};
+  const territories: Territory[] = territoryPage.rows.map((row, index) => ({ id: row.id, name: row.name, ownerId: row.owner_id, area: areaOf(row.area), colour: index, changeable: mayTerritories && mayChangeTerritory(us, row.owner_id) }));
   const companies: Company[] = companyPage.rows.map((row) => ({
     id: row.id,
     name: row.name,
@@ -151,6 +161,7 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
     spot: spotOf(row.place),
     open: readsDeals ? num(row.open) : null,
     openValue: readsDeals ? num(row.open_value) : null,
+    changeable: mayCompanies && openOwners !== null && mayChangeCompany(us, row.account_owner_id ?? null, openOwners[String(row.id)] ?? []),
   }));
   const names: Record<string, string> = {};
   for (const person of people) names[person.id] = person.name;
@@ -186,7 +197,8 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
     names,
     figures,
     placed: { companies: placedIds.length, open: placedOpen.count, value: placedOpen.value },
-    owners: reps === null ? [] : reps.rows.map((row) => row.user_id),
+    // A manager names only somebody she leads (the server holds it): the reps among "us".
+    owners: reps === null ? [] : reps.rows.map((row) => row.user_id).filter((id) => us === "anybody" || us.has(id)),
   };
 }
 

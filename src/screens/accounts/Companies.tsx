@@ -67,7 +67,6 @@ function Companies() {
   }, [overflow, typedNow]);
 
   const canAdd = session.can("companies", "create");
-  const canEdit = session.can("companies", "update");
   const money = reach === "team" || reach === "mine";
   const open = useCallback((id: number) => nav.go("companies", id), [nav]);
 
@@ -106,7 +105,7 @@ function Companies() {
                       <Tile id={company.id} size="card">
                         {stale > 0 && <span className="crm-acc-badge crm-mono">{t("acc.co.stale", { count: f.number(stale) }, stale)}</span>}
                       </Tile>
-                      {canEdit && (
+                      {data.changeable.has(company.id) && (
                         <button type="button" className="crm-icon-btn crm-acc-card-edit mr-gi" aria-label={t("acc.co.edit", { name: company.name })} onClick={() => setRec({ kind: "company", mode: "edit", id: company.id })}>
                           <Icon name="pencil" size={13} />
                         </button>

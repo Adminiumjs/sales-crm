@@ -6865,7 +6865,10 @@
      "filters": {
       "over": 20000
      },
-     "pinned": false
+     "pinned": false,
+     "owner_id": {
+      "@person": "ivy"
+     }
     },
     {
      "made_by_id": {
@@ -6886,7 +6889,10 @@
      "filters": {
       "sitting": 14
      },
-     "pinned": false
+     "pinned": false,
+     "owner_id": {
+      "@person": "ivy"
+     }
     },
     {
      "owner_id": {
@@ -6957,7 +6963,10 @@
      "filters": {
       "stage": "discovery"
      },
-     "pinned": false
+     "pinned": false,
+     "owner_id": {
+      "@person": "ivy"
+     }
     }
    ]
   },

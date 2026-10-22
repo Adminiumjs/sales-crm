@@ -442,22 +442,25 @@ for (const [dialect, reachable] of LEGS) {
         const ran = (await get(person, `/api/v1/imports/${id}`)).json() as { data: { status: string; stats: Record<string, number> } };
         return { counts, stats: ran.data.stats };
       };
-      const COLS: [string, string][] = [['Name', 'name'], ['Sector', 'sector'], ['Town', 'town']];
-      const paste = 'Name\tSector\tTown\nP07 Kestrel Print\tPrinting\tYork\nP07 Verity Insurance\tInsurance\tDurham\nP07 Halden Foods\tFood\tRipon\n';
+      const COLS: [string, string][] = [['Number', 'customer_no'], ['Name', 'name'], ['Sector', 'sector'], ['Town', 'town']];
+      const paste = 'Number\tName\tSector\tTown\nP07-K\tP07 Kestrel Print\tPrinting\tYork\nP07-V\tP07 Verity Insurance\tInsurance\tDurham\nP07-H\tP07 Halden Foods\tFood\tRipon\n';
       const count = async (table: string, like: string): Promise<number> => Number((await one(`SELECT COUNT(*) AS n FROM ${s.real(table)} WHERE name LIKE '${like}'`))['n']);
 
-      // As the screen offers a rep: a line already here is left as it is, matched on the company's name.
-      expect(await run('dana', paste, 'companies', COLS, { mode: 'skip', matchColumn: 'name' })).toMatchObject({ counts: { new: 3, here: 0, refused: 0 }, stats: { inserted: 3, skipped: 0 } });
+      // As the screen offers a rep: a line already here is left as it is, matched on the company's customer number (plan 68
+      // X3 holds her to some companies, and a writer held to some rows matches a list only on a column no two rows share:
+      // by the name, the server refuses her, which crm-g3 proves).
+      expect(await run('dana', paste, 'companies', COLS, { mode: 'skip', matchColumn: 'customer_no' })).toMatchObject({ counts: { new: 3, here: 0, refused: 0 }, stats: { inserted: 3, skipped: 0 } });
       expect(await count('companies', 'P07 %')).toBe(3);
       // The same three again: nothing is brought in.
-      expect(await run('dana', paste, 'companies', COLS, { mode: 'skip', matchColumn: 'name' })).toMatchObject({ counts: { new: 0, here: 3, refused: 0 }, stats: { inserted: 0, skipped: 3 } });
+      expect(await run('dana', paste, 'companies', COLS, { mode: 'skip', matchColumn: 'customer_no' })).toMatchObject({ counts: { new: 0, here: 3, refused: 0 }, stats: { inserted: 0, skipped: 3 } });
       expect(await count('companies', 'P07 %')).toBe(3);
       // With no match column every line is new: this is why the screen always names one for companies.
       expect(await run('ivy', 'Name\nP07 Kestrel Print\n', 'companies', [['Name', 'name']], { mode: 'insert' })).toMatchObject({ stats: { inserted: 1 } });
       expect(await count('companies', 'P07 Kestrel Print')).toBe(2);
 
-      // THE SERVER LETS A REP UPDATE BY A LIST (she may change any company one at a time); the screen does not offer it to her.
-      const changed = await run('dana', 'Name\tTown\nP07 Halden Foods\tHarrogate\n', 'companies', [['Name', 'name'], ['Town', 'town']], { mode: 'upsert', matchColumn: 'name' });
+      // THE SERVER LETS A REP UPDATE BY A LIST the companies she may change one at a time (this one is nobody's); the screen
+      // does not offer it to her.
+      const changed = await run('dana', 'Number\tTown\nP07-H\tHarrogate\n', 'companies', [['Number', 'customer_no'], ['Town', 'town']], { mode: 'upsert', matchColumn: 'customer_no' });
       expect(changed).toMatchObject({ stats: { inserted: 0, updated: 1 } });
       expect((await one(`SELECT town FROM ${s.real('companies')} WHERE name = 'P07 Halden Foods'`))['town']).toBe('Harrogate');
 
@@ -540,6 +543,94 @@ for (const [dialect, reachable] of LEGS) {
       expect([Boolean(Number(unticked['may_email'])), unticked['may_email_by_id'], String(unticked['may_email_at']).startsWith('2020')]).toEqual([false, s.id['tessa'], false]);
     });
 
+    it('X3 (Q5 = B): a rep changes a company she is the account owner of, has an open deal at, or nobody\'s; her manager her team\'s; the CRM admin any', async () => {
+      const names = await byName('companies');
+      const town = async (id: number): Promise<string> => String((await one(`SELECT town FROM ${s.real('companies')} WHERE id = ${String(id)}`))['town']);
+      const change = (person: string, id: number, values: Record<string, unknown> = { town: `X3 ${person}` }) => send(person, 'PATCH', url('companies', `/${String(id)}`), { values });
+      const [cobalt, fernway, veldt, brightloom, tandem, lowOrbit] = ['Cobalt Legal', 'Fernway Clinics', 'Veldt Studios', 'Brightloom Foods', 'Tandem Robotics', 'Low Orbit'].map((name) => names[name]!);
+      // The sample, as it stands: Cobalt is Dana's account (her deal and Sam's open there); Fernway Priya's (Dana's deal there
+      // is lost); Veldt Leo's (Dana's deal open); Brightloom and Tandem Sam's (Priya's deals open); Low Orbit Priya's (Dana's open).
+      const tries: [string, number, boolean][] = [
+        ['dana', cobalt, true], ['dana', veldt, true], ['dana', lowOrbit, true], ['dana', fernway, false], ['dana', brightloom, false], ['dana', tandem, false],
+        ['sam', cobalt, true], ['sam', tandem, true], ['sam', brightloom, true], ['sam', lowOrbit, false], ['sam', veldt, false],
+        ['hugo', cobalt, false], ['hugo', fernway, false],
+        ['ivy', cobalt, true], ['ivy', fernway, true], ['tessa', tandem, true],
+      ];
+      for (const [person, id, may] of tries) {
+        const was = await town(id);
+        const res = await change(person, id);
+        if (may) expect(said(res), `${person} ${String(id)}`).toBe('ok');
+        else {
+          // Refused as a row that is not there for an update: nothing of it is told, and nothing changes.
+          expect(said(res), `${person} ${String(id)}`).toMatch(/^40[34] /);
+          expect(await town(id), `${person} ${String(id)}`).toBe(was);
+        }
+      }
+      // A company nobody owns, with no open deal: anybody who changes companies changes it, the account manager included.
+      const nobodys = Number((await send('tessa', 'POST', url('companies'), { values: { name: 'P07 X3 Nobody\'s', town: 'Ripon' } })).json().data.id);
+      for (const person of ['dana', 'sam', 'hugo', 'ivy']) expect(said(await change(person, nobodys)), person).toBe('ok');
+      // Dana opens a deal there: it is hers now, and no longer Sam's to change. A closed deal makes nobody its owner.
+      const stage = Number((await one(`SELECT id FROM ${s.real('stages')} ORDER BY position`))['id']);
+      const deal = await send('dana', 'POST', url('deals'), { values: { name: 'P07 X3 deal', company_id: nobodys, owner_id: s.id['dana'], stage_id: stage, typed_amount: 100 } });
+      expect(deal.statusCode, deal.body).toBe(201);
+      const dealId = Number((deal.json() as { data: { id: number } }).data.id);
+      expect(said(await change('dana', nobodys))).toBe('ok');
+      for (const person of ['sam', 'hugo']) expect(said(await change(person, nobodys)), person).toMatch(/^40[34] /);
+      expect(said(await change('ivy', nobodys))).toBe('ok');
+      const lost = Number((await one(`SELECT id FROM ${s.real('lost_reasons')} ORDER BY id`))['id']);
+      expect(said(await send('dana', 'PATCH', url('deals', `/${String(dealId)}`), { values: { state: 'lost', lost_reason_id: lost } }))).toBe('ok');
+      expect(said(await change('sam', nobodys))).toBe('ok');
+
+      // WHOSE ACCOUNT. A rep names only herself as a new company's account owner, and changes no account owner; the manager
+      // names somebody she leads, and nobody else; the CRM admin anybody.
+      expect(said(await send('dana', 'POST', url('companies'), { values: { name: 'P07 X3 For Sam', account_owner_id: s.id['sam'] } }))).toMatch(/^403 /);
+      const danas = await send('dana', 'POST', url('companies'), { values: { name: 'P07 X3 Dana\'s', account_owner_id: s.id['dana'] } });
+      expect(danas.statusCode, danas.body).toBe(201);
+      const danasId = Number((danas.json() as { data: { id: number } }).data.id);
+      expect(said(await change('dana', danasId, { account_owner_id: s.id['sam'] }))).toMatch(/^403 /);
+      expect(said(await change('ivy', danasId, { account_owner_id: s.id['hugo'] }))).toMatch(/^403 /);
+      expect(said(await change('ivy', danasId, { account_owner_id: s.id['sam'] }))).toBe('ok');
+      expect(said(await change('sam', danasId))).toBe('ok');
+      expect(said(await change('dana', danasId))).toMatch(/^40[34] /);
+      // The account manager's own account, which the CRM admin gives him: his to change, and not the manager's (he is in no
+      // team of hers), nor a rep's.
+      expect(said(await change('tessa', danasId, { account_owner_id: s.id['hugo'] }))).toBe('ok');
+      expect(said(await change('hugo', danasId))).toBe('ok');
+      for (const person of ['ivy', 'sam', 'dana']) expect(said(await change(person, danasId)), person).toMatch(/^40[34] /);
+      expect(said(await change('tessa', danasId))).toBe('ok');
+
+      // A TERRITORY is its owner's: the manager changes and removes her team's and nobody's, and names as its owner only
+      // somebody she leads; another's (Hugo's, here) she reads and does not touch, nor its places. A rep changes none.
+      const north = Number((await one(`SELECT id FROM ${s.real('territories')} WHERE owner_id = '${s.id['dana']!}' ORDER BY id`))['id']);
+      expect(said(await send('ivy', 'PATCH', url('territories', `/${String(north)}`), { values: { name: 'North' } }))).toBe('ok');
+      const fresh = await send('ivy', 'POST', url('territories'), { values: { name: 'P07 X3 East' } });
+      expect(fresh.statusCode, fresh.body).toBe(201);
+      const east = Number((fresh.json() as { data: { id: number } }).data.id);
+      expect(said(await send('ivy', 'PATCH', url('territories', `/${String(east)}`), { values: { owner_id: s.id['hugo'] } }))).toMatch(/^403 /);
+      expect(said(await send('ivy', 'PATCH', url('territories', `/${String(east)}`), { values: { owner_id: s.id['sam'] } }))).toBe('ok');
+      const place = await send('ivy', 'POST', url('territory_places'), { values: { territory_id: east, place: 'P07 X3 Hull' } });
+      expect(place.statusCode, place.body).toBe(201);
+      const hugos = await send('tessa', 'POST', url('territories'), { values: { name: 'P07 X3 Hugo\'s', owner_id: s.id['hugo'] } });
+      expect(hugos.statusCode, hugos.body).toBe(201);
+      const hugosId = Number((hugos.json() as { data: { id: number } }).data.id);
+      const hugosPlace = Number((await send('tessa', 'POST', url('territory_places'), { values: { territory_id: hugosId, place: 'P07 X3 Selby' } })).json().data.id);
+      expect(data(await get('ivy', url('territories', '?select=id&limit=200'))).map((row) => Number(row['id']))).toContain(hugosId);
+      expect(said(await send('ivy', 'PATCH', url('territories', `/${String(hugosId)}`), { values: { name: 'Mine now' } }))).toMatch(/^40[34] /);
+      expect(said(await send('ivy', 'PATCH', url('territories', `/${String(hugosId)}`), { values: { owner_id: s.id['ivy'] } }))).toMatch(/^40[34] /);
+      expect(said(await send('ivy', 'DELETE', url('territories', `/${String(hugosId)}?confirm=true`)))).toMatch(/^40[34] /);
+      expect(said(await send('ivy', 'POST', url('territory_places'), { values: { territory_id: hugosId, place: 'P07 X3 Goole' } }))).toMatch(/^4/);
+      expect(said(await send('ivy', 'PATCH', url('territory_places', `/${String(hugosPlace)}`), { values: { place: 'P07 X3 Goole' } }))).toMatch(/^40[34] /);
+      expect(said(await send('ivy', 'DELETE', url('territory_places', `/${String(hugosPlace)}?confirm=true`)))).toMatch(/^40[34] /);
+      expect((await one(`SELECT name, owner_id FROM ${s.real('territories')} WHERE id = ${String(hugosId)}`))).toEqual({ name: 'P07 X3 Hugo\'s', owner_id: s.id['hugo'] });
+      expect(said(await send('dana', 'PATCH', url('territories', `/${String(north)}`), { values: { name: 'Hers' } }))).toMatch(/^403 /);
+      // The CRM admin changes any, and the manager removes her own team's.
+      expect(said(await send('tessa', 'PATCH', url('territories', `/${String(hugosId)}`), { values: { name: 'P07 X3 Hugo\'s again' } }))).toBe('ok');
+      expect(said(await send('ivy', 'DELETE', url('territory_places', `/${String(Number((place.json() as { data: { id: number } }).data.id))}?confirm=true`)))).toBe('ok');
+      expect(said(await send('ivy', 'DELETE', url('territories', `/${String(east)}?confirm=true`)))).toBe('ok');
+      expect(said(await send('tessa', 'DELETE', url('territory_places', `/${String(hugosPlace)}?confirm=true`)))).toBe('ok');
+      expect(said(await send('tessa', 'DELETE', url('territories', `/${String(hugosId)}?confirm=true`)))).toBe('ok');
+    });
+
     it('a company and a contact are everybody\'s to read; who may change them is the server\'s', async () => {
       const names = await byName('companies');
       const cobalt = names['Cobalt Legal']!;
@@ -570,9 +661,11 @@ for (const [dialect, reachable] of LEGS) {
         expect((row['_masked'] as string[] | undefined) ?? [], person).not.toEqual(expect.arrayContaining(['address_lines']));
       }
 
-      // Changing a company: a rep, the manager, the admin and the account manager; Read-only and the marketer are refused.
+      // Changing a company: its rep (Cobalt is Dana's account), the manager and the admin; the account manager not this one
+      // (plan 68 X3, below); Read-only and the marketer are refused.
       const town = async (): Promise<string> => String((await one(`SELECT town FROM ${s.real('companies')} WHERE id = ${String(cobalt)}`))['town']);
-      for (const person of ['dana', 'ivy', 'tessa', 'hugo']) expect(said(await send(person, 'PATCH', url('companies', `/${String(cobalt)}`), { values: { town: 'Leeds' } })), person).toBe('ok');
+      for (const person of ['dana', 'ivy', 'tessa']) expect(said(await send(person, 'PATCH', url('companies', `/${String(cobalt)}`), { values: { town: 'Leeds' } })), person).toBe('ok');
+      expect(said(await send('hugo', 'PATCH', url('companies', `/${String(cobalt)}`), { values: { town: 'Elsewhere' } }))).toMatch(/^40[34] /);
       for (const person of ['grace', 'lena']) {
         expect(said(await send(person, 'PATCH', url('companies', `/${String(cobalt)}`), { values: { town: 'Elsewhere' } })), person).toMatch(/^403 /);
         expect(said(await send(person, 'POST', url('companies'), { values: { name: 'P07 Refused' } })), person).toMatch(/^403 /);

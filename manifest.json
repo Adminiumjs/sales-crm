@@ -4755,7 +4755,8 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "private": true
       },
       {
         "ref": "saved_searches",
@@ -4916,7 +4917,8 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "private": true
       },
       {
         "ref": "nudge_snoozes",
@@ -5792,7 +5794,12 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "occupies": {
+          "resource": "rep_id",
+          "start": "starts_at",
+          "minutes": "minutes"
+        }
       },
       {
         "ref": "visit_notes",
@@ -6507,6 +6514,25 @@
               "zh-TW": "重試鍵"
             }
           }
+        ],
+        "belongs": [
+          {
+            "column": "account_owner_id",
+            "set": "team"
+          },
+          {
+            "through": {
+              "table": "deals",
+              "link": "company_id",
+              "user": "owner_id",
+              "while": {
+                "column": "state",
+                "in": [
+                  "open"
+                ]
+              }
+            }
+          }
         ]
       },
       {
@@ -6862,6 +6888,12 @@
               "zh-TW": "重試鍵"
             }
           }
+        ],
+        "belongs": [
+          {
+            "column": "owner_id",
+            "set": "team"
+          }
         ]
       },
       {
@@ -6948,6 +6980,11 @@
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
             }
+          }
+        ],
+        "belongs": [
+          {
+            "via": "territory_id"
           }
         ]
       },
@@ -8963,6 +9000,9 @@
         "indexes": [
           [
             "meeting_id"
+          ],
+          [
+            "who_id"
           ]
         ],
         "columns": [
@@ -9082,6 +9122,12 @@
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
             }
+          }
+        ],
+        "belongs": [
+          {
+            "column": "who_id",
+            "set": "team"
           }
         ]
       },
@@ -10003,6 +10049,15 @@
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
             }
+          }
+        ],
+        "belongs": [
+          {
+            "column": "owner_id",
+            "set": "team"
+          },
+          {
+            "via": "starter_id"
           }
         ]
       },
@@ -21083,7 +21138,6 @@
         "table:@follow_ups:delete",
         "table:@activities:read",
         "table:@activities:create",
-        "table:@activities:update",
         "table:@activities:delete",
         "table:@lost_reasons:read",
         "table:@lost_reasons:create",
@@ -21416,32 +21470,26 @@
         "saved_views": {
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "delete": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             }
           }
         },
         "saved_searches": {
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "delete": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             }
           }
         },
@@ -21559,6 +21607,28 @@
               "sent"
             ]
           }
+        },
+        "comments": {
+          "writable": [
+            "settled_at"
+          ]
+        },
+        "deals": {
+          "writable": [
+            "name",
+            "scope",
+            "company_id",
+            "contact_id",
+            "owner_id",
+            "stage_id",
+            "expected_close",
+            "state",
+            "lost_reason_id",
+            "close_note",
+            "typed_amount",
+            "list_value",
+            "introduce"
+          ]
         }
       },
       "tables": [
@@ -21706,7 +21776,6 @@
         "table:@follow_ups:update",
         "table:@activities:read",
         "table:@activities:create",
-        "table:@activities:update",
         "table:@lost_reasons:read",
         "table:@lost_reasons:create",
         "table:@lost_reasons:update",
@@ -21993,18 +22062,9 @@
           }
         },
         "activities": {
-          "writable": [
-            "deal_id",
-            "kind",
-            "text"
-          ],
           "rows": {
             "read": {
               "reach": "team"
-            },
-            "update": {
-              "reach": "team",
-              "by": "author_id"
             }
           }
         },
@@ -22088,7 +22148,6 @@
         },
         "comments": {
           "writable": [
-            "text",
             "settled_at"
           ],
           "rows": {
@@ -22096,8 +22155,7 @@
               "reach": "team"
             },
             "update": {
-              "reach": "team",
-              "by": "author_id"
+              "reach": "team"
             }
           }
         },
@@ -22110,16 +22168,13 @@
           ],
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "delete": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             }
           }
         },
@@ -22133,16 +22188,13 @@
           ],
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "delete": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             }
           }
         },
@@ -22500,6 +22552,72 @@
           "rows": {
             "read": {
               "reach": "team"
+            }
+          }
+        },
+        "companies": {
+          "rows": {
+            "update": {
+              "reach": "team",
+              "unowned": true
+            }
+          }
+        },
+        "territories": {
+          "rows": {
+            "update": {
+              "reach": "team",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "team",
+              "unowned": true
+            }
+          }
+        },
+        "territory_places": {
+          "rows": {
+            "update": {
+              "reach": "team",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "team",
+              "unowned": true
+            }
+          }
+        },
+        "starters": {
+          "rows": {
+            "update": {
+              "reach": "team"
+            },
+            "delete": {
+              "reach": "team"
+            }
+          }
+        },
+        "starter_steps": {
+          "rows": {
+            "update": {
+              "reach": "team",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "team",
+              "unowned": true
+            }
+          }
+        },
+        "meeting_slots": {
+          "rows": {
+            "update": {
+              "reach": "team",
+              "unowned": true
+            },
+            "delete": {
+              "reach": "team",
+              "unowned": true
             }
           }
         }
@@ -22914,8 +23032,7 @@
           ],
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
               "reach": "own"
@@ -22935,8 +23052,7 @@
           ],
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
               "reach": "own"
@@ -23151,7 +23267,12 @@
         "starter_steps": {
           "writable": [
             "done"
-          ]
+          ],
+          "rows": {
+            "update": {
+              "reach": "own"
+            }
+          }
         },
         "cover_notes": {
           "rows": {
@@ -23319,7 +23440,13 @@
             "account_owner_id",
             "access_note",
             "ask_for_contact_id"
-          ]
+          ],
+          "rows": {
+            "update": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
         },
         "sample_loans": {
           "writable": [
@@ -23526,8 +23653,7 @@
           ],
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
               "reach": "own"
@@ -23547,8 +23673,7 @@
           ],
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             },
             "update": {
               "reach": "own"
@@ -23669,7 +23794,13 @@
             "account_owner_id",
             "access_note",
             "ask_for_contact_id"
-          ]
+          ],
+          "rows": {
+            "update": {
+              "reach": "own",
+              "unowned": true
+            }
+          }
         },
         "referrals": {
           "writable": [
@@ -25036,16 +25167,14 @@
         "saved_views": {
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             }
           }
         },
         "saved_searches": {
           "rows": {
             "read": {
-              "reach": "own",
-              "unowned": true
+              "reach": "own"
             }
           }
         },

@@ -336,7 +336,8 @@ for (const [dialect, reachable] of LEGS) {
         ['deals', 'all team own won+own - - won - all'],
         ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all team own own - - - - all'],
         ['follow_ups', 'all team own own - - - - all'],
-        ['saved_views saved_searches', 'own+free own+free own+free own+free - - - - own+free'],
+        // Private (plan 68 D9): each person's own, and a view nobody owns is read by nobody.
+        ['saved_views saved_searches', 'own own own own - - - - own'],
         ['nudge_snoozes', 'own own own - - - - - -'],
         // F14: who is on a deal is read by whoever is on it (and by who leads its owner).
         ['deal_members', 'all team own own - - - - all'],
@@ -554,9 +555,16 @@ for (const [dialect, reachable] of LEGS) {
       }
       if (otherJob !== undefined) await gone('dana', 'jobs', otherJob);
       const starter = (await get('dana', 'starters', '?limit=1')).json() as { data: Record<string, unknown>[] };
+<<<<<<< HEAD
       t('25 a rep reads a starter\'s name, day and patch, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'patch', 'starts_on', 'user_id']);
       const step = (await ids(`SELECT id FROM ${s.real('starter_steps')}`))[0]!;
       t('26 a rep ticks a starter\'s step and does not reword it', [said(await patch('dana', 'starter_steps', step, { done: true })), refused(await patch('dana', 'starter_steps', step, { text: 'Skip this' }))], ['ok', '403']);
+=======
+      t('25 a rep reads a starter\'s name and day, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'starts_on', 'user_id']);
+      // Her own step (plan 68 X1: a step is its owner's, and its starter's manager's).
+      const step = (await ids(`SELECT id FROM ${s.real('starter_steps')} WHERE owner_id = '${s.id['dana']!}'`))[0]!;
+      t('26 a rep ticks her own step of a starter and does not reword it', [said(await patch('dana', 'starter_steps', step, { done: true })), refused(await patch('dana', 'starter_steps', step, { text: 'Skip this' }))], ['ok', '403']);
+>>>>>>> c51fd108200b546e11e88825f6e8a505785fe143
       t('27 a rep does not change a setting', refused(await patch('dana', 'settings', 1, { approval_threshold_pct: 90 })), '403');
 
       // ── Account manager (Hugo) ───────────────────────────────────────────────
@@ -1194,8 +1202,8 @@ for (const [dialect, reachable] of LEGS) {
         expect(said(await patch('sam', 'activities', made(his), { text: 'Sam looked at the floor plan, twice' }))).toBe('ok');
         expect((await patch('dana', 'activities', made(his), { text: 'Rewritten by the owner' })).statusCode).toBeGreaterThanOrEqual(400);
         expect(said(await patch('dana', 'activities', noted['id'], { text: String(noted['text']) }))).toBe('ok');
-        // Their manager leads them both, and changes either.
-        expect(said(await patch('ivy', 'activities', made(his), { text: 'Sam looked at the floor plan (noted by Ivy)' }))).toBe('ok');
+        // Their manager leads them both, and rewords neither (plan 68 X6: a note is its author's to change).
+        expect(said(await patch('ivy', 'activities', made(his), { text: 'Sam looked at the floor plan (noted by Ivy)' }))).toMatch(/^403/);
       });
 
       it('E3, CLOSED: a new row is somebody\'s, unless its writer\'s reach includes the rows nobody owns', async () => {
@@ -1206,14 +1214,10 @@ for (const [dialect, reachable] of LEGS) {
         const hers = await post('dana', 'saved_views', { name: 'Dana\'s board', filters: {}, owner_id: s.id['dana'] });
         expect(said(hers), hers.body).toBe('ok');
         expect(said(await del('dana', 'saved_views', made(hers)))).toBe('ok');
-        // The Sales manager's reach includes the views nobody owns: she makes a shared one, every rep sees it, and only
-        // she or the CRM admin takes it away.
-        const shared = await post('ivy', 'saved_views', { name: 'The team\'s board', filters: {} });
-        expect(said(shared), shared.body).toBe('ok');
-        expect((await one(`SELECT owner_id FROM ${s.real('saved_views')} WHERE id = ${String(made(shared))}`))['owner_id']).toBeNull();
-        expect(await keys('sam', 'saved_views')).toContain(made(shared));
-        expect((await del('sam', 'saved_views', made(shared))).statusCode).toBeGreaterThanOrEqual(400);
-        expect(said(await del('tessa', 'saved_views', made(shared)))).toBe('ok');
+        // Saved views are private (plan 68 D9): nobody's reach includes the views nobody owns, the Sales manager's and the
+        // CRM admin's neither, so nobody makes one.
+        for (const person of ['ivy', 'tessa']) expect((await post(person, 'saved_views', { name: 'The team\'s board', filters: {} })).statusCode, person).toBe(422);
+        expect(await ids(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id IS NULL`)).toEqual([]);
         // A deal must name its owner, and a rep may name only themselves.
         const company = (await ids(`SELECT id FROM ${s.real('companies')}`))[0]!;
         const stage = (await ids(`SELECT id FROM ${s.real('stages')}`))[0]!;
@@ -1257,6 +1261,73 @@ for (const [dialect, reachable] of LEGS) {
       const third = await post('dana', 'thread_members', { thread_id: direct, user_id: s.id['sam'] });
       expect(third.statusCode, third.body).toBeGreaterThanOrEqual(400);
       expect(await members(direct)).toEqual(before);
+    });
+
+    it('X6: a call note and a comment are reworded by their author only; the CRM admin writes no kept history; saved views are their owner\'s alone', async () => {
+      const deal = Number((await one(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id`))['id']);
+      // Dana's call note on her deal, and Ivy's (her manager) on the same deal.
+      const hers = made(await post('dana', 'activities', { deal_id: deal, kind: 'call', text: 'X6 spec: Dana rang' }));
+      const ivys = await post('ivy', 'activities', { deal_id: deal, kind: 'note', text: 'X6 spec: Ivy noted' });
+      expect(ivys.statusCode, ivys.body).toBe(201);
+      const tessas = await post('tessa', 'activities', { deal_id: deal, kind: 'note', text: 'X6 spec: Tessa noted' });
+      expect(tessas.statusCode, tessas.body).toBe(201);
+      const text = async (id: number): Promise<string> => String((await one(`SELECT text FROM ${s.real('activities')} WHERE id = ${String(id)}`))['text']);
+      // A manager no longer rewords her rep's note, nor the CRM admin; nor do they their own (they change no note). Dana hers.
+      for (const person of ['ivy', 'tessa']) expect(said(await patch(person, 'activities', hers, { text: `X6 spec: reworded by ${person}` })), person).toMatch(/^403/);
+      expect(said(await patch('ivy', 'activities', made(ivys), { text: 'X6 spec: Ivy again' }))).toMatch(/^403/);
+      expect(said(await patch('sam', 'activities', hers, { text: 'X6 spec: Sam' }))).toMatch(/^40[34]/);
+      expect(said(await patch('dana', 'activities', made(tessas), { text: 'X6 spec: Dana over Tessa' }))).toMatch(/^40[34]/);
+      expect(await text(hers)).toBe('X6 spec: Dana rang');
+      expect(said(await patch('dana', 'activities', hers, { text: 'X6 spec: Dana rang twice' }))).toBe('ok');
+      expect(await text(hers)).toBe('X6 spec: Dana rang twice');
+      // The CRM admin still removes a note.
+      expect(said(await del('tessa', 'activities', made(tessas)))).toBe('ok');
+
+      // A comment: its words are its author's. The manager and the CRM admin settle a thread (who settled is the server's
+      // stamp) and reword none, their own included; a rep settles only a thread she started.
+      const thread = made(await post('dana', 'comments', { deal_id: deal, text: 'X6 spec: Dana asks' }));
+      const ivyThread = made(await post('ivy', 'comments', { deal_id: deal, text: 'X6 spec: Ivy asks' }));
+      const words = async (id: number): Promise<string> => String((await one(`SELECT text FROM ${s.real('comments')} WHERE id = ${String(id)}`))['text']);
+      for (const person of ['ivy', 'tessa']) expect(said(await patch(person, 'comments', thread, { text: `X6 spec: ${person} rewords` })), person).toMatch(/^403/);
+      expect(said(await patch('ivy', 'comments', ivyThread, { text: 'X6 spec: Ivy rewords her own' }))).toMatch(/^403/);
+      expect(said(await patch('dana', 'comments', ivyThread, { text: 'X6 spec: Dana rewords Ivy' }))).toMatch(/^40[34]/);
+      expect(said(await patch('dana', 'comments', ivyThread, { settled_at: new Date().toISOString() }))).toMatch(/^40[34]/);
+      expect([await words(thread), await words(ivyThread)]).toEqual(['X6 spec: Dana asks', 'X6 spec: Ivy asks']);
+      expect(said(await patch('dana', 'comments', thread, { text: 'X6 spec: Dana asks again' }))).toBe('ok');
+      expect(said(await patch('ivy', 'comments', thread, { settled_at: new Date().toISOString() }))).toBe('ok');
+      expect((await one(`SELECT settled_by_id FROM ${s.real('comments')} WHERE id = ${String(thread)}`))['settled_by_id']).toBe(s.id['ivy']);
+      expect(said(await patch('tessa', 'comments', ivyThread, { settled_at: new Date().toISOString() }))).toBe('ok');
+      expect((await one(`SELECT settled_by_id FROM ${s.real('comments')} WHERE id = ${String(ivyThread)}`))['settled_by_id']).toBe(s.id['tessa']);
+      // Not another team's: Ivy settles nothing on Noor's deal (Noor is in no team of hers).
+      const company = (await ids(`SELECT id FROM ${s.real('companies')}`))[0]!;
+      const stage = (await ids(`SELECT id FROM ${s.real('stages')}`))[0]!;
+      const noors = made(await post('noor', 'deals', { name: 'X6 spec: Noor\'s', company_id: company, stage_id: stage, owner_id: s.id['noor'], typed_amount: 100 }));
+      const noorThread = made(await post('noor', 'comments', { deal_id: noors, text: 'X6 spec: Noor asks' }));
+      expect(said(await patch('ivy', 'comments', noorThread, { settled_at: new Date().toISOString() }))).toMatch(/^40[34]/);
+      expect((await one(`SELECT settled_at FROM ${s.real('comments')} WHERE id = ${String(noorThread)}`))['settled_at']).toBeNull();
+
+      // The CRM admin writes a deal's columns, but not its kept history (was_move_key, was_from_stage): the rules' alone.
+      expect(said(await patch('tessa', 'deals', deal, { close_note: 'X6 spec' }))).toBe('ok');
+      for (const values of [{ was_move_key: 'made-up' }, { was_from_stage: 'made-up' }]) expect(said(await patch('tessa', 'deals', deal, values)), JSON.stringify(values)).toBe('403 COLUMN_FORBIDDEN');
+      expect((await one(`SELECT was_move_key, was_from_stage FROM ${s.real('deals')} WHERE id = ${String(deal)}`))).not.toMatchObject({ was_move_key: 'made-up' });
+
+      // SAVED VIEWS AND SEARCHES ARE PRIVATE (D9): the owner's, and nobody else's: not the CRM admin's, not the install's owner's.
+      const danasView = Number((await one(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id = '${s.id['dana']!}' ORDER BY id`))['id']);
+      const danasSearch = Number((await one(`SELECT id FROM ${s.real('saved_searches')} WHERE owner_id = '${s.id['dana']!}' ORDER BY id`))['id']);
+      for (const person of ['owner', 'tessa', 'ivy', 'grace']) {
+        for (const ref of ['saved_views', 'saved_searches']) expect(await keys(person, ref), `${person} ${ref}`).toEqual(await ids(`SELECT id FROM ${s.real(ref)} WHERE owner_id = '${person === 'owner' ? 'nobody' : s.id[person]!}'`));
+        await gone(person, 'saved_views', danasView);
+        await gone(person, 'saved_searches', danasSearch);
+      }
+      // The sample's views all have an owner (Ivy's three that were shared are hers): none is nobody's.
+      expect(await ids(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id IS NULL`)).toEqual([]);
+      expect(await keys('ivy', 'saved_views')).toHaveLength(5);
+      // Nobody makes one that is nobody's, nor one in a colleague's name; nor does the CRM admin change or remove Dana's.
+      expect(said(await post('ivy', 'saved_views', { name: 'X6 spec: nobody\'s', filters: {}, owner_id: null }))).toMatch(/^4/);
+      expect(said(await post('dana', 'saved_views', { name: 'X6 spec: Sam\'s', filters: {}, owner_id: s.id['sam'] }))).toMatch(/^4/);
+      expect(said(await patch('tessa', 'saved_views', danasView, { name: 'X6 spec' }))).toMatch(/^40[34]/);
+      expect(said(await del('owner', 'saved_searches', danasSearch))).toMatch(/^40[34]/);
+      expect(await ids(`SELECT id FROM ${s.real('saved_searches')} WHERE id = ${String(danasSearch)}`)).toEqual([danasSearch]);
     });
 
     it('T03: a comment keeps when it was written, a visit\'s write-up its five ticks, and a stage its questions, each written by whom it should be', async () => {

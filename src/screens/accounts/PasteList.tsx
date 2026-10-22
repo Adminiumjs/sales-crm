@@ -12,8 +12,11 @@
  *  - anybody else has no such line in their menu, and the server refuses them
  *    the import itself.
  *
- * WHAT "ALREADY HERE" MEANS. A company is matched on its name, letter for
- * letter: the app has no column that no two companies share. A contact is
+ * WHAT "ALREADY HERE" MEANS. For the CRM admin a company is matched on its
+ * name, letter for letter. Everybody else is held to some companies (plan 68
+ * X3), and the server matches such a writer's list only on a column no two
+ * rows share: for them a company is matched on its customer number, and a
+ * line with none is a new company (the page says so). A contact is
  * matched on nothing to begin with (two people may share a name), so every
  * line of a contacts list is a new contact unless the person chooses to match
  * on the name; below the CRM admin the name is the only column offered for
@@ -79,7 +82,13 @@ export function PasteList(_props: ScreenProps) {
   const props = useMemo<ImportProps | null>(() => {
     if (config.connectionId === null || (!mayCompanies && !mayContacts)) return null;
     const tables: ImportTable[] = [];
-    if (mayCompanies) tables.push({ table: session.tableId("companies"), label: t("acc.im.companies"), columns: COMPANY_COLUMNS.map((key) => ({ key, label: t(`acc.rec.co.${key}` as MessageKey) })), matchOn: "name" });
+    if (mayCompanies)
+      tables.push({
+        table: session.tableId("companies"),
+        label: t("acc.im.companies"),
+        columns: [...COMPANY_COLUMNS.map((key) => ({ key, label: t(`acc.rec.co.${key}` as MessageKey) })), { key: "customer_no", label: t("acc.im.co.customer_no"), ...(admin ? {} : { unique: true }) }],
+        matchOn: admin ? "name" : "customer_no",
+      });
     // Below the CRM admin a contact is matched on its name or on nothing, never on an e-mail or a phone (personal data): the part offers for matching only the columns marked here.
     if (mayContacts) tables.push({ table: session.tableId("contacts"), label: t("acc.im.contacts"), columns: CONTACT_COLUMNS.map((key) => ({ key, label: t(`acc.im.ct.${key}` as MessageKey), ...(!admin && key === "name" ? { unique: true } : {}) })) });
     return {
@@ -129,7 +138,7 @@ export function PasteList(_props: ScreenProps) {
         <>
           <ul className="crm-acc-im-notes">
             <li data-note="modes">{t(modes.includes("update") ? "acc.im.note.update" : "acc.im.note.skip")}</li>
-            {mayCompanies && <li data-note="companies">{t("acc.im.note.companies")}</li>}
+            {mayCompanies && <li data-note="companies">{t(admin ? "acc.im.note.companies" : "acc.im.note.companies.number")}</li>}
             {mayContacts && <li data-note="contacts">{t("acc.im.note.contacts")}</li>}
           </ul>
           <KitPart<ImportProps> part="import" className="crm-acc-im-kit mr-card" props={props} fallback={unavailable} />

@@ -68,9 +68,11 @@ test("Dana opens Companies from her menu: the nine, each with what is HERS open 
   }
   // The two deals that have sat past thirty days (d12, d5) are colleagues': no badge on her cards.
   await expect(page.locator(".crm-acc-badge")).toHaveCount(0);
-  // A rep adds and changes companies.
+  // A rep adds companies, and changes the ones that are hers: her accounts and where she has an open deal (Veldt is Leo's
+  // account, with her deal), not a colleague's (Fernway is Priya's, Brightloom Sam's: plan 68 X3).
   await expect(page.getByRole("button", { name: "New company" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Edit Nordwind Logistics" })).toBeVisible();
+  for (const name of ["Nordwind Logistics", "Veldt Studios", "Low Orbit", "Cobalt Legal", "Juno Analytics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toBeVisible();
+  for (const name of ["Fernway Clinics", "Brightloom Foods", "Harbor & Finch", "Tandem Robotics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toHaveCount(0);
   expect(problems).toEqual([]);
   await picture(page, "1-dana-companies");
 });
@@ -145,9 +147,10 @@ test("every figure on a company's card is what the server answers that person, a
       }
     }
     if (person === "grace") expect(deals.reduce((total, deal) => total + Number(deal.amount), 0)).toBe(286_300);
-    // Who is offered a change: Read-only and the marketer none.
+    // Who is offered a change: Read-only and the marketer none; Dana the five that are hers (her accounts and where she has
+    // an open deal); the account manager none of the nine (no account of the sample is his, and none is nobody's: plan 68 X3).
     await expect(page.getByRole("button", { name: "New company" }), person).toHaveCount(person === "hugo" ? 1 : person === "dana" ? 1 : 0);
-    await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "grace" || person === "lena" ? 0 : 9);
+    await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "dana" ? 5 : 0);
     await page.close();
   }
 });

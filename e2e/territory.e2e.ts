@@ -120,15 +120,21 @@ test("a rep reads her own deals' value, places and moves pins, and may not chang
   await expect(row.getByTestId("terr-open")).toHaveText("5 open deals");
   await expect(row.getByTestId("terr-other")).toHaveText("You can open 3 of 5. The value is theirs.");
 
-  // She may place and move a company's pin; she is offered no way to change an area.
+  // She may place and move the pin of a company that is hers (she has an open deal at Low Orbit), not of a colleague's
+  // (Tandem is Sam's, with Priya's deal: plan 68 X3); she is offered no way to change an area.
   await expect(page.getByTestId("terr-edit")).toHaveCount(0);
   await expect(unplacedRow(page, "Low Orbit").getByRole("button", { name: "Place it" })).toBeVisible();
+  await expect(unplacedRow(page, "Tandem Robotics")).toBeVisible();
+  await expect(unplacedRow(page, "Tandem Robotics").getByRole("button", { name: "Place it" })).toHaveCount(0);
   await expect(pinOf(page, "Cobalt Legal")).toHaveAttribute("aria-label", /Drag to the exact spot/);
 
   // The server's own refusal: a rep changes no territory, by its area, its owner or its name; she makes none and removes none.
   const headers = await csrf(dana);
   const square = { type: "Polygon", coordinates: [[[-2, 53], [0, 53], [0, 54], [-2, 54], [-2, 53]]] };
   for (const values of [{ area: square }, { owner_id: north.owner_id }, { name: "Hers" }]) expect((await dana.patch(data("territories", `/${String(north.id)}`), { data: { values }, headers })).status()).toBe(403);
+  const tandem = allCompanies.find((company) => company.name === "Tandem Robotics")!;
+  expect([403, 404]).toContain((await dana.patch(data("companies", `/${String(tandem.id)}`), { data: { values: { place: { lat: 53.8, lng: -1.5 } } }, headers })).status());
+  expect(placeOf((await companies(dana, data)).find((company) => company.id === tandem.id)!.place)).toBeNull();
   expect((await dana.post(data("territories"), { data: { values: { name: "Spec: not hers to make" } }, headers })).status()).toBe(403);
   expect((await dana.delete(data("territories", `/${String(north.id)}?confirm=true`), { headers })).status()).toBe(403);
   expect((await territories(dana, data)).find((territory) => territory.id === north.id)).toMatchObject({ name: "North", area: null });
@@ -256,13 +262,14 @@ test("maps switched off for the install: the list and one line, and nothing is a
 });
 
 test("a company with no place is put on the map by a rep; a lost reply is read back; a refusal is said; a colleague's open page follows", async ({ as, api, data }) => {
+  // Priya: Low Orbit is her account and she has an open deal at Tandem, so both are hers to place (plan 68 X3).
   const tessa = await api("tessa");
   const was = await snapshot(tessa, data);
   const lowOrbit = was.companies.find((company) => company.name === "Low Orbit")!;
   const tandem = was.companies.find((company) => company.name === "Tandem Robotics")!;
   expect(placeOf(lowOrbit.place)).toBeNull();
   try {
-    const page = await (await as("leo")).newPage();
+    const page = await (await as("priya")).newPage();
     await mapServer(page);
     await openTerritory(page);
     // A colleague has the page open too.
@@ -302,7 +309,7 @@ test("a company with no place is put on the map by a rep; a lost reply is read b
     await expect(pins(hers)).toHaveCount(6);
     await expect(hers.getByTestId("terr-placed")).toHaveText("6");
 
-    // By keyboard, and refused: the server's "no" is said above the map, and the company stays unplaced. (The refusal is staged in the browser: Leo's role may place a company, so the real server would not refuse him. The server's own refusal of somebody who may not is the Read-only spec's.)
+    // By keyboard, and refused: the server's "no" is said above the map, and the company stays unplaced. (The refusal is staged in the browser: Tandem is Priya's to place, so the real server would not refuse her. The server's own refusal of somebody who may not is the Read-only spec's.)
     await page.route("**/api/v1/data/**", (route) =>
       route.request().method() === "PATCH" && new RegExp(`crm_companies/${String(tandem.id)}$`).test(new URL(route.request().url()).pathname)
         ? route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ error: { code: "FORBIDDEN", message: "Forbidden" } }) })
@@ -334,7 +341,8 @@ test("a pin is moved by keyboard and the new spot is the company's", async ({ as
   const cobalt = was.companies.find((company) => company.name === "Cobalt Legal")!;
   const before = placeOf(cobalt.place)!;
   try {
-    const page = await (await as("leo")).newPage();
+    // Dana: Cobalt is her account (plan 68 X3: a colleague's pin is not hers to move).
+    const page = await (await as("dana")).newPage();
     await mapServer(page);
     await openTerritory(page);
     const pin = pinOf(page, "Cobalt Legal");

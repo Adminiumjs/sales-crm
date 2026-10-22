@@ -383,7 +383,7 @@ export interface ViewFilters {
 
 export interface SavedView extends Record<string, unknown> {
   id: number;
-  /** Null: shared with everybody who has saved views. */
+  /** Whose it is: hers (the table is private; a view with no owner, left from before plan 68, is read by nobody). */
   owner_id: string | null;
   made_by_id: string;
   name: string;
@@ -416,7 +416,7 @@ interface ViewRow extends Record<string, unknown> {
 }
 const viewOf = (row: ViewRow): SavedView => ({ id: row.id, owner_id: row.owner_id, made_by_id: row.made_by_id, name: row.name, filters: filtersOf(row.filters), pinned: row.pinned === true || row.pinned === 1 });
 
-/** Her views: her own and the shared ones, as the server answers her. Pinned first, then by name. */
+/** Her views, as the server answers her (her own: the table is private). Pinned first, then by name. */
 export const readViews = (session: StaffSession): Promise<SavedView[]> =>
   session.list<ViewRow>("saved_views", { select: ["id", "owner_id", "made_by_id", "name", "filters", "pinned"], order: ["pinned.desc", "name", "id"], limit: 200 }).then((page) => page.rows.map(viewOf));
 export const readView = (session: StaffSession, id: number): Promise<SavedView | null> => session.get<ViewRow>("saved_views", id).then((row) => (row === null ? null : viewOf(row)));
@@ -477,13 +477,12 @@ export async function viewFigure(session: StaffSession, view: SavedView, stages:
 const totalOf = (session: StaffSession, ref: string, where: Condition[]): Promise<number> =>
   session.list(ref, { select: ["id"], ...(where.length === 0 ? {} : { where: { and: where } }), limit: 1, count: "exact" }).then((page) => page.total ?? page.rows.length);
 
-/** Save a view. `shared` leaves it with no owner, which is how the table says "everybody's"; only who may change a shared view is offered that. */
-export const saveView = (session: StaffSession, name: string, filters: ViewFilters, shared: boolean, clientKey: string): Promise<Saved<SavedView>> =>
-  session.create<SavedView>("saved_views", { name: name.trim(), filters, owner_id: shared ? null : (session.config.user?.id ?? null), pinned: false }, clientKey);
+/** Save a view: always her own. Saved views are private (plan 68 D9): a view nobody owns would be read by nobody. */
+export const saveView = (session: StaffSession, name: string, filters: ViewFilters, clientKey: string): Promise<Saved<SavedView>> =>
+  session.create<SavedView>("saved_views", { name: name.trim(), filters, owner_id: session.config.user?.id ?? null, pinned: false }, clientKey);
 
-/** May this person change this view: her own; a shared one only for who the server lets (a manager, the CRM admin). */
-export const mayChangeView = (session: StaffSession, view: Pick<SavedView, "owner_id">, slugs: readonly string[]): boolean =>
-  session.can("saved_views", "update") && (view.owner_id === (session.config.user?.id ?? "") || (view.owner_id === null && (slugs.length === 0 || slugs.includes("crm-sales-manager") || slugs.includes("crm-admin"))));
+/** May this person change this view: her own, which is every view the server answers her. */
+export const mayChangeView = (session: StaffSession, view: Pick<SavedView, "owner_id">): boolean => session.can("saved_views", "update") && view.owner_id === (session.config.user?.id ?? "");
 
 /* ── Saved searches ──────────────────────────────────────────────────────── */
 
@@ -522,18 +521,31 @@ export interface Found {
   value: number | null;
 }
 
-const LABEL: Record<"deals" | "companies" | "people", { ref: string; select: string[]; context?: string }> = {
-  deals: { ref: "deals", select: ["id", "name"] },
-  companies: { ref: "companies", select: ["id", "name", "town"], context: "town" },
-  people: { ref: "contacts", select: ["id", "name", "job_title"], context: "job_title" },
+/**
+ * What a saved search looks through, table by table: the words a person reads on the screens. Never the whole row
+ * (plan 68 K2): the server's quick search (`q`) looks through EVERY text column of a table, a person's id among them, a
+ * stage move's key and a save's retry key. A staff id is `usr_` and 26 letters and digits, so "bea" found every deal of
+ * somebody whose id held those three letters (each deal names its owner), and a move key in hex found deals at random.
+ * And a table whose columns the server had not in hand would have answered every row to `q`, where a named column that
+ * is not there is refused. A person's e-mail is not looked through: it is kept from some readers, who would be refused.
+ */
+const LABEL: Record<"deals" | "companies" | "people", { ref: string; select: string[]; context?: string; words: readonly string[] }> = {
+  deals: { ref: "deals", select: ["id", "name"], words: ["name", "scope", "close_note"] },
+  companies: { ref: "companies", select: ["id", "name", "town"], context: "town", words: ["name", "town", "sector", "address_lines", "postal_code", "website"] },
+  people: { ref: "contacts", select: ["id", "name", "job_title"], context: "job_title", words: ["name", "job_title"] },
+};
+/** The words, as one condition: any of the columns holds them, whatever the case (`%`, `_` and `\` are taken as typed). */
+export const wordsIn = (columns: readonly string[], q: string): Condition => {
+  const like = `%${q.replace(/[%_\\]/g, (letter) => `\\${letter}`)}%`;
+  return { or: columns.map((column) => ({ column, op: "ilike" as const, value: like })) };
 };
 
 /**
  * Run a search as her: the three things a saved search counts (deals,
  * companies, people), each asked of its own table with the words typed. The
- * server looks through the table's text for her rows only and answers how
- * many there are; the value of the deals found is a sum it works out over
- * those deals.
+ * server looks through the columns named above for her rows only and answers
+ * how many there are; the value of the deals found is a sum it works out
+ * over those deals.
  *
  * Not Adminium's one search door: that door looks through twenty tables at
  * most unless it is told which, by names this side is not given (see the
@@ -547,7 +559,7 @@ export async function runSearch(session: StaffSession, query: string): Promise<F
     (Object.keys(LABEL) as (keyof typeof LABEL)[]).map(async (key) => {
       const table = LABEL[key];
       if (!session.can(table.ref, "read")) return;
-      const page = await session.list<{ id: number; name: string } & Record<string, unknown>>(table.ref, { select: table.select, q, order: ["name", "id"], limit: 50, count: "exact" });
+      const page = await session.list<{ id: number; name: string } & Record<string, unknown>>(table.ref, { select: table.select, where: wordsIn(table.words, q), order: ["name", "id"], limit: 50, count: "exact" });
       found[key] = { count: page.total ?? page.rows.length, hits: page.rows.map((row) => ({ id: String(row.id), label: row.name, context: table.context === undefined ? null : ((row[table.context] as string | null) ?? null) })) };
     }),
   );

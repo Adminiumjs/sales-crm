@@ -176,8 +176,9 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(dialog.locator(".crm-bk-other")).toContainText("10:30–12:00");
   await expect(dialog.locator(".crm-bk-other")).toContainText("Nordwind Logistics");
   await expect(dialog.locator(".crm-bk-other em")).toHaveText("Overlaps");
-  await expect(dialog.locator(".crm-bk-flag")).toHaveText("This overlaps one of Dana’s visits. It can still be booked.");
-  await expect(book).toBeEnabled();
+  // A rep's two visits never overlap (plan 68 X7): the dialog says which one is in the way and books nothing over it.
+  await expect(dialog.locator(".crm-bk-flag")).toHaveText("This overlaps one of Dana’s visits. Pick another time.");
+  await expect(book).toBeDisabled();
   // What the customer is told, read from the switch the server holds: an e-mail goes, said with her name.
   await expect(dialog.getByTestId("bk-told")).toHaveAttribute("data-mails", "on");
   await expect(dialog.getByTestId("bk-told")).toHaveText("Ines Vaughan is sent an e-mail with the day and the time, if their address is on file.");
@@ -236,6 +237,16 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await cardOf.getByRole("button", { name: /^Move the visit to Cobalt Legal/ }).click();
   await expect(moving.getByTestId("bk-history")).toHaveText(/^Moved before: it was Wed, Jul 29, 08:30\. Changed by Dana Whitlock on Tue, Jul 28, \d\d:\d\d\.$/);
   await page.keyboard.press("Escape");
+  // The server's own refusal of two at once (plan 68 X7), asked directly: moved onto her Wednesday visit (10:30–12:00), or a
+  // new one over it, is refused as taken, and the visit keeps its time.
+  const over = { starts_at: "2026-07-29T09:45:00.000Z", minutes: 30 };
+  const moved = await dana.patch(data("site_visits", `/${String(held[0]!.id)}`), { data: { values: over }, headers: await csrf(dana) });
+  expect([moved.status(), ((await moved.json()) as { error?: { code?: string } }).error?.code]).toEqual([409, "BOOKING_TAKEN"]);
+  const deal = (await rows<{ deal_id: number }>(dana, data, "site_visits", { column: "id", op: "eq", value: held[0]!.id }))[0]!.deal_id;
+  const made = await dana.post(data("site_visits"), { data: { values: { deal_id: deal, rep_id: await me(dana), purpose: "Spec: two at once", ...over } }, headers: await csrf(dana) });
+  expect([made.status(), ((await made.json()) as { error?: { code?: string } }).error?.code]).toEqual([409, "BOOKING_TAKEN"]);
+  expect(await named(dana, data, "Spec: two at once")).toEqual([]);
+  expect(new Date((await named(dana, data, "Spec: check the door swing"))[0]!.starts_at).toISOString()).toBe("2026-07-30T14:15:00.000Z");
 
   // CANCEL.
   await cardOf.getByRole("button", { name: /^Cancel the visit to Cobalt Legal/ }).click();

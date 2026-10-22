@@ -188,9 +188,10 @@ describe("the rules the app ships", () => {
     // The order is the mechanism: a stamp reads the row as the stamps BEFORE it left it, so each copy sits before its source.
     const at = (ref: string) => deals.findIndex((one) => one.ref === ref);
     for (const [copy, source] of [["prev_from_stage_id", "stage_from_id"], ["prev_by_id", "stage_by_id"], ["prev_at", "entered_stage_at"], ["stage_from_id", "stage_kept_id"]] as const) expect(at(copy), `${copy} before ${source}`).toBeLessThan(at(source));
-    // Nobody but the CRM admin types any of them.
-    const roles = (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[] }> }[] }).roles;
-    for (const role of roles.filter((one) => one.key !== "admin" && one.limits?.["deals"]?.writable !== undefined)) for (const ref of [...Object.keys(kept), "first_stage_id", "opened_by_id", "opened_at", "was_move_key", "was_from_stage"]) expect(role.limits!["deals"]!.writable, `${role.key} ${ref}`).not.toContain(ref);
+    // Nobody types any of them, the CRM admin included (plan 68 X6): every role that changes a deal says what it writes.
+    const roles = (manifest as unknown as { roles: { key: string; permissions: string[]; limits?: Record<string, { writable?: string[] }> }[] }).roles;
+    for (const role of roles.filter((one) => one.permissions.includes("table:@deals:update"))) expect(role.limits?.["deals"]?.writable, role.key).toBeDefined();
+    for (const role of roles.filter((one) => one.limits?.["deals"]?.writable !== undefined)) for (const ref of [...Object.keys(kept), "first_stage_id", "opened_by_id", "opened_at", "was_move_key", "was_from_stage"]) expect(role.limits!["deals"]!.writable, `${role.key} ${ref}`).not.toContain(ref);
   });
 
   it("a deal won gets its job, once", () => {

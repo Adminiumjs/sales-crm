@@ -157,6 +157,8 @@ export const accounts = {
     "acc.im.note.skip": "A line that is already here is left as it is. Changing what is already here by a list is the CRM admin’s to do.",
     "acc.im.note.update": "A line that is already here is left as it is, unless you choose to update it.",
     "acc.im.note.companies": "A company is already here when its name is the same, letter for letter.",
+    "acc.im.note.companies.number": "A company is already here when its customer number is the same. A line with no customer number is brought in as a new company, so leave out the ones you already have.",
+    "acc.im.co.customer_no": "Customer number",
     "acc.im.note.contacts": "A contact is matched on nothing to begin with, so every line is a new contact unless you choose to match on the name. Each line names its company by the company’s number (on the company’s page) and says whether the person may be emailed.",
   },
   "de-DE": {
@@ -308,6 +310,8 @@ export const accounts = {
     "acc.im.note.skip": "Eine Zeile, die es schon gibt, bleibt, wie sie ist. Vorhandenes per Liste zu ändern, ist Sache des CRM-Admins.",
     "acc.im.note.update": "Eine Zeile, die es schon gibt, bleibt, wie sie ist, es sei denn, Sie entscheiden sich fürs Aktualisieren.",
     "acc.im.note.companies": "Ein Unternehmen gibt es schon, wenn sein Name Buchstabe für Buchstabe derselbe ist.",
+    "acc.im.note.companies.number": "Ein Unternehmen gibt es schon, wenn seine Kundennummer dieselbe ist. Eine Zeile ohne Kundennummer wird als neues Unternehmen übernommen; lassen Sie die weg, die Sie schon haben.",
+    "acc.im.co.customer_no": "Kundennummer",
     "acc.im.note.contacts": "Ein Kontakt wird zunächst mit nichts abgeglichen: Jede Zeile ist ein neuer Kontakt, es sei denn, Sie wählen den Abgleich über den Namen. Jede Zeile nennt ihr Unternehmen mit dessen Nummer (auf der Seite des Unternehmens) und sagt, ob die Person E-Mails erhalten darf.",
   },
   "fr-FR": {
@@ -459,6 +463,8 @@ export const accounts = {
     "acc.im.note.skip": "Une ligne déjà présente reste telle quelle. Modifier par une liste ce qui existe déjà revient à l’admin du CRM.",
     "acc.im.note.update": "Une ligne déjà présente reste telle quelle, sauf si vous choisissez de la mettre à jour.",
     "acc.im.note.companies": "Une entreprise est déjà présente quand son nom est le même, lettre pour lettre.",
+    "acc.im.note.companies.number": "Une entreprise est déjà présente quand son numéro client est le même. Une ligne sans numéro client devient une nouvelle entreprise : retirez celles que vous avez déjà.",
+    "acc.im.co.customer_no": "Numéro client",
     "acc.im.note.contacts": "Au départ, un contact n’est rapproché de rien : chaque ligne est un nouveau contact, sauf si vous choisissez de rapprocher sur le nom. Chaque ligne désigne son entreprise par le numéro de celle-ci (sur la page de l’entreprise) et dit si la personne accepte les e-mails.",
   },
   "da-DK": {
@@ -610,6 +616,8 @@ export const accounts = {
     "acc.im.note.skip": "En linje, der allerede findes, bliver stående, som den er. At ændre det, der allerede findes, med en liste er CRM-administratorens opgave.",
     "acc.im.note.update": "En linje, der allerede findes, bliver stående, som den er, medmindre du vælger at opdatere den.",
     "acc.im.note.companies": "En virksomhed findes allerede, når navnet er det samme, bogstav for bogstav.",
+    "acc.im.note.companies.number": "En virksomhed findes allerede, når kundenummeret er det samme. En linje uden kundenummer bliver en ny virksomhed, så udelad dem, I allerede har.",
+    "acc.im.co.customer_no": "Kundenummer",
     "acc.im.note.contacts": "En kontakt sammenholdes ikke med noget til at begynde med: Hver linje er en ny kontakt, medmindre du vælger at sammenholde på navnet. Hver linje angiver sin virksomhed med virksomhedens nummer (på virksomhedens side) og siger, om personen må få e-mails.",
   },
   "cs-CZ": {
@@ -761,6 +769,8 @@ export const accounts = {
     "acc.im.note.skip": "Řádek, který tu už je, zůstane, jak je. Měnit seznamem to, co tu už je, přísluší správci CRM.",
     "acc.im.note.update": "Řádek, který tu už je, zůstane, jak je, pokud nezvolíte aktualizaci.",
     "acc.im.note.companies": "Firma tu už je, když se její název shoduje písmeno po písmenu.",
+    "acc.im.note.companies.number": "Firma tu už je, když se shoduje její zákaznické číslo. Řádek bez zákaznického čísla se přenese jako nová firma, proto vynechte ty, které už máte.",
+    "acc.im.co.customer_no": "Zákaznické číslo",
     "acc.im.note.contacts": "Kontakt se zpočátku s ničím neporovnává: každý řádek je nový kontakt, pokud nezvolíte porovnání podle jména. Každý řádek uvádí svou firmu jejím číslem (na stránce firmy) a říká, zda člověk smí dostávat e-maily.",
   },
   "zh-CN": {
@@ -912,6 +922,8 @@ export const accounts = {
     "acc.im.note.skip": "已经存在的行保持不变。用列表修改已有内容由 CRM 管理员来做。",
     "acc.im.note.update": "已经存在的行保持不变，除非你选择更新。",
     "acc.im.note.companies": "名称逐字相同的公司视为已经存在。",
+    "acc.im.note.companies.number": "客户编号相同的公司视为已经存在。没有客户编号的行会作为新公司导入，所以请去掉已有的公司。",
+    "acc.im.co.customer_no": "客户编号",
     "acc.im.note.contacts": "联系人一开始不做比对：每一行都是一位新联系人，除非你选择按姓名比对。每行用公司的编号（见公司页面）指明所属公司，并说明是否可以发邮件。",
   },
   "zh-TW": {
@@ -1063,6 +1075,8 @@ export const accounts = {
     "acc.im.note.skip": "已經存在的行維持不變。以清單修改既有內容由 CRM 管理員處理。",
     "acc.im.note.update": "已經存在的行維持不變，除非你選擇更新。",
     "acc.im.note.companies": "名稱逐字相同的公司視為已經存在。",
+    "acc.im.note.companies.number": "客戶編號相同的公司視為已經存在。沒有客戶編號的列會當作新公司匯入，所以請拿掉已有的公司。",
+    "acc.im.co.customer_no": "客戶編號",
     "acc.im.note.contacts": "聯絡人一開始不做比對：每一行都是一位新聯絡人，除非你選擇依姓名比對。每行以公司的編號（見公司頁面）指明所屬公司，並說明是否可寄電子郵件。",
   },
   "ar-EG": {
@@ -1214,6 +1228,8 @@ export const accounts = {
     "acc.im.note.skip": "السطر الموجود من قبل يُترك كما هو. تغيير الموجود بقائمة من شأن مسؤول الـ CRM.",
     "acc.im.note.update": "السطر الموجود من قبل يُترك كما هو، إلا إذا اخترت تحديثه.",
     "acc.im.note.companies": "تُعدّ الشركة موجودة إذا كان اسمها هو نفسه حرفًا بحرف.",
+    "acc.im.note.companies.number": "تُعدّ الشركة موجودة إذا كان رقم العميل هو نفسه. السطر الذي ليس فيه رقم عميل يُضاف كشركة جديدة، لذا احذف الشركات الموجودة لديك.",
+    "acc.im.co.customer_no": "رقم العميل",
     "acc.im.note.contacts": "جهة الاتصال لا تُطابَق بشيء في البداية: كل سطر جهة اتصال جديدة، إلا إذا اخترت المطابقة بالاسم. يذكر كل سطر شركته برقمها (في صفحة الشركة) ويقول هل يُسمح بمراسلة الشخص.",
   },
 } satisfies Record<LocaleTag, Record<string, string>>;

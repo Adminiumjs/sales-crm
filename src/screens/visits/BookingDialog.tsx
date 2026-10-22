@@ -6,9 +6,10 @@
  * WHAT THE SERVER HOLDS, whatever this dialog offers: a rep books for
  * herself, on a deal she opens; a manager for the people she leads; a visit
  * is moved and cancelled by the rep it names or who leads her; a visit that
- * was made or written up is not removed. "That time has passed" and
- * "overlaps" are this dialog's own: the server takes a visit at any time,
- * and two at once.
+ * was made or written up is not removed; a rep's two visits never overlap
+ * (plan 68 X7: the dialog shows the one in the way and books nothing over
+ * it, and a clash it could not see is the server's refusal, said in words).
+ * "That time has passed" is this dialog's own until the server holds it.
  *
  * WHAT IS SAVED. A booking carries a key made when the dialog opened, so a
  * reply lost on the way back is sent again and makes one visit. A move names
@@ -139,7 +140,7 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
   const contactName = visit !== null ? (visit.contact ?? "") : (contacts.find((one) => one.id === contactId)?.name ?? "");
   const passed = start !== null && start.getTime() < now.getTime();
   const changed = visit === null || startWas === null || start === null || start.getTime() !== startWas.getTime() || minutes !== Number(visit.minutes) || purpose.trim() !== visit.purpose || note.trim() !== (visit.note ?? "");
-  const ready = isCancel ? why.trim().length > 2 : dealId !== null && purpose.trim() !== "" && repId !== "" && start !== null && !passed && changed && (!isNew || contacts.length === 0 || contactId !== null);
+  const ready = isCancel ? why.trim().length > 2 : dealId !== null && purpose.trim() !== "" && repId !== "" && start !== null && !passed && clashes.length === 0 && changed && (!isNew || contacts.length === 0 || contactId !== null);
 
   const refusal = (status: number, fallback: string): string => (status === 409 ? t("visits.book.refused.kept") : fallback);
 
@@ -170,7 +171,14 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
     end();
     if (saved.state === "refused") {
       const fields = saved.error.fields;
-      const reason = fields["rep_id"] !== undefined ? t("visits.book.refused.rep") : fields["deal_id"] !== undefined || saved.error.code === "FK_VIOLATION" ? t("visits.book.refused.deal") : reasonOf(saved.error, t);
+      const reason =
+        saved.error.code === "BOOKING_TAKEN"
+          ? t("visits.book.refused.taken", { rep: firstName(repName) })
+          : fields["rep_id"] !== undefined
+            ? t("visits.book.refused.rep")
+            : fields["deal_id"] !== undefined || saved.error.code === "FK_VIOLATION"
+              ? t("visits.book.refused.deal")
+              : reasonOf(saved.error, t);
       return setError(t("ui.refused", { reason }));
     }
     if (saved.state === "unknown") return setError(t("ui.unknown"));
