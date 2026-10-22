@@ -555,16 +555,10 @@ for (const [dialect, reachable] of LEGS) {
       }
       if (otherJob !== undefined) await gone('dana', 'jobs', otherJob);
       const starter = (await get('dana', 'starters', '?limit=1')).json() as { data: Record<string, unknown>[] };
-<<<<<<< HEAD
       t('25 a rep reads a starter\'s name, day and patch, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'patch', 'starts_on', 'user_id']);
-      const step = (await ids(`SELECT id FROM ${s.real('starter_steps')}`))[0]!;
-      t('26 a rep ticks a starter\'s step and does not reword it', [said(await patch('dana', 'starter_steps', step, { done: true })), refused(await patch('dana', 'starter_steps', step, { text: 'Skip this' }))], ['ok', '403']);
-=======
-      t('25 a rep reads a starter\'s name and day, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'starts_on', 'user_id']);
       // Her own step (plan 68 X1: a step is its owner's, and its starter's manager's).
       const step = (await ids(`SELECT id FROM ${s.real('starter_steps')} WHERE owner_id = '${s.id['dana']!}'`))[0]!;
       t('26 a rep ticks her own step of a starter and does not reword it', [said(await patch('dana', 'starter_steps', step, { done: true })), refused(await patch('dana', 'starter_steps', step, { text: 'Skip this' }))], ['ok', '403']);
->>>>>>> c51fd108200b546e11e88825f6e8a505785fe143
       t('27 a rep does not change a setting', refused(await patch('dana', 'settings', 1, { approval_threshold_pct: 90 })), '403');
 
       // ── Account manager (Hugo) ───────────────────────────────────────────────
