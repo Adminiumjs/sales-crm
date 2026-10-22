@@ -107,7 +107,8 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
   // The crew's vehicle for the day (plan 68 S14): its row that day, else the one picked for this crew, else its own (CD-9).
   const vans = writesVanDays(session);
   const { load: dayLoad } = useLoad(() => (vans && validDay ? readDayFacts(session, day) : Promise.resolve(null)), [session, vans, validDay, day]);
-  const dayFacts = dayLoad.state === "ready" ? dayLoad.data : null;
+  // The facts of the day picked, never those of the day before while the new day is read.
+  const dayFacts = dayLoad.state === "ready" && dayLoad.data !== null && dayLoad.data.day === day ? dayLoad.data : null;
   const [pick, setPick] = useState<{ crewId: number | null; vehicle: number } | null>(null);
   const [changingDay, setChangingDay] = useState(false);
   const [vanRefused, setVanRefused] = useState<DayRefusal | null>(null);
@@ -116,7 +117,7 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
   const picked = pick !== null && pick.crewId === crewId ? pick.vehicle : null;
   const vehicleId = dayFacts === null ? null : changingDay ? (picked ?? dayRow?.vehicle_id ?? null) : dayRow !== undefined ? dayRow.vehicle_id : (picked ?? (crewId === null ? null : (dayFacts.own.get(crewId) ?? null)));
   const vanRefusal = vanRefused ?? (dayFacts === null || !booking_ ? null : refusalOf(dayFacts, vehicleId, crewId, day));
-  const vanReady = !vans || isCancel || !booking_ || (dayLoad.state === "ready" && vanRefusal === null);
+  const vanReady = !vans || isCancel || !booking_ || !validDay || (dayFacts !== null && vanRefusal === null);
   const here = visit !== null && visit.state === "booked" && visit.crew_id === crewId && wasDay === day ? 1 : 0;
   // A new vehicle for the crew's day is a change of its own, though the visit's fields stay as they were.
   const vanChanged = dayRow !== undefined && vehicleId !== null && vehicleId !== dayRow.vehicle_id;

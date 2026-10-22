@@ -172,6 +172,16 @@ export async function putVanDay(session: StaffSession, facts: Facts, crewId: num
         ? { state: "saved", row, replayed: false, readBack: false }
         : await session.update<VanDay>("van_days", row.id, { vehicle_id: vehicleId }, { seen: { vehicle_id: row.vehicle_id } });
   if (saved.state === "saved") return { made: row === undefined ? saved.row : null };
+  // A colleague gave the crew its row of that day meanwhile: that row is changed instead.
+  if (row === undefined && saved.state === "refused" && saved.error.status === 409) {
+    const theirs = (await session.list<VanDay>("van_days", { select: DAY_COLUMNS, where: { and: [{ column: "crew_id", op: "eq", value: crewId }, { column: "day", op: "eq", value: day }] }, limit: 1 }).catch(() => null))?.rows[0];
+    if (theirs !== undefined) {
+      if (theirs.vehicle_id === vehicleId) return { made: null };
+      const again = await session.update<VanDay>("van_days", theirs.id, { vehicle_id: vehicleId }, { seen: { vehicle_id: theirs.vehicle_id } });
+      if (again.state === "saved") return { made: null };
+      return { refused: await readRefusal(session, again, vehicleId, day, crewId) };
+    }
+  }
   return { refused: await readRefusal(session, saved, vehicleId, day, crewId) };
 }
 

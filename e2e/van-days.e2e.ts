@@ -100,7 +100,7 @@ test("the booking dialog's vehicle for the day: the crew's day as it stands, the
     await picture(page, "m3-1e-ada-change-for-the-day");
     // The vehicle with another crew is listed and cannot be picked; Escape closes the list and keeps the dialog.
     await dialog.getByTestId("vd-pick").locator("button").click();
-    await list.locator(`[data-vehicle="${String(HIRED)}"]`).click();
+    await list.locator(`[data-vehicle="${String(HIRED)}"]`).click({ force: true });
     await expect(list).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(list).toHaveCount(0);
