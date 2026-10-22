@@ -2,14 +2,11 @@
  * SAVED VIEWS (ledger screen 19): a cut of a screen a person keeps coming
  * back to, with a live count.
  *
- * The list is what the server answers her: her own views and the shared ones
- * (a shared view has no owner). A view's count, and for a cut of the board
- * its weighted value, are the server's FOR HER: "Everything over 20,000" is
- * seven deals for the manager who shared it and fewer for a rep, who reads
- * her own. "Open it" goes to the screen the view was saved from, narrowed.
- *
- * Her own she pins and removes; a shared one only whoever the server lets
- * (a manager, the CRM admin).
+ * The list is what the server answers her: her own views, and nobody else's
+ * (the table is private, plan 68 D9: not even the install's owner reads
+ * them). A view's count, and for a cut of the board its weighted value, are
+ * the server's FOR HER. "Open it" goes to the screen the view was saved
+ * from, narrowed. She pins and removes her own.
  */
 import { useCallback, useMemo, useState } from "react";
 
@@ -36,7 +33,6 @@ export function Views(_props: ScreenProps) {
   const toasts = useToasts();
   const config = session.config;
   const f = useMemo(() => formatters({ locale, currency: config.currency, timeZone: config.timezone ?? config.serverTimezone }), [locale, config]);
-  const slugs = useMemo(() => (config.access?.roles ?? []).map((role) => role.slug), [config]);
   const me = config.user?.id ?? "";
   const [now, setNow] = useState(() => session.now());
   // Who and which stage a rule names: read once per page.
@@ -107,7 +103,7 @@ export function Views(_props: ScreenProps) {
               {rows.map(({ view, figure }) => {
                 const screen = screenOf(view.filters);
                 const mine = view.owner_id === me;
-                const change = mayChangeView(session, view, slugs);
+                const change = mayChangeView(session, view);
                 const maker = names[view.made_by_id];
                 return (
                   <li key={view.id} className="crm-view mr-card" data-view={view.id} data-shared={view.owner_id === null ? "1" : "0"}>

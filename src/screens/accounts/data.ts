@@ -22,6 +22,7 @@
  * picks the first row of a list the server put in order, and subtracts a
  * moment from the server's clock.
  */
+import { mayChangeCompany, openOwnersAt, readUs } from "../../selling/whose.ts";
 import { leadRole } from "../../shell/roles.ts";
 import type { Condition, Grouped, ListQuery, Measure, Page, StaffSession } from "../../staffSession.ts";
 import { noValue } from "../../staffSession.ts";
@@ -65,6 +66,7 @@ export interface CompanyCard extends Record<string, unknown> {
   sector: string | null;
   headcount: number | null;
   town: string | null;
+  account_owner_id?: string | null;
   /** The reader's own open deals here, and their sum: null when she reads no deal. */
   open_n: number | string | null;
   open_value: number | string | null;
@@ -77,6 +79,22 @@ export interface CompanyList {
   marks: Record<string, number> | null;
   /** The reader's open deals that have sat in their stage past the "stale" setting, by company. */
   stale: Record<string, number>;
+  /** The companies the reader may change (plan 68 X3: hers, her team's, or nobody's; the server holds every write). */
+  changeable: ReadonlySet<number>;
+}
+
+/**
+ * Which of some companies the reader may change: none for a role that changes no company; for the others, the server's
+ * rule as the page can read it (whose each is, and whose its open deals are, from the marks).
+ */
+export async function changeableOf(session: StaffSession, companies: readonly { id: number; account_owner_id?: string | null }[]): Promise<ReadonlySet<number>> {
+  if (!session.can("companies", "update") || companies.length === 0) return new Set();
+  const us = await readUs(session);
+  if (us === "anybody") return new Set(companies.map((company) => company.id));
+  const owners = await openOwnersAt(session, companies.map((company) => company.id)).catch(() => null);
+  // Unread, nothing is offered: the server would be asked to decide a write the page cannot say is hers.
+  if (owners === null) return new Set();
+  return new Set(companies.filter((company) => mayChangeCompany(us, company.account_owner_id ?? null, owners[String(company.id)] ?? [])).map((company) => company.id));
 }
 
 /** The most companies or contacts one look holds: the server's limit for a list. */
@@ -120,7 +138,7 @@ export async function readCompanies(session: StaffSession, reach: Reach, before:
   const staleBefore = reach === "team" || reach === "mine" ? before(await staleDaysOf(session)) : null;
   const where = typed(["name", "sector", "town"], q);
   const page = await session.list<CompanyCard>("companies", {
-    select: ["id", "name", "sector", "headcount", "town"],
+    select: ["id", "name", "sector", "headcount", "town", "account_owner_id"],
     ...(where === undefined ? {} : { where }),
     order: ["name", "id"],
     limit: PAGE,
@@ -128,9 +146,9 @@ export async function readCompanies(session: StaffSession, reach: Reach, before:
     ...(readsDeals(reach) ? { measures: [overDeals("open_n", "count", undefined, OPEN), overDeals("open_value", "sum", "amount", OPEN)] } : {}),
   });
   const ids = page.rows.map((row) => row.id);
-  if (ids.length === 0) return { rows: [], total: page.total ?? 0, marks: reach === "none" ? null : {}, stale: {} };
+  if (ids.length === 0) return { rows: [], total: page.total ?? 0, marks: reach === "none" ? null : {}, stale: {}, changeable: new Set() };
   const here: Condition = { column: "company_id", op: "in", value: ids };
-  const [marks, stale] = await Promise.all([
+  const [marks, stale, changeable] = await Promise.all([
     reach === "none"
       ? Promise.resolve(null)
       : session.figure<Grouped>({ table: "deal_marks", shape: "categorical", filters: [{ column: "state", op: "eq", value: "open" }, here], groupBy: ["company_id"], aggregations: [{ fn: "count", alias: "n" }], limit: PAGE }),
@@ -144,8 +162,9 @@ export async function readCompanies(session: StaffSession, reach: Reach, before:
           limit: PAGE,
         })
       : Promise.resolve(null),
+    changeableOf(session, page.rows),
   ]);
-  return { rows: page.rows, total: page.total ?? page.rows.length, marks: marks === null ? null : grouped(marks), stale: stale === null ? {} : grouped(stale) };
+  return { rows: page.rows, total: page.total ?? page.rows.length, marks: marks === null ? null : grouped(marks), stale: stale === null ? {} : grouped(stale), changeable };
 }
 
 /** The words under a card: how many deals are open here, said for this reader. */
@@ -256,6 +275,8 @@ export interface Profile {
   /** The job a won deal became, where the reader has Jobs on site: its code by the deal's number. */
   jobs: Record<number, string>;
   names: Record<string, string>;
+  /** Whether the reader may change the company (plan 68 X3). */
+  changeable: boolean;
 }
 
 /**
@@ -354,6 +375,7 @@ export async function readProfile(session: StaffSession, reach: Reach, id: numbe
       .map((deal) => String(deal[column]))
       .sort()[0] ?? null;
   const allMarks = marks?.rows ?? null;
+  const changeable = (await changeableOf(session, [company])).has(company.id);
   return {
     company,
     open,
@@ -366,6 +388,7 @@ export async function readProfile(session: StaffSession, reach: Reach, id: numbe
     latest,
     jobs,
     names,
+    changeable,
   };
 }
 

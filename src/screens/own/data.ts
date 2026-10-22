@@ -383,7 +383,7 @@ export interface ViewFilters {
 
 export interface SavedView extends Record<string, unknown> {
   id: number;
-  /** Null: shared with everybody who has saved views. */
+  /** Whose it is: hers (the table is private; a view with no owner, left from before plan 68, is read by nobody). */
   owner_id: string | null;
   made_by_id: string;
   name: string;
@@ -416,7 +416,7 @@ interface ViewRow extends Record<string, unknown> {
 }
 const viewOf = (row: ViewRow): SavedView => ({ id: row.id, owner_id: row.owner_id, made_by_id: row.made_by_id, name: row.name, filters: filtersOf(row.filters), pinned: row.pinned === true || row.pinned === 1 });
 
-/** Her views: her own and the shared ones, as the server answers her. Pinned first, then by name. */
+/** Her views, as the server answers her (her own: the table is private). Pinned first, then by name. */
 export const readViews = (session: StaffSession): Promise<SavedView[]> =>
   session.list<ViewRow>("saved_views", { select: ["id", "owner_id", "made_by_id", "name", "filters", "pinned"], order: ["pinned.desc", "name", "id"], limit: 200 }).then((page) => page.rows.map(viewOf));
 export const readView = (session: StaffSession, id: number): Promise<SavedView | null> => session.get<ViewRow>("saved_views", id).then((row) => (row === null ? null : viewOf(row)));
@@ -477,13 +477,12 @@ export async function viewFigure(session: StaffSession, view: SavedView, stages:
 const totalOf = (session: StaffSession, ref: string, where: Condition[]): Promise<number> =>
   session.list(ref, { select: ["id"], ...(where.length === 0 ? {} : { where: { and: where } }), limit: 1, count: "exact" }).then((page) => page.total ?? page.rows.length);
 
-/** Save a view. `shared` leaves it with no owner, which is how the table says "everybody's"; only who may change a shared view is offered that. */
-export const saveView = (session: StaffSession, name: string, filters: ViewFilters, shared: boolean, clientKey: string): Promise<Saved<SavedView>> =>
-  session.create<SavedView>("saved_views", { name: name.trim(), filters, owner_id: shared ? null : (session.config.user?.id ?? null), pinned: false }, clientKey);
+/** Save a view: always her own. Saved views are private (plan 68 D9): a view nobody owns would be read by nobody. */
+export const saveView = (session: StaffSession, name: string, filters: ViewFilters, clientKey: string): Promise<Saved<SavedView>> =>
+  session.create<SavedView>("saved_views", { name: name.trim(), filters, owner_id: session.config.user?.id ?? null, pinned: false }, clientKey);
 
-/** May this person change this view: her own; a shared one only for who the server lets (a manager, the CRM admin). */
-export const mayChangeView = (session: StaffSession, view: Pick<SavedView, "owner_id">, slugs: readonly string[]): boolean =>
-  session.can("saved_views", "update") && (view.owner_id === (session.config.user?.id ?? "") || (view.owner_id === null && (slugs.length === 0 || slugs.includes("crm-sales-manager") || slugs.includes("crm-admin"))));
+/** May this person change this view: her own, which is every view the server answers her. */
+export const mayChangeView = (session: StaffSession, view: Pick<SavedView, "owner_id">): boolean => session.can("saved_views", "update") && view.owner_id === (session.config.user?.id ?? "");
 
 /* ── Saved searches ──────────────────────────────────────────────────────── */
 

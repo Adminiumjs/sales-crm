@@ -7,8 +7,8 @@
  * says which view is showing, clears it, and saves what the screen is
  * narrowed to now as a new view.
  *
- * Whose views a person may open is the server's: her own and the shared
- * ones. A view that is not hers reads as not there.
+ * Whose views a person may open is the server's: her own (the table is
+ * private, plan 68 D9). A view that is not hers reads as not there.
  */
 import { useMemo, useRef, useState } from "react";
 
@@ -129,11 +129,7 @@ function SaveView({ filters, rules, onClose }: { filters: ViewFilters; rules: st
   const t = useT();
   const session = useSession();
   const toasts = useToasts();
-  const slugs = (session.config.access?.roles ?? []).map((role) => role.slug);
-  // A shared view has no owner; only somebody who may change those is offered it (the server holds a rep to her own).
-  const mayShare = slugs.length === 0 || slugs.includes("crm-sales-manager") || slugs.includes("crm-admin");
   const [name, setName] = useState("");
-  const [shared, setShared] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const key = useRef(newClientKey());
@@ -141,7 +137,7 @@ function SaveView({ filters, rules, onClose }: { filters: ViewFilters; rules: st
     if (name.trim() === "") return setError(t("views.save.error"));
     setError(null);
     setBusy(true);
-    const saved = await saveView(session, name, filters, mayShare && shared, key.current);
+    const saved = await saveView(session, name, filters, key.current);
     setBusy(false);
     if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
     if (saved.state === "unknown") return setError(t("ui.unknown"));
@@ -188,14 +184,6 @@ function SaveView({ filters, rules, onClose }: { filters: ViewFilters; rules: st
         <p className="crm-field-note" data-testid="view-holds">
           {t("views.save.holds", { rules: rules.join(" · ") })}
         </p>
-        {mayShare && (
-          <button type="button" role="switch" aria-checked={shared} className="crm-switch mr-gi" onClick={() => setShared((was) => !was)}>
-            <span className="crm-switch-track">
-              <span className="crm-switch-knob" />
-            </span>
-            {t("views.save.shared")}
-          </button>
-        )}
       </fieldset>
       {error !== null && (
         <div className="crm-form-error" role="alert">
