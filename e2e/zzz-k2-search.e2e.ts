@@ -41,7 +41,9 @@ const total = async (person: APIRequestContext, data: Data, ref: string, query: 
 const named = (columns: string[], word: string): string => `where=${encodeURIComponent(JSON.stringify({ or: columns.map((column) => ({ column, op: "ilike", value: `%${word}%` })) }))}`;
 const WORDS: Record<string, string[]> = { deals: ["name", "scope", "close_note"], companies: ["name", "town", "sector", "address_lines", "postal_code", "website"], contacts: ["name", "job_title"] };
 
-test("K2: a saved search counts the words a person reads, after another spec's leftovers, and nothing else", async ({ as, api, data }) => {
+test("K2: a saved search counts the words a person reads, after another spec's leftovers, and nothing else", async ({ as, api, data }, info) => {
+  // Run over and over (`--repeat-each`), each look spends some sixty of Dana's 300 requests a minute: a pause between them.
+  if (info.repeatEachIndex > 0) await new Promise((done) => setTimeout(done, 12_000));
   const dana = await api("dana");
   const ivy = await api("ivy");
   const tessa = await api("tessa");
