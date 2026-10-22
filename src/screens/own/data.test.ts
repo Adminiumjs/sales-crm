@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatters } from "../../lib/format.ts";
 import type { StaffSession } from "../../staffSession.ts";
-import { channelsOf, dealConditions, digestKinds, filtersOf, fromServerLocale, kindsFor, quietFor, quietOf, reasonsFor, ruleState, screenOf, sendTest, stageOf, toServerLocale, type Told } from "./data.ts";
+import { channelsOf, dealConditions, digestKinds, filtersOf, fromServerLocale, kindsFor, quietFor, quietOf, reasonsFor, ruleState, runSearch, screenOf, sendTest, stageOf, toServerLocale, wordsIn, type Told } from "./data.ts";
 
 const f = formatters({ locale: "en-US", currency: "GBP", timeZone: "Europe/London" });
 const NOW = new Date("2026-07-28T08:35:00.000Z");
@@ -147,5 +147,35 @@ describe("a saved view's filters", () => {
     expect(dealConditions({ closing: "this month" }, STAGES, NOW, f)).toEqual([{ column: "expected_close", op: "between", value: ["2026-07-01", "2026-07-31"] }]);
     expect(dealConditions({ closing: "this month" }, STAGES, new Date("2028-02-10T12:00:00Z"), f)).toEqual([{ column: "expected_close", op: "between", value: ["2028-02-01", "2028-02-29"] }]);
     expect(dealConditions({}, STAGES, NOW, f)).toEqual([]);
+  });
+});
+
+describe("a saved search looks through the words a person reads, and no id, key or hash (plan 68 K2)", () => {
+  it("names its columns, case aside, with the typed % _ and \\ taken as typed", () => {
+    expect(wordsIn(["name", "town"], "bea")).toEqual({ or: [{ column: "name", op: "ilike", value: "%bea%" }, { column: "town", op: "ilike", value: "%bea%" }] });
+    expect(wordsIn(["name"], "50%_a\\b")).toEqual({ or: [{ column: "name", op: "ilike", value: "%50\\%\\_a\\\\b%" }] });
+  });
+
+  it("asks each table by its named columns, never by the server's whole-row quick search", async () => {
+    const asked: { ref: string; q: unknown; where: unknown }[] = [];
+    const session = {
+      can: () => true,
+      list: (ref: string, query: { q?: unknown; where?: unknown }) => {
+        asked.push({ ref, q: query.q, where: query.where });
+        return Promise.resolve({ rows: [], total: 0 });
+      },
+      figure: () => Promise.resolve({ value: null }),
+    } as unknown as StaffSession;
+    await runSearch(session, "  bea ");
+    expect(asked.map((one) => one.ref).sort()).toEqual(["companies", "contacts", "deals"]);
+    for (const one of asked) expect(one.q, one.ref).toBeUndefined();
+    const columns = (where: unknown): string[] => (where as { or: { column: string }[] }).or.map((one) => one.column);
+    expect(columns(asked.find((one) => one.ref === "deals")!.where)).toEqual(["name", "scope", "close_note"]);
+    expect(columns(asked.find((one) => one.ref === "contacts")!.where)).toEqual(["name", "job_title"]);
+    for (const one of asked) for (const column of columns(one.where)) expect(column, one.ref).not.toMatch(/_id$|key|retry|email/);
+    // Under two letters, nothing is asked.
+    asked.length = 0;
+    await runSearch(session, "b");
+    expect(asked).toEqual([]);
   });
 });
