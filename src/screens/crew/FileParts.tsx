@@ -17,7 +17,7 @@
  * and the queue sends it, first, when the save naming it goes. A part's own
  * "take it out" throws the phone's copy away.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { kitCommon, mountPart } from "../../kitParts.ts";
@@ -60,8 +60,13 @@ export function warmFileParts(config: StaffConfig): void {
   }
 }
 
-function Missing() {
+function Missing({ again }: { again: () => void }) {
   const t = useT();
+  // A part that could not be loaded with no signal is asked for again once the signal is back.
+  useEffect(() => {
+    window.addEventListener("online", again);
+    return () => window.removeEventListener("online", again);
+  }, [again]);
   return (
     <p className="crm-cw-nokit" role="status">
       {t("cw.kit.missing")}
@@ -72,11 +77,11 @@ function Missing() {
 export function SignaturePad({ table, column, label, round, onChange, disabled = false }: { table: string; column: string; label: string; round: number; onChange: (id: string | null) => void; disabled?: boolean }) {
   const target = useTarget(table, column);
   const props = useMemo(() => ({ ...target, label, onChange, disabled }), [target, label, onChange, disabled]);
-  return <KitPart key={round} part="signature" props={props} className="crm-cw-kit" fallback={() => <Missing />} />;
+  return <KitPart key={round} part="signature" props={props} className="crm-cw-kit" fallback={(_why, again) => <Missing again={again} />} />;
 }
 
 export function PhotoField({ table, column, label, max, round, onChange, onBusy, disabled = false }: { table: string; column: string; label: string; max: number; round: number; onChange: (ids: string[]) => void; onBusy: (busy: boolean) => void; disabled?: boolean }) {
   const target = useTarget(table, column);
   const props = useMemo(() => ({ ...target, label, max, onChange, onBusy, disabled }), [target, label, max, onChange, onBusy, disabled]);
-  return <KitPart key={round} part="photos" props={props} className="crm-cw-kit" fallback={() => <Missing />} />;
+  return <KitPart key={round} part="photos" props={props} className="crm-cw-kit" fallback={(_why, again) => <Missing again={again} />} />;
 }

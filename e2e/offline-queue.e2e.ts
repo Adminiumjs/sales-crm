@@ -208,6 +208,7 @@ test("Snags: a put-right and a new snag kept with their photos, each sent once; 
     // The dialog opened with signal, its photo field drawn; the signal goes before the photo is taken.
     await row.getByRole("button", { name: "Put right" }).click();
     const dialog = page.getByRole("dialog", { name: "Put right" });
+    await expect(dialog.locator('[data-testid="kit-photos-input"]')).toHaveCount(1);
     await offline(context, page);
     await dialog.locator('[data-testid="kit-photos-input"]').setInputFiles({ name: "skirting.png", mimeType: "image/png", buffer: photoPng() });
     await dialog.getByLabel("What you did").fill("Touched up the paint");
@@ -296,6 +297,8 @@ test("My vehicle: a fuel fill and a fault with a photo kept with no signal, the 
   try {
     await page.goto(`${STAFF}my-vehicle`);
     await expect(page.getByTestId("fl-my-reading")).toHaveText("118,420 km");
+    // The photo field is drawn (Adminium's part, loaded with signal) before the signal goes.
+    await expect(page.getByTestId("fl-my-fault").locator('[data-testid="kit-photos-input"]')).toHaveCount(1);
     await offline(context, page);
     const fill = page.getByTestId("fl-my-fill");
     await fill.getByLabel("Litres").fill("41.2");
@@ -376,8 +379,10 @@ test("My hours: a day of a week with no sheet yet, and the week sent for sign-of
     expect(real(problems)).toEqual([]);
   } finally {
     await context.setOffline(false);
-    const sheets = await rows<{ id: number }>(ada, data, "time_sheets", { and: [{ column: "user_id", op: "eq", value: yusufId }, { column: "week_of", op: "eq", value: week }] });
+    const sheets = await rows<{ id: number; state: string }>(ada, data, "time_sheets", { and: [{ column: "user_id", op: "eq", value: yusufId }, { column: "week_of", op: "eq", value: week }] });
     for (const sheet of sheets) {
+      // A sent week is locked: the office sends it back first, then the owner takes it away.
+      if (sheet.state === "sent") expect((await ada.post(data("time_sheets", `/${String(sheet.id)}/actions/send-back`), { data: { from: "sent", values: { sent_back_note: "Spec offline: taken away" } }, headers: await csrf(ada) })).status()).toBe(200);
       await takeAway(data, "time_sheet_lines", { column: "sheet_id", op: "eq", value: sheet.id });
       await takeAway(data, "time_sheets", { column: "id", op: "eq", value: sheet.id });
     }

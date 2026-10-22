@@ -165,7 +165,8 @@ export function QueueProvider({ app, children }: { app: string; children: ReactN
   useEffect(
     () =>
       queue.onRound((round) => {
-        if (round.refused > 0) toasts.show(round.sent === 0 ? t("offline.round.refusedOnly", { n: round.refused }, round.refused) : t("offline.round.refused", { sent: round.sent, n: round.refused }, round.refused), "danger", true);
+        // A status line, not one to dismiss: the pill and the list keep what was refused.
+        if (round.refused > 0) toasts.show(round.sent === 0 ? t("offline.round.refusedOnly", { n: round.refused }, round.refused) : t("offline.round.refused", { sent: round.sent, n: round.refused }, round.refused), "danger");
         else toasts.show(t("offline.round.sent", { n: round.sent }, round.sent), "pos");
       }),
     [queue, toasts, t],
