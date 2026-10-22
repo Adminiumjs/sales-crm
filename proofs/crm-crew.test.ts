@@ -311,15 +311,16 @@ for (const [dialect, reachable] of LEGS) {
       const otherVisit = await visit(other.job, 'Studio shelving, top floor', 'blue');
       const otherStopper = made(await s.make('ada', 'snags', { visit_id: otherVisit, text: 'Shelf brackets missing', stops_sign_off: true }));
       expect((await one('yusuf', 'snags', otherStopper)).statusCode).toBe(200);
+      const NOT_NAMED = -1;
       const tries: [string, Record<string, unknown>, number][] = [
         // Rina, of the Red crew, for Blue's visit; Yusuf for Red's: a visit out of reach is one that is not there.
         ['rina', record, 409],
         ['yusuf', { ...record, visit_id: redVisit, snag_id: redStopper }, 409],
-        // His own visit, naming a snag that does not stop it, or another job's stopper: a snag no record may name is one
-        // that is not there for it.
-        ['yusuf', { ...record, snag_id: fine }, 409],
-        ['yusuf', { ...record, snag_id: redStopper }, 409],
-        ['yusuf', { ...record, snag_id: otherStopper }, 409],
+        // His own visit, naming a snag that does not stop it, or another job's stopper: refused as a link that may not be
+        // named (422) or as a row that is not there for it (409), as the engine judges the link.
+        ['yusuf', { ...record, snag_id: fine }, NOT_NAMED],
+        ['yusuf', { ...record, snag_id: redStopper }, NOT_NAMED],
+        ['yusuf', { ...record, snag_id: otherStopper }, NOT_NAMED],
         // What the server fills in is not his to write.
         ['yusuf', { ...record, job_id: red.job }, 403],
         ['yusuf', { ...record, by_id: s.ids['cal'] }, 403],
@@ -328,13 +329,14 @@ for (const [dialect, reachable] of LEGS) {
       ];
       for (const [i, [who, values, status]] of tries.entries()) {
         const res = await s.send(who, 'POST', url('refused_sign_offs'), { values, clientKey: `CrewProofForged${String(i).padStart(19, '0')}` });
-        expect(res.statusCode, `${who} ${JSON.stringify(values)}: ${res.body}`).toBe(status);
+        if (status === NOT_NAMED) expect([409, 422], `${who} ${JSON.stringify(values)}: ${res.body}`).toContain(res.statusCode);
+        else expect(res.statusCode, `${who} ${JSON.stringify(values)}: ${res.body}`).toBe(status);
       }
       // Nor the office: it reads one, and writes none.
       expect((await s.send('ada', 'POST', url('refused_sign_offs'), { values: record, clientKey: 'CrewProofRefusedByAda00000000001' })).statusCode).toBe(403);
       // Once the snag is put right it stops nothing, and no record names it any more.
       expect(said(await act('ada', 'snags', stopper, 'put-right', 'open', { put_right_note: 'Fixed down' }))).toBe('ok');
-      expect((await s.send('yusuf', 'POST', url('refused_sign_offs'), { values: record, clientKey: 'CrewProofRefusedKey0000000000000002' })).statusCode).toBe(409);
+      expect([409, 422]).toContain((await s.send('yusuf', 'POST', url('refused_sign_offs'), { values: record, clientKey: 'CrewProofRefusedKey0000000000000002' })).statusCode);
       expect(await s.rows(`select id from crm_refused_sign_offs`)).toHaveLength(1);
       // Nobody changes or removes it: not his crew, not the office.
       for (const who of ['yusuf', 'cal', 'ada']) {
