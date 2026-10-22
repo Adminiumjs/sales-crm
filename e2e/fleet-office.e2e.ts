@@ -88,7 +88,7 @@ test("Vehicles, as the operations manager: the ledger's figures, each the server
     await expect(card("Red van").getByTestId("fl-vn-service")).toHaveText("8 days over");
     await expect(card("Red van").getByTestId("fl-vn-inspection")).toHaveText("Aug 8, 2026 · in 11 days");
     await expect(card("Blue van").getByTestId("fl-vn-model")).toHaveText("Sprinter, long wheelbase · Blue crew");
-    await expect(card("Hired van").getByTestId("fl-vn-model")).toHaveText("Hired in for August · no crew");
+    await expect(card("Hired van").getByTestId("fl-vn-model")).toHaveText("No crew of its own");
     await picture(page, "p25-1-ada-vehicles");
 
     // A vehicle added, with a lost reply on its way back: the same key answers the row the first one made.

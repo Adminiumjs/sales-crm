@@ -270,6 +270,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await s.change('ada', 'job_visits', near, { day: day(1) }))).toBe('ok');
       await settle();
 
+      console.log('DEBUG left', JSON.stringify(await s.rows(`select * from ${s.t('left_visits')} order by id`)), JSON.stringify((await noticesOf('yusuf')).filter((one) => /Cupboards/.test(one.title))));
       expect(await told('yusuf')).toEqual(['A visit is no longer yours: Cupboards given', 'A visit left your day sheet: Cupboards moved', 'Your day sheet changed: Cupboards near']);
       expect(await told('rina')).toEqual(['A visit is now yours: Cupboards given', 'A visit is off your day sheet: Cupboards waiting', 'A visit was called off: Cupboards called off']);
       for (const who of ['ada', 'tessa', 'dana', 'grace']) expect(await told(who), who).toEqual([]);

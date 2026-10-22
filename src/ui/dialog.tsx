@@ -45,6 +45,8 @@ export function Dialog({ shape, icon, tone = "plain", title, subtitle, onClose, 
     (first ?? box.current)?.focus();
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape") {
+        // An open list inside the dialog (a listbox) takes its own Escape: it closes, the dialog stays.
+        if (event.target instanceof Element && event.target.closest('[role="listbox"]') !== null) return;
         event.stopPropagation();
         if (!held.current) close.current();
         return;

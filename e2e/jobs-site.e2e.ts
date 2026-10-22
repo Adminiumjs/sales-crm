@@ -80,11 +80,12 @@ test("the Day sheet: the next day booked, its crew, the server's hours, the tick
   await expect(page.locator(".crm-toast").last()).toHaveText("Taken back: Done on site.");
   await expect(stop.locator('[data-figure="ticks"]')).toHaveText("0 of 4 ticked");
   expect((await rows<{ tick_done: boolean }>(context.request, data, "job_visits", { column: "id", op: "eq", value: 12 }))[0]!.tick_done).toBe(false);
-  // Wednesday, the same crew: nothing; Red's day is over its normal day, as the server adds it up.
+  // Wednesday, the same crew: J-07's return visit (plan 68 M3 BN-19); Red's day is over its normal day, as the server adds it up.
   await page.getByRole("group", { name: "Which day" }).locator('[data-day="2026-08-05"]').click();
   await expect(page).toHaveURL(/\/day-sheet\/2026-08-05\/1$/);
-  await expect(page.getByTestId("jb-sheet-empty")).toContainText("Nothing for this crew");
-  await page.getByRole("button", { name: "Show the Red crew" }).click();
+  await expect(sheet.locator("li[data-visit='16'] .crm-jb-stop-line")).toHaveText("08:00Tandem Robotics7 h · Cambridge");
+  await page.locator(`.crm-jb-crews [data-crew="${String(RED)}"]`).click();
+  await expect(page).toHaveURL(/\/day-sheet\/2026-08-05\/2$/);
   await expect(sheet.locator('[data-figure="sheet-hours"]')).toHaveText("9 h");
   await expect(sheet.locator(".crm-jb-sheet-hours")).toContainText("over a normal day of 8 h");
   await page.getByTestId("jb-print").click();
@@ -234,12 +235,13 @@ test("Delivery notes: the server's totals and what needs sorting; the office sor
     const lines = await figure(context.request, stand, "delivery_note_lines");
     const sorting = await figure(context.request, stand, "delivery_notes", [{ column: "needs_sorting", op: "eq", value: 1 }]);
     const clean = await figure(context.request, stand, "delivery_notes", [{ column: "needs_sorting", op: "eq", value: 0 }, { column: "sorted", op: "eq", value: false }]);
-    expect([all, lines, clean, sorting]).toEqual([5, 15, 2, 3]);
+    // J-07's note for its return visit of Wed 5 Aug (plan 68 M3 BN-21) is not signed for yet: it needs sorting as any unsigned note does.
+    expect([all, lines, clean, sorting]).toEqual([6, 17, 2, 4]);
     await expect(stat(page, "notes").locator("[data-value]")).toHaveText(String(all));
     await expect(stat(page, "notes").locator(".crm-kpi-sub")).toHaveText(`${String(lines)} lines on ${String(all)} visits`);
     await expect(stat(page, "clean").locator("[data-value]")).toHaveText(String(clean));
     await expect(stat(page, "sorting").locator("[data-value]")).toHaveText(String(sorting));
-    await expect(page.getByTestId("jb-dn-unsigned")).toHaveText("Fernway Clinics was never signed for. If anything goes missing, that note is all we have.");
+    await expect(page.getByTestId("jb-dn-unsigned")).toContainText("2 deliveries were never signed for.");
     const short = page.locator('li[data-note="1"]');
     await expect(short.getByTestId("jb-dn-state")).toHaveText("Short by 2");
     await expect(short.locator('[data-figure="items"]')).toHaveText("42 of 44");

@@ -288,3 +288,19 @@ export async function readDayFacts(session: StaffSession, day: string): Promise<
 
 /** Whether a crew's day is on a hired vehicle, as its row keeps it. */
 export const truthyHired = (row: Pick<VanDay, "hired">): boolean => truthy(row.hired);
+
+/**
+ * A booked visit dragged to another day keeps its crew: the crew's row that day stands, or one is made on the
+ * crew's own vehicle (CD-8). Answers the refusal when another crew has that vehicle then, with the facts read.
+ */
+export async function vanDayForMove(session: StaffSession, crewId: number | null, day: string): Promise<{ made: VanDay | null; facts: DayFacts | null } | { refused: DayRefusal; facts: DayFacts }> {
+  if (crewId === null || !writesVanDays(session)) return { made: null, facts: null };
+  const facts = await readDayFacts(session, day);
+  if (facts === null || rowOf(facts.days, crewId, day) !== undefined) return { made: null, facts };
+  const own = facts.own.get(crewId);
+  if (own === undefined) return { made: null, facts };
+  const early = refusalOf(facts, own, crewId, day);
+  if (early !== null) return { refused: early, facts };
+  const put = await putVanDay(session, facts, crewId, day, own);
+  return "refused" in put ? { refused: put.refused, facts } : { made: put.made, facts };
+}

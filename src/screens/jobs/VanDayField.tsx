@@ -60,16 +60,14 @@ export function VanDayField({ facts, crews, crewId, day, today, here, value, cha
 
   return (
     <div className="crm-vd-field">
-      <label className="crm-label" htmlFor="crm-jb-vehicle">
-        {t("vandays.field")}
-      </label>
+      {row !== undefined && !changing ? <div className="crm-label">{t("vandays.field")}</div> : <label className="crm-label" htmlFor="crm-jb-vehicle">{t("vandays.field")}</label>}
       {row !== undefined && !changing ? (
         <div className="crm-vd-line" data-testid="vd-line">
           <Icon name="truck" size={15} />
           <span>
             {t(truthyHired(row) ? "vandays.line.hired" : "vandays.line", { crew: crewName, plate: row.plate ?? row.vehicle_name ?? "", day: dayWords(f, day) })} {others === 0 ? t("vandays.others.none") : t("vandays.others", { count: f.number(others) }, others)}
           </span>
-          <button id="crm-jb-vehicle" type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-testid="vd-change-day" disabled={disabled} onClick={onChange}>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-testid="vd-change-day" disabled={disabled} onClick={onChange}>
             <Icon name="pencil" size={14} />
             {t("vandays.changeDay")}
           </button>

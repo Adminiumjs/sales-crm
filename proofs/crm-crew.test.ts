@@ -337,8 +337,8 @@ for (const [dialect, reachable] of LEGS) {
       }
       // Dana's deal asks for two lines of stock (a rep writes a need on her own deal); won, the rule makes its job.
       at.deal = made(await s.make('dana', 'deals', { name: 'Test-floor workbenches', company_id: company, owner_id: s.ids['dana'], stage_id: stage, typed_amount: 48_000 }));
-      at.need = made(await s.make('dana', 'deal_stock_needs', { deal_id: at.deal, item: 8, qty: 2 }));
-      at.other = made(await s.make('dana', 'deal_stock_needs', { deal_id: at.deal, item: 3, qty: 1 }));
+      at.need = made(await s.make('dana', 'deal_stock_needs', { deal_id: at.deal, qty: 2 }));
+      at.other = made(await s.make('dana', 'deal_stock_needs', { deal_id: at.deal, qty: 1 }));
       expect(said(await act('dana', 'deals', at.deal, 'mark-won', 'open'))).toBe('ok');
       await jobs();
       const job = Number((await s.rows(`select id from ${s.t('jobs')} where deal_id = ${String(at.deal)}`))[0]!['id']);
@@ -373,7 +373,7 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.get('yusuf', url('deals', '?limit=5'))).statusCode).toBe(403);
       // He writes none of it.
       expect((await s.change('yusuf', 'deal_stock_needs', at.need, { qty: 9 })).statusCode).toBe(403);
-      expect((await s.make('yusuf', 'deal_stock_needs', { deal_id: at.deal, item: 1, qty: 1 })).statusCode).toBe(403);
+      expect((await s.make('yusuf', 'deal_stock_needs', { deal_id: at.deal, qty: 1 })).statusCode).toBe(403);
       // The visit given to Red: the need goes with it.
       expect(said(await s.change('ada', 'job_visits', at.blueVisit, { crew_id: crew['red'] }))).toBe('ok');
       try {

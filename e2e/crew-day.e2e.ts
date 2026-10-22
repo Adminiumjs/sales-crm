@@ -75,8 +75,8 @@ test("My day: he lands on today, his crew and its people; a day with a visit has
   await expect(card.getByTestId("cw-signed")).toContainText("Signed off Nov 18, 2025 by Tomas Reidy");
   await expect(card.getByRole("link", { name: "Sign off the job" })).toHaveCount(0);
   await expect(card.getByTestId("cw-add-snag")).toBeVisible();
-  // The week's strip marks his two booked days, Tue 4 and Thu 6 Aug.
-  await expect(page.locator('.crm-cw-weekday-dot[data-on="1"]')).toHaveCount(2);
+  // The week's strip marks his three booked days, Tue 4, Wed 5 (J-07's return visit, plan 68 M3 BN-19) and Thu 6 Aug.
+  await expect(page.locator('.crm-cw-weekday-dot[data-on="1"]')).toHaveCount(3);
   // No amount anywhere on his day.
   expect(await page.locator("#crm-page").innerText()).not.toMatch(/£/);
   expect(await narrowEnough(page)).toBe(true);

@@ -78,7 +78,11 @@ export function VehiclePick({ id, facts, crews, crewId, crewName, day, value, on
       event.preventDefault();
       choose(active);
     } else if (event.key === "Escape" || event.key === "Tab") {
-      if (event.key === "Escape") event.preventDefault();
+      // Escape closes the list, not the dialog it is in.
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       close();
     }
   };
@@ -92,6 +96,7 @@ export function VehiclePick({ id, facts, crews, crewId, crewName, day, value, on
         className="crm-input crm-vd-value mr-fld"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-describedby={`${listId}-value`}
         aria-controls={listId}
         disabled={disabled}
         data-vehicle={value ?? ""}
@@ -105,7 +110,7 @@ export function VehiclePick({ id, facts, crews, crewId, crewName, day, value, on
         }}
       >
         <Icon name="truck" size={15} />
-        <span className="crm-vd-value-words">
+        <span className="crm-vd-value-words" id={`${listId}-value`}>
           {picked === undefined ? (
             <span className="crm-vd-sub">{t("vandays.none")}</span>
           ) : (
@@ -125,7 +130,7 @@ export function VehiclePick({ id, facts, crews, crewId, crewName, day, value, on
         <Icon name="chevrons-up-down" size={15} />
       </button>
       {open && (
-        <ul ref={list} id={listId} role="listbox" tabIndex={-1} className="crm-vd-list" aria-label={t("vandays.list", { crew: crewName, day: dayWords(f, day) })} aria-activedescendant={`${listId}-${String(active)}`} onKeyDown={onListKey} onBlur={(event) => !event.currentTarget.contains(event.relatedTarget as Node | null) && setOpen(false)}>
+        <ul ref={list} id={listId} role="listbox" tabIndex={-1} {...(openAtStart ? { "data-autofocus": true } : {})} className="crm-vd-list" aria-label={t("vandays.list", { crew: crewName, day: dayWords(f, day) })} aria-activedescendant={`${listId}-${String(active)}`} onKeyDown={onListKey} onBlur={(event) => !event.currentTarget.contains(event.relatedTarget as Node | null) && setOpen(false)}>
           {options.map((one, i) => {
             const can = pickable(one.standing);
             const words = standingWords(t, f, crews, one.standing, crewName, day);

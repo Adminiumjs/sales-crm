@@ -295,17 +295,20 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
       <section className="crm-jb-route-side" aria-labelledby="crm-jb-route-h">
         <div className="crm-jb-route-head">
           <span className="crm-jb-dot" data-colour={crewIndex < 0 ? undefined : crewIndex % 8} aria-hidden="true" />
-          <h2 id="crm-jb-route-h">
-            {crew?.name ?? ""}
-            {vanDay !== undefined && (
-              <>
-                <span aria-hidden="true"> · </span>
-                <span data-testid="jb-route-vehicle">
-                  {t(truthyHired(vanDay) ? "vandays.rt.vehicle.hired" : "vandays.rt.vehicle", { plate: vanDay.plate ?? vanDay.vehicle_name ?? "" })}
-                </span>
-              </>
-            )}
-          </h2>
+          <h2 id="crm-jb-route-h">{crew?.name ?? ""}</h2>
+          {vanDay !== undefined && (
+            <>
+              <span className="crm-jb-route-dot" aria-hidden="true">
+                ·
+              </span>
+              <span className="crm-jb-route-vehicle" data-testid="jb-route-vehicle">
+                {t(truthyHired(vanDay) ? "vandays.rt.vehicle.hired" : "vandays.rt.vehicle", { plate: vanDay.plate ?? vanDay.vehicle_name ?? "" })}
+              </span>
+              <span className="crm-jb-route-dot" aria-hidden="true">
+                ·
+              </span>
+            </>
+          )}
           <span className="crm-jb-quiet">{dayLong(f, day)}</span>
         </div>
         <div className="crm-jb-route-stats">
