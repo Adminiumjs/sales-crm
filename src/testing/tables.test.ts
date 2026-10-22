@@ -663,8 +663,10 @@ describe("a site visit that is cancelled is removed, never marked (F17)", () => 
 });
 
 describe("the four private tables are reached by their own two people and nothing else", () => {
-  it("marks exactly those four private", () => {
-    expect(tables.filter((table) => table.private === true).map((table) => table.ref).sort()).toEqual(Object.keys(PRIVATE).sort());
+  it("marks exactly those four private, and the two a person saves for herself", () => {
+    expect(tables.filter((table) => table.private === true).map((table) => table.ref).sort()).toEqual([...Object.keys(PRIVATE), "saved_searches", "saved_views"].sort());
+    // A saved view or search is its owner's alone (plan 68 D9): one way, its owner.
+    for (const ref of ["saved_views", "saved_searches"]) expect(byRef.get(ref)?.belongs, ref).toEqual([{ column: "owner_id" }]);
   });
 
   it("gives each exactly two ways, both staff columns of its own", () => {

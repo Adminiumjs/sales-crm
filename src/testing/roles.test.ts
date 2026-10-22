@@ -52,7 +52,6 @@ const NAMES: Record<RoleKey, string> = {
  * A create is never limited to some rows: a new row is held by the links and
  * the people it names.
  */
-const SAVED = "RCUD;r=own+free;u=own;d=own";
 /** The four private tables: the manager and the rep of the row, and nobody else. */
 const PAIR = ["-", "RCUD:own", "R:own", "-", "-", "-", "-", "-", "-"] as const;
 /** Conversations: the four sales roles, each in their own. */
@@ -69,16 +68,19 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
   [["deal_amount_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
-  // Everybody on a deal reads its notes and comments; each changes only the ones they wrote (a manager, those of her people).
-  [["activities"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
-  [["comments"], "RCUD", "RCU:team;u=team-written", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
+  // Everybody on a deal reads its notes and comments; a note is changed by whoever wrote it, of the deals they are on (plan
+  // 68 X6: a manager no longer rewords her rep's). A comment's words are its author's too: the manager settles her team's
+  // threads and the CRM admin any, and neither rewords one (their `writable` is `settled_at` alone).
+  [["activities"], "RCUD;u=own-written", "RCU:team;u=own-written", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
+  [["comments"], "RCUD", "RCU:team", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
   [["quotes"], "RCUDX", "RCU:team", "RCU:own", "R:own", "-", "-", "-", "-", "RX"],
   // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
   [["quote_lines"], "RCUDX", "RCUD:team", "RCUD:own", "R:own", "-", "-", "-", "-", "RX"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
-  [["saved_views", "saved_searches"], "RCUD:own+free", "RCUD:own+free", SAVED, SAVED, "-", "-", "-", "-", "R:own+free"],
+  // Private (plan 68 D9): each person's own, and nobody else's, the install's owner included. A view nobody owns is nobody's.
+  [["saved_views", "saved_searches"], "RCUD:own", "RCUD:own", "RCUD:own", "RCUD:own", "-", "-", "-", "-", "R:own"],
   [["nudge_snoozes"], "RCD:own", "RCD:own", "RCD:own", "-", "-", "-", "-", "-", "-"],
   // Who is on a deal is read by whoever is on it, and written by its owner (or who leads her): `owner's` below.
   [["deal_members"], "RCUD", "RCUD;r=team;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R:own", "-", "-", "-", "-", "R"],
@@ -89,22 +91,28 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // A rep takes an agreed point back; nobody but the CRM admin removes a visit's write-up (a helper could remove the owner's).
   [["visit_notes"], "RCUD", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
   [["visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
-  [["companies"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "R", "-", "-", "RX"],
+  // Everybody reads every company. A rep (and the account manager) changes one she is the account owner of, has an open
+  // deal at, or that nobody owns; the manager her team's and nobody's; the CRM admin any (plan 68 X3, Q5 = B).
+  [["companies"], "RCUDXI", "RCUXI;u=team+free", "RCUI;u=own+free", "RCU;u=own+free", "R", "R", "-", "-", "RX"],
   [["contacts"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "RC", "-", "-", "RX"],
-  [["territories", "territory_places"], "RCUD", "RCUD", "R", "R", "R", "-", "-", "-", "R"],
+  // The sales manager changes and removes the territories her team owns, and the ones nobody does (plan 68 X3).
+  [["territories", "territory_places"], "RCUD", "RCUD;u=team+free;d=team+free", "R", "R", "R", "-", "-", "-", "R"],
   // A rep reads what came after a sale and writes none of it: no screen of hers does, and a thank-you mails a contact (the review).
   [["renewals", "referrals"], "RCUD", "R", "R", "RCUD", "-", "-", "-", "-", "R"],
   [["reps"], "RCUD", "RU;u=own", "RU;u=own", "RU;u=own", "-", "-", "-", "-", "R"],
   [["targets"], "RCUD", "RCU:team", "R:own", "-", "-", "-", "-", "-", "R"],
   [["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"], ...PAIR],
   [["actions"], "R:own", "RCUD:own", "RCU:own", "-", "-", "-", "-", "-", "-"],
-  [["meetings", "meeting_slots", "meeting_decisions"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
+  [["meetings", "meeting_decisions"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
+  // An agenda item is its speaker's: the manager changes her team's, and the ones that name nobody (plan 68 X1).
+  [["meeting_slots"], "RCUD", "RCUD;u=team+free;d=team+free", "R", "-", "-", "-", "-", "-", "R"],
   [["threads"], ...talk("RC:own")],
   // Who is in a conversation is read by its members and the CRM admin (plan 68 R4c); each moves only her own mark.
   [["thread_members"], "RCU;u=own-self", ...talk("RCU;r=own;u=own-self").slice(1)],
   [["messages"], ...talk("RC:own")],
-  [["starters"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
-  [["starter_steps"], "RCUD", "RCUD", "RU", "-", "-", "-", "-", "-", "R"],
+  // A starter is her manager's; a step its owner's and its starter's manager's: a rep ticks her own (plan 68 X1).
+  [["starters"], "RCUD", "RCUD;u=team;d=team", "R", "-", "-", "-", "-", "-", "R"],
+  [["starter_steps"], "RCUD", "RCUD;u=team+free;d=team+free", "RU;u=own", "-", "-", "-", "-", "-", "R"],
   // NARROWER THAN "EVERY COVER": a sales manager does not hold every cover. A cover opens
   // its rep's deals to whoever it names, so a manager who could write one for any rep could read any
   // team's deals by covering for them. They read every cover, and write one for the people they lead.
@@ -146,6 +154,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
 
 /** The four tables read by the two people of a row, on the screen, and by nothing else. */
 const PRIVATE = ["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"] as const;
+/** Private too: what a person saves for herself (plan 68 D9). */
+const SAVED_TABLES: readonly string[] = ["saved_views", "saved_searches"];
 /** The only roles that hold anything on them. */
 const PRIVATE_ROLES: readonly RoleKey[] = ["sales-manager", "rep"];
 
@@ -541,8 +551,19 @@ describe("every cell of the matrix is what the manifest grants", () => {
 });
 
 describe("the four private tables are their two people's", () => {
-  it("marks exactly those four private", () => {
-    expect(tables.filter((table) => table.private === true).map((table) => table.ref)).toEqual([...PRIVATE]);
+  it("marks exactly those four private, and the two a person saves for herself", () => {
+    expect(tables.filter((table) => table.private === true && !SAVED_TABLES.includes(table.ref)).map((table) => table.ref)).toEqual([...PRIVATE]);
+    expect(tables.filter((table) => SAVED_TABLES.includes(table.ref)).map((table) => table.private)).toEqual([true, true]);
+  });
+
+  it("holds every right on a saved view or search to the person's own (plan 68 D9: the install's owner reads none of them)", () => {
+    for (const r of roles) {
+      for (const ref of SAVED_TABLES) {
+        for (const action of ROW_ACTIONS) {
+          if (holds(r.key as RoleKey, ref, action)) expect(limitOf(r.key as RoleKey, ref)?.rows?.[action], `${r.key}: ${ref} ${action}`).toEqual({ reach: "own" });
+        }
+      }
+    }
   });
 
   it("gives nothing on them to any role but the sales manager and the rep", () => {
@@ -1056,7 +1077,7 @@ describe("what a role is kept from, column by column", () => {
 
   it("lets a rep tick an onboarding step done, and rewrite none", () => {
     expect(held("rep", "starter_steps")).toEqual(["read", "update"]);
-    expect(limitOf("rep", "starter_steps")).toEqual({ writable: ["done"] });
+    expect(limitOf("rep", "starter_steps")).toEqual({ writable: ["done"], rows: { update: { reach: "own" } } });
   });
 
   it("lets the front desk name no deal: it reads none", () => {
