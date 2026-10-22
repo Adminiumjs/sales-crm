@@ -1291,6 +1291,10 @@ for (const [dialect, reachable] of LEGS) {
       const start = (person: string, values: Record<string, unknown>, people: string[]) =>
         s.app.inject({ method: 'POST', url: url('threads'), headers: { cookie: who(person) }, payload: { values, children: { [link('thread_members', 'thread_id', 'threads')]: people.map((one) => ({ values: { user_id: s.id[one] } })) } } });
       const threads = async (): Promise<number[]> => ids(`SELECT id FROM ${s.real('threads')}`);
+      // The screen finds that link's name in the schema, which any signed-in person reads (the staff config names tables only).
+      const schema = await s.app.inject({ method: 'GET', url: `/api/v1/connections/${s.connectionId}/schema?raw=true`, headers: { cookie: who('dana') } });
+      expect(schema.statusCode, schema.body.slice(0, 200)).toBe(200);
+      expect((schema.json() as { model: { relations: { id: string }[] } }).model.relations.map((relation) => relation.id)).toEqual(expect.arrayContaining([link('thread_members', 'thread_id', 'threads'), link('starter_steps', 'starter_id', 'starters')]));
       const group = await start('dana', { kind: 'group', title: 'T04 spec: the Leeds show' }, ['dana', 'sam', 'leo']);
       expect(group.statusCode, group.body).toBe(201);
       const groupId = made(group);

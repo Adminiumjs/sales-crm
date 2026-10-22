@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { LostReply, StaffError, type StaffSession } from "../../staffSession.ts";
 import { coverState, dayOf, makeCover, workingDays } from "./cover.ts";
 import { areaRow } from "./coaching.ts";
-import { all, alsoIn, childLink, num, sessionLinked, truthy } from "./data.ts";
+import { all, alsoIn, num, relationIn, sessionLinked, truthy } from "./data.ts";
 import { raisedOf, sessionRow, TOPICS } from "./notes.ts";
 import { coverOf, leftOf, yearDay } from "./targets.ts";
 
@@ -148,9 +148,19 @@ describe("T04: the Team screens' left-out pieces", () => {
     expect(sessionLinked(parts({ selling: true, team: true, showroom: true }))).toBe(true);
     expect(sessionLinked(parts(null))).toBe(true);
   });
-  it("names the link a child row is written through by the tables' stored names", () => {
-    const session = { tableId: (ref: string) => `public.crm_${ref}` } as unknown as StaffSession;
-    expect(childLink(session, "thread_members", "thread_id", "threads")).toBe("fk:public.crm_thread_members(thread_id)->public.crm_threads(id)");
+  it("finds the link a child row is written through in the server's schema, by the tables' stored names", () => {
+    const model = {
+      tables: [
+        { id: "public.crm_threads", name: "crm_threads" },
+        { id: "public.crm_thread_members", name: "crm_thread_members" },
+      ],
+      relations: [
+        { id: "fk:public.crm_thread_members(user_id)->public.crm_threads(id)", through: null, from: { tableId: "public.crm_thread_members", columns: ["user_id"] }, to: { tableId: "public.crm_threads", columns: ["id"] } },
+        { id: "fk:public.crm_thread_members(thread_id)->public.crm_threads(id)", through: null, from: { tableId: "public.crm_thread_members", columns: ["thread_id"] }, to: { tableId: "public.crm_threads", columns: ["id"] } },
+      ],
+    };
+    expect(relationIn(model, "crm_thread_members", "thread_id", "crm_threads")).toBe("fk:public.crm_thread_members(thread_id)->public.crm_threads(id)");
+    expect(relationIn(model, "crm_messages", "thread_id", "crm_threads")).toBeNull();
   });
   it("saves an area with an empty line as no line and no measure as no number", () => {
     expect(areaRow({ title: " Get on site sooner ", why: "  ", good_looks_like: "Inside five days", measure: "" })).toEqual({ title: "Get on site sooner", why: null, good_looks_like: "Inside five days", measure: null });

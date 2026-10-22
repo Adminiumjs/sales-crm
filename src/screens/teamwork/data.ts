@@ -95,8 +95,46 @@ export function sessionLinked(session: Pick<StaffSession, "config">): boolean {
   return Object.keys(parts).some((part) => !first.has(part));
 }
 
+interface ModelTable {
+  id: string;
+  name: string;
+}
+interface ModelRelation {
+  id: string;
+  through: unknown;
+  from: { tableId: string; columns: string[] };
+  to: { tableId: string; columns: string[] };
+}
+export interface Model {
+  tables: ModelTable[];
+  relations: ModelRelation[];
+}
+
 /**
- * The name of a link the server writes child rows through, beside a new row in the same save (a conversation and its
- * people, a starter and her steps): the child table's link column to the parent's key, by their stored names.
+ * The link a child table's rows hang on a parent by (`thread_members.thread_id` to `threads`), as the server names it
+ * in its schema: the key a save sends the child rows under, beside a new row (a conversation and its people, a
+ * starter and her steps). Tables are found by their stored names; null where the schema has no such link.
  */
-export const childLink = (session: Pick<StaffSession, "tableId">, child: string, column: string, parent: string): string => `fk:${session.tableId(child)}(${column})->${session.tableId(parent)}(id)`;
+export function relationIn(model: Model, child: string, column: string, parent: string): string | null {
+  const childId = model.tables.find((table) => table.name === child)?.id;
+  const parentId = model.tables.find((table) => table.name === parent)?.id;
+  if (childId === undefined || parentId === undefined) return null;
+  const found = model.relations.find((relation) => relation.through === null && relation.from.tableId === childId && relation.to.tableId === parentId && relation.from.columns.length === 1 && relation.from.columns[0] === column);
+  return found?.id ?? null;
+}
+
+const models = new WeakMap<object, Promise<Model>>();
+
+/**
+ * The same, asked of the server: the staff config names a table by its stored name only, while a link is named by the
+ * schema's table ids (which carry the database's schema). The schema is read once per page and person.
+ */
+export async function childLink(session: Pick<StaffSession, "tableId" | "call" | "connectionId">, child: string, column: string, parent: string): Promise<string | null> {
+  let model = models.get(session);
+  if (model === undefined) {
+    model = session.call<{ model: Model }>("GET", `/connections/${encodeURIComponent(session.connectionId)}/schema?raw=true`).then((reply) => reply.model);
+    models.set(session, model);
+    model.catch(() => models.delete(session));
+  }
+  return relationIn(await model, session.tableId(child), column, session.tableId(parent));
+}

@@ -355,7 +355,12 @@ function NewStarter({ from, today, onClose, onMade }: { from: StarterRow | null;
   const go = async (): Promise<void> => {
     if (!ready || busy) return;
     setBusy(true);
-    const children = copy && theirs.length > 0 ? { [childLink(session, "starter_steps", "starter_id", "starters")]: theirs.map((step) => ({ values: { phase: step.phase, text: step.text, owner_id: truthy(step.for_starter) ? null : step.owner_id, for_starter: truthy(step.for_starter), done: false } })) } : undefined;
+    const link = copy && theirs.length > 0 ? await childLink(session, "starter_steps", "starter_id", "starters").catch(() => null) : null;
+    if (copy && theirs.length > 0 && link === null) {
+      setBusy(false);
+      return setError(t("ui.unknown"));
+    }
+    const children = link !== null ? { [link]: theirs.map((step) => ({ values: { phase: step.phase, text: step.text, owner_id: truthy(step.for_starter) ? null : step.owner_id, for_starter: truthy(step.for_starter), done: false } })) } : undefined;
     const saved = await session.create<StarterRow>("starters", { name: name.trim(), starts_on: day, manager_id: me, patch: patch === "" ? null : Number(patch) }, key.current, children === undefined ? {} : { children });
     setBusy(false);
     if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));

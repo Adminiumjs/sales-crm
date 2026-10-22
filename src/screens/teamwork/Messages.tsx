@@ -433,7 +433,12 @@ function NewConversation({ me, everyone, names, threads, onClose, onOpen }: { me
     if (already !== null) return onOpen(already.thread.id);
     setBusy(true);
     const members = [me, ...picked].map((user) => ({ values: { user_id: user } }));
-    const saved = await session.create<Thread>("threads", { kind: group ? "group" : "direct", title: group && title.trim() !== "" ? title.trim() : null }, key.current, { children: { [childLink(session, "thread_members", "thread_id", "threads")]: members } });
+    const link = await childLink(session, "thread_members", "thread_id", "threads").catch(() => null);
+    if (link === null) {
+      setBusy(false);
+      return setError(t("ui.unknown"));
+    }
+    const saved = await session.create<Thread>("threads", { kind: group ? "group" : "direct", title: group && title.trim() !== "" ? title.trim() : null }, key.current, { children: { [link]: members } });
     setBusy(false);
     if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
     if (saved.state === "unknown") return setError(t("ui.unknown"));
