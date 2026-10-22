@@ -68,9 +68,11 @@ test("Dana opens Companies from her menu: the nine, each with what is HERS open 
   }
   // The two deals that have sat past thirty days (d12, d5) are colleagues': no badge on her cards.
   await expect(page.locator(".crm-acc-badge")).toHaveCount(0);
-  // A rep adds and changes companies.
+  // A rep adds companies, and changes the ones that are hers: her accounts and where she has an open deal (Veldt is Leo's
+  // account, with her deal), not a colleague's (Fernway is Priya's, Brightloom Sam's: plan 68 X3).
   await expect(page.getByRole("button", { name: "New company" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Edit Nordwind Logistics" })).toBeVisible();
+  for (const name of ["Nordwind Logistics", "Veldt Studios", "Low Orbit", "Cobalt Legal", "Juno Analytics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toBeVisible();
+  for (const name of ["Fernway Clinics", "Brightloom Foods", "Harbor & Finch", "Tandem Robotics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toHaveCount(0);
   expect(problems).toEqual([]);
   await picture(page, "1-dana-companies");
 });

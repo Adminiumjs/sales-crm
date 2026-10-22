@@ -124,8 +124,25 @@ reach("sales-manager", "meeting_slots", { update: { reach: "team", unowned: true
 
 if (!same(table("activities").belongs, [{ via: "deal_id" }])) fail("activities are no longer read through their deal");
 staff("activities", "author_id");
-reach("sales-manager", "activities", { update: { reach: "own", by: "author_id" } });
-reach("admin", "activities", { update: { reach: "own", by: "author_id" } });
+// A call note is changed by whoever wrote it: a rep and the account manager, theirs. The manager and the CRM admin reword
+// none: a reach of "the ones I wrote" would also be the reach a new note is hung by (only on deals they are on), and "the
+// ones my team wrote" is the gap. So neither holds the update; the CRM admin still removes one.
+for (const key of ["sales-manager", "admin"]) {
+  const r = role(key);
+  r.permissions = r.permissions.filter((grant) => grant !== "table:@activities:update");
+  const limit = r.limits?.activities;
+  if (limit !== undefined) {
+    delete limit.writable;
+    delete limit.writableValues;
+    delete limit.writableFrom;
+    if (limit.rows !== undefined) delete limit.rows.update;
+    if (Object.keys(limit.rows ?? {}).length === 0) delete limit.rows;
+    if (Object.keys(limit).length === 0) delete r.limits.activities;
+  }
+}
+for (const key of ["rep", "account-manager"]) {
+  if (holds(key, "activities", "update") && !same(role(key).limits?.activities?.rows?.update, { reach: "own", by: "author_id" })) fail(`${key} changes call notes it did not write`);
+}
 
 if (!same(table("comments").belongs, [{ via: "deal_id" }])) fail("comments are no longer read through their deal");
 for (const key of ["sales-manager", "admin"]) {

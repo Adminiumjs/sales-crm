@@ -68,10 +68,10 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
   [["deal_amount_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
-  // Everybody on a deal reads its notes and comments; a note is changed by whoever wrote it, of the deals they are on (plan
-  // 68 X6: a manager no longer rewords her rep's). A comment's words are its author's too: the manager settles her team's
-  // threads and the CRM admin any, and neither rewords one (their `writable` is `settled_at` alone).
-  [["activities"], "RCUD;u=own-written", "RCU:team;u=own-written", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
+  // Everybody on a deal reads its notes and comments; a note or a comment is reworded by whoever wrote it, of the deals they
+  // are on (plan 68 X6: a manager no longer rewords her rep's). The manager and the CRM admin reword none: they change no
+  // call note, and of a comment only `settled_at` (the manager her team's threads, the CRM admin any).
+  [["activities"], "RCD", "RC:team", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
   [["comments"], "RCUD", "RCU:team", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
   [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
   [["quotes"], "RCUDX", "RCU:team", "RCU:own", "R:own", "-", "-", "-", "-", "RX"],

@@ -83,24 +83,18 @@ test("a rep's saved views count her own deals, and a view that is not hers reads
   const context = await as("dana");
   const page = await context.newPage();
   await page.goto(`${STAFF}saved-views`);
-  // §19: Dana sees 4 of the 6.
-  await expect(views(page)).toHaveCount(4);
+  // §19: Dana sees her own one of the six: saved views are private (plan 68 D9), so nobody shares one.
+  await expect(views(page)).toHaveCount(1);
   // v1, her own: 2 deals · weighted 55,800.
   const mine = viewNamed(page, "My negotiation deals");
   await expect(mine.getByTestId("view-count")).toHaveText("2");
   await expect(mine.getByTestId("view-weighted")).toHaveText("£55,800");
   await expect(mine.locator(".crm-view-owner")).toHaveText("Board · Yours · private");
   await expect(mine.locator(".crm-view-rules .crm-pill")).toHaveText(["Dana’s", "Stage: Negotiation"]);
-  // A shared view counts HER deals, not the team's: what the server answers her for the same cut.
-  const over = await context.request.get(data("deals", `?limit=1&select=id&count=exact&where=${encodeURIComponent(JSON.stringify({ and: [{ column: "state", op: "eq", value: "open" }, { column: "amount", op: "gt", value: 20000 }] }))}`));
-  const hers = ((await over.json()) as { page: { total: number } }).page.total;
-  expect(hers).toBeLessThan(7);
-  await expect(viewNamed(page, "Everything over 20,000").getByTestId("view-count")).toHaveText(String(hers));
-  await expect(viewNamed(page, "Everything over 20,000").locator(".crm-view-owner")).toHaveText("Board · Shared by Ivy");
-  // She pins and removes her own; a shared one has neither control for her.
+  // She pins and removes her own; Ivy's are not listed for her at all.
   await expect(mine.locator('[data-act="pin"]')).toBeVisible();
   await expect(mine.locator('[data-act="remove"]')).toBeVisible();
-  await expect(viewNamed(page, "Everything over 20,000").locator("[data-act]")).toHaveCount(0);
+  await expect(viewNamed(page, "Everything over 20,000")).toHaveCount(0);
   // Her own board on her own view.
   await mine.getByRole("link").click();
   await expect(page.getByTestId("viewbar-showing")).toContainText("Showing “My negotiation deals”");
@@ -173,8 +167,8 @@ test("saved searches: a live count from the server, private to their owner", asy
       expect((await rows(direct, data, "saved_searches")).length, person).toBe(0);
       expect((await direct.get(data("saved_searches", `/${String(one.id)}`))).status(), person).toBe(404);
     }
-    // Not so for whoever runs the install: no row limit is theirs, here as on every table.
-    expect((await rows(await api("owner"), data, "saved_searches")).length).toBe(5);
+    // Whoever runs the install included: saved searches are private (plan 68 D9).
+    expect((await rows(await api("owner"), data, "saved_searches")).length).toBe(0);
   } finally {
     await clear();
   }
@@ -501,15 +495,15 @@ test("saved views: the ledger's six, whose they are, and each count the reader's
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Saved views" }).click();
   await expect(page).toHaveURL(/\/saved-views$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Saved views");
-  // Ivy reads her two private views and the three she shared: five of the six. Dana's is not hers.
+  // Ivy reads her five: saved views are private (plan 68 D9), so the three she used to share are hers alone. Dana's is not hers.
   await expect(views(page)).toHaveCount(5);
   // §19, as the manager reads the team's deals.
   for (const [name, count, weighted, owner] of [
-    ["Everything over 20,000", "7", "£124,890", "Board · Shared by Ivy"],
-    ["Sitting 14 days and up", "5", "£77,487.50", "Board · Shared by Ivy"],
+    ["Everything over 20,000", "7", "£124,890", "Board · Yours · private"],
+    ["Sitting 14 days and up", "5", "£77,487.50", "Board · Yours · private"],
     ["Closing this month", "3", "£38,340", "Board · Yours · private"],
     ["Sam's board", "3", "£44,590", "Board · Yours · private"],
-    ["Discovery, all reps", "3", "£3,635", "Board · Shared by Ivy"],
+    ["Discovery, all reps", "3", "£3,635", "Board · Yours · private"],
   ] as const) {
     const card = viewNamed(page, name);
     await expect(card.getByTestId("view-count"), name).toHaveText(count);
@@ -578,26 +572,30 @@ test("saved views: the ledger's six, whose they are, and each count the reader's
     await clear();
   }
 
-  // WHOSE THEY ARE, by direct calls. Dana's private view answers nobody else, the CRM admin included.
+  // WHOSE THEY ARE, by direct calls. Saved views are private (plan 68 D9): each answers its owner and nobody else, the CRM
+  // admin and whoever runs the install included.
   const dana = await api("dana");
   const hers = await rows<{ id: number; name: string; owner_id: string | null }>(dana, data, "saved_views");
-  expect(hers.map((row) => row.name).sort()).toEqual(["Discovery, all reps", "Everything over 20,000", "My negotiation deals", "Sitting 14 days and up"]);
-  const own = hers.find((row) => row.name === "My negotiation deals")!;
-  const shared = hers.find((row) => row.name === "Everything over 20,000")!;
-  for (const person of ["ivy", "tessa", "sam", "grace"]) expect((await (await api(person)).get(data("saved_views", `/${String(own.id)}`))).status(), person).toBe(404);
-  expect((await rows(admin, data, "saved_views")).length).toBe(3);
-  // The one person no row limit holds: whoever runs the install has none of the app's roles and reads every view, as they read every table.
-  expect((await rows(await api("owner"), data, "saved_views")).length).toBe(6);
-  const ivys = (await rows<{ id: number; name: string }>(context.request, data, "saved_views")).find((row) => row.name === "Closing this month")!;
-  for (const person of ["dana", "tessa"]) expect((await (await api(person)).get(data("saved_views", `/${String(ivys.id)}`))).status(), person).toBe(404);
-  // A rep reads a shared view and does not change or remove it; the manager who shared it may.
+  expect(hers.map((row) => row.name)).toEqual(["My negotiation deals"]);
+  const own = hers[0]!;
+  for (const person of ["ivy", "tessa", "sam", "grace", "owner"]) expect((await (await api(person)).get(data("saved_views", `/${String(own.id)}`))).status(), person).toBe(404);
+  expect((await rows(admin, data, "saved_views")).length).toBe(0);
+  expect((await rows(await api("owner"), data, "saved_views")).length).toBe(0);
+  const ivys = await rows<{ id: number; name: string }>(context.request, data, "saved_views");
+  expect(ivys).toHaveLength(5);
+  const closing = ivys.find((row) => row.name === "Closing this month")!;
+  const over = ivys.find((row) => row.name === "Everything over 20,000")!;
+  for (const person of ["dana", "tessa"]) expect((await (await api(person)).get(data("saved_views", `/${String(closing.id)}`))).status(), person).toBe(404);
+  // A rep neither changes nor removes Ivy's: to her it is not there.
   const headers = await csrf(dana);
-  expect([403, 404]).toContain((await dana.patch(data("saved_views", `/${String(shared.id)}`), { data: { values: { name: "P13 not hers" } }, headers })).status());
-  expect([403, 404]).toContain((await dana.delete(data("saved_views", `/${String(shared.id)}?confirm=true`), { headers })).status());
-  expect((await rows<{ name: string }>(admin, data, "saved_views", { column: "id", op: "eq", value: shared.id }))[0]!.name).toBe("Everything over 20,000");
-  // Read-only reads the shared ones and saves none; the marketer has no saved views at all.
+  expect([403, 404]).toContain((await dana.patch(data("saved_views", `/${String(over.id)}`), { data: { values: { name: "P13 not hers" } }, headers })).status());
+  expect([403, 404]).toContain((await dana.delete(data("saved_views", `/${String(over.id)}?confirm=true`), { headers })).status());
+  expect((await rows<{ name: string }>(context.request, data, "saved_views", { column: "id", op: "eq", value: over.id }))[0]!.name).toBe("Everything over 20,000");
+  // A view saved with nobody as its owner is refused: nobody could open it again.
+  expect([403, 422]).toContain((await dana.post(data("saved_views"), { data: { values: { name: "P13 nobody's", filters: {}, owner_id: null }, clientKey: "p13danaviewnobodyAAAAAAAAAAAAAAA" }, headers })).status());
+  // Read-only has none and saves none; the marketer has no saved views at all.
   const grace = await api("grace");
-  expect((await rows(grace, data, "saved_views")).length).toBe(3);
+  expect((await rows(grace, data, "saved_views")).length).toBe(0);
   expect((await grace.post(data("saved_views"), { data: { values: { name: "P13 no", filters: {} }, clientKey: "p13graceviewAAAAAAAAAAAAAAAAAAAA" }, headers: await csrf(grace) })).status()).toBe(403);
   expect((await (await api("lena")).get(data("saved_views", "?limit=1"))).status()).toBe(403);
   const lena = await (await as("lena")).newPage();

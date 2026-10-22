@@ -20498,7 +20498,6 @@
         "table:@follow_ups:delete",
         "table:@activities:read",
         "table:@activities:create",
-        "table:@activities:update",
         "table:@activities:delete",
         "table:@lost_reasons:read",
         "table:@lost_reasons:create",
@@ -20967,14 +20966,6 @@
             ]
           }
         },
-        "activities": {
-          "rows": {
-            "update": {
-              "reach": "own",
-              "by": "author_id"
-            }
-          }
-        },
         "comments": {
           "writable": [
             "settled_at"
@@ -21143,7 +21134,6 @@
         "table:@follow_ups:update",
         "table:@activities:read",
         "table:@activities:create",
-        "table:@activities:update",
         "table:@lost_reasons:read",
         "table:@lost_reasons:create",
         "table:@lost_reasons:update",
@@ -21428,18 +21418,9 @@
           }
         },
         "activities": {
-          "writable": [
-            "deal_id",
-            "kind",
-            "text"
-          ],
           "rows": {
             "read": {
               "reach": "team"
-            },
-            "update": {
-              "reach": "own",
-              "by": "author_id"
             }
           }
         },
