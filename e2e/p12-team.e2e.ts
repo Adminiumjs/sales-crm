@@ -296,8 +296,11 @@ test("One-to-one notes: the ledger's record for Dana and Priya; a new session wi
   expect(made.find((action) => action.text.includes("layout"))!.due_on?.slice(0, 10)).toBe("2026-07-31");
   await expect(page.getByTestId("notes-open").locator(".crm-tw-action", { hasText: "Spec: send Fernway the full-floor layout" })).toContainText("Priya · due Fri, Jul 31");
 
+  // The session lists the two actions it set (T04: an action keeps its session).
+  await expect(page.locator(".crm-no-session").first().getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveCount(2);
+  expect(made.every((action) => (action as { session_id?: number | null }).session_id !== null)).toBe(true);
   // Ticked here, it is done on the server and moves under "Ticked off".
-  await tick(page, "Spec: Ivy rings the Fernway buyer").click();
+  await tick(page.getByTestId("notes-open"), "Spec: Ivy rings the Fernway buyer").click();
   await expect(page.locator(".crm-toast")).toHaveText("Done.");
   await expect(page.getByTestId("notes-open-count")).toHaveText("2 of 4");
   await expect(page.getByTestId("notes-done").getByRole("checkbox", { name: "Spec: Ivy rings the Fernway buyer" })).toBeChecked();
