@@ -23,6 +23,7 @@ export const callnotes = tables({
     "مكالمات اليوم",
   ],
   "call.last": ["Where we left it", "Wo wir stehen geblieben sind", "Où nous en étions", "Hvor vi slap", "Kde jsme skončili", "上次进展", "上次進展", "أين توقفنا"],
+  "call.asking": ["Worth asking", "Lohnende Fragen", "Questions à poser", "Værd at spørge om", "Stojí za otázku", "值得问的问题", "值得問的問題", "أسئلة تستحق الطرح"],
   "call.notes": ["Notes from the call", "Notizen zum Gespräch", "Notes de l’appel", "Noter fra opkaldet", "Poznámky z hovoru", "通话笔记", "通話筆記", "ملاحظات من المكالمة"],
   "call.marks": ["Mark a line", "Zeile markieren", "Marquer une ligne", "Markér en linje", "Označit řádek", "标记一行", "標記一行", "وسم سطر"],
   "call.mark.next": ["Next step", "Nächster Schritt", "Prochaine étape", "Næste skridt", "Další krok", "下一步", "下一步", "الخطوة التالية"],

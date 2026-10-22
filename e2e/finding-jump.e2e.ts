@@ -17,6 +17,7 @@ const palette = (page: Page) => page.getByRole("dialog", { name: "Jump" });
 const field = (page: Page) => palette(page).getByRole("combobox");
 const options = (page: Page) => palette(page).getByRole("option");
 const group = (page: Page, name: string) => palette(page).getByRole("group", { name, exact: true });
+const me = async (person: APIRequestContext): Promise<string> => ((await (await person.get(`${STAFF}surface-config.json`)).json()) as { user: { id: string } }).user.id;
 
 /** What the server answers this person for a name, as Jump asks it. */
 const named = async (person: APIRequestContext, data: Data, ref: string, typed: string, column = "name"): Promise<string[]> =>
@@ -231,6 +232,33 @@ test("Read-only: every deal her role reads, her own menu's screens, nothing to s
   const quotes = await rows<{ id: number }>(grace, data, "quotes", { or: [{ column: "family_no", op: "ilike", value: "%Q-100%" }, { column: "number", op: "ilike", value: "%Q-100%" }] });
   await expect(group(page, "Quotes").getByRole("option")).toHaveCount(Math.min(5, quotes.length));
   await page.keyboard.press("Escape");
+});
+
+test("in a deal's room Jump also edits the amount and closes the deal, only where the room's own buttons would (S4)", async ({ as, data }) => {
+  const context = await as("dana");
+  const page = await context.newPage();
+  const problems = watch(page);
+  // A deal of Dana's whose amount is typed, not a quote's: the room's own amount field is hers to open.
+  const typed = (await rows<{ id: number; name: string }>(context.request, data, "deals", { and: [{ column: "state", op: "eq", value: "open" }, { column: "quoted_amount", op: "is_null" }, { column: "owner_id", op: "eq", value: await me(context.request) }] }))[0]!;
+  await page.goto(`${STAFF}deals/${String(typed.id)}`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(typed.name);
+  await page.keyboard.press("Control+k");
+  await expect(group(page, "Actions").getByRole("option")).toContainText(["Edit the amount", "Close this deal…"]);
+  // Close this deal…: the board's own dialog, for this deal.
+  await group(page, "Actions").getByRole("option", { name: /Close this deal/ }).click();
+  await expect(page.getByRole("dialog", { name: "Close this deal" })).toContainText(typed.name);
+  await page.keyboard.press("Escape");
+  // Edit the amount: the room's own field opens.
+  await page.keyboard.press("Control+k");
+  await group(page, "Actions").getByRole("option", { name: /Edit the amount/ }).click();
+  await expect(page.getByRole("textbox", { name: "Amount", exact: true })).toBeFocused();
+  expect(problems).toEqual([]);
+  // Read-only opens the same room and is offered neither.
+  const graces = await (await as("grace")).newPage();
+  await graces.goto(`${STAFF}deals/${String(typed.id)}`);
+  await expect(graces.getByRole("heading", { level: 1 })).toHaveText(typed.name);
+  await graces.keyboard.press("Control+k");
+  await expect(group(graces, "Actions").getByRole("option")).not.toContainText(["Edit the amount", "Close this deal…"]);
 });
 
 test("390 wide, dark, and in Arabic: the palette fits and reads right to left", async ({ as, api }) => {

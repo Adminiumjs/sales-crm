@@ -170,6 +170,8 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["signed-copy-to", "jobs"],
       // A subcontractor's certificate asked for goes with Vehicles and crew (P25, e-mail 11).
       ["certificate-asked", "fleet"],
+      // A hand-over's introduction to the customer goes with Selling (S1).
+      ["handover-intro", "selling"],
     ]);
   });
 });
@@ -193,7 +195,7 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(quoted.rules?.["rollup"]).toBeUndefined();
     // The outgoing e-mails lose their link to a quote, and the quote's own e-mail.
     expect(kept.find((table) => table.ref === "outbox")!.columns.map((column) => column.ref)).not.toContain("quote_id");
-    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked"]);
+    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked", "handover-intro"]);
     expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "approval-asked", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked"]);
     // The visit's, the referral's, the showroom's and a delivery's e-mails still go, and read nothing of a quote.
     const templates = (left as unknown as { emailTemplates: { key: string }[] }).emailTemplates;

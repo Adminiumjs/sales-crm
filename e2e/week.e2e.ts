@@ -1,4 +1,4 @@
-import { unfoldMenu } from "./helpers.ts";
+import { csrf, rows, unfoldMenu } from "./helpers.ts";
 /**
  * P02, This week: the follow-ups due up to Sunday, a lane a day, with the
  * ledger's figures (§7 of `figures.md`): Mon 27 Jul to Sun 2 Aug, 7 follow-ups,
@@ -150,4 +150,52 @@ test("This week at 390 wide: the lanes scroll inside themselves, the page does n
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(await page.locator(".crm-lanes-scroll").evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
   await picture(page, "4-dana-week-390");
+});
+
+test("the week starts on the business's first day, and a narrowed week is kept as a view and opened again (S9, S7)", async ({ as, api, data }) => {
+  const tessa = await api("tessa");
+  const settings = (await rows<{ id: number; week_starts: string }>(tessa, data, "settings"))[0]!;
+  const startOn = async (day: string): Promise<void> => {
+    expect((await tessa.patch(data("settings", `/${String(settings.id)}`), { data: { values: { week_starts: day } }, headers: await csrf(tessa) })).status()).toBe(200);
+  };
+  try {
+    // S9: a business whose week starts on Sunday sees Sunday to Saturday; what is from before is "Before Sunday".
+    await startOn("sun");
+    const page = await (await as("dana")).newPage();
+    await page.goto(`${STAFF}week`);
+    await expect(page.locator(".crm-facts")).toContainText("Sun, Jul 26 — Sat, Aug 1");
+    await expect(lane(page, "2026-07-26")).toBeVisible();
+    await expect(lane(page, "2026-08-02")).toHaveCount(0);
+    await expect(lane(page, "before")).toContainText("Before Sunday");
+  } finally {
+    await startOn(settings.week_starts);
+  }
+
+  // S7: the sales manager narrows This week to one of her people and keeps it as a view; opened from Saved views, it is
+  // that person's week again.
+  const context = await as("ivy");
+  const ivy = context.request;
+  const page = await context.newPage();
+  await page.goto(`${STAFF}week`);
+  const person = page.locator(".crm-chips").getByRole("button").nth(1);
+  const first = (await person.innerText()).trim();
+  await person.click();
+  await page.getByTestId("viewbar-save").click();
+  const box = page.getByRole("dialog", { name: "Save this view" });
+  await expect(box.getByTestId("view-holds")).toHaveText(`It keeps: ${first}’s`);
+  await box.getByLabel("What to call it").fill("Spec: a person's week");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".crm-toast")).toHaveText("“Spec: a person's week” is saved. It is under Saved views.");
+  const view = (await rows<{ id: number; filters: unknown }>(ivy, data, "saved_views", { column: "name", op: "eq", value: "Spec: a person's week" }))[0]!;
+  try {
+    expect(JSON.parse(typeof view.filters === "string" ? view.filters : JSON.stringify(view.filters))).toMatchObject({ screen: "week" });
+    const fresh = await context.newPage();
+    await fresh.goto(`${STAFF}saved-views`);
+    await fresh.locator(`[data-view="${String(view.id)}"]`).filter({ hasText: "Spec: a person's week" }).getByRole("link").first().click();
+    await expect(fresh).toHaveURL(new RegExp(`/week/view/${String(view.id)}$`));
+    await expect(fresh.getByTestId("viewbar-showing")).toContainText("Spec: a person's week");
+    await expect(fresh.locator(".crm-chips").getByRole("button", { name: first, exact: true })).toHaveAttribute("aria-pressed", "true");
+  } finally {
+    expect((await ivy.delete(data("saved_views", `/${String(view.id)}?confirm=true`), { headers: await csrf(ivy) })).status()).toBeLessThan(300);
+  }
 });

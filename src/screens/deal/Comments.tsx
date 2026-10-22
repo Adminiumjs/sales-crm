@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { kitCommon } from "../../kitParts.ts";
+import { formatters } from "../../lib/format.ts";
 import { scopeOf } from "../../selling/figures.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
@@ -26,6 +27,7 @@ import { KitPart } from "../../ui/kit.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
+import { whenOf } from "../inbox/parts.tsx";
 import { readNames } from "../quotes/data.ts";
 import { mentioned, mentionParts, readComments, threadsOf, type Comment } from "./data.ts";
 import { NoDeal } from "./Room.tsx";
@@ -102,7 +104,9 @@ function Words({ text }: { text: string }) {
 
 export function Comments({ id }: { id: string }) {
   const t = useT();
+  const { locale } = useI18n();
   const session = useSession();
+  const f = useMemo(() => formatters({ locale, currency: session.config.currency, timeZone: session.config.timezone ?? session.config.serverTimezone }), [locale, session]);
   const toasts = useToasts();
   const key = Number(id);
   const me = session.config.user?.id ?? null;
@@ -228,6 +232,7 @@ export function Comments({ id }: { id: string }) {
                         <div className="crm-cmt-body">
                           <div className="crm-cmt-head">
                             <span className="crm-cmt-who">{author}</span>
+                            {typeof thread.first.at === "string" && <span className="crm-cmt-when crm-mono">{whenOf(thread.first.at, session.now(), f, t)}</span>}
                             {settled && (
                               <span className="crm-pill" data-tone="pos" data-testid="cmt-settled">
                                 {thread.first.settled_by_id === null ? t("cmt.settled") : t("cmt.settledBy", { name: nameOf(thread.first.settled_by_id) })}
@@ -253,6 +258,7 @@ export function Comments({ id }: { id: string }) {
                               <div className="crm-cmt-body">
                                 <div className="crm-cmt-head">
                                   <span className="crm-cmt-who">{nameOf(one.author_id)}</span>
+                                  {typeof one.at === "string" && <span className="crm-cmt-when crm-mono">{whenOf(one.at, session.now(), f, t)}</span>}
                                 </div>
                                 <Words text={one.text} />
                               </div>

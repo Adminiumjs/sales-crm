@@ -78,8 +78,8 @@ describe("what the screens ask the server", () => {
     const figures = await readWeekFigures(session, "2026-07-20", 40);
     expect(figures).toMatchObject({ onJob: 5, travel: 5, sheets: 5, toSign: 5, over: 5, lines: 5, onAJob: 5, daysOff: 5, byJob: [{ label: "J-07", count: 2 }] });
     expect(asked.map((figure) => figure.table)).toEqual(["time_sheets", "time_sheets", "time_sheets", "time_sheets", "time_sheets", "time_sheet_lines", "time_sheet_lines", "time_sheet_lines", "time_sheet_lines"]);
-    expect(asked[0]).toMatchObject({ filters: [{ column: "week_of", op: "eq", value: "2026-07-20" }], aggregations: [{ fn: "sum", column: "hours_total" }] });
-    expect(asked[4]).toMatchObject({ filters: [{ column: "week_of", op: "eq", value: "2026-07-20" }, { column: "total_hours", op: "gt", value: 40 }] });
+    expect(asked[0]).toMatchObject({ filters: [{ column: "week_of", op: "between", value: ["2026-07-20", "2026-07-26"] }], aggregations: [{ fn: "sum", column: "hours_total" }] });
+    expect(asked[4]).toMatchObject({ filters: [{ column: "week_of", op: "between", value: ["2026-07-20", "2026-07-26"] }, { column: "total_hours", op: "gt", value: 40 }] });
     expect(asked[5]).toMatchObject({ filters: [{ column: "day", op: "between", value: ["2026-07-20", "2026-07-26"] }] });
     expect(asked[8]).toMatchObject({ groupBy: ["job_id"], groupLabel: "job_id.code" });
   });

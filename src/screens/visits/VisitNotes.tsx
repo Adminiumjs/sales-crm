@@ -6,8 +6,8 @@
  * (made with a key the first time, so a lost reply makes one write-up). Each
  * agreed point is its own row, saved as it is added and removed as it is
  * taken off. The first save also marks the visit as made, which is what
- * keeps it from being removed afterwards. The "what to capture" ticks are a
- * list to write by: they are not kept.
+ * keeps it from being removed afterwards. The "what to capture" ticks are
+ * kept with the write-up (one yes/no column each, saved by the same button: D6).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -21,6 +21,7 @@ import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { initials } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { truthy } from "../teamwork/data.ts";
 import { isWritten, readNames, readWriteUp, type Agreed, type Note, type WriteUp } from "./data.ts";
 
 const CAPTURE = ["access", "floor", "power", "existing", "timing"] as const;
@@ -96,6 +97,8 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
     if (!touched.current) setDraft({ saw: note?.saw ?? "", said: note?.said ?? "", next: note?.next ?? "" });
   }, [note]);
   const [ticks, setTicks] = useState<Record<string, boolean>>({});
+  /** A tick as the person left it on screen, else as the write-up keeps it. */
+  const tickOf = (key: (typeof CAPTURE)[number]): boolean => ticks[key] ?? truthy(note?.[`cap_${key}`]);
   const [point, setPoint] = useState("");
   const [queue, setQueue] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -103,11 +106,16 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
   const keys = useRef({ note: newClientKey(), step: newClientKey(), point: newClientKey() });
 
   const typed = FIELDS.some((field) => draft[field].trim() !== "");
-  const dirty = FIELDS.some((field) => draft[field].trim() !== (note?.[field] ?? "").trim());
+  const dirty = FIELDS.some((field) => draft[field].trim() !== (note?.[field] ?? "").trim()) || CAPTURE.some((key) => ticks[key] !== undefined && ticks[key] !== truthy(note?.[`cap_${key}`]));
 
   /** The write-up's own row: made the first time, changed after. Answers the row, or null with the reason on screen. */
   const saveNote = useCallback(async (): Promise<Note | null> => {
-    const values = { saw: draft.saw.trim() === "" ? null : draft.saw.trim(), said: draft.said.trim() === "" ? null : draft.said.trim(), next: draft.next.trim() === "" ? null : draft.next.trim() };
+    const values = {
+      saw: draft.saw.trim() === "" ? null : draft.saw.trim(),
+      said: draft.said.trim() === "" ? null : draft.said.trim(),
+      next: draft.next.trim() === "" ? null : draft.next.trim(),
+      ...Object.fromEntries(CAPTURE.map((key) => [`cap_${key}`, tickOf(key)])),
+    };
     const saved = note === null ? await session.create<Note>("visit_notes", { visit_id: visit.id, ...values }, keys.current.note) : await session.update<Note>("visit_notes", note.id, values);
     if (saved.state === "saved") {
       touched.current = false;
@@ -117,7 +125,7 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
     }
     setError(saved.state === "refused" ? t("ui.refused", { reason: reasonOf(saved.error, t) }) : t("ui.unknown"));
     return null;
-  }, [draft, note, session, visit, t]);
+  }, [draft, note, session, visit, t, ticks]); // eslint-disable-line react-hooks/exhaustive-deps -- tickOf reads ticks and note
 
   const save = async (): Promise<void> => {
     if (!canWrite || !typed || busy) return;
@@ -163,7 +171,7 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
     reload();
   };
 
-  const ticked = CAPTURE.filter((key) => ticks[key] ?? written).length;
+  const ticked = CAPTURE.filter((key) => tickOf(key)).length;
   const ago = f.dayDiff(at, now);
   const repName = names[visit.rep_id] ?? "";
   const earlier = data.past.filter((one) => one.id !== visit.id && isWritten(one));
@@ -222,7 +230,7 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
                 <p className="crm-field-note">{t("visits.notes.capture.hint")}</p>
                 <div className="crm-vn-capture">
                   {CAPTURE.map((key) => {
-                    const on = ticks[key] ?? written;
+                    const on = tickOf(key);
                     return (
                       <button key={key} type="button" role="checkbox" aria-checked={on} className="crm-vn-tick mr-row" onClick={() => setTicks((was) => ({ ...was, [key]: !on }))}>
                         <span className="crm-vn-box" aria-hidden="true">

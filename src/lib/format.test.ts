@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatters, monthOf, weekOf } from "./format.ts";
+import { formatters, monthOf, setWeekStart, weekOf } from "./format.ts";
 
 const LONDON = { locale: "en-GB", currency: "GBP", timeZone: "Europe/London" };
 const at = (iso: string) => new Date(iso);
@@ -65,6 +65,22 @@ describe("the month and the week a day is in", () => {
     expect(weekOf("2026-07-28")).toEqual(["2026-07-27", "2026-08-03"]);
     expect(weekOf("2026-08-02")).toEqual(["2026-07-27", "2026-08-03"]);
     expect(weekOf("2026-07-27")).toEqual(["2026-07-27", "2026-08-03"]);
+  });
+
+  it("starts the week on the business's first day once Settings says one (plan 68 S9), and on Monday for anything else", () => {
+    try {
+      setWeekStart("sun");
+      // Tue 28 Jul 2026 is in the week of Sun 26 Jul; Sun 2 Aug starts the next.
+      expect(weekOf("2026-07-28")).toEqual(["2026-07-26", "2026-08-02"]);
+      expect(weekOf("2026-08-01")).toEqual(["2026-07-26", "2026-08-02"]);
+      expect(weekOf("2026-08-02")).toEqual(["2026-08-02", "2026-08-09"]);
+      setWeekStart("sat");
+      expect(weekOf("2026-07-28")).toEqual(["2026-07-25", "2026-08-01"]);
+      setWeekStart("nonsense");
+      expect(weekOf("2026-07-28")).toEqual(["2026-07-27", "2026-08-03"]);
+    } finally {
+      setWeekStart("mon");
+    }
   });
 });
 

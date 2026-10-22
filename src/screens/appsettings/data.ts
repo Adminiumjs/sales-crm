@@ -161,7 +161,20 @@ export interface StageRow extends Record<string, unknown> {
   label: string;
   odds: number | string;
   position: number;
+  /** Up to five questions, one a line, that Call notes offers for a deal at this stage (plan 68 S11). */
+  worth_asking?: string | null;
 }
+
+/** The most "worth asking" questions a stage holds, and the longest one. */
+export const ASKING_MAX = 5;
+export const ASKING_LENGTH = 160;
+/** A stage's questions, one a line: the empty lines left out, and no more than five. */
+export const askingOf = (text: string | null | undefined): string[] =>
+  (text ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "")
+    .slice(0, ASKING_MAX);
 export interface ReasonRow extends Record<string, unknown> {
   id: number;
   label: string;
@@ -210,7 +223,7 @@ export async function readSelling(session: StaffSession, f: Formatters): Promise
   const today = f.dayKey(session.now());
   const [settings, stages, reasons] = await Promise.all([
     readSettings(session),
-    session.list<StageRow>("stages", { select: ["id", "label", "odds", "position"], order: ["position", "id"], limit: 50 }).then((page) => page.rows),
+    session.list<StageRow>("stages", { select: ["id", "label", "odds", "position", "worth_asking"], order: ["position", "id"], limit: 50 }).then((page) => page.rows),
     session.list<ReasonRow>("lost_reasons", { select: ["id", "label", "position"], order: ["position", "id"], limit: 50 }).then((page) => page.rows),
   ]);
   const days = (column: string, fallback: number): number => num(settings?.[column]) || fallback;

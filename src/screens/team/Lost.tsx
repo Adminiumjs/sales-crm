@@ -9,7 +9,7 @@
  * named as a tie. The design's typed commentary ("up since spring", "the
  * pattern", "what to try") is not drawn: nothing in the data says it.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { noonOf } from "../../lib/format.ts";
@@ -22,6 +22,7 @@ import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { noValue } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { byKey, cellsOf, largest, monthsBack, num, peopleOf, stagesOf, toneOf, useScreen, type Matrix, type People, type Stage } from "./data.ts";
 
 const WINDOWS = [3, 6, 12] as const;
@@ -99,20 +100,29 @@ const readWindow = (text: string | undefined): Months => (WINDOWS.find((months) 
 
 export function Lost(props: ScreenProps) {
   const reason = props.rest[0];
-  return reason === undefined ? <LostView /> : <OneReason reason={reason} months={readWindow(props.rest[1])} />;
+  // `why-we-lose/view/<id>` is a saved view of the whole screen (S7), not a reason.
+  return reason === undefined || reason === "view" ? <LostView rest={props.rest} /> : <OneReason reason={reason} months={readWindow(props.rest[1])} />;
 }
 
-function LostView() {
+function LostView({ rest }: { rest: readonly string[] }) {
   const t = useT();
   const { session, f } = useScreen();
   const today = useMemo(() => f.dayKey(session.now()), [f, session]);
   const [months, setMonths] = useState<Months>(12);
+  const view = useSavedView("lost", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    const asked = view.state === "ready" ? view.view.filters.months : undefined;
+    if (WINDOWS.includes(asked as Months)) setMonths(asked as Months);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const from = monthsBack(today, months);
   const { load, reload } = useLoad(() => readLost(session, from, today), [session, from, today]);
   useLive(["deals"], reload);
 
   return (
     <div className="crm-screen crm-lost mr-screen" data-screen="lost">
+      <ViewBar screen="lost" view={view} current={{ months }} names={{}} />
       <div className="crm-screen-head">
         <div>
           <h1>{t("lost.title")}</h1>

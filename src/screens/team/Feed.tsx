@@ -16,7 +16,7 @@
  * WHO ADDS UP. A kind's count is the server's. "Everything" carries no
  * count: it would be three tables' counts added here.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
@@ -24,6 +24,8 @@ import { Icon } from "../../shell/icons.tsx";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
+import type { ScreenProps } from "../../shell/screens.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { byKey, num, OPEN, peopleOf, useScreen, type People } from "./data.ts";
 
 const PAGE = 20;
@@ -120,13 +122,23 @@ async function read(session: StaffSession, type: Type, who: string | null, upTo:
   return { people, entries: entries.slice(0, upTo), more: held || entries.length > upTo, counts, cut: deals.cut };
 }
 
-export function Feed() {
+export function Feed({ rest = [] }: Partial<ScreenProps>) {
   const t = useT();
   const { session, f } = useScreen();
   const me = session.config.user?.id ?? null;
   const [now, setNow] = useState(() => session.now());
   const [type, setType] = useState<Type>("all");
   const [who, setWho] = useState<string | null>(null);
+  // `activity/view/<id>`: the kind of line and the person a saved view names (S7).
+  const view = useSavedView("feed", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state !== "ready") return;
+    setWho(view.view.filters.rep ?? null);
+    const kind = view.view.filters.type;
+    setType(TYPES.includes(kind as Type) ? (kind as Type) : "all");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const [upTo, setUpTo] = useState(PAGE);
   const { load, reload } = useLoad(() => read(session, type, who, upTo), [session, type, who, upTo]);
   const again = useCallback(() => {
@@ -139,6 +151,7 @@ export function Feed() {
 
   return (
     <div className="crm-screen crm-feed mr-screen" data-screen="feed">
+      <ViewBar screen="feed" view={view} current={{ ...(who === null ? {} : { rep: who }), ...(type === "all" ? {} : { type }) }} names={load.state === "ready" ? load.data.people.names : {}} />
       <div className="crm-screen-head">
         <div>
           <h1>{t("feed.title")}</h1>

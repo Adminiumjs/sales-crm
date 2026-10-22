@@ -27,7 +27,7 @@ import { readNames } from "../visits/data.ts";
 import { mayChangeView, readViews, screenOf, viewFigure, type SavedView, type Stage, type ViewFigure, type ViewScreen } from "./data.ts";
 import { rulesOf } from "./savedView.tsx";
 
-const SCREEN_ICON: Record<ViewScreen, string> = { pipeline: "columns-3", archive: "folder-clock", quotes: "file-text", visits: "map-pin", team: "users" };
+const SCREEN_ICON: Record<ViewScreen, string> = { pipeline: "columns-3", archive: "folder-clock", quotes: "file-text", visits: "map-pin", team: "users", week: "calendar-range", health: "activity", feed: "history", lost: "circle-slash" };
 
 export function Views(_props: ScreenProps) {
   const t = useT();

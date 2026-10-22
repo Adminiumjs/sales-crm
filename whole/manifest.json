@@ -114,6 +114,26 @@
             }
           },
           {
+            "ref": "worth_asking",
+            "type": "text",
+            "nullable": true,
+            "label": {
+              "en-US": "Worth asking",
+              "de-DE": "Lohnende Fragen",
+              "fr-FR": "Questions à poser",
+              "da-DK": "Værd at spørge om",
+              "cs-CZ": "Stojí za otázku",
+              "ar-EG": "أسئلة تستحق الطرح",
+              "zh-CN": "值得问的问题",
+              "zh-TW": "值得問的問題"
+            },
+            "rules": {
+              "validation": {
+                "maxLength": 820
+              }
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -323,7 +343,8 @@
                 "open"
               ],
               "ask": [
-                "owner_id"
+                "owner_id",
+                "introduce"
               ],
               "handOver": true
             }
@@ -354,6 +375,12 @@
               "ar-EG": "الاسم",
               "zh-CN": "名称",
               "zh-TW": "名稱"
+            },
+            "rules": {
+              "plainText": {
+                "digits": 12,
+                "max": 120
+              }
             }
           },
           {
@@ -401,6 +428,16 @@
               "ar-EG": "جهة الاتصال",
               "zh-CN": "联系人",
               "zh-TW": "聯絡人"
+            },
+            "rules": {
+              "linkable": {
+                "same": [
+                  {
+                    "column": "company_id",
+                    "as": "company_id"
+                  }
+                ]
+              }
             }
           },
           {
@@ -419,6 +456,21 @@
               "ar-EG": "المسؤول",
               "zh-CN": "负责人",
               "zh-TW": "負責人"
+            }
+          },
+          {
+            "ref": "introduce",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Introduce the new owner",
+              "de-DE": "Neue Verantwortliche vorstellen",
+              "fr-FR": "Présenter le nouveau responsable",
+              "da-DK": "Præsentér den nye ansvarlige",
+              "cs-CZ": "Představit nového vlastníka",
+              "ar-EG": "تقديم المسؤول الجديد",
+              "zh-CN": "介绍新负责人",
+              "zh-TW": "介紹新負責人"
             }
           },
           {
@@ -3346,6 +3398,16 @@
               "ar-EG": "أُرسل إلى",
               "zh-CN": "发送给",
               "zh-TW": "送出對象"
+            },
+            "rules": {
+              "linkable": {
+                "same": [
+                  {
+                    "column": "company_id",
+                    "as": "deal_id.company_id"
+                  }
+                ]
+              }
             }
           },
           {
@@ -4466,6 +4528,27 @@
             }
           },
           {
+            "ref": "at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Written",
+              "de-DE": "Geschrieben",
+              "fr-FR": "Écrit le",
+              "da-DK": "Skrevet",
+              "cs-CZ": "Napsáno",
+              "ar-EG": "كُتب في",
+              "zh-CN": "写于",
+              "zh-TW": "寫於"
+            },
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            }
+          },
+          {
             "ref": "settled_by_id",
             "type": "text",
             "maxLength": 36,
@@ -5511,6 +5594,16 @@
               "ar-EG": "جهة الاتصال",
               "zh-CN": "联系人",
               "zh-TW": "聯絡人"
+            },
+            "rules": {
+              "linkable": {
+                "same": [
+                  {
+                    "column": "company_id",
+                    "as": "deal_id.company_id"
+                  }
+                ]
+              }
             }
           },
           {
@@ -5809,6 +5902,81 @@
               "ar-EG": "ما التالي",
               "zh-CN": "后续安排",
               "zh-TW": "後續安排"
+            }
+          },
+          {
+            "ref": "cap_access",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Access and the lift",
+              "de-DE": "Zugang und Aufzug",
+              "fr-FR": "Accès et ascenseur",
+              "da-DK": "Adgang og elevator",
+              "cs-CZ": "Přístup a výtah",
+              "zh-CN": "进场通道和电梯",
+              "zh-TW": "進場動線和電梯",
+              "ar-EG": "الدخول والمصعد"
+            }
+          },
+          {
+            "ref": "cap_floor",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Floor levels and finish",
+              "de-DE": "Bodenhöhen und Belag",
+              "fr-FR": "Niveaux et revêtement du sol",
+              "da-DK": "Gulvniveauer og belægning",
+              "cs-CZ": "Úrovně a povrch podlahy",
+              "zh-CN": "地面标高和面层",
+              "zh-TW": "地面高程和面材",
+              "ar-EG": "مناسيب الأرضية وتشطيبها"
+            }
+          },
+          {
+            "ref": "cap_power",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Power and data",
+              "de-DE": "Strom und Daten",
+              "fr-FR": "Électricité et réseau",
+              "da-DK": "Strøm og data",
+              "cs-CZ": "Elektřina a data",
+              "zh-CN": "电源和网络",
+              "zh-TW": "電源和網路",
+              "ar-EG": "الكهرباء والبيانات"
+            }
+          },
+          {
+            "ref": "cap_existing",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "What is already in there",
+              "de-DE": "Was schon vorhanden ist",
+              "fr-FR": "Ce qui est déjà en place",
+              "da-DK": "Hvad der allerede står der",
+              "cs-CZ": "Co už tam je",
+              "zh-CN": "现场已有的东西",
+              "zh-TW": "現場已有的東西",
+              "ar-EG": "ما هو موجود بالفعل"
+            }
+          },
+          {
+            "ref": "cap_timing",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "When we can be on site",
+              "de-DE": "Wann wir vor Ort sein können",
+              "fr-FR": "Quand nous pouvons être sur place",
+              "da-DK": "Hvornår vi kan være på stedet",
+              "cs-CZ": "Kdy můžeme být na místě",
+              "zh-CN": "我们何时可以进场",
+              "zh-TW": "我們何時可以進場",
+              "ar-EG": "متى يمكننا التواجد في الموقع"
             }
           },
           {
@@ -21119,7 +21287,8 @@
             "lost_reason_id",
             "close_note",
             "typed_amount",
-            "list_value"
+            "list_value",
+            "introduce"
           ],
           "creatable": [
             "name",
@@ -21903,7 +22072,8 @@
             "lost_reason_id",
             "close_note",
             "typed_amount",
-            "list_value"
+            "list_value",
+            "introduce"
           ],
           "creatable": [
             "name",
@@ -27249,6 +27419,51 @@
         "replyTo": {
           "staff": "chased_by_id"
         }
+      },
+      {
+        "kind": "handover-intro",
+        "module": "selling",
+        "link": "deal_id",
+        "onChange": {
+          "table": "deals",
+          "columns": [
+            "owner_id"
+          ],
+          "changed": true,
+          "where": {
+            "column": "introduce",
+            "eq": true
+          }
+        },
+        "was": [
+          "owner_id"
+        ],
+        "repeatBy": "owner_id",
+        "holdSeconds": 900,
+        "dropWhen": [
+          {
+            "column": "introduce",
+            "eq": false,
+            "reason": "no-longer-needed"
+          },
+          {
+            "column": "state",
+            "in": [
+              "won",
+              "lost"
+            ],
+            "reason": "no-longer-needed"
+          }
+        ],
+        "onSent": {
+          "table": "deals",
+          "set": {
+            "introduce": false
+          }
+        },
+        "replyTo": {
+          "staff": "owner_id"
+        }
       }
     ],
     "settings": {
@@ -27952,192 +28167,379 @@
       "name": "Handover introduction",
       "vars": [
         "deal.name",
-        "contact.name"
+        "deal.owner_id.name",
+        "was.owner_id.name",
+        "recipient.first_name",
+        "practice.office_phone"
       ],
       "locales": {
         "en-US": {
-          "subject": "A new contact for {{deal.name}}",
+          "subject": "Introducing {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "A new contact for you"
+                "text": "Meet {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Hello {{contact.name}}, from today a colleague looks after {{deal.name}} for you."
+                "text": "Hello {{recipient.first_name}}, from today {{deal.owner_id.name}} looks after {{deal.name}}."
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Nothing changes in what was agreed. They will be in touch this week."
+                "text": "{{was.owner_id.name}} stays in the loop.",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Name",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "Phone",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "To write to {{deal.owner_id.name}}, reply to this email."
               }
             }
-          ]
+          ],
+          "footer": "You got this because {{deal.owner_id.name}} now looks after your work with us."
         },
         "de-DE": {
-          "subject": "Neue Ansprechperson für {{deal.name}}",
+          "subject": "Wir stellen vor: {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "Eine neue Ansprechperson für Sie"
+                "text": "Das ist {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Guten Tag {{contact.name}}, ab heute betreut eine Kollegin oder ein Kollege {{deal.name}} für Sie."
+                "text": "Guten Tag {{recipient.first_name}}, ab heute betreut {{deal.owner_id.name}} {{deal.name}}."
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "An dem Vereinbarten ändert sich nichts. Sie meldet sich diese Woche bei Ihnen."
+                "text": "{{was.owner_id.name}} bleibt auf dem Laufenden.",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Name",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "Telefon",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Um {{deal.owner_id.name}} zu schreiben, antworten Sie auf diese E-Mail."
               }
             }
-          ]
+          ],
+          "footer": "Sie erhalten diese E-Mail, weil {{deal.owner_id.name}} jetzt Ihre Zusammenarbeit mit uns betreut."
         },
         "fr-FR": {
-          "subject": "Un nouvel interlocuteur pour {{deal.name}}",
+          "subject": "Nous vous présentons {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "Un nouvel interlocuteur pour vous"
+                "text": "Voici {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Bonjour {{contact.name}}, à partir d’aujourd’hui un collègue s’occupe de {{deal.name}} pour vous."
+                "text": "Bonjour {{recipient.first_name}}, à partir d’aujourd’hui {{deal.owner_id.name}} s’occupe de {{deal.name}}."
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Rien ne change à ce qui a été convenu. Il vous contactera cette semaine."
+                "text": "{{was.owner_id.name}} reste informé.",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Nom",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "Téléphone",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Pour écrire à {{deal.owner_id.name}}, répondez à cet e-mail."
               }
             }
-          ]
+          ],
+          "footer": "Vous recevez ce message parce que {{deal.owner_id.name}} suit désormais votre collaboration avec nous."
         },
         "da-DK": {
-          "subject": "Ny kontaktperson for {{deal.name}}",
+          "subject": "Vi præsenterer {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "En ny kontaktperson til dig"
+                "text": "Mød {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Hej {{contact.name}}, fra i dag tager en kollega sig af {{deal.name}} for dig."
+                "text": "Hej {{recipient.first_name}}, fra i dag tager {{deal.owner_id.name}} sig af {{deal.name}}."
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Der ændres intet i det aftalte. Du hører fra vedkommende i denne uge."
+                "text": "{{was.owner_id.name}} holdes orienteret.",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Navn",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "Telefon",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Svar på denne e-mail for at skrive til {{deal.owner_id.name}}."
               }
             }
-          ]
+          ],
+          "footer": "Du får denne e-mail, fordi {{deal.owner_id.name}} nu tager sig af dit samarbejde med os."
         },
         "cs-CZ": {
-          "subject": "Nový kontakt pro {{deal.name}}",
+          "subject": "Představujeme: {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "Nový kontakt pro vás"
+                "text": "Seznamte se: {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Dobrý den, {{contact.name}}, ode dneška se o {{deal.name}} stará kolega."
+                "text": "Dobrý den, {{recipient.first_name}}, ode dneška má {{deal.name}} na starosti {{deal.owner_id.name}}."
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "Na tom, co bylo domluveno, se nic nemění. Ozve se vám tento týden."
+                "text": "{{was.owner_id.name}} zůstává v obraze.",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Jméno",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "Telefon",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Chcete-li napsat {{deal.owner_id.name}}, odpovězte na tento e-mail."
               }
             }
-          ]
+          ],
+          "footer": "Tento e-mail dostáváte, protože vaši spolupráci s námi má nyní na starosti {{deal.owner_id.name}}."
         },
         "ar-EG": {
-          "subject": "جهة اتصال جديدة بخصوص {{deal.name}}",
+          "subject": "نقدّم لك {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "جهة اتصال جديدة لك"
+                "text": "تعرّف على {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "مرحبًا {{contact.name}}، من اليوم يتولى زميل متابعة {{deal.name}} معك."
+                "text": "مرحبًا {{recipient.first_name}}، من اليوم يتولى {{deal.owner_id.name}} متابعة {{deal.name}}."
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "لا يتغير شيء مما اتُّفق عليه. سيتواصل معك هذا الأسبوع."
+                "text": "ويبقى {{was.owner_id.name}} على اطلاع.",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "الاسم",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "الهاتف",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "للكتابة إلى {{deal.owner_id.name}}، ردّ على هذه الرسالة."
               }
             }
-          ]
+          ],
+          "footer": "وصلتك هذه الرسالة لأن {{deal.owner_id.name}} يتولى الآن متابعة عملك معنا."
         },
         "zh-CN": {
-          "subject": "{{deal.name}} 的新联系人",
+          "subject": "为您介绍 {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "为您安排了新的联系人"
+                "text": "认识一下 {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "{{contact.name}}，您好，从今天起由一位同事为您跟进 {{deal.name}}。"
+                "text": "{{recipient.first_name}}，您好！从今天起，{{deal.name}} 由 {{deal.owner_id.name}} 负责。"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "已商定的内容不变。同事将在本周与您联系。"
+                "text": "{{was.owner_id.name}} 会继续了解进展。",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "姓名",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "电话",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需联系 {{deal.owner_id.name}}，直接回复这封邮件即可。"
               }
             }
-          ]
+          ],
+          "footer": "您收到这封邮件，是因为 {{deal.owner_id.name}} 现在负责与您的合作。"
         },
         "zh-TW": {
-          "subject": "{{deal.name}} 的新聯絡人",
+          "subject": "為您介紹 {{deal.owner_id.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "data": {
-                "text": "為您安排了新的聯絡人"
+                "text": "認識一下 {{deal.owner_id.name}}"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "{{contact.name}} 您好，自今日起由一位同事為您跟進 {{deal.name}}。"
+                "text": "{{recipient.first_name}}，您好！從今天起，{{deal.name}} 由 {{deal.owner_id.name}} 負責。"
               }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "已約定的內容不變。同事將於本週與您聯絡。"
+                "text": "{{was.owner_id.name}} 會繼續了解進度。",
+                "onlyWith": "was.owner_id.name"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "data": {
+                "lines": [
+                  {
+                    "label": "姓名",
+                    "amount": "{{deal.owner_id.name}}"
+                  },
+                  {
+                    "label": "電話",
+                    "amount": "{{practice.office_phone}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "如需聯絡 {{deal.owner_id.name}}，直接回覆這封郵件即可。"
               }
             }
-          ]
+          ],
+          "footer": "您收到這封郵件，是因為 {{deal.owner_id.name}} 現在負責與您的合作。"
         }
       }
     },

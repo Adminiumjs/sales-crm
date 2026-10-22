@@ -26,6 +26,7 @@ import { homeFor, menuFor, type MenuFacts, type PartId } from "../../shell/route
 import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import type { StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { useToasts } from "../../ui/toast.tsx";
 
 interface Step extends Record<string, unknown> {
@@ -83,7 +84,7 @@ interface Lane {
   items: Step[];
 }
 
-export function Week(_props: ScreenProps) {
+export function Week({ rest }: ScreenProps) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();
@@ -101,6 +102,13 @@ export function Week(_props: ScreenProps) {
   useLive(["follow_ups", "deals"], again);
 
   const [who, setWho] = useState<string | null>(null);
+  // `week/view/<id>`: narrowed to the person a saved view names (S7).
+  const view = useSavedView("week", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state === "ready") setWho(view.view.filters.rep ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const [drag, setDrag] = useState<number | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const [moving, setMoving] = useState<number | null>(null);
@@ -184,6 +192,7 @@ export function Week(_props: ScreenProps) {
   return (
     <div className="crm-week mr-screen" data-screen="week">
       <div className="crm-screen crm-week-head">
+        <ViewBar screen="week" view={view} current={who === null ? {} : { rep: who }} names={names} />
         <div className="crm-screen-head">
           <div>
             <h1>{t("week.title")}</h1>

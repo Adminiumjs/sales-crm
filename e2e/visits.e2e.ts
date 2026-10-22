@@ -459,9 +459,15 @@ test("Dana writes up the visit that waits on its notes; her manager's open page 
   await page.getByLabel("What they said").fill("Spec: Bea wants six pods by the windows.");
   await page.getByLabel("What happens next").fill("Spec: send Bea the pod layout");
   await page.getByRole("switch", { name: "Put the next step in my queue" }).click();
+  // Two of the five "what to capture" ticks, kept with the write-up (S10).
+  await page.getByRole("checkbox", { name: "Access and the lift" }).click();
+  await page.getByRole("checkbox", { name: "Power and data" }).click();
+  await expect(page.getByText("2 of 5")).toBeVisible();
   await save.click();
   await expect(page.locator(".crm-toast")).toHaveText(/^Write-up saved for Low Orbit\. The next step is in your queue for Thu, Jul 30, 10:00\.$/);
   await expect(page.getByTestId("notes-state")).toHaveText("Written up");
+  const kept = (await rows<Record<string, unknown>>(context.request, data, "visit_notes", { column: "visit_id", op: "eq", value: visit.id }))[0]!;
+  expect(["cap_access", "cap_floor", "cap_power", "cap_existing", "cap_timing"].map((key) => kept[key] === true || kept[key] === 1)).toEqual([true, false, true, false, false]);
   // An agreed point is its own row, saved as it is added.
   await page.getByLabel("Add what you both agreed…").fill("Spec: six pods, not eight");
   await page.keyboard.press("Enter");

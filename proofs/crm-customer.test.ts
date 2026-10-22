@@ -312,8 +312,9 @@ for (const [dialect, reachable] of LEGS) {
       const named = (real: string) => names.find((ref) => ref === real || ref.startsWith(`${real}_`))!;
       refs = { quotes: named(s.real('quotes')), lines: named(s.real('quote_lines')) };
       item = made(await post('ivy', 'price_list', { name: 'Stacking chair', list_rate: 100 }));
-      contact = Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE email IS NOT NULL ORDER BY id`))['id']);
       deal = Number((await one(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id`))['id']);
+      // A contact of the deal's own company, with an address: a quote names nobody else (S6).
+      contact = Number((await one(`SELECT c.id FROM ${s.real('contacts')} c JOIN ${s.real('deals')} d ON d.company_id = c.company_id WHERE d.id = ${String(deal)} AND c.email IS NOT NULL ORDER BY c.id`))['id']);
     }, 600_000);
     afterAll(async () => {
       await s?.close();

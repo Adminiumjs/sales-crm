@@ -25,6 +25,7 @@ import { appName } from "../../i18n/ambient.ts";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
+import { askingOf } from "../appsettings/data.ts";
 import { ScreenLink } from "../../shell/nav.tsx";
 import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
@@ -198,6 +199,20 @@ export function Call({ id }: { id: string }) {
                 </ol>
               )}
             </section>
+            {askingOf(data.deal.asking).length > 0 && (
+              // What the sales manager wrote for this stage (S11): pressed, it starts a line of the notes.
+              <section className="crm-side-card" aria-labelledby="crm-call-asking" data-testid="call-asking">
+                <h2 id="crm-call-asking">{t("call.asking")}</h2>
+                <div className="crm-call-asking">
+                  {askingOf(data.deal.asking).map((question) => (
+                    <button key={question} type="button" className="crm-call-ask mr-row" disabled={!canLog} onClick={() => setNotes((was) => `${was.replace(/\s*$/, "")}${was.trim() === "" ? "" : "\n"}${question} `)}>
+                      <Icon name="plus" size={14} />
+                      <span>{question}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
           <div className="crm-call-main">

@@ -69,6 +69,8 @@ export function callText(opening: string | null, notes: string): string {
 
 export interface CallDeal extends Deal {
   stage: string | null;
+  /** The questions the stage's "worth asking" holds, one a line (S11). */
+  asking?: string | null;
 }
 
 /** One of the person's deals with a call lined up today or overdue: the chips at the top. */
@@ -92,7 +94,7 @@ export interface CallData {
  * answers no such deal for this reader (not there, or not theirs).
  */
 export async function readCall(session: StaffSession, id: number, endOfToday: string): Promise<CallData | null> {
-  const deal = await session.get<CallDeal>("deals", id, { lookup: [...DEAL_LOOKUPS, "stage:stage_id.label"] });
+  const deal = await session.get<CallDeal>("deals", id, { lookup: [...DEAL_LOOKUPS, "stage:stage_id.label", "asking:stage_id.worth_asking"] });
   if (deal === null) return null;
   const me = session.config.user?.id ?? null;
   const [last, people, queue] = await Promise.all([

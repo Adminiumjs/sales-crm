@@ -488,6 +488,29 @@ for (const [dialect, reachable] of LEGS) {
       expect([Boolean(Number(ada['may_email'])), ada['may_email_by_id'], ada['may_email_at'] === null]).toEqual([true, s.id['dana'], false]);
     });
 
+    it('S6: a deal\'s, a visit\'s and a quote\'s contact works for the deal\'s company, and a deal moved to another company takes its contact along or none', async () => {
+      const names = await byName('companies');
+      const [cobalt, fernway] = [names['Cobalt Legal']!, names['Fernway Clinics']!];
+      const contactOf = async (company: number): Promise<number> => Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE company_id = ${String(company)} ORDER BY id`))['id']);
+      const [atCobalt, atFernway] = [await contactOf(cobalt), await contactOf(fernway)];
+      const stage = Number((await one(`SELECT id FROM ${s.real('stages')} ORDER BY position`))['id']);
+      const deal = (contact: number) => send('dana', 'POST', url('deals'), { values: { name: 'S6 spec deal', company_id: cobalt, contact_id: contact, owner_id: s.id['dana'], stage_id: stage, typed_amount: 100 } });
+      // A deal naming another company's contact is refused; its own company's is taken.
+      expect(said(await deal(atFernway))).toMatch(/^4/);
+      const made = await deal(atCobalt);
+      expect(made.statusCode, made.body).toBe(201);
+      const id = Number((made.json() as { data: { id: number } }).data.id);
+      // A visit and a quote on it, naming the other company's contact, are refused; the deal's own company's is taken.
+      const at = new Date(Date.parse('2026-08-03T09:00:00.000Z')).toISOString();
+      expect(said(await send('dana', 'POST', url('site_visits'), { values: { deal_id: id, contact_id: atFernway, rep_id: s.id['dana'], starts_at: at, minutes: 60, purpose: 'S6 spec' } }))).toMatch(/^4/);
+      expect(said(await send('dana', 'POST', url('site_visits'), { values: { deal_id: id, contact_id: atCobalt, rep_id: s.id['dana'], starts_at: at, minutes: 60, purpose: 'S6 spec' } }))).toBe('ok');
+      expect(said(await send('dana', 'POST', url('quotes'), { values: { deal_id: id, sent_to_contact_id: atFernway } }))).toMatch(/^4/);
+      // The deal moved to Fernway with Cobalt's contact still on it is refused; with Fernway's contact, or none, in the same write, it moves.
+      expect(said(await send('dana', 'PATCH', url('deals', `/${String(id)}`), { values: { company_id: fernway } }))).toMatch(/^4/);
+      expect(said(await send('dana', 'PATCH', url('deals', `/${String(id)}`), { values: { company_id: fernway, contact_id: atFernway } }))).toBe('ok');
+      expect(said(await send('dana', 'PATCH', url('deals', `/${String(id)}`), { values: { company_id: cobalt, contact_id: null } }))).toBe('ok');
+    });
+
     it('a new contact may not be emailed until somebody ticks it, and the server says who and when (R8)', async () => {
       const names = await byName('companies');
       const cobalt = names['Cobalt Legal']!;

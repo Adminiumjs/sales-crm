@@ -359,6 +359,8 @@ export interface Comment extends Record<string, unknown> {
   text: string;
   settled_by_id: string | null;
   settled_at: string | null;
+  /** When it was written: the server's stamp; empty for a comment written before 0.2.2. */
+  at?: string | null;
 }
 
 export interface Thread {
@@ -376,7 +378,7 @@ export async function readComments(session: StaffSession, id: number): Promise<{
   const deal = await session.get<Deal>("deals", id, { lookup: DEAL_LOOKUPS });
   if (deal === null) return null;
   const [comments, members] = await Promise.all([
-    session.list<Comment>("comments", { select: ["id", "deal_id", "parent_id", "author_id", "text", "settled_by_id", "settled_at"], where: ofDeal(id), order: ["id"], limit: 200 }).then((page) => page.rows),
+    session.list<Comment>("comments", { select: ["id", "deal_id", "parent_id", "author_id", "text", "at", "settled_by_id", "settled_at"], where: ofDeal(id), order: ["id"], limit: 200 }).then((page) => page.rows),
     session.can("deal_members", "read") ? session.list<Member>("deal_members", { select: ["id", "deal_id", "user_id", "since", "added_by_id"], where: ofDeal(id), limit: 200 }).then((page) => page.rows) : Promise.resolve([] as Member[]),
   ]);
   return { deal, members, comments };

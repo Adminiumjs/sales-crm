@@ -106,7 +106,8 @@ export const weekHours = (settings: Pick<HoursSettings, "workDays" | "dayHours">
 /** The last working day of a week: the week is over once today is past it. */
 export function lastWorkingDay(monday: string, workDays: ReadonlySet<Day>): string {
   const days = daysOf(monday);
-  for (let i = 6; i >= 0; i -= 1) if (workDays.has(DAYS[i]!)) return days[i]!;
+  // By the day each date is, not its place in the week: the week may start on any day (S9).
+  for (let i = 6; i >= 0; i -= 1) if (workDays.has(DAYS[(new Date(`${days[i]!}T12:00:00Z`).getUTCDay() + 6) % 7]!)) return days[i]!;
   return days[6]!;
 }
 
@@ -114,7 +115,9 @@ export function lastWorkingDay(monday: string, workDays: ReadonlySet<Day>): stri
 
 /** The sheets of one week the reader reaches: everybody's for the office, his own for a crew member. */
 export async function readWeekSheets(session: StaffSession, monday: string, user: string | null = null): Promise<Sheet[]> {
-  const where: Condition = user === null ? { column: "week_of", op: "eq", value: monday } : { and: [{ column: "week_of", op: "eq", value: monday }, { column: "user_id", op: "eq", value: user }] };
+  // Any sheet whose week falls in this one: a sheet made before the business moved its first day keeps its old one (S9).
+  const week: Condition = { column: "week_of", op: "between", value: [monday, addDays(monday, 6)] };
+  const where: Condition = user === null ? week : { and: [week, { column: "user_id", op: "eq", value: user }] };
   return (await session.list<Sheet>("time_sheets", { select: SHEET_COLUMNS, where, order: ["id"], limit: 200 })).rows;
 }
 
@@ -144,7 +147,7 @@ const value = (figure: { value?: number | null }): number => num(figure.value);
 
 /** Every figure of a week, in one batch: the server's, for the rows the reader reaches. */
 export async function readWeekFigures(session: StaffSession, monday: string, over: number): Promise<WeekFigures> {
-  const week: Condition = { column: "week_of", op: "eq", value: monday };
+  const week: Condition = { column: "week_of", op: "between", value: [monday, addDays(monday, 6)] };
   const days: Condition = { column: "day", op: "between", value: [monday, addDays(monday, 6)] };
   const one = (table: string, filters: Condition[], aggregation: { fn: "count" | "sum"; column?: string }): Promise<number> =>
     session.figure<{ value?: number | null }>({ table, shape: "single-metric", filters, aggregations: [{ ...aggregation, alias: "v" }] }).then(value);

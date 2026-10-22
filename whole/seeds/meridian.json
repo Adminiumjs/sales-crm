@@ -98,7 +98,19 @@
       }
      },
      "odds": 0.5,
-     "position": 2
+     "position": 2,
+     "worth_asking": {
+      "@t": {
+       "en-US": "Who else has to read the proposal?\nDoes the delivery window work for them?\nDoes anything in it need to be on paper?\nWhen will they decide?",
+       "de-DE": "Wer muss das Angebot noch lesen?\nPasst ihnen das Lieferfenster?\nMuss etwas davon auf Papier vorliegen?\nWann entscheiden sie?",
+       "fr-FR": "Qui d’autre doit lire la proposition ?\nLa fenêtre de livraison leur convient-elle ?\nFaut-il quelque chose sur papier ?\nQuand décideront-ils ?",
+       "cs-CZ": "Kdo další musí nabídku číst?\nVyhovuje jim termín dodání?\nPotřebují něco z toho na papíře?\nKdy se rozhodnou?",
+       "da-DK": "Hvem skal ellers læse tilbuddet?\nPasser leveringsvinduet dem?\nSkal noget af det foreligge på papir?\nHvornår beslutter de sig?",
+       "zh-CN": "还有谁需要看这份方案？\n交付时间段对他们合适吗？\n有哪些内容需要书面材料？\n他们什么时候做决定？",
+       "zh-TW": "還有誰需要看這份提案？\n交貨時段對他們合適嗎？\n有哪些內容需要書面資料？\n他們什麼時候做決定？",
+       "ar-EG": "من غيرهم يجب أن يقرأ العرض؟\nهل يناسبهم موعد التسليم؟\nهل يلزم شيء منه مكتوبًا على الورق؟\nمتى سيقررون؟"
+      }
+     }
     },
     {
      "@label": "stage:negotiation",
@@ -115,7 +127,19 @@
       }
      },
      "odds": 0.75,
-     "position": 3
+     "position": 3,
+     "worth_asking": {
+      "@t": {
+       "en-US": "Who signs the order?\nDo the terms work as written?\nIs this the whole job, or is there more after it?\nWhat would make this close this month?",
+       "de-DE": "Wer unterschreibt den Auftrag?\nPassen die Bedingungen so, wie sie stehen?\nIst das der ganze Auftrag, oder kommt danach mehr?\nWas bräuchte es, damit das diesen Monat abgeschlossen wird?",
+       "fr-FR": "Qui signe la commande ?\nLes conditions conviennent-elles telles qu’elles sont écrites ?\nEst-ce tout le chantier, ou y a-t-il une suite ?\nQue faudrait-il pour conclure ce mois-ci ?",
+       "cs-CZ": "Kdo podepíše objednávku?\nVyhovují podmínky tak, jak jsou napsané?\nJe to celá zakázka, nebo přijde ještě něco?\nCo by bylo potřeba, aby se to uzavřelo tento měsíc?",
+       "da-DK": "Hvem skriver under på ordren?\nPasser betingelserne, som de står?\nEr det hele opgaven, eller kommer der mere bagefter?\nHvad skal der til, for at det lukkes i denne måned?",
+       "zh-CN": "谁来签订单？\n条款照现在写的可以吗？\n这是全部工作，还是之后还有？\n怎样才能在本月成交？",
+       "zh-TW": "誰來簽訂單？\n條款照現在寫的可以嗎？\n這是全部工作，還是之後還有？\n怎樣才能在本月成交？",
+       "ar-EG": "من يوقّع على الطلب؟\nهل تناسبهم الشروط كما هي مكتوبة؟\nهل هذا هو العمل كله، أم يأتي بعده المزيد؟\nما الذي يجعل هذه الصفقة تُغلق هذا الشهر؟"
+      }
+     }
     },
     {
      "@label": "stage:verbal",
@@ -6613,6 +6637,11 @@
        "zh-TW": "@Ivy 牌價折扣是 9.1%。Petra 手上有另一家只針對桌子的報價。值得做，其他樓層會跟著這一單走。",
        "ar-EG": "@Ivy الخصم عن قائمة الأسعار 9.1%. لدى Petra عرض من مورد آخر على المكاتب فقط. يستحق الأمر، فباقي الأدوار ستتبع هذا الدور."
       }
+     },
+     "at": {
+      "@day": -1,
+      "@time": "17:20",
+      "@week": true
      }
     },
     {
@@ -6636,6 +6665,11 @@
        "zh-TW": "我這邊核准。線槽和安裝維持牌價，她簽約前先寫成書面。",
        "ar-EG": "موافق من جانبي. أبقِ المسارات والتركيب بسعر القائمة، واكتب ذلك رسميًا قبل أن توقّع."
       }
+     },
+     "at": {
+      "@day": 0,
+      "@time": "08:05",
+      "@week": true
      }
     },
     {
@@ -6657,6 +6691,11 @@
        "zh-TW": "這一單的送貨和 Nordwind 倉儲點的工程撞期。那週藍組不在。",
        "ar-EG": "التوصيل لهذا الطلب يتعارض مع شغل مستودع Nordwind. الطاقم الأزرق غير متاح ذلك الأسبوع."
       }
+     },
+     "at": {
+      "@day": -4,
+      "@time": "12:40",
+      "@week": true
      },
      "settled_by_id": {
       "@person": "leo"
@@ -6688,6 +6727,11 @@
        "zh-TW": "改到下週二。Petra 沒意見。",
        "ar-EG": "نُقل إلى الثلاثاء التالي. لم يكن لدى Petra مانع."
       }
+     },
+     "at": {
+      "@day": -4,
+      "@time": "13:15",
+      "@week": true
      }
     },
     {
@@ -6709,6 +6753,11 @@
        "zh-TW": "@Dana 隔音等級的問題又被問到了。四人隔音間有測試報告嗎？還是只有單人的？",
        "ar-EG": "@Dana سؤال درجة العزل الصوتي طُرح مرة أخرى. هل عندنا ورقة الاختبار للكابينة لأربعة أشخاص أم للفردية فقط؟"
       }
+     },
+     "at": {
+      "@day": -2,
+      "@time": "09:15",
+      "@week": true
      }
     },
     {
@@ -6730,6 +6779,11 @@
        "zh-TW": "@Dana 這案子議價已經八天了。到底還剩什麼沒談妥？",
        "ar-EG": "@Dana هذه الصفقة في التفاوض منذ ثمانية أيام. ما الذي بقي فعلًا للاتفاق عليه؟"
       }
+     },
+     "at": {
+      "@day": -3,
+      "@time": "15:30",
+      "@week": true
      }
     },
     {
@@ -6753,6 +6807,11 @@
        "zh-TW": "只剩付款條件。他們財務要六十天，我們說三十天。週四開會折衷。",
        "ar-EG": "شروط الدفع فقط. الإدارة المالية عندهم تريد ستين يومًا وقلنا ثلاثين. اجتماع الخميس للتوصل إلى حل وسط."
       }
+     },
+     "at": {
+      "@day": -3,
+      "@time": "16:02",
+      "@week": true
      }
     }
    ]

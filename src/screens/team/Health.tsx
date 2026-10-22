@@ -8,13 +8,15 @@
  * design's "typical age" is a median, which the server cannot answer, so it
  * is not drawn: nothing here sorts rows to find a middle.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import type { Formatters } from "../../lib/format.ts";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
+import type { ScreenProps } from "../../shell/screens.tsx";
+import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { before, byKey, daysOf, daysSince, num, OPEN, peopleOf, stagesOf, toneOf, useScreen, type Days, type People, type Stage } from "./data.ts";
 
 const BUCKETS = ["fresh", "warm", "stale"] as const;
@@ -72,12 +74,19 @@ async function read(session: StaffSession, f: Formatters, today: string, who: st
   };
 }
 
-export function Health() {
+export function Health({ rest = [] }: Partial<ScreenProps>) {
   const t = useT();
   const { session, f } = useScreen();
   const [now, setNow] = useState(() => session.now());
   const today = f.dayKey(now);
   const [who, setWho] = useState<string | null>(null);
+  // `stage-health/view/<id>`: narrowed to the person a saved view names (S7).
+  const view = useSavedView("health", rest);
+  const viewId = view.state === "ready" ? view.view.id : null;
+  useEffect(() => {
+    if (view.state === "ready") setWho(view.view.filters.rep ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per view
+  }, [viewId]);
   const { load, reload } = useLoad(() => read(session, f, today, who), [session, f, today, who]);
   const again = useCallback(() => {
     setNow(session.now());
@@ -87,6 +96,7 @@ export function Health() {
 
   return (
     <div className="crm-screen crm-health mr-screen" data-screen="health">
+      <ViewBar screen="health" view={view} current={who === null ? {} : { rep: who }} names={load.state === "ready" ? load.data.people.names : {}} />
       <div className="crm-screen-head">
         <div>
           <h1>{t("health.title")}</h1>

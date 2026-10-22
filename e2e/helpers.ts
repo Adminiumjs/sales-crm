@@ -134,7 +134,15 @@ export async function inArabic(person: APIRequestContext, run: () => Promise<voi
   try {
     await run();
   } finally {
-    await person.patch("/api/v1/me/prefs", { data: { locale: "en_US" }, headers });
+    // Put back for the specs that follow, whatever: a refusal for too many requests waits out the minute and asks again,
+    // or every later spec as this person reads Arabic (seen 2026-10-22: one 429 here failed 24 specs after it).
+    let back = 0;
+    for (let round = 0; round < 4; round += 1) {
+      back = (await person.patch("/api/v1/me/prefs", { data: { locale: "en_US" }, headers })).status();
+      if (back !== 429) break;
+      await new Promise((done) => setTimeout(done, 20_000));
+    }
+    expect(back, "the person's language is put back").toBe(200);
   }
 }
 

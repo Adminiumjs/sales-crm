@@ -18,7 +18,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { DEAL_AMOUNT_EVENT } from "../../finding/shortcuts.ts";
+import { DEAL_AMOUNT_EVENT, DEAL_CLOSE_EVENT, roomCan } from "../../finding/shortcuts.ts";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
@@ -161,10 +161,19 @@ export function Room({ id }: { id: string }) {
   const keys = useRef<{ of: string; activity: string; step: string }>({ of: "", activity: "", step: "" });
   // `E`, heard by the frame (`finding/Finding.tsx`): open the amount's field, when it may be changed here.
   const amountKey = useRef<(() => void) | null>(null);
+  // Jump's "Close this deal…": the same dialog as the room's own Close button.
+  const closeKey = useRef<(() => void) | null>(null);
   useEffect(() => {
     const onAmount = (): void => amountKey.current?.();
+    const onClose = (): void => closeKey.current?.();
     window.addEventListener(DEAL_AMOUNT_EVENT, onAmount);
-    return () => window.removeEventListener(DEAL_AMOUNT_EVENT, onAmount);
+    window.addEventListener(DEAL_CLOSE_EVENT, onClose);
+    return () => {
+      window.removeEventListener(DEAL_AMOUNT_EVENT, onAmount);
+      window.removeEventListener(DEAL_CLOSE_EVENT, onClose);
+      roomCan.amount = false;
+      roomCan.close = false;
+    };
   }, []);
   useEffect(() => {
     setAmountDraft(null);
@@ -359,6 +368,9 @@ export function Room({ id }: { id: string }) {
     const has = family === null ? null : held(family);
     const quoteState = family === null || newestQuote === null ? null : stateOf(newestQuote, family, today);
     amountKey.current = canWork && !fromQuote && !busy ? () => setAmountDraft((was) => was ?? String(num(deal.amount))) : null;
+    closeKey.current = canWork && !busy ? () => actions.close({ id: deal.id, name: deal.name, company: deal.company, amount: f.money(deal.amount) }) : null;
+    roomCan.amount = canWork && !fromQuote;
+    roomCan.close = canWork;
     const pool = data.fixed.reps.filter((userId) => userId !== deal.owner_id && !members.some((member) => member.user_id === userId));
     const coverCard = data.cover !== null && coverPhase(data.cover, today) !== "over" ? data.cover : null;
     const coverMine = coverCard !== null && coverCard.owner_id === me && session.can("cover_notes", "create") && open;

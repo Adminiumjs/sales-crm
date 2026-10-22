@@ -530,7 +530,7 @@ for (const [dialect, reachable] of LEGS) {
         Number((await one(`SELECT list_rate FROM ${s.real('price_list')} WHERE id = ${String(made(desk))}`))['list_rate']),
         said(await unlist('tessa', made(desk))), (await get('ivy', 'price_list', `/${String(made(desk))}`)).statusCode,
       ], ['ok', 'ok', 'ok', '422', '422', '403', '403', '403', 200, '403', '403', 403, 403, 403, 495.5, 'ok', 404]);
-      const quote = made(await post('dana', 'quotes', { deal_id: danaOpen, sent_to_contact_id: Number((await one(`SELECT id FROM ${s.real('contacts')} WHERE email IS NOT NULL ORDER BY id`))['id']) }));
+      const quote = made(await post('dana', 'quotes', { deal_id: danaOpen, sent_to_contact_id: Number((await one(`SELECT c.id FROM ${s.real('contacts')} c JOIN ${s.real('deals')} d ON d.company_id = c.company_id WHERE d.id = ${String(danaOpen)} AND c.email IS NOT NULL ORDER BY c.id`))['id']) }));
       t('20b a rep does not type a line\'s list price', refused(await post('dana', 'quote_lines', { document_id: quote, qty: 10, rate: 91, list_rate: 91 })), '403');
       const line = made(await post('dana', 'quote_lines', { document_id: quote, qty: 10, rate: 91, price_id: made(listed) }));
       t('20c the line takes the list price of the row it names', Number((await one(`SELECT list_rate FROM ${s.real('quote_lines')} WHERE id = ${String(line)}`))['list_rate']), 100);
@@ -1257,6 +1257,30 @@ for (const [dialect, reachable] of LEGS) {
       const third = await post('dana', 'thread_members', { thread_id: direct, user_id: s.id['sam'] });
       expect(third.statusCode, third.body).toBeGreaterThanOrEqual(400);
       expect(await members(direct)).toEqual(before);
+    });
+
+    it('T03: a comment keeps when it was written, a visit\'s write-up its five ticks, and a stage its questions, each written by whom it should be', async () => {
+      // S18: the server stamps when a comment was written; a moment sent with it is not taken.
+      const deal = Number((await one(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id`))['id']);
+      const comment = await post('dana', 'comments', { deal_id: deal, text: 'T03 spec: when', at: '2001-01-01T00:00:00.000Z' });
+      expect(comment.statusCode, comment.body).toBe(201);
+      const at = (await one(`SELECT at FROM ${s.real('comments')} WHERE id = ${String(made(comment))}`))['at'];
+      expect(at).not.toBeNull();
+      expect(String(at)).not.toContain('2001');
+      // S10: the five "what to capture" ticks are kept with a visit's write-up, no by default.
+      const visit = made(await post('tessa', 'site_visits', { deal_id: deal, rep_id: s.id['dana'], starts_at: '2026-07-20T09:00:00.000Z', minutes: 30, purpose: 'T03 spec visit' }));
+      const note = await post('dana', 'visit_notes', { visit_id: visit, saw: 'T03 spec', cap_access: true, cap_power: true });
+      expect(note.statusCode, note.body).toBe(201);
+      const caps = await one(`SELECT cap_access, cap_floor, cap_power, cap_existing, cap_timing FROM ${s.real('visit_notes')} WHERE id = ${String(made(note))}`);
+      expect(Object.values(caps).map((value) => [true, 1, '1'].includes(value as never))).toEqual([true, false, true, false, false]);
+      // S11: a stage's "worth asking" is the sales manager's and the CRM admin's to write; a rep reads it and writes none.
+      const stage = Number((await one(`SELECT id FROM ${s.real('stages')} ORDER BY position`))['id']);
+      expect(said(await patch('ivy', 'stages', stage, { worth_asking: 'Who signs?\nWhen?' }))).toBe('ok');
+      expect(said(await patch('tessa', 'stages', stage, { worth_asking: 'Who signs?' }))).toBe('ok');
+      expect(said(await patch('dana', 'stages', stage, { worth_asking: 'Mine' }))).toMatch(/^403/);
+      expect(said(await patch('ivy', 'stages', stage, { worth_asking: 'x'.repeat(821) }))).toMatch(/^4/);
+      const asked = (await get('dana', 'stages', `/${String(stage)}`)).json() as { data: Record<string, unknown> };
+      expect(asked.data['worth_asking']).toBe('Who signs?');
     });
   });
 }

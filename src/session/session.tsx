@@ -16,6 +16,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
+import { setWeekStart } from "../lib/format.ts";
 import { connectStaffSession, LostReply, StaffError, type StaffSession } from "../staffSession.ts";
 
 export type Boot = { state: "loading" } | { state: "ready"; session: StaffSession } | { state: "outside" } | { state: "unreachable" };
@@ -37,7 +38,15 @@ export function useBoot(open: () => Promise<StaffSession> = connectStaffSession)
     let gone = false;
     setBoot({ state: "loading" });
     open().then(
-      (session) => {
+      async (session) => {
+        // The business's first day of the week, before any screen works a week out (plan 68 S9). A reader who may not read
+        // the settings row keeps Monday.
+        if (session.can("settings", "read")) {
+          await session
+            .list<{ week_starts?: string | null }>("settings", { select: ["week_starts"], limit: 1 })
+            .then((page) => setWeekStart(page.rows[0]?.week_starts))
+            .catch(() => undefined);
+        }
         if (!gone) setBoot({ state: "ready", session });
       },
       (error: unknown) => {

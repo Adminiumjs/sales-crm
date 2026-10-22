@@ -29,7 +29,7 @@ const LOCALES = ["en-US", "de-DE", "fr-FR", "cs-CZ", "da-DK", "zh-CN", "zh-TW", 
  */
 const TABLES: Record<string, { nullable: readonly string[] }> = {
   // Selling
-  stages: { nullable: [] },
+  stages: { nullable: ["worth_asking"] },
   deals: {
     nullable: [
       "scope",
@@ -115,7 +115,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
   price_list: { nullable: [] },
   quote_lines: { nullable: ["description", "rate", "discount", "currency", "amount", "price_id", "list_rate"] },
-  comments: { nullable: ["parent_id", "settled_by_id", "settled_at"] },
+  comments: { nullable: ["at", "parent_id", "settled_by_id", "settled_at"] },
   saved_views: { nullable: ["owner_id"] },
   saved_searches: { nullable: ["owner_id", "last_run_at"] },
   nudge_snoozes: { nullable: [] },

@@ -49,6 +49,7 @@ export const finding = tables({
   "jump.deal.lost": ["lost", "verloren", "perdue", "tabt", "prohraný", "已输单", "已輸單", "خاسرة"],
   "jump.here": ["here", "hier", "ici", "her", "zde", "当前", "目前", "هنا"],
   "jump.call": ["Call notes", "Gesprächsnotizen", "Notes d’appel", "Opkaldsnoter", "Poznámky z hovoru", "通话记录", "通話記錄", "ملاحظات المكالمة"],
+  "jump.closeDeal": ["Close this deal…", "Diesen Deal abschließen …", "Clore cette affaire…", "Luk denne handel …", "Uzavřít tento obchod…", "关闭这个商机…", "關閉這個案件…", "إغلاق هذه الصفقة…"],
   "jump.none": ["Nothing matches that", "Dazu passt nichts", "Rien ne correspond", "Intet passer til det", "Nic tomu neodpovídá", "没有匹配项", "沒有相符項目", "لا شيء يطابق ذلك"],
   "jump.none.body": [
     "Try a deal name, a company or a screen.",

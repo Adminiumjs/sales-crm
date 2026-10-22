@@ -312,6 +312,51 @@ for (const [dialect, reachable] of LEGS) {
       await s.rows(`delete from crm_referrals where id = ${String(ref)}`);
     });
 
+    it('S1: a hand-over with "Introduce" ticked writes the deal\'s contact one introduction from the new owner; without it, a plain change of owner and a hand-back within the quarter-hour write none', async () => {
+      await s.emails();
+      const deal = await makeDeal('dana', 'Clinic lockers', 'dana');
+      const hand = (who: string, to: string, introduce: boolean): Promise<Reply> => s.send(who, 'POST', url('deals', `/${String(deal)}/actions/hand-over`), { from: 'open', values: { owner_id: s.ids[to], introduce } });
+      const rows = async (): Promise<Record<string, unknown>[]> => s.rows(`select id, status, skip_reason, contact_id from crm_outbox where deal_id = ${String(deal)} and kind = 'handover-intro' order by id`);
+      const ticked = async (): Promise<boolean> => [true, 1, '1'].includes((await s.rows(`select introduce from crm_deals where id = ${String(deal)}`))[0]!['introduce'] as never);
+      const sendNow = async (): Promise<void> => {
+        await s.rows(`update crm_outbox set due_at = '${dialect === 'mysql' ? '2000-01-01 00:00:00' : '2000-01-01T00:00:00.000Z'}' where kind = 'handover-intro' and deal_id = ${String(deal)} and status = 'queued'`);
+        await jobsRepo(s.meta).enqueue({ kind: 'app-outbox-send', payload: { app: 'crm' }, dedupeKey: `app-outbox-send:crm:s1-${dialect}-${String(Date.now())}` });
+        await jobs();
+      };
+      // Handed over without it: nothing.
+      expect(said(await hand('dana', 'priya', false))).toBe('ok');
+      await jobs();
+      expect(await rows()).toEqual([]);
+      // Handed on with it: one introduction, to the deal's contact, waiting its quarter-hour.
+      expect(said(await hand('priya', 'dana', true))).toBe('ok');
+      await jobs();
+      expect((await rows()).map((row) => [row['status'], Number(row['contact_id'])])).toEqual([['queued', contact]]);
+      // It goes; the tick is cleared once it has gone.
+      await sendNow();
+      expect((await rows()).map((row) => row['status'])).toEqual(['sent']);
+      expect(await ticked()).toBe(false);
+      const [mail] = (await s.emails()).filter((one) => one.templateKey === 'crm-handover-intro');
+      expect(mail!.to).toBe('ana.belova@fernway-clinics.com');
+      expect(mail!.subject).toBe('Introducing Dana');
+      expect(mail!.text).toContain('Hello Ana, from today Dana looks after Clinic lockers.');
+      expect(mail!.text).toContain('Priya stays in the loop.');
+      expect(`${mail!.subject} ${mail!.text}`).not.toMatch(/\{\{|Qualified|dana@|priya@/);
+      // A plain change of owner afterwards (the CRM admin's edit) writes none.
+      expect(said(await s.change('tessa', 'deals', deal, { owner_id: s.ids['priya'] }))).toBe('ok');
+      await jobs();
+      expect(await rows()).toHaveLength(1);
+      // Handed over with the tick and handed back at once without it: the first is dropped, and nothing more is written.
+      // (To somebody it has not introduced yet: one introduction per deal and new owner.)
+      expect(said(await hand('priya', 'noor', true))).toBe('ok');
+      await jobs();
+      expect(said(await hand('noor', 'priya', false))).toBe('ok');
+      await jobs();
+      await sendNow();
+      expect((await rows()).map((row) => [row['status'], row['skip_reason'] ?? null])).toEqual([['sent', null], ['skipped', 'no-longer-needed']]);
+      // A deal's name goes into the customer's e-mail: no web or e-mail address in it.
+      for (const name of ['See www.fernway-offer.com', 'Mail ana@elsewhere.com']) expect(said(await s.make('dana', 'deals', { name, company_id: company, contact_id: contact, owner_id: s.ids['dana'], stage_id: stage['a'] })), name).toMatch(/^4/);
+    });
+
     it('a visit that names no contact tells the deal\'s contact', async () => {
       await s.emails();
       const deal = await makeDeal('dana', 'Canteen benches', 'dana');

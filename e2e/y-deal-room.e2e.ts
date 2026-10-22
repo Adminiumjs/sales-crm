@@ -567,6 +567,9 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   await expect(threads.first()).toContainText("the number off list is 9.1%");
   await expect(threads.first().locator(".crm-cmt-reply")).toHaveCount(1);
   await expect(threads.first().locator(".crm-cmt-reply")).toContainText("Ivy Sandoval");
+  // When each was written, as the server keeps it (S18): Dana's yesterday evening, Ivy's reply this morning.
+  await expect(threads.first().locator(".crm-cmt-head .crm-cmt-when").first()).toHaveText("Yesterday 17:20");
+  await expect(threads.first().locator(".crm-cmt-reply .crm-cmt-when")).toHaveText("Today 08:05");
   // Hers to settle; Leo's is not, and the server says the same.
   await expect(threads.first().getByRole("button", { name: "Settle it" })).toBeVisible();
   await page.getByRole("button", { name: "Show settled" }).click();
@@ -743,6 +746,12 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   const who = page.getByRole("radiogroup", { name: "Who picks it up?" });
   await expect(who.getByRole("radio")).toHaveText([/Priya$/, /Sam$/, /Leo$/]);
   await expect(page.getByTestId("hand-who-note")).toHaveText("Currently Dana Whitlock. Pick who takes it.");
+  // "Tell the new owner" is the rule's real state (off as installed); the introduction to the customer is offered, and on,
+  // since Petra has an address (S1).
+  await expect(page.getByTestId("hand-tell")).toHaveText("The new owner is not told: the rule that tells them is switched off. The person who runs this install switches it on.");
+  await expect(page.getByTestId("hand-introduce")).toHaveText("Introduce the new owner to the customer by email");
+  await expect(page.getByTestId("hand-introduce")).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("#crm-hand-intro-note")).toHaveText("It goes to Petra Lindqvist a quarter of an hour after you hand the deal over.");
   await expect(page.getByRole("button", { name: "Pick who takes it" })).toBeDisabled();
   await picture(page, "7-dana-hand-over");
 
@@ -756,6 +765,10 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   await who.getByRole("radio", { name: "Priya" }).click();
   await expect(page.getByTestId("hand-who-note")).toHaveText("Priya Raman picks it up from Dana Whitlock. Their board updates straight away.");
   await page.getByRole("textbox", { name: "Notes for them" }).fill("Ines decides. She wants the tall lockers and a price by Friday.");
+  // She hands it over without introducing Priya to the customer: the tick is hers to take off, and nothing is written.
+  await expect(page.getByTestId("hand-introduce")).toHaveText("Introduce Priya to the customer by email");
+  await page.getByTestId("hand-introduce").click();
+  await expect(page.getByTestId("hand-introduce")).toHaveAttribute("aria-checked", "false");
   await page.getByRole("button", { name: "Hand it to Priya" }).click();
   const done = page.getByTestId("hand-done");
   await expect(done).toContainText("Room spec: handed is Priya Raman's now.");
@@ -763,6 +776,7 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   await expect(done).toContainText("Your notes are on the deal, as a note.");
   await expect(page.getByTestId("hand-stayed")).toContainText("1 open follow-up stays with Dana.");
   await expect(done).toContainText("It is Priya's to open now, and no longer on your board.");
+  await expect(page.getByTestId("hand-introduced")).toHaveCount(0);
   await expect(done.getByRole("link", { name: "Open the deal room" })).toHaveCount(0);
   // The server holds exactly that: Priya's deal, with Dana's note on it; not Dana's to read any more; her follow-up still hers.
   const handed = (await rows<{ owner_id: string }>(priya, data, "deals", { column: "id", op: "eq", value: deal.id }))[0]!;
@@ -799,6 +813,11 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   const hersDone = hers.getByTestId("hand-done");
   await expect(hersDone).toContainText("Room spec: handed is Sam Okonjo's now.");
   await expect(hersDone).toContainText("1 open follow-up moved to Sam's queue.");
+  // She left "Introduce Sam" on: the customer gets the introduction once its quarter-hour is up (S1); the spec's deal is
+  // closed before then, which drops it.
+  await expect(hers.getByTestId("hand-introduced")).toHaveText("Ines Vaughan gets an email introducing Sam in a quarter of an hour.");
+  const queued = await rows<{ kind: string; status: string }>(await api("tessa"), data, "outbox", { and: [{ column: "deal_id", op: "eq", value: deal.id }, { column: "kind", op: "eq", value: "handover-intro" }] });
+  expect(queued.map((one) => one.status)).toEqual(["queued"]);
   expect((await rows<{ owner_id: string }>(ivy, data, "deals", { column: "id", op: "eq", value: deal.id }))[0]!.owner_id).toBe(samId);
   expect((await rows<{ owner_id: string }>(ivy, data, "follow_ups", { column: "id", op: "eq", value: stepId }))[0]!.owner_id).toBe(samId);
   // She still reaches it: its room says whose it was, each change signed and dated, from the deal's own history.

@@ -74,6 +74,8 @@ export function rulesOf(filters: ViewFilters, facts: { names: Record<string, str
   if (filters.closing === "this month") out.push(t("views.rule.closing"));
   if (filters.only !== undefined) out.push(t(`views.rule.only.${filters.only}` as MessageKey));
   if (filters.show !== undefined) out.push(t(`views.rule.show.${filters.show}` as MessageKey));
+  if (typeof filters.type === "string" && filters.type !== "all") out.push(t(`feed.kind.${filters.type}` as MessageKey));
+  if (typeof filters.months === "number") out.push(t("lost.window.months", { count: f.number(filters.months) }, filters.months));
   return out.length === 0 ? [t("views.rule.all")] : out;
 }
 

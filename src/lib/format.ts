@@ -174,13 +174,24 @@ export function monthOf(dayKey: string): [string, string] {
   return [`${String(year)}-${mm}-01`, `${String(year)}-${mm}-${String(last).padStart(2, "0")}`];
 }
 
-/** The Monday that starts the week a day falls in, and the Monday after: day keys. */
+/** The days of the week, from Monday, as Settings names them (`settings.week_starts`). */
+const WEEK_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+/** The business's first day of the week (plan 68 S9), as an offset from Monday: read once when the app opens, and when Settings changes it. */
+let weekStart = 0;
+
+/** Say which day the business's week starts on (`mon` … `sun`); anything else is Monday. */
+export function setWeekStart(day: unknown): void {
+  const at = WEEK_DAYS.indexOf(day as (typeof WEEK_DAYS)[number]);
+  weekStart = at < 0 ? 0 : at;
+}
+
+/** The first day of the week a day falls in, by the business's week (Monday unless Settings says otherwise), and the first day of the next: day keys. */
 export function weekOf(dayKey: string): [string, string] {
   const at = new Date(`${dayKey}T00:00:00Z`);
-  const back = (at.getUTCDay() + 6) % 7;
-  const monday = new Date(at.getTime() - back * 86_400_000);
-  const next = new Date(monday.getTime() + 7 * 86_400_000);
-  return [monday.toISOString().slice(0, 10), next.toISOString().slice(0, 10)];
+  const back = ((at.getUTCDay() + 6) % 7 - weekStart + 7) % 7;
+  const first = new Date(at.getTime() - back * 86_400_000);
+  const next = new Date(first.getTime() + 7 * 86_400_000);
+  return [first.toISOString().slice(0, 10), next.toISOString().slice(0, 10)];
 }
 
 /** A day key some days on (or back): `addDays("2026-07-27", 6)` is `2026-08-02`. */

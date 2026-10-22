@@ -214,6 +214,25 @@ test("the sales manager has Selling and nothing else: she writes her eight setti
     await expect(page.locator('[data-panel="selling"]')).toBeVisible();
     await expect(page.locator('[data-panel="work"]')).toHaveCount(0);
     await expect(card(page, "stages").locator('[data-figure="open"]')).toHaveText("14 open deals");
+    // WORTH ASKING (S11): Proposal and Negotiation hold the sample's four questions, Discovery none. She writes Discovery's,
+    // the server keeps them, and she takes them off again.
+    const asking = (stage: string) => card(page, "stages").getByRole("button", { name: `Worth asking at ${stage}` });
+    await expect(asking("Negotiation")).toHaveText("4");
+    await expect(asking("Discovery")).toHaveText("0");
+    await asking("Discovery").click();
+    const dialog = page.getByRole("dialog", { name: "Worth asking at Discovery" });
+    await dialog.getByRole("textbox", { name: "Question 1" }).fill("Who else is in the room?");
+    await dialog.getByRole("textbox", { name: "Question 2" }).fill("What made them call now?");
+    await dialog.getByRole("button", { name: "Save the questions" }).click();
+    await expect(toast(page)).toHaveText("Worth asking at Discovery: saved.");
+    await expect(asking("Discovery")).toHaveText("2");
+    const discovery = (await rows<{ worth_asking: string | null }>(direct, data, "stages", { column: "label", op: "eq", value: "Discovery" }))[0]!;
+    expect(discovery.worth_asking).toBe("Who else is in the room?\nWhat made them call now?");
+    await asking("Discovery").click();
+    await dialog.getByRole("textbox", { name: "Question 1" }).fill("");
+    await dialog.getByRole("textbox", { name: "Question 2" }).fill("");
+    await dialog.getByRole("button", { name: "Save the questions" }).click();
+    await expect(asking("Discovery")).toHaveText("0");
     // The admin's setting on this tab is not hers: she reads no field for it.
     await expect(card(page, "enquiries")).toHaveCount(0);
 

@@ -21,7 +21,7 @@ import { canOpen, USER_MENU, type MenuFacts, type RouteKey, type ShownGroup } fr
 import { Dialog } from "../ui/dialog.tsx";
 import { kindsFor, screenLines } from "./jump.ts";
 import { Jump, type JumpAction } from "./Jump.tsx";
-import { busyTarget, DEAL_AMOUNT_EVENT, G_WAIT_MS, shortcutFor, shortcutGroups, type ShortcutFacts } from "./shortcuts.ts";
+import { busyTarget, DEAL_AMOUNT_EVENT, DEAL_CLOSE_EVENT, G_WAIT_MS, roomCan, shortcutFor, shortcutGroups, type ShortcutFacts } from "./shortcuts.ts";
 
 interface Finding {
   jump: (typed?: string) => void;
@@ -83,11 +83,16 @@ export function FindingProvider({ groups, home, current, facts, onTheme, onSignO
     if (deals.canStart) out.push({ id: "new-deal", label: "keys.newDeal", icon: "plus", hint: "N", run: () => deals.start() });
     if (room !== null && keyFacts.canReadComments) out.push({ id: "comments", label: "keys.dealComments", icon: "message-square", hint: "C", run: () => nav.go("deal", room, "comments") });
     if (room !== null && session.can("activities", "create")) out.push({ id: "call", label: "jump.call", icon: "phone", run: () => nav.go("deal", room, "call") });
+    // In a deal's room, what its own buttons do, for whoever they are drawn for (plan 68 S4).
+    if (room !== null && keyFacts.canEditDeal && roomCan.amount) out.push({ id: "amount", label: "keys.dealAmount", icon: "pencil", hint: "E", run: () => window.dispatchEvent(new CustomEvent(DEAL_AMOUNT_EVENT)) });
+    if (room !== null && keyFacts.canEditDeal && roomCan.close) out.push({ id: "close-deal", label: "jump.closeDeal", icon: "handshake", run: () => window.dispatchEvent(new CustomEvent(DEAL_CLOSE_EVENT)) });
     out.push({ id: "theme", label: "keys.theme", icon: "sun-moon", hint: "D", run: onTheme });
     out.push({ id: "keys", label: "keys.title", icon: "keyboard", hint: "?", run: help });
     out.push({ id: "sign-out", label: "shell.signOut", icon: "log-out", run: onSignOut });
     return out;
-  }, [crewOnly, deals, room, keyFacts.canReadComments, session, nav, onTheme, help, onSignOut]);
+    // `jumping`: read again each time Jump opens, so what the room allows now is what is offered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [crewOnly, deals, room, keyFacts.canReadComments, keyFacts.canEditDeal, session, nav, onTheme, help, onSignOut, jumping]);
 
   // The keys, once for the app.
   useEffect(() => {

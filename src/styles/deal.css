@@ -719,6 +719,13 @@ button.crm-room-step:disabled {
   font-weight: 800;
   letter-spacing: -0.02em;
 }
+.crm-cmt-when {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+.crm-cmt-reply .crm-cmt-when {
+  font-size: 10.5px;
+}
 .crm-cmt-settle {
   margin-inline-start: auto;
 }
@@ -989,4 +996,19 @@ button.crm-room-step:disabled {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* The hand-over's "Tell the new owner" line (plan 68 S1): what the rule that tells them does, said quietly. */
+.crm-hand-tell {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-block: 12px 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.crm-hand-tell svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
 }

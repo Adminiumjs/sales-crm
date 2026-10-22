@@ -625,3 +625,13 @@
     transition: none;
   }
 }
+
+/* A stage's "worth asking" questions (plan 68 S11): a small count button beside its odds. */
+.crm-ast-asking {
+  gap: 6px;
+}
+.crm-ast-asking-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

@@ -36,6 +36,13 @@ export const SINGLE: Readonly<Record<string, RouteKey | "home">> = { "1": "home"
 export const AFTER_G: Readonly<Record<string, RouteKey>> = { w: "week", c: "archive", i: "inbox", m: "messages", f: "feed", t: "team" };
 /** Told to the deal room when its "edit the amount" key is pressed: the field it opens is the room's own. */
 export const DEAL_AMOUNT_EVENT = "crm:deal-amount";
+/** Told to the deal room when Jump's "Close this deal…" is pressed: it opens the board's own dialog for that deal. */
+export const DEAL_CLOSE_EVENT = "crm:deal-close";
+/**
+ * What the open deal room lets the reader do from Jump (plan 68 S4): kept by the room as it draws, read by Jump when it
+ * opens, so Jump offers "Edit the amount" and "Close this deal…" only where the room's own buttons would.
+ */
+export const roomCan: { amount: boolean; close: boolean } = { amount: false, close: false };
 /** How long `G` waits for its letter. */
 export const G_WAIT_MS = 1500;
 

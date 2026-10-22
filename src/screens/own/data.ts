@@ -350,8 +350,9 @@ export async function saveDetails(session: StaffSession, was: Details, choice: D
 /* ── Saved views ─────────────────────────────────────────────────────────── */
 
 /** The screens a view can be saved from and reopened on. */
-export type ViewScreen = "pipeline" | "archive" | "quotes" | "visits" | "team";
-export const VIEW_SCREENS: readonly ViewScreen[] = ["pipeline", "archive", "quotes", "visits", "team"];
+export type ViewScreen = "pipeline" | "archive" | "quotes" | "visits" | "team" | "week" | "health" | "feed" | "lost";
+// This week, Stage health, the Activity feed and Why we lose take a view too (plan 68 S7). Today narrows nothing: it has none.
+export const VIEW_SCREENS: readonly ViewScreen[] = ["pipeline", "archive", "quotes", "visits", "team", "week", "health", "feed", "lost"];
 
 /**
  * A view's filters, as kept in the row. `screen` is absent from a view made
@@ -374,6 +375,10 @@ export interface ViewFilters {
   only?: "won" | "lost";
   /** Site visits: which ones. */
   show?: "soon" | "done" | "unwritten";
+  /** The Activity feed: what kind of line (`call` … `amount`). */
+  type?: string;
+  /** Why we lose: how many months back. */
+  months?: number;
 }
 
 export interface SavedView extends Record<string, unknown> {
@@ -463,6 +468,8 @@ export async function viewFigure(session: StaffSession, view: SavedView, stages:
     // A quote is somebody's through its deal, and a count cannot be asked through a link: a view narrowed to a person carries no figure.
     return filters.rep === undefined ? { count: await totalOf(session, "quotes", []), weighted: null } : null;
   }
+  // This week, Stage health, the Activity feed and Why we lose are read as they are opened: their view carries no figure.
+  if (screen !== "visits") return null;
   if (!session.can("site_visits", "read")) return null;
   return { count: await totalOf(session, "site_visits", filters.rep === undefined ? [] : [{ column: "rep_id", op: "eq", value: filters.rep }]), weighted: null };
 }

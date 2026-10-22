@@ -80,6 +80,11 @@ test("Dana opens d1's call notes from its room: the ledger's figures, where it w
   // Nothing typed: nothing to log.
   await expect(page.getByRole("button", { name: "Log the call" })).toBeDisabled();
   await expect(page.getByTestId("call-words")).toHaveText("0 words");
+  // Worth asking at Negotiation, as the sales manager wrote it (S11): pressed, a question starts a line of the notes.
+  const asking = page.getByTestId("call-asking");
+  await expect(asking.getByRole("button")).toHaveText(["Who signs the order?", "Do the terms work as written?", "Is this the whole job, or is there more after it?", "What would make this close this month?"]);
+  await asking.getByRole("button", { name: "Who signs the order?" }).click();
+  await expect(page.getByRole("textbox", { name: "Notes from the call" })).toHaveValue("Who signs the order? ");
   await picture(page, "call-1-dana-d1");
   // A chip opens that deal's call notes.
   await chips.nth(1).click();

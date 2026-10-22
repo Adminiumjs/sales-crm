@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
-import type { Formatters } from "../../lib/format.ts";
+import { setWeekStart, type Formatters } from "../../lib/format.ts";
 import { Icon } from "../../shell/icons.tsx";
 import type { PartId } from "../../shell/routes.ts";
 import type { StaffSession } from "../../staffSession.ts";
@@ -108,7 +108,7 @@ export function WorkingTime({ session, f, rights }: { session: StaffSession; f: 
                   label={t("aset.work.starts")}
                   options={(["mon", "sun", "sat"] as const).map((day) => ({ key: day, label: f.weekdayLong(dayDate(day)) }))}
                   pressed={(day) => settings.week_starts === day}
-                  onPress={can ? (day) => (day === settings.week_starts ? undefined : void save({ week_starts: day }, t("aset.work.starts.saved", { day: f.weekdayLong(dayDate(day)) }))) : null}
+                  onPress={can ? (day) => (day === settings.week_starts ? undefined : void save({ week_starts: day }, t("aset.work.starts.saved", { day: f.weekdayLong(dayDate(day)) })).then((saved) => saved && setWeekStart(day))) : null}
                   disabled={busy}
                 />
                 <div className="crm-ast-sum crm-mono" data-figure="week">

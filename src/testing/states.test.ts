@@ -152,7 +152,8 @@ describe("a deal", () => {
       ["mark-won", "won", ["close_note"], false],
       ["mark-lost", "lost", ["lost_reason_id", "close_note"], false],
       ["reopen", "open", [], false],
-      ["hand-over", null, ["owner_id"], true],
+      // It also takes the sheet's "Introduce … to the customer by email" (S1).
+      ["hand-over", null, ["owner_id", "introduce"], true],
     ]);
     // A deal is handed over while it is open; a closed one is locked, owner and all.
     expect(deal.actions!.find((one) => one.id === "hand-over")).toMatchObject({ set: {}, in: ["open"] });

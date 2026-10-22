@@ -28,7 +28,8 @@ import { LostReply, newClientKey, StaffError, type Saved, type StaffSession } fr
 import { Loaded, Skeleton, useCoalesced, useLoad } from "../../ui/load.tsx";
 import { useToasts } from "../../ui/toast.tsx";
 import { peopleOf } from "../team/data.ts";
-import { num, readSelling, type PriceRow, type ReasonRow, type RepRow, type SellingData, type StageRow } from "./data.ts";
+import { Dialog } from "../../ui/dialog.tsx";
+import { ASKING_LENGTH, ASKING_MAX, askingOf, num, readSelling, type PriceRow, type ReasonRow, type RepRow, type SellingData, type StageRow } from "./data.ts";
 import { AskLine, Card, NumField, useSaveSettings, type Rights } from "./parts.tsx";
 
 type ListTable = "stages" | "lost_reasons";
@@ -67,6 +68,8 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   const canRemove = session.can(table, "delete");
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  // The stage whose "worth asking" questions are open (S11).
+  const [asking, setAsking] = useState<Listed | null>(null);
   /**
    * What was last sent for a field, until the list has been read again: Enter
    * saves, and leaving the field a moment later must not send the same thing
@@ -206,6 +209,12 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
                   <span className="crm-ast-unit crm-mono">%</span>
                 </span>
               )}
+              {table === "stages" && canEdit && (
+                <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-ast-asking mr-gi" data-asking={row.id} aria-label={t("aset.stages.ask.open", { name: row.label })} onClick={() => setAsking(row)}>
+                  <Icon name="message-square" size={14} />
+                  <span className="crm-mono">{f.number(askingOf(row.worth_asking as string | null | undefined).length)}</span>
+                </button>
+              )}
               <span className="crm-ast-count crm-mono" data-figure="count">
                 {counts(row)}
               </span>
@@ -229,7 +238,56 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
           <span>{t(k(canRemove ? "held" : "held.ask"))}</span>
         </div>
       )}
+      {asking !== null && (
+        <AskingDialog
+          stage={asking}
+          onClose={() => setAsking(null)}
+          onSave={async (text) => {
+            const done = await run(session.update("stages", asking.id, { worth_asking: text }, { seen: { worth_asking: asking.worth_asking ?? null } }), t("aset.stages.ask.saved", { name: asking.label }));
+            if (done) setAsking(null);
+          }}
+          busy={busy}
+        />
+      )}
     </>
+  );
+}
+
+/** A stage's "worth asking" questions, five lines at most: what Call notes offers for a deal at this stage (plan 68 S11, Q4 = A). */
+function AskingDialog({ stage, busy, onClose, onSave }: { stage: Listed; busy: boolean; onClose: () => void; onSave: (text: string | null) => Promise<void> }) {
+  const t = useT();
+  const kept = askingOf(stage.worth_asking as string | null | undefined);
+  const [lines, setLines] = useState<string[]>(() => Array.from({ length: ASKING_MAX }, (_, at) => kept[at] ?? ""));
+  const text = lines.map((line) => line.trim()).filter((line) => line !== "").join("\n");
+  return (
+    <Dialog
+      shape="box"
+      name="stage-asking"
+      icon="message-square"
+      title={t("aset.stages.ask.title", { name: stage.label })}
+      subtitle={t("aset.stages.ask.sub")}
+      onClose={onClose}
+      busy={busy}
+      foot={
+        <>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
+            {t("ui.cancel")}
+          </button>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" disabled={busy || text === kept.join("\n")} onClick={() => void onSave(text === "" ? null : text)}>
+            {busy ? t("ui.saving") : t("aset.stages.ask.save")}
+          </button>
+        </>
+      }
+    >
+      <div className="crm-fields">
+        {lines.map((line, at) => (
+          <label key={at} className="crm-ast-asking-line">
+            <span className="crm-label">{t("aset.stages.ask.line", { n: at + 1 })}</span>
+            <input className="crm-input mr-fld" value={line} maxLength={ASKING_LENGTH} {...(at === 0 ? { "data-autofocus": true } : {})} onChange={(event) => setLines((was) => was.map((one, i) => (i === at ? event.target.value : one)))} />
+          </label>
+        ))}
+      </div>
+    </Dialog>
   );
 }
 

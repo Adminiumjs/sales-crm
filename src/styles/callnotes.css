@@ -314,3 +314,30 @@
 .crm-call .crm-btn-wide {
   margin-block-start: 14px;
 }
+
+/* "Worth asking" (plan 68 S11): the design's dashed rows, each starting a line of the notes. */
+.crm-call-asking {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-block-start: 12px;
+}
+.crm-call-ask {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  inline-size: 100%;
+  padding: 11px;
+  border-radius: 11px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+  cursor: pointer;
+  text-align: start;
+}
+.crm-call-ask svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}

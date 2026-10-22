@@ -28,6 +28,7 @@ import { newClientKey, type Condition, type StaffSession } from "../../staffSess
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { ruleStates } from "../../lib/rules.ts";
 import { readNames } from "../quotes/data.ts";
 import { num, readFixed, sittingOf, type Activity, type Fixed } from "./data.ts";
 
@@ -44,6 +45,8 @@ interface Offered extends Record<string, unknown> {
   company: string | null;
   stage: string | null;
   contact: string | null;
+  /** The deal contact's address, where the introduction would go (S1). */
+  contact_email?: string | null;
 }
 interface Step extends Record<string, unknown> {
   id: number;
@@ -73,6 +76,8 @@ interface Done {
   moved: number;
   stayed: number;
   why: string | null;
+  /** Who the introduction e-mail goes to, when it was asked for. */
+  introduced: string | null;
 }
 
 async function readPool(session: StaffSession, mine: boolean): Promise<Pool> {
@@ -82,7 +87,7 @@ async function readPool(session: StaffSession, mine: boolean): Promise<Pool> {
     session.list<Offered>("deals", {
       select: ["id", "name", "owner_id", "stage_id", "amount", "weighted_value", "stage_odds", "expected_close", "entered_stage_at"],
       where: mine && me !== null ? { and: [open, { column: "owner_id", op: "eq", value: me }] } : open,
-      lookup: ["company:company_id.name", "stage:stage_id.label", "contact:contact_id.name"],
+      lookup: ["company:company_id.name", "stage:stage_id.label", "contact:contact_id.name", "contact_email:contact_id.email"],
       order: ["name"],
       limit: 200,
     }),
@@ -123,10 +128,17 @@ export function Handover({ rest }: ScreenProps) {
   const [to, setTo] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [withSteps, setWithSteps] = useState(true);
+  // "Introduce … to the customer by e-mail" (S1): on when the deal's contact has an address, and the reader's to undo.
+  const [introduce, setIntroduce] = useState(true);
+  // "Tell the new owner" is the `deal-handed-over` rule: what is said is its real state (plan-67 T10i).
+  const told = useLoad(() => ruleStates(session).then((states) => (states === null || states["deal-handed-over"] === undefined ? "unknown" : states["deal-handed-over"] ? "on" : "off")), [session]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<Done | null>(null);
   const noteKey = useRef<{ of: string; key: string }>({ of: "", key: "" });
-  useEffect(() => setTo(null), [dealId]);
+  useEffect(() => {
+    setTo(null);
+    setIntroduce(true);
+  }, [dealId]);
   const canHand = session.can("deals", "update");
 
   return (
@@ -180,6 +192,12 @@ export function Handover({ rest }: ScreenProps) {
                 {done.why !== null && ` ${done.why}`}
               </li>
             )}
+            {done.introduced !== null && (
+              <li data-testid="hand-introduced">
+                <Icon name="mail" size={14} />
+                {t("hand.done.introduced", { contact: done.introduced, name: firstName(done.to) })}
+              </li>
+            )}
             <li>
               <Icon name="history" size={14} />
               {t("hand.done.history")}
@@ -217,6 +235,8 @@ export function Handover({ rest }: ScreenProps) {
             const openSteps = brief.load.state === "ready" && brief.load.data !== null ? brief.load.data.open : 0;
             const days = deal.entered_stage_at === null ? 0 : Math.max(0, f.dayDiff(new Date(deal.entered_stage_at), now));
             const sitting = sittingOf(days, data.fixed);
+            const reachable = typeof deal.contact_email === "string" && deal.contact_email !== "";
+            const newName = to === null ? null : firstName(nameOf(to));
 
             const confirm = async (): Promise<void> => {
               if (to === null || me === null) return;
@@ -234,7 +254,8 @@ export function Handover({ rest }: ScreenProps) {
                 }
                 noted = true;
               }
-              const handed = await toasts.say(session.act("deals", deal.id, "hand-over", "open", { values: { owner_id: to } }), () => t("hand.toast", { deal: deal.name, name: firstName(nameOf(to)) }));
+              const introducing = introduce && reachable;
+              const handed = await toasts.say(session.act("deals", deal.id, "hand-over", "open", { values: { owner_id: to, introduce: introducing } }), () => t("hand.toast", { deal: deal.name, name: firstName(nameOf(to)) }));
               if (handed === null) {
                 setBusy(false);
                 pool.reload();
@@ -254,7 +275,7 @@ export function Handover({ rest }: ScreenProps) {
                   }
                 }
               } else stayed = theirs.length;
-              setDone({ id: deal.id, deal: deal.name, to: nameOf(to), from, stillOpens: team, noted, moved, stayed, why });
+              setDone({ id: deal.id, deal: deal.name, to: nameOf(to), from, stillOpens: team, noted, moved, stayed, why, introduced: introducing ? deal.contact : null });
               setBusy(false);
               pool.reload();
             };
@@ -315,6 +336,25 @@ export function Handover({ rest }: ScreenProps) {
                           {t("hand.steps.stay", undefined, openSteps)}
                         </p>
                       ))}
+                    <div className="crm-hand-tell" data-testid="hand-tell">
+                      <Icon name={told.load.state === "ready" && told.load.data === "on" ? "bell-ring" : "bell"} size={14} />
+                      <span>
+                        {told.load.state !== "ready" || told.load.data === "unknown"
+                          ? t("hand.tell.unknown")
+                          : told.load.data === "on"
+                            ? t(newName === null ? "hand.tell.on.anyone" : "hand.tell.on", { name: newName ?? "" })
+                            : t("hand.tell.off")}
+                      </span>
+                    </div>
+                    <button type="button" role="switch" aria-checked={introduce && reachable} className="crm-switch mr-gi" disabled={busy || !reachable} aria-describedby="crm-hand-intro-note" onClick={() => setIntroduce((was) => !was)} data-testid="hand-introduce">
+                      <span className="crm-switch-track">
+                        <span className="crm-switch-knob" />
+                      </span>
+                      {newName === null ? t("hand.intro.anyone") : t("hand.intro", { name: newName })}
+                    </button>
+                    <p className="crm-room-quiet" id="crm-hand-intro-note">
+                      {!reachable ? (deal.contact === null ? t("hand.intro.noContact") : t("hand.intro.noAddress", { contact: deal.contact })) : t("hand.intro.to", { contact: deal.contact ?? "" })}
+                    </p>
                     <button type="button" className="crm-btn crm-btn-primary crm-btn-44 crm-btn-wide mr-btn" disabled={busy || to === null || !canHand} onClick={() => void confirm()}>
                       <Icon name="arrow-right-left" />
                       {busy ? t("ui.saving") : to === null ? t("hand.confirm.pick") : t("hand.confirm", { name: firstName(nameOf(to)) })}
