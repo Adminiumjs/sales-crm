@@ -122,6 +122,9 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["job_visits"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
   // A sign-off is never changed or removed once made, by anybody: a correction is a new row that names the one it corrects.
   [["sign_offs"], "RC", "R:team", "R:own", "R", "-", "-", "RC", "RC:own", "R"],
+  // A sign-off refused on arrival (plan 68 S19): written by the crew's phone alone, for its own crew's visit, and read as far
+  // as each reads sign-offs. Nobody changes or removes one.
+  [["refused_sign_offs"], "R", "R:team", "R:own", "R", "-", "-", "R", "RC:own", "R"],
   [["snags"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["delivery_notes", "delivery_note_lines"], "RCUD", "-", "-", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["waste_removals"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
@@ -185,7 +188,7 @@ const PARTS: readonly (readonly [string, readonly string[]])[] = [
   ["team", ["reps", "targets", "one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas", "actions", "meetings", "meeting_slots", "meeting_decisions", "threads", "thread_members", "messages", "starters", "starter_steps", "covers", "cover_notes"]],
   ["inbox", ["enquiries", "shows"]],
   ["showroom", ["showroom_spaces", "showroom_bookings", "samples", "sample_loans", "sample_chases", "display_pieces"]],
-  ["jobs", ["jobs", "crews", "crew_members", "crew_days", "job_visits", "sign_offs", "snags", "delivery_notes", "delivery_note_lines", "waste_removals"]],
+  ["jobs", ["jobs", "crews", "crew_members", "crew_days", "job_visits", "sign_offs", "refused_sign_offs", "snags", "delivery_notes", "delivery_note_lines", "waste_removals"]],
   ["aftercare", ["feedback", "complaints", "warranty_claims"]],
   ["supply", ["deal_stock_needs"]],
   ["fleet", ["vehicles", "vehicle_checks", "vehicle_faults", "fuel_fills", "time_sheets", "time_sheet_lines", "certificates", "subcontractors", "insurance_incidents"]],
@@ -472,13 +475,13 @@ describe("the matrix covers every table, and every table's every role", () => {
   it("lists each of the manifest's tables once", () => {
     expect(MATRIX_TABLES.length).toBe(new Set(MATRIX_TABLES).size);
     expect([...MATRIX_TABLES].sort()).toEqual(tables.map((table) => table.ref).sort());
-    expect(MATRIX_TABLES).toHaveLength(75);
+    expect(MATRIX_TABLES).toHaveLength(76);
   });
 
-  it("has nine roles by seventy-five tables: 675 cells", () => {
+  it("has nine roles by seventy-six tables: 684 cells", () => {
     let cells = 0;
     for (const key of ROLES) cells += EXPECTED.get(key)?.size ?? 0;
-    expect(cells).toBe(675);
+    expect(cells).toBe(684);
   });
 });
 
@@ -698,7 +701,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 74, "sales-manager": 62, rep: 60, "account-manager": 36, marketer: 8, "front-desk": 11, "ops-manager": 25, crew: 16, "read-only": 68 });
+    expect(menu).toEqual({ admin: 75, "sales-manager": 63, rep: 61, "account-manager": 37, marketer: 8, "front-desk": 11, "ops-manager": 26, crew: 17, "read-only": 69 });
   });
 });
 

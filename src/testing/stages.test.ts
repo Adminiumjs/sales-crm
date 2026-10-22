@@ -126,7 +126,7 @@ describe("stage 1, the first release", () => {
   it("holds six parts, 47 tables, and offers no Field crew", () => {
     expect(doc.modules.map((part) => part.id)).toEqual(["selling", "quotes", "accounts", "team", "inbox", "supply"]);
     expect(doc.requiredSchema.tables.length).toBe(47);
-    expect(gone.length).toBe(28);
+    expect(gone.length).toBe(29);
     expect(doc.roles.map((role) => role.key)).toEqual(["admin", "sales-manager", "rep", "account-manager", "marketer", "front-desk", "ops-manager", "read-only"]);
     expect(one.cut.roles).toEqual(["crew"]);
     // Each role keeps only the parts this stage has; the operations manager is left with Supply, the front desk with the Inbox.
@@ -161,7 +161,7 @@ describe("stage 1, the first release", () => {
     for (const role of doc.roles) for (const permission of role.permissions) if (permission.startsWith("page:@")) expect(pages.has(permission.split(":")[1]!.slice(1)), `${role.key}: ${permission}`).toBe(true);
     // The rules of Jobs on site (a won deal makes its job; a crew is told its day sheet changed) are not here to run.
     expect(doc.automations.map((rule) => rule.key)).not.toContain("deal-won-job");
-    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "aftercare-call"]);
+    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "sign-off-refused", "aftercare-call"]);
     // Nor are the delivery e-mails, their templates, or the operations manager's read of won deals.
     expect(Object.keys((doc as unknown as { outbox: { kinds: Record<string, string> } }).outbox.kinds).filter((kind) => kind.startsWith("delivery-"))).toEqual([]);
     expect(JSON.stringify(doc).includes("crm-delivery-")).toBe(false);

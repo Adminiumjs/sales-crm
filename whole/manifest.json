@@ -13982,6 +13982,364 @@
         ]
       },
       {
+        "ref": "refused_sign_offs",
+        "module": "jobs",
+        "label": {
+          "en-US": "Refused sign-off",
+          "de-DE": "Abgelehnte Abnahme",
+          "fr-FR": "Réception refusée",
+          "da-DK": "Afvist godkendelse",
+          "cs-CZ": "Odmítnuté převzetí",
+          "ar-EG": "استلام مرفوض",
+          "zh-CN": "被拒的验收",
+          "zh-TW": "被拒的驗收"
+        },
+        "labelPlural": {
+          "en-US": "Refused sign-offs",
+          "de-DE": "Abgelehnte Abnahmen",
+          "fr-FR": "Réceptions refusées",
+          "da-DK": "Afviste godkendelser",
+          "cs-CZ": "Odmítnutá převzetí",
+          "ar-EG": "استلامات مرفوضة",
+          "zh-CN": "被拒的验收",
+          "zh-TW": "被拒的驗收"
+        },
+        "keyField": "signer_name",
+        "belongs": [
+          {
+            "through": {
+              "table": "crew_members",
+              "link": "crew_id",
+              "on": "crew_id",
+              "user": "user_id"
+            }
+          },
+          {
+            "via": "job_id"
+          }
+        ],
+        "indexes": [
+          [
+            "crew_id"
+          ],
+          [
+            "visit_id"
+          ],
+          [
+            "job_id"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "visit_id",
+            "type": "fk",
+            "references": "job_visits",
+            "label": {
+              "en-US": "Visit",
+              "de-DE": "Einsatz",
+              "fr-FR": "Intervention",
+              "da-DK": "Besøg",
+              "cs-CZ": "Výjezd",
+              "ar-EG": "الزيارة",
+              "zh-CN": "作业",
+              "zh-TW": "作業"
+            }
+          },
+          {
+            "ref": "job_id",
+            "type": "fk",
+            "references": "jobs",
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "job_id",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Job",
+              "de-DE": "Auftrag",
+              "fr-FR": "Chantier",
+              "da-DK": "Opgave",
+              "cs-CZ": "Zakázka",
+              "ar-EG": "أمر العمل",
+              "zh-CN": "工单",
+              "zh-TW": "工單"
+            }
+          },
+          {
+            "ref": "crew_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "crew_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Crew",
+              "de-DE": "Montageteam",
+              "fr-FR": "Équipe",
+              "da-DK": "Hold",
+              "cs-CZ": "Montážní tým",
+              "ar-EG": "الطاقم",
+              "zh-CN": "施工队",
+              "zh-TW": "施工班"
+            }
+          },
+          {
+            "ref": "site_name",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "visit_id",
+                "from": "site_name",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Site name",
+              "de-DE": "Standortname",
+              "fr-FR": "Nom du site",
+              "da-DK": "Stedets navn",
+              "cs-CZ": "Název místa",
+              "ar-EG": "اسم الموقع",
+              "zh-CN": "现场名称",
+              "zh-TW": "現場名稱"
+            }
+          },
+          {
+            "ref": "signer_name",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Signed by (name)",
+              "de-DE": "Unterzeichnet von (Name)",
+              "fr-FR": "Signé par (nom)",
+              "da-DK": "Underskrevet af (navn)",
+              "cs-CZ": "Podepsal(a) (jméno)",
+              "ar-EG": "اسم الموقِّع",
+              "zh-CN": "签字人姓名",
+              "zh-TW": "簽名人姓名"
+            }
+          },
+          {
+            "ref": "signed_at",
+            "type": "timestamptz",
+            "label": {
+              "en-US": "Signed on the phone at",
+              "de-DE": "Auf dem Telefon unterzeichnet um",
+              "fr-FR": "Signé sur le téléphone à",
+              "da-DK": "Underskrevet på telefonen kl.",
+              "cs-CZ": "Podepsáno na telefonu v",
+              "ar-EG": "وقت التوقيع على الهاتف",
+              "zh-CN": "手机上签字时间",
+              "zh-TW": "手機上簽名時間"
+            }
+          },
+          {
+            "ref": "reached_at",
+            "type": "timestamptz",
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Reached us at",
+              "de-DE": "Bei uns eingegangen um",
+              "fr-FR": "Reçue chez nous à",
+              "da-DK": "Nåede os kl.",
+              "cs-CZ": "Dorazilo k nám v",
+              "ar-EG": "وصل إلينا الساعة",
+              "zh-CN": "送达时间",
+              "zh-TW": "送達時間"
+            }
+          },
+          {
+            "ref": "by_id",
+            "type": "text",
+            "maxLength": 36,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Crew member",
+              "de-DE": "Teammitglied",
+              "fr-FR": "Membre de l’équipe",
+              "da-DK": "Holdmedlem",
+              "cs-CZ": "Člen čety",
+              "ar-EG": "عضو الفريق",
+              "zh-CN": "班组成员",
+              "zh-TW": "班組成員"
+            }
+          },
+          {
+            "ref": "snag_id",
+            "type": "fk",
+            "references": "snags",
+            "rules": {
+              "linkable": {
+                "where": [
+                  {
+                    "column": "stops_sign_off",
+                    "eq": true
+                  },
+                  {
+                    "column": "state",
+                    "in": [
+                      "open",
+                      "waiting-part"
+                    ]
+                  }
+                ],
+                "same": [
+                  {
+                    "column": "job_id",
+                    "as": "job_id"
+                  }
+                ]
+              }
+            },
+            "label": {
+              "en-US": "Snag that stopped it",
+              "de-DE": "Mangel, der sie verhinderte",
+              "fr-FR": "Réserve qui l’a bloquée",
+              "da-DK": "Mangel, der stoppede den",
+              "cs-CZ": "Vada, která ho zastavila",
+              "ar-EG": "الملاحظة التي أوقفته",
+              "zh-CN": "阻止验收的整改项",
+              "zh-TW": "阻止驗收的改善項目"
+            }
+          },
+          {
+            "ref": "snag_text",
+            "type": "text",
+            "maxLength": 400,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "snag_id",
+                "from": "text",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "What the snag says",
+              "de-DE": "Text des Mangels",
+              "fr-FR": "Texte de la réserve",
+              "da-DK": "Manglens tekst",
+              "cs-CZ": "Text vady",
+              "ar-EG": "نص الملاحظة",
+              "zh-CN": "整改项内容",
+              "zh-TW": "改善項目內容"
+            }
+          },
+          {
+            "ref": "snag_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "snag_id",
+                "from": "raised_by_id",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Snag raised by",
+              "de-DE": "Mangel gemeldet von",
+              "fr-FR": "Réserve signalée par",
+              "da-DK": "Mangel meldt af",
+              "cs-CZ": "Vadu nahlásil(a)",
+              "ar-EG": "أبلغ عن الملاحظة",
+              "zh-CN": "整改项提出人",
+              "zh-TW": "改善項目提出人"
+            }
+          },
+          {
+            "ref": "snag_raised_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "snag_id",
+                "from": "raised_at",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Snag raised at",
+              "de-DE": "Mangel gemeldet um",
+              "fr-FR": "Réserve signalée à",
+              "da-DK": "Mangel meldt kl.",
+              "cs-CZ": "Vada nahlášena v",
+              "ar-EG": "وقت الإبلاغ عن الملاحظة",
+              "zh-CN": "整改项提出时间",
+              "zh-TW": "改善項目提出時間"
+            }
+          },
+          {
+            "ref": "snag_raised_on",
+            "type": "date",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "snag_id",
+                "from": "raised_on",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Snag raised on",
+              "de-DE": "Mangel gemeldet am",
+              "fr-FR": "Réserve signalée le",
+              "da-DK": "Mangel meldt den",
+              "cs-CZ": "Vada nahlášena dne",
+              "ar-EG": "تاريخ الإبلاغ عن الملاحظة",
+              "zh-CN": "整改项提出日期",
+              "zh-TW": "改善項目提出日期"
+            }
+          },
+          {
+            "ref": "retry_key",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "rules": {
+              "retryKey": true
+            },
+            "label": {
+              "en-US": "Retry key",
+              "de-DE": "Wiederholungsschlüssel",
+              "fr-FR": "Clé de renvoi",
+              "da-DK": "Gentagelsesnøgle",
+              "cs-CZ": "Klíč opakování",
+              "ar-EG": "مفتاح إعادة الإرسال",
+              "zh-CN": "重试键",
+              "zh-TW": "重試鍵"
+            }
+          }
+        ]
+      },
+      {
         "ref": "snags",
         "module": "jobs",
         "label": {
@@ -14339,6 +14697,27 @@
               "ar-EG": "تاريخ الإبلاغ",
               "zh-CN": "提出日期",
               "zh-TW": "提出日期"
+            }
+          },
+          {
+            "ref": "raised_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": "create"
+              }
+            },
+            "label": {
+              "en-US": "Raised at",
+              "de-DE": "Gemeldet um",
+              "fr-FR": "Signalé à",
+              "da-DK": "Meldt kl.",
+              "cs-CZ": "Nahlášeno v",
+              "ar-EG": "وقت الإبلاغ",
+              "zh-CN": "提出时间",
+              "zh-TW": "提出時間"
             }
           },
           {
@@ -20624,6 +21003,7 @@
         "table:@job_visits:update",
         "table:@job_visits:delete",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:read",
         "table:@sign_offs:create",
         "table:@snags:read",
         "table:@snags:create",
@@ -20745,6 +21125,7 @@
         "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-delivery-notes:view",
         "page:@crm-delivery-note-lines:view",
@@ -21203,6 +21584,7 @@
         "table:@jobs:read",
         "table:@job_visits:read",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:read",
         "table:@snags:read",
         "table:@feedback:read",
         "table:@complaints:read",
@@ -21264,6 +21646,7 @@
         "page:@crm-jobs:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-feedback:view",
         "page:@crm-complaints:view",
@@ -21851,6 +22234,13 @@
             "nudge_stuck_days",
             "nudge_soon_days"
           ]
+        },
+        "refused_sign_offs": {
+          "rows": {
+            "read": {
+              "reach": "team"
+            }
+          }
         }
       }
     },
@@ -21988,6 +22378,7 @@
         "table:@jobs:read",
         "table:@job_visits:read",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:read",
         "table:@snags:read",
         "table:@feedback:read",
         "table:@complaints:read",
@@ -22051,6 +22442,7 @@
         "page:@crm-jobs:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-feedback:view",
         "page:@crm-complaints:view",
@@ -22686,6 +23078,13 @@
             "due_back",
             "returned_on"
           ]
+        },
+        "refused_sign_offs": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
         }
       }
     },
@@ -22761,6 +23160,7 @@
         "table:@jobs:read",
         "table:@job_visits:read",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:read",
         "table:@snags:read",
         "table:@delivery_notes:read",
         "table:@delivery_note_lines:read",
@@ -22800,6 +23200,7 @@
         "page:@crm-jobs:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-delivery-notes:view",
         "page:@crm-delivery-note-lines:view",
@@ -23436,6 +23837,7 @@
         "table:@job_visits:update",
         "table:@job_visits:delete",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:read",
         "table:@sign_offs:create",
         "table:@snags:read",
         "table:@snags:create",
@@ -23501,6 +23903,7 @@
         "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-delivery-notes:view",
         "page:@crm-delivery-note-lines:view",
@@ -23910,6 +24313,8 @@
         "table:@job_visits:update",
         "table:@sign_offs:read",
         "table:@sign_offs:create",
+        "table:@refused_sign_offs:read",
+        "table:@refused_sign_offs:create",
         "table:@snags:read",
         "table:@snags:create",
         "table:@snags:update",
@@ -23939,6 +24344,7 @@
         "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-delivery-notes:view",
         "page:@crm-delivery-note-lines:view",
@@ -24181,6 +24587,19 @@
               "reach": "own"
             }
           }
+        },
+        "refused_sign_offs": {
+          "creatable": [
+            "visit_id",
+            "signer_name",
+            "signed_at",
+            "snag_id"
+          ],
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
         }
       }
     },
@@ -24262,6 +24681,7 @@
         "table:@crew_days:read",
         "table:@job_visits:read",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:read",
         "table:@snags:read",
         "table:@delivery_notes:read",
         "table:@delivery_note_lines:read",
@@ -24328,6 +24748,7 @@
         "page:@crm-crew-days:view",
         "page:@crm-job-visits:view",
         "page:@crm-sign-offs:view",
+        "page:@crm-refused-sign-offs:view",
         "page:@crm-snags:view",
         "page:@crm-delivery-notes:view",
         "page:@crm-delivery-note-lines:view",
@@ -26853,6 +27274,79 @@
                 "ar-EG": "{{record.site_name}}، {{record.site_town}}: الآن يوم {{record.day}}. التفاصيل في يومي.",
                 "zh-CN": "{{record.site_name}}，{{record.site_town}}：现改为 {{record.day}}。其余见“我的一天”。",
                 "zh-TW": "{{record.site_name}}，{{record.site_town}}：現改為 {{record.day}}。其餘見「我的一天」。"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "sign-off-refused",
+      "name": {
+        "en-US": "A sign-off is refused on arrival: tell the operations manager",
+        "de-DE": "Eine Abnahme wird beim Eingang abgelehnt: der Einsatzleitung Bescheid geben",
+        "fr-FR": "Une réception est refusée à son arrivée : prévenir le responsable des opérations",
+        "da-DK": "En godkendelse afvises ved ankomst: giv driftslederen besked",
+        "cs-CZ": "Převzetí je po doručení odmítnuto: dát vědět vedoucímu provozu",
+        "ar-EG": "رُفض استلام عند وصوله: أخبر مدير العمليات",
+        "zh-CN": "验收送达时被拒：通知运营经理",
+        "zh-TW": "驗收送達時被拒：通知營運經理"
+      },
+      "description": {
+        "en-US": "A crew's phone signs a job off with no signal; when it is sent, a snag raised meanwhile stops it, and the phone writes down that it was refused. The operations manager is told, and opens the job's Sign-off.",
+        "de-DE": "Das Telefon eines Teams nimmt einen Auftrag ohne Empfang ab; beim Senden verhindert ein inzwischen gemeldeter Mangel die Abnahme, und das Telefon hält die Ablehnung fest. Die Einsatzleitung erfährt es und öffnet die Abnahme des Auftrags.",
+        "fr-FR": "Le téléphone d’une équipe réceptionne un chantier sans réseau ; à l’envoi, une réserve signalée entre-temps la bloque, et le téléphone note le refus. Le responsable des opérations est prévenu et ouvre la réception du chantier.",
+        "da-DK": "Et holds telefon godkender en opgave uden signal; da den sendes, stopper en mangel meldt imens godkendelsen, og telefonen noterer afvisningen. Driftslederen får besked og åbner opgavens godkendelse.",
+        "cs-CZ": "Telefon čety převezme zakázku bez signálu; při odeslání ji zastaví vada nahlášená mezitím a telefon odmítnutí zapíše. Vedoucí provozu se to dozví a otevře převzetí zakázky.",
+        "ar-EG": "يستلم هاتف الفريق العمل دون إشارة؛ وعند إرساله توقفه ملاحظة أُبلغ عنها في الأثناء، فيسجّل الهاتف الرفض. يُبلَّغ مدير العمليات ويفتح استلام العمل.",
+        "zh-CN": "班组手机在没有信号时完成验收；发送时，期间提出的整改项阻止了验收，手机记下被拒。运营经理会收到通知，并打开该工单的验收。",
+        "zh-TW": "班組手機在沒有訊號時完成驗收；送出時，期間提出的改善項目阻止了驗收，手機記下被拒。營運經理會收到通知，並開啟該工單的驗收。"
+      },
+      "enabled": true,
+      "module": "jobs",
+      "trigger": {
+        "kind": "record",
+        "event": "created",
+        "table": "refused_sign_offs"
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A sign-off is refused on arrival: tell the operations manager"
+          },
+          {
+            "id": "tell",
+            "kind": "action",
+            "title": "Tell the operations manager",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "roles": [
+                  "ops-manager"
+                ]
+              },
+              "title": {
+                "en-US": "A sign-off was refused on arrival: {{record.site_name}}",
+                "de-DE": "Eine Abnahme wurde beim Eingang abgelehnt: {{record.site_name}}",
+                "fr-FR": "Une réception a été refusée à son arrivée : {{record.site_name}}",
+                "da-DK": "En godkendelse blev afvist ved ankomst: {{record.site_name}}",
+                "cs-CZ": "Převzetí bylo po doručení odmítnuto: {{record.site_name}}",
+                "ar-EG": "رُفض استلام عند وصوله: {{record.site_name}}",
+                "zh-CN": "验收送达时被拒：{{record.site_name}}",
+                "zh-TW": "驗收送達時被拒：{{record.site_name}}"
+              },
+              "body": {
+                "en-US": "“{{record.snag_text}}” stops it. Put it right; the customer signs again on the next visit.",
+                "de-DE": "„{{record.snag_text}}“ verhindert sie. Beheben Sie den Mangel; die Kundschaft unterschreibt beim nächsten Einsatz erneut.",
+                "fr-FR": "« {{record.snag_text}} » la bloque. Levez la réserve ; le client signe à nouveau lors de la prochaine intervention.",
+                "da-DK": "“{{record.snag_text}}” stopper den. Udbedr manglen; kunden skriver under igen ved næste besøg.",
+                "cs-CZ": "„{{record.snag_text}}“ ho zastavuje. Vadu odstraňte; zákazník podepíše znovu při příštím výjezdu.",
+                "ar-EG": "«{{record.snag_text}}» توقفه. عالجها؛ ويوقّع العميل من جديد في الزيارة القادمة.",
+                "zh-CN": "“{{record.snag_text}}”阻止了验收。请先整改；客户会在下次上门时重新签字。",
+                "zh-TW": "「{{record.snag_text}}」阻止了驗收。請先改善；客戶會在下次到訪時重新簽名。"
               }
             }
           }
@@ -39638,6 +40132,33 @@
       "module": "jobs"
     },
     {
+      "ref": "crm-refused-sign-offs",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.refused_sign_offs",
+        "fallback": "Refused sign-offs"
+      },
+      "titles": {
+        "de-DE": "Abgelehnte Abnahmen",
+        "fr-FR": "Réceptions refusées",
+        "da-DK": "Afviste godkendelser",
+        "cs-CZ": "Odmítnutá převzetí",
+        "ar-EG": "استلامات مرفوضة",
+        "zh-CN": "被拒的验收",
+        "zh-TW": "被拒的驗收"
+      },
+      "nav": {
+        "group": "jobs",
+        "icon": "signature",
+        "order": 16,
+        "offRail": true
+      },
+      "bindings": {
+        "rows": "refused_sign_offs"
+      },
+      "module": "jobs"
+    },
+    {
       "ref": "crm-snags",
       "template": "page-crud",
       "title": {
@@ -40528,7 +41049,8 @@
         "quotes": "/quotes/{id}",
         "companies": "/companies/{id}",
         "contacts": "/contacts/{id}",
-        "site_visits": "/visits/notes/{id}"
+        "site_visits": "/visits/notes/{id}",
+        "refused_sign_offs": "/sign-off/refused/{id}"
       }
     },
     {
