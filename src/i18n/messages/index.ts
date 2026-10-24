@@ -42,6 +42,7 @@ import { vandays } from "../strings/vandays.ts";
 import { removals } from "../strings/removals.ts";
 import { scorecard } from "../strings/scorecard.ts";
 import { dealrules } from "../strings/dealrules.ts";
+import { guards } from "../strings/guards.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
 
 /**
@@ -88,6 +89,7 @@ const AREAS = [
   removals satisfies Area<(typeof removals)["en-US"]>,
   scorecard satisfies Area<(typeof scorecard)["en-US"]>,
   dealrules satisfies Area<(typeof dealrules)["en-US"]>,
+  guards satisfies Area<(typeof guards)["en-US"]>,
 ] as const;
 
 /**
@@ -133,4 +135,5 @@ export type MessageKey =
   | keyof (typeof vandays)["en-US"]
   | keyof (typeof removals)["en-US"]
   | keyof (typeof scorecard)["en-US"]
-  | keyof (typeof dealrules)["en-US"];
+  | keyof (typeof dealrules)["en-US"]
+  | keyof (typeof guards)["en-US"];

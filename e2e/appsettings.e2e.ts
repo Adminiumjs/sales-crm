@@ -240,9 +240,10 @@ test("the sales manager has Selling and nothing else: she writes her eight setti
     await type(page, "quote_valid_days", "45");
     await expect(toast(page)).toHaveText("A quote is valid for: saved.");
     expect((await settingsRow(direct, data))["quote_valid_days"]).toBe(45);
-    // Outside its bounds: not sent, and the field says what it takes.
+    // Outside its bounds: not sent, and the field says what it takes (more days than the warning before it runs out, which
+    // is 3: plan 68 X4 keeps the warning below the validity).
     await type(page, "quote_valid_days", "400");
-    await expect(setting(page, "quote_valid_days").getByRole("alert")).toHaveText("From 1 to 365.");
+    await expect(setting(page, "quote_valid_days").getByRole("alert")).toHaveText("From 4 to 365.");
     // Warm stays under stale.
     await type(page, "sitting_warm_days", "30");
     await expect(setting(page, "sitting_warm_days").getByRole("alert")).toHaveText("From 1 to 29.");
@@ -624,4 +625,63 @@ test("Settings at 390 wide in the dark, and in Arabic from the right", async ({ 
     expect(await noSidewaysScroll(page)).toBe(true);
     await picture(page, "p15-9-tessa-working-time-arabic");
   });
+});
+
+/**
+ * Plan 68 X4: a pair the server keeps apart is refused naming both settings. The screen bounds each field by the other
+ * as it last read them, so the save is made to cross its partner on its way (the request's value changed in flight):
+ * what comes back is the server's own refusal, said on the page in the reader's words.
+ */
+test("a setting saved past its partner is refused by the server, and the page names both settings", async ({ as, api, data }) => {
+  const admin = await api("tessa");
+  await restore(admin, data);
+  const page = await (await as("tessa")).newPage();
+  try {
+    await page.route("**/api/v1/data/**", async (route) => {
+      const request = route.request();
+      if (request.method() !== "PATCH" || !/crm_settings/.test(decodeURIComponent(request.url()))) return route.fallback();
+      const body = request.postDataJSON() as { values: Record<string, unknown> };
+      if (body.values["sitting_warm_days"] !== 20) return route.fallback();
+      return route.fallback({ postData: JSON.stringify({ ...body, values: { ...body.values, sitting_warm_days: 30 } }) });
+    });
+    await page.goto(`${STAFF}settings`);
+    await expect(setting(page, "sitting_warm_days").locator("input")).toHaveValue("14");
+    await type(page, "sitting_warm_days", "20");
+    await expect(toast(page)).toHaveText("Not saved. “Warm from” must be fewer days than “Stale from”. Change one of the two.");
+    expect(Number((await settingsRow(admin, data))["sitting_warm_days"])).toBe(14);
+  } finally {
+    await restore(admin, data);
+  }
+});
+
+/** Plan 68 X4: Settings shows every lost reason, fifty at a time. The 46 it adds are "Spec reason …", removed at the end. */
+test("Settings shows every lost reason, fifty and then the rest", async ({ as, api, data }) => {
+  const admin = await api("tessa");
+  const headers = await csrf(admin);
+  const clean = async () => {
+    for (const made of await rows<{ id: number }>(admin, data, "lost_reasons", { column: "label", op: "like", value: "Spec reason%" })) {
+      expect((await admin.delete(data("lost_reasons", `/${String(made.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
+    }
+  };
+  await clean();
+  try {
+    const kept = (await rows<{ id: number }>(admin, data, "lost_reasons")).length;
+    const adding = 51 - kept;
+    for (let n = 0; n < adding; n += 1) {
+      const res = await admin.post(data("lost_reasons"), { headers, data: { values: { label: `Spec reason ${String(n + 1).padStart(2, "0")}`, position: 100 + n } } });
+      expect(res.status(), await res.text()).toBe(201);
+    }
+    const page = await (await as("tessa")).newPage();
+    await page.goto(`${STAFF}settings`);
+    const reasons = card(page, "reasons");
+    await expect(reasons.locator(".crm-ast-row")).toHaveCount(50);
+    await expect(reasons.locator('[data-more="lost_reasons"]')).toContainText("Show 1 more");
+    await expect(reasons.locator('[data-more="lost_reasons"]')).toContainText("50 of 51");
+    await reasons.locator('[data-more="lost_reasons"] button').click();
+    await expect(reasons.locator(".crm-ast-row")).toHaveCount(51);
+    await expect(reasons.locator(".crm-ast-row").last().locator(".crm-ast-input-name")).toHaveValue(`Spec reason ${String(adding).padStart(2, "0")}`);
+    await expect(reasons.locator('[data-more="lost_reasons"]')).toHaveCount(0);
+  } finally {
+    await clean();
+  }
 });

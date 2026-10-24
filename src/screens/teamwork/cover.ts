@@ -45,6 +45,9 @@ export function workingDays(from: string, to: string, week: ReadonlySet<Day> = w
   return workingDaysBetween(from, to, week);
 }
 
+/** A cover's last day is at most this many days after its first (plan 68 X5, D11; the manifest's `notAfter` on `covers.ends_on`). */
+export const COVER_MOST_DAYS = 365;
+
 export const COVER_COLUMNS = ["id", "owner_id", "cover_id", "starts_on", "ends_on"];
 
 /** Every cover the reader reaches, the earliest first. */

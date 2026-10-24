@@ -296,8 +296,9 @@ const DEAL_LOOKUPS = ["stage:stage_id.label", "reason:lost_reason_id.label"];
 
 /**
  * "Customer since" is the day the first deal here was won; with none won,
- * "in conversation since" the day the first was opened. The server puts the
- * rows in order and this takes the first.
+ * "in conversation since" the day the first was opened. Both are the
+ * server's: the earliest of a date (plan 68 S17, E9), asked as one figure
+ * each over the deals the reader reaches; nothing here sorts rows.
  *
  * It is a fact about the WHOLE company, so the day is said only to a reader
  * who was answered EVERY deal there (as many deals as the company has marks):
@@ -368,12 +369,14 @@ export async function readProfile(session: StaffSession, reach: Reach, id: numbe
     const found = await session.list<{ deal_id: number; code: string | null }>("jobs", { select: ["deal_id", "code"], where: { column: "deal_id", op: "in", value: won }, limit: PAGE }).catch(() => null);
     for (const job of found?.rows ?? []) if (job.code !== null) jobs[job.deal_id] = job.code;
   }
-  // The first day of each kind, from the rows the server answered this reader (every deal here, for a team's reader).
-  const days = (state: "won" | null, column: "closed_on" | "opened_on"): string | null =>
-    rows
-      .filter((deal) => (state === null || deal.state === state) && deal[column] !== null)
-      .map((deal) => String(deal[column]))
-      .sort()[0] ?? null;
+  // The first day of each kind: the server's earliest date over the deals here this reader reaches (every deal, for a team's reader).
+  const earliest = async (state: "won" | null, column: "closed_on" | "opened_on"): Promise<string | null> => {
+    if (!deals) return null;
+    const filters: Condition[] = state === null ? [here] : [here, { column: "state", op: "eq", value: state }];
+    const figure = await session.figure<{ value: unknown }>({ table: "deals", shape: "single-metric", filters, aggregations: [{ fn: "min", column, alias: "first" }] }).catch(() => ({ value: null }));
+    return typeof figure.value === "string" && figure.value !== "" ? figure.value.slice(0, 10) : null;
+  };
+  const [firstWon, firstOpened] = await Promise.all([earliest("won", "closed_on"), earliest(null, "opened_on")]);
   const allMarks = marks?.rows ?? null;
   const changeable = (await changeableOf(session, [company])).has(company.id);
   return {
@@ -382,7 +385,7 @@ export async function readProfile(session: StaffSession, reach: Reach, id: numbe
     closed,
     quiet: allMarks === null || reach === "count" ? [] : quietLines(allMarks, open, names, stageNames),
     openEverybody: allMarks === null ? null : allMarks.filter((mark) => mark.state === "open").length,
-    since: sinceOf(reach, days("won", "closed_on"), days(null, "opened_on"), allMarks, allMarks !== null && (marks?.total ?? allMarks.length) === rows.length),
+    since: sinceOf(reach, firstWon, firstOpened, allMarks, allMarks !== null && (marks?.total ?? allMarks.length) === rows.length),
     people: people.page.rows,
     details: people.details,
     latest,

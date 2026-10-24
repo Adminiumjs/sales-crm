@@ -5,8 +5,10 @@
  * deals have sat under the "warm" mark, between the two marks and past the
  * "stale" one, are counts the server makes (the marks are the business's own
  * settings; the cut-off moments are worked out from the server's clock). The
- * design's "typical age" is a median, which the server cannot answer, so it
- * is not drawn: nothing here sorts rows to find a middle.
+ * design's "typical age" is the server's median of the moment each deal
+ * entered its stage (plan 68 S15, E9: of a date, the earlier of the two
+ * middle ones), asked beside each stage's count: nothing here sorts rows to
+ * find a middle, and the page only counts the days from that moment to now.
  */
 import { useCallback, useEffect, useState } from "react";
 
@@ -37,6 +39,8 @@ interface HealthData {
   owners: string[];
   /** Count and weighted value by stage. */
   byStage: Record<string, Record<string, number>>;
+  /** By stage, the middle moment its open deals entered it (the server's median), or null with none. */
+  typical: Record<string, string | null>;
   buckets: Record<Bucket, Record<string, Record<string, number>>>;
   oldest: Record<string, Oldest | undefined>;
 }
@@ -49,7 +53,7 @@ async function read(session: StaffSession, f: Formatters, today: string, who: st
   const counted = (more: Condition[]) => session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [...scoped, ...more], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }], limit: 50 });
   const sitting = ["id", "name", "owner_id", "amount", "entered_stage_at", "stage_id"];
   const [byStage, fresh, warmed, staled, byOwner, longest] = await Promise.all([
-    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: scoped, groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }, { fn: "sum", column: "weighted_value", alias: "w" }], limit: 50 }),
+    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: scoped, groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }, { fn: "sum", column: "weighted_value", alias: "w" }, { fn: "median", column: "entered_stage_at", alias: "middle" }], limit: 50 }),
     counted([{ column: "entered_stage_at", op: "gte", value: warm }]),
     counted([{ column: "entered_stage_at", op: "lt", value: warm }, { column: "entered_stage_at", op: "gte", value: stale }]),
     counted([{ column: "entered_stage_at", op: "lt", value: stale }]),
@@ -69,6 +73,7 @@ async function read(session: StaffSession, f: Formatters, today: string, who: st
     days,
     owners: [...people.reps, ...owning.filter((id) => !people.reps.includes(id))],
     byStage: byKey(byStage),
+    typical: Object.fromEntries(byStage.items.filter((item) => item.key !== null).map((item) => [String(item.key), typeof item.values?.["middle"] === "string" ? (item.values["middle"] as unknown as string) : null])),
     buckets: { fresh: byKey(fresh, "n"), warm: byKey(warmed, "n"), stale: byKey(staled, "n") },
     oldest: Object.fromEntries(stages.map((stage, i) => [String(stage.id), oldest[i]])),
   };
@@ -139,6 +144,7 @@ export function Health({ rest = [] }: Partial<ScreenProps>) {
                   const count = data.byStage[key]?.["n"] ?? 0;
                   const oldest = data.oldest[key];
                   const sat = oldest === undefined ? 0 : (daysSince(f, now, oldest.entered_stage_at) ?? 0);
+                  const typical = daysSince(f, now, data.typical[key] ?? null);
                   return (
                     <section key={stage.id} className="crm-hl-stage mr-card" data-stage={stage.label} aria-label={stage.label}>
                       <div className="crm-hl-head">
@@ -158,6 +164,14 @@ export function Health({ rest = [] }: Partial<ScreenProps>) {
                               {f.money(data.byStage[key]?.["w"] ?? 0)}
                             </span>
                           </span>
+                          {count > 0 && typical !== null && (
+                            <span>
+                              {t("guards.health.typical")}
+                              <span className="crm-mono" data-figure="typical">
+                                {t("closed.days", undefined, typical)}
+                              </span>
+                            </span>
+                          )}
                         </div>
                       </div>
                       {count > 0 && (

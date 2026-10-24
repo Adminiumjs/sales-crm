@@ -88,10 +88,22 @@ export function workDaysOf(row: Record<string, unknown> | null | undefined): Set
 /** The weekday of a calendar day: `2026-07-28` is `tue`. */
 export const dayOfKey = (dayKey: string): Day => DAYS[(new Date(`${dayKey}T12:00:00Z`).getUTCDay() + 6) % 7]!;
 
-/** Working days from one calendar day to another, both counted, by the business's working week. */
+/** Whole calendar days from one day to another (`2026-08-10` to `2026-08-12` is 2). */
+const daysApart = (from: string, to: string): number => Math.round((Date.parse(`${to}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / 86_400_000);
+
+/**
+ * Working days from one calendar day to another, both counted, by the
+ * business's working week. By arithmetic, never a walk along the days (plan
+ * 68 X5): the whole weeks each count the week's working days, and the few
+ * days left over (six at most) are looked at one by one.
+ */
 export function workingDaysBetween(from: string, to: string, days: ReadonlySet<Day>): number {
-  let count = 0;
-  for (let day = from; day <= to; day = addDays(day, 1)) if (days.has(dayOfKey(day))) count += 1;
+  if (to < from) return 0;
+  const span = daysApart(from, to) + 1;
+  const weeks = Math.floor(span / 7);
+  const first = DAYS.indexOf(dayOfKey(from));
+  let count = weeks * days.size;
+  for (let extra = 0; extra < span % 7; extra += 1) if (days.has(DAYS[(first + extra) % 7]!)) count += 1;
   return count;
 }
 
@@ -195,6 +207,22 @@ export interface RepRow extends Record<string, unknown> {
 
 const OPEN: Condition = { column: "state", op: "eq", value: "open" };
 
+/** The most stages or lost reasons Settings reads (and counts deals for): far more than any business keeps. */
+export const LIST_MOST = 1000;
+/** How many of a list Settings shows before "Show more" (plan 68 X4). */
+export const LIST_PAGE = 50;
+
+/** Every row of a short list, read a page of 200 at a time (a list answers 200 at most), up to {@link LIST_MOST}. */
+export async function everyRow<R extends Record<string, unknown>>(session: StaffSession, ref: string, q: { select: string[]; order: string[] }): Promise<R[]> {
+  const out: R[] = [];
+  for (let offset = 0; offset < LIST_MOST; offset += 200) {
+    const page = await session.list<R>(ref, { ...q, limit: 200, offset });
+    out.push(...page.rows);
+    if (page.rows.length < 200) break;
+  }
+  return out;
+}
+
 export interface SellingData {
   settings: SettingsRow | null;
   stages: StageRow[];
@@ -223,8 +251,9 @@ export async function readSelling(session: StaffSession, f: Formatters): Promise
   const today = f.dayKey(session.now());
   const [settings, stages, reasons] = await Promise.all([
     readSettings(session),
-    session.list<StageRow>("stages", { select: ["id", "label", "odds", "position", "worth_asking"], order: ["position", "id"], limit: 50 }).then((page) => page.rows),
-    session.list<ReasonRow>("lost_reasons", { select: ["id", "label", "position"], order: ["position", "id"], limit: 50 }).then((page) => page.rows),
+    // Every stage and every reason, however many (plan 68 X4): the screen shows them fifty at a time.
+    everyRow<StageRow>(session, "stages", { select: ["id", "label", "odds", "position", "worth_asking"], order: ["position", "id"] }),
+    everyRow<ReasonRow>(session, "lost_reasons", { select: ["id", "label", "position"], order: ["position", "id"] }),
   ]);
   const days = (column: string, fallback: number): number => num(settings?.[column]) || fallback;
   const count = (filters: Condition[]): Promise<number> => session.figure<{ value: number }>({ table: "deals", shape: "single-metric", filters, aggregations: [{ fn: "count", alias: "n" }] }).then((figure) => num(figure.value));
@@ -234,9 +263,9 @@ export async function readSelling(session: StaffSession, f: Formatters): Promise
   const staleAt = before(f, today, days("sitting_stale_days", 30));
   const sum = (filters: Condition[]): Promise<number> => session.figure<{ value: number }>({ table: "deals", shape: "single-metric", filters, aggregations: [{ fn: "sum", column: "weighted_value", alias: "w" }] }).then((figure) => num(figure.value));
   const [openBy, allBy, lostBy, warm, stale, quiet, stuck, soon, openAll, weightedAll, lostAll] = await Promise.all([
-    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [OPEN], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }, { fn: "sum", column: "weighted_value", alias: "w" }], limit: 50 }),
-    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }], limit: 50 }),
-    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [{ column: "state", op: "eq", value: "lost" }], groupBy: ["lost_reason_id"], aggregations: [{ fn: "count", alias: "n" }], limit: 50 }),
+    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [OPEN], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }, { fn: "sum", column: "weighted_value", alias: "w" }], limit: LIST_MOST }),
+    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }], limit: LIST_MOST }),
+    session.figure<Grouped>({ table: "deals", shape: "categorical", filters: [{ column: "state", op: "eq", value: "lost" }], groupBy: ["lost_reason_id"], aggregations: [{ fn: "count", alias: "n" }], limit: LIST_MOST }),
     count([OPEN, { column: "entered_stage_at", op: "lt", value: warmAt }, { column: "entered_stage_at", op: "gte", value: staleAt }]),
     count([OPEN, { column: "entered_stage_at", op: "lt", value: staleAt }]),
     count([OPEN, { column: "last_activity_at", op: "lt", value: before(f, today, days("nudge_quiet_days", 7)) }]),

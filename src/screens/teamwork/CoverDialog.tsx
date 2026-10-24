@@ -21,7 +21,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { useF, type Who } from "./common.tsx";
-import { coverState, makeCover, type Cover } from "./cover.ts";
+import { COVER_MOST_DAYS, coverState, makeCover, type Cover } from "./cover.ts";
 
 export type CoverEdit = { mode: "new" } | { mode: "dates"; cover: Cover };
 
@@ -55,6 +55,8 @@ export function CoverDialog({ edit, who, covers, wide, onClose, onDone }: { edit
     if (!day.test(from)) return t("cover.dlg.err.first");
     if (from < today && (isNew || from !== was.starts_on)) return t("cover.dlg.err.past");
     if (to !== "" && (!day.test(to) || to < from)) return t("cover.dlg.err.order");
+    // A year at most (plan 68 X5, D11): longer is "until further notice", an empty last day. The server holds it too.
+    if (to !== "" && to > addDays(from, COVER_MOST_DAYS)) return t("guards.cover.year");
     const clash = covers.find((one) => one.id !== was?.id && one.owner_id === away && coverState(one, today) !== "over" && from <= (one.ends_on ?? "9999-12-31") && one.starts_on <= (to === "" ? "9999-12-31" : to));
     return clash === undefined ? null : t("cover.dlg.err.taken", { away: firstName(name(away)) });
   })();
@@ -80,7 +82,9 @@ export function CoverDialog({ edit, who, covers, wide, onClose, onDone }: { edit
           ? t("cover.dlg.err.taken", { away: firstName(name(away)) })
           : fields["cover_id"] === "cannot-open"
             ? t("cover.dlg.err.cannotOpen", { by: firstName(name(by)) })
-            : fields["cover_id"] !== undefined || fields["owner_id"] !== undefined || saved.error.status === 403
+            : fields["ends_on"] === "out-of-range"
+              ? t(to !== "" && to < from ? "guards.cover.order" : "guards.cover.year")
+              : fields["cover_id"] !== undefined || fields["owner_id"] !== undefined || saved.error.status === 403
               ? t("cover.dlg.err.notYours")
               : reasonOf(saved.error, t);
       return setError(t("ui.refused", { reason }));

@@ -622,3 +622,29 @@ test("site visits at 390 wide in the dark, the dialog too; and in Arabic right t
     await arabic.close();
   });
 });
+
+/**
+ * Plan 68 X7 (D18): the server refuses a new visit that starts before now. The dialog books nothing in the past itself,
+ * so the time is moved into the past on its way: what comes back is the server's refusal, said in the dialog's words.
+ * Nothing is made.
+ */
+test("a visit sent to start in the past is refused by the server, and the dialog says why", async ({ as, data }) => {
+  const context = await as("priya");
+  const page = await context.newPage();
+  await page.goto(`${STAFF}visits`);
+  await page.getByTestId("visit-book").click();
+  const dialog = page.getByRole("dialog", { name: "Book a site visit" });
+  await dialog.getByLabel("Deal").selectOption({ label: "Fernway Clinics · Clinic waiting-room seating" });
+  await dialog.getByLabel("Purpose").fill("Spec: in the past");
+  await dialog.getByLabel("Date").fill("2026-08-06");
+  await page.route("**/api/v1/data/**", async (route) => {
+    const request = route.request();
+    if (request.method() !== "POST" || !/crm_site_visits$/.test(new URL(request.url()).pathname)) return route.fallback();
+    const body = request.postDataJSON() as { values: Record<string, unknown> };
+    return route.fallback({ postData: JSON.stringify({ ...body, values: { ...body.values, starts_at: "2026-07-27T09:00:00.000Z" } }) });
+  });
+  await dialog.getByRole("button", { name: "Book", exact: true }).click();
+  await expect(dialog.locator(".crm-form-error")).toHaveText("Not saved. A visit cannot start in the past. Pick a time from now on.");
+  await page.unroute("**/api/v1/data/**");
+  expect(await named(context.request, data, "Spec: in the past")).toEqual([]);
+});

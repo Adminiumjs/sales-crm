@@ -89,6 +89,22 @@ describe("the working week", () => {
     expect(workingDays("2026-08-15", "2026-08-16")).toBe(0);
     expect(workingDays("2026-08-21", "2026-08-10")).toBe(0);
   });
+  it("counts working days by arithmetic: the same as a day-by-day count, over a year's span, never walking the days (plan 68 X5)", () => {
+    const walk = (from: string, to: string, days: ReadonlySet<Day>): number => {
+      let n = 0;
+      for (let at = Date.parse(`${from}T12:00:00Z`); at <= Date.parse(`${to}T12:00:00Z`); at += 86_400_000) if (days.has(dayOfKey(new Date(at).toISOString().slice(0, 10)))) n += 1;
+      return n;
+    };
+    const weeks = [workDaysOf(null), week("mon", "tue", "wed", "thu", "fri", "sat"), week("sun", "wed"), week("sat")];
+    for (const days of weeks) for (const [from, to] of [["2026-08-10", "2026-08-21"], ["2026-08-13", "2027-08-13"], ["2026-03-27", "2026-03-30"], ["2026-10-24", "2026-10-25"], ["2026-12-31", "2027-01-06"]] as const) {
+      expect(workingDaysBetween(from, to, days), `${from} ${to}`).toBe(walk(from, to, days));
+    }
+    // A cover "until further notice" counted to a date far off answers at once.
+    expect(workingDaysBetween("2026-01-05", "2126-01-04", workDaysOf(null))).toBe(walk("2026-01-05", "2126-01-04", workDaysOf(null)));
+    const source = readFileSync(fileURLToPath(new URL("./data.ts", import.meta.url)), "utf8");
+    const body = source.slice(source.indexOf("export function workingDaysBetween"), source.indexOf("\n}\n", source.indexOf("export function workingDaysBetween")));
+    expect(body).not.toMatch(/addDays\(/);
+  });
   it("orders a week from its first day", () => {
     expect(weekFrom("mon")).toEqual(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
     expect(weekFrom("sun")).toEqual(["sun", "mon", "tue", "wed", "thu", "fri", "sat"]);

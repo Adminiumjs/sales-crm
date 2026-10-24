@@ -972,6 +972,13 @@
                   ]
                 },
                 "clearOnBack": true
+              },
+              "requiredWhen": {
+                "column": "state",
+                "in": [
+                  "won",
+                  "lost"
+                ]
               }
             },
             "label": {
@@ -1000,6 +1007,13 @@
                   ]
                 },
                 "clearOnBack": true
+              },
+              "requiredWhen": {
+                "column": "state",
+                "in": [
+                  "won",
+                  "lost"
+                ]
               }
             },
             "label": {
@@ -5819,6 +5833,9 @@
               "ar-EG": "وقت البدء",
               "zh-CN": "开始时间",
               "zh-TW": "開始時間"
+            },
+            "rules": {
+              "notBefore": "now"
             }
           },
           {
@@ -6900,7 +6917,8 @@
                   "columns": [
                     "may_email"
                   ]
-                }
+                },
+                "strict": true
               }
             }
           },
@@ -6925,7 +6943,8 @@
                   "columns": [
                     "may_email"
                   ]
-                }
+                },
+                "strict": true
               }
             }
           },
@@ -10566,6 +10585,15 @@
               "ar-EG": "إلى",
               "zh-CN": "结束日期",
               "zh-TW": "結束日期"
+            },
+            "rules": {
+              "notBefore": {
+                "column": "starts_on"
+              },
+              "notAfter": {
+                "column": "starts_on",
+                "days": 365
+              }
             }
           },
           {
@@ -11311,6 +11339,19 @@
               "ar-EG": "الصفقة",
               "zh-CN": "商机",
               "zh-TW": "案件"
+            },
+            "rules": {
+              "changes": [
+                {
+                  "while": {
+                    "column": "state",
+                    "in": [
+                      "claimed"
+                    ]
+                  },
+                  "by": "claimed_by_id"
+                }
+              ]
             }
           },
           {
@@ -21263,6 +21304,10 @@
               "validation": {
                 "min": 0,
                 "max": 30
+              },
+              "notAfter": {
+                "column": "quote_valid_days",
+                "strict": true
               }
             },
             "label": {
@@ -21314,6 +21359,10 @@
               "validation": {
                 "min": 1,
                 "max": 364
+              },
+              "notAfter": {
+                "column": "sitting_stale_days",
+                "strict": true
               }
             },
             "label": {
@@ -21603,6 +21652,10 @@
               "validation": {
                 "minLength": 5,
                 "maxLength": 5
+              },
+              "notAfter": {
+                "column": "work_to",
+                "strict": true
               }
             },
             "label": {
@@ -21647,6 +21700,10 @@
               "validation": {
                 "minLength": 5,
                 "maxLength": 5
+              },
+              "notAfter": {
+                "column": "showroom_closes",
+                "strict": true
               }
             },
             "label": {
@@ -21826,6 +21883,9 @@
               "validation": {
                 "minLength": 2,
                 "maxLength": 2
+              },
+              "options": {
+                "list": "builtin:countries"
               }
             },
             "label": {
@@ -22528,7 +22588,8 @@
         "page:@crm-van-days:view",
         "table:@left_visits:read",
         "table:@left_visits:delete",
-        "page:@crm-left-visits:view"
+        "page:@crm-left-visits:view",
+        "table:@deals:import"
       ],
       "limits": {
         "saved_views": {
@@ -41077,9 +41138,32 @@
             "daysSince": {
               "column": "entered_stage_at",
               "warnFrom": 14,
-              "alertFrom": 30
+              "alertFrom": 30,
+              "label": "in stage",
+              "labels": {
+                "de-DE": "in der Phase",
+                "fr-FR": "dans l’étape",
+                "da-DK": "i fasen",
+                "cs-CZ": "ve fázi",
+                "ar-EG": "في المرحلة",
+                "zh-CN": "在此阶段",
+                "zh-TW": "在此階段"
+              }
             },
-            "date": "expected_close"
+            "date": "expected_close",
+            "secondAmount": {
+              "column": "weighted_value",
+              "label": "w",
+              "labels": {
+                "de-DE": "gew.",
+                "fr-FR": "pond.",
+                "da-DK": "vægt.",
+                "cs-CZ": "váž.",
+                "ar-EG": "مرجّح",
+                "zh-CN": "加权",
+                "zh-TW": "加權"
+              }
+            }
           },
           "note": {
             "text": "Columns come from Stages",
@@ -41093,6 +41177,10 @@
               "zh-TW": "欄位來自階段表"
             },
             "href": "/p/crm-stages"
+          },
+          "toolbar": {
+            "total": true,
+            "person": "owner_id"
           }
         }
       },

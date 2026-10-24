@@ -184,7 +184,10 @@ for (const [dialect, reachable] of LEGS) {
     });
 
     it('counts a write-up on the visit, and keeps a visit that was written up or made', async () => {
-      const id = made(await book('dana', 'dana', 'danas', { starts_at: at(-2) }));
+      // Booked ahead (a visit never starts in the past when it is made: plan 68 X7), then dated two days back, as a visit
+      // written up after the day is: a later change is not held to "not before now".
+      const id = made(await book('dana', 'dana', 'danas', { starts_at: at(5) }));
+      expect(said(await s.change('dana', 'site_visits', id, { starts_at: at(-2) }))).toBe('ok');
       expect(Number((await row('dana', 'site_visits', id))?.['written'])).toBe(0);
       const note = made(await s.make('dana', 'visit_notes', { visit_id: id, saw: 'Narrow door', said: 'Keep the keypads', next: 'Re-cut the run' }));
       const agreed = made(await s.make('dana', 'visit_agreed', { visit_note_id: note, text: 'Layout by Friday', position: 0 }));

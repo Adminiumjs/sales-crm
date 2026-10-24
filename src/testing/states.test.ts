@@ -114,6 +114,8 @@ describe("a deal", () => {
     const closedAt = table("deals").columns.find((one) => one.ref === "closed_at")!;
     expect(closedAt.nullable).toBe(true);
     expect(closedAt.rules?.stamp).toEqual({ set: "now", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
+    // A closed deal carries its closed moment: a file's line without one is named and not brought in (plan 68 R5, E13).
+    expect((closedAt.rules as { requiredWhen?: unknown } | undefined)?.requiredWhen).toEqual({ column: "state", in: ["won", "lost"] });
     expect(table("deals").columns.find((one) => one.ref === "lost_reason_id")!.nullable).toBe(true);
   });
 
@@ -121,7 +123,9 @@ describe("a deal", () => {
     // "Average cycle" is the server's average of a stored figure: whole days from the day it opened to the day it closed.
     const closedOn = table("deals").columns.find((one) => one.ref === "closed_on")!;
     expect([closedOn.type, closedOn.nullable]).toEqual(["date", true]);
+    // A person's close stamps the business's day; a deal brought in closed carries its own (plan 68 R5), never the import's.
     expect(closedOn.rules?.stamp).toEqual({ set: "today", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
+    expect((closedOn.rules as { requiredWhen?: unknown } | undefined)?.requiredWhen).toEqual({ column: "state", in: ["won", "lost"] });
     const cycle = table("deals").columns.find((one) => one.ref === "cycle_days")!;
     expect([cycle.type, cycle.nullable, (cycle.rules as { formula?: unknown } | undefined)?.formula]).toEqual(["int", true, { daysBetween: ["opened_on", "closed_on"] }]);
   });

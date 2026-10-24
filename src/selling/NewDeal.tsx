@@ -196,7 +196,9 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
       const told = await session.update("enquiries", start.enquiry.id, { deal_id: dealId, company_id: company });
       if (told.state !== "saved") {
         onSaved(dealId);
-        return stop(t("deal.new.error.tell", { reason: told.state === "refused" ? reasonOf(told.error, t) : t("deal.new.error.step.unknown") }));
+        // Only whoever claimed an enquiry ties it to a deal, while it is claimed (plan 68 X6): the server's refusal names the column.
+        const unclaimed = told.state === "refused" && told.error.status === 403 && (told.error.details["column"] === "deal_id" || told.error.fields["deal_id"] !== undefined);
+        return stop(t("deal.new.error.tell", { reason: told.state === "refused" ? (unclaimed ? t("guards.enquiry.claimFirst") : reasonOf(told.error, t)) : t("deal.new.error.step.unknown") }));
       }
       around.current.told = true;
     }
