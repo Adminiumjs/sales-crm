@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Plan 68, the rule cap (§10.10, owner 2026-10-24): a manifest ships at most 24 rules, and T05 brings
-// the CRM to 25. `approval-given` and `approval-refused` become one rule, `approval-decided`: the same
-// change (a quote's approval decided), the same person told (who asked), both shipped switched off.
+// the CRM to 25. `approval-given` and `approval-refused` become one rule, kept under the key `approval-given`: the
+// same change (a quote's approval decided), the same person told (who asked), both shipped switched off.
 // Each notice keeps its words; a branch picks which. `approval-asked` stays its own rule: it ships
 // switched on, and these two are off for the install's owner to switch on.
 //
-// An update from 0.2.1 removes the two old rules unless the owner edited them, and writes this one.
+// The key stays `approval-given` (T09): an update rewrites a rule of the same key and keeps the owner's switch, so an
+// install that switched the approval notice on keeps it on (a new key would arrive switched off, and the two old rules
+// would go). `approval-refused` goes, unless its owner edited it; one switched on alone is lost (the bell for "refused").
 //
 // Run: node scripts/plan68/rule-cap-whole.mjs  (idempotent; finds everything by key)
 import { readFileSync, writeFileSync } from "node:fs";
@@ -20,14 +22,17 @@ const fail = (message) => {
   throw new Error(`rule-cap-whole: ${message}`);
 };
 const words = (en, de, fr, da, cs, ar, zhCN, zhTW) => ({ "en-US": en, "de-DE": de, "fr-FR": fr, "da-DK": da, "cs-CZ": cs, "ar-EG": ar, "zh-CN": zhCN, "zh-TW": zhTW });
-const RULE = "approval-decided";
+const RULE = "approval-given";
 const OLD = ["approval-given", "approval-refused"];
+const merged = (rule) => rule?.graph?.nodes?.some((node) => node.id === "which") === true;
 
 const rules = manifest.automations;
 if (!Array.isArray(rules)) fail("automations is not a list");
 const at = (key) => rules.findIndex((one) => one.key === key);
 
-if (at(RULE) === -1) {
+// Written by an earlier run of this script under its first key: the same rule, renamed.
+if (at("approval-decided") !== -1) rules[at("approval-decided")].key = RULE;
+if (!merged(rules[at(RULE)])) {
   const [given, refused] = OLD.map((key) => rules[at(key)] ?? fail(`no rule "${key}"`));
   // Both must still be what this script folds: told who asked, off, on the approval column.
   for (const old of [given, refused]) {
@@ -104,7 +109,7 @@ if (at(RULE) === -1) {
   rules.splice(at("approval-given"), 1, rule);
   rules.splice(at("approval-refused"), 1);
 }
-for (const key of OLD) if (at(key) !== -1) fail(`"${key}" is still shipped beside "${RULE}"`);
+if (at("approval-refused") !== -1 || !merged(rules[at(RULE)])) fail(`"${RULE}" is not the one rule it should be`);
 
 writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
-console.log(`rule-cap-whole: "${RULE}" ships in place of ${OLD.join(" and ")} (${rules.length} rules).`);
+console.log(`rule-cap-whole: "${RULE}" tells the asker both ways; "approval-refused" is gone (${rules.length} rules).`);

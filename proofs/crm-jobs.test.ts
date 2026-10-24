@@ -290,6 +290,31 @@ for (const [dialect, reachable] of LEGS) {
       await settle();
     });
 
+    it('notes a visit that leaves the same way twice, twice; one save that moves the day and the crew at once, once (T09)', async () => {
+      const { job } = await wonJob('Ward store shelving');
+      const settle = async (): Promise<void> => {
+        await jobs();
+        await jobs();
+      };
+      const notes = async (what: string): Promise<number> => (await list('yusuf', 'left_visits')).filter((one) => String(one['what']) === what).length;
+      // Out of tomorrow, back, out again: each time Blue loses it, Blue is told (the change's key carries when it changed).
+      const twice = await visit(job, 'Shelving twice', { day: day(1), crew: 'blue' });
+      for (const to of [day(5), day(1), day(5)]) {
+        // A person's moves are seconds apart; MySQL keeps whole seconds, so the proof waits as long.
+        await new Promise((done) => setTimeout(done, 1_100));
+        expect(said(await s.change('ada', 'job_visits', twice, { day: to }))).toBe('ok');
+        await settle();
+      }
+      expect(await notes('Shelving twice')).toBe(2);
+      // Day and crew in one save: two rules hear it, and the one change is noted once.
+      const both = await visit(job, 'Shelving both', { day: day(0), crew: 'blue' });
+      expect(said(await s.change('ada', 'job_visits', both, { day: day(5), crew_id: crew['red'] }))).toBe('ok');
+      await settle();
+      expect(await notes('Shelving both')).toBe(1);
+      for (const id of [twice, both]) expect(said(await remove('ada', 'job_visits', id))).toBe('ok');
+      await settle();
+    });
+
     it('keeps a sign-off as it was made: nobody changes or removes it, and a correction is a new row with the next version', async () => {
       const { job } = await wonJob('Library shelving');
       const first = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, check_2: true, signer_name: 'Ana Belova' }));

@@ -160,9 +160,18 @@ const adminDeals = limitOf("admin", "deals");
 if (adminDeals.writable !== undefined && !same(adminDeals.writable, DEALS_WRITABLE)) fail(`the CRM admin's deals.writable is already ${JSON.stringify(adminDeals.writable)}`);
 adminDeals.writable = DEALS_WRITABLE;
 
+// T09: a view or search is also its maker's (`made_by_id`, stamped on create). 0.2.1 saved a shared one with no owner;
+// after the update it is its maker's again, where "own" alone left it read by nobody (the install's owner included).
+const OWNER_OR_MAKER = [{ column: "owner_id" }, { column: "made_by_id" }];
 for (const ref of ["saved_views", "saved_searches"]) {
   const saved = table(ref);
-  if (!same(saved.belongs, [{ column: "owner_id" }])) fail(`${ref} is no longer its owner's`);
+  if (!same(saved.belongs, [{ column: "owner_id" }]) && !same(saved.belongs, OWNER_OR_MAKER)) fail(`${ref} is no longer its owner's`);
+  const maker = column(ref, "made_by_id");
+  if (!same(maker.rules?.stamp, { set: "user-id", on: "create" })) fail(`${ref}.made_by_id is no longer stamped with its maker`);
+  maker.rules = { staff: true, ...maker.rules };
+  saved.belongs = OWNER_OR_MAKER;
+  saved.indexes ??= [];
+  if (!saved.indexes.some((index) => same(index, ["made_by_id"]))) saved.indexes.push(["made_by_id"]);
   saved.private = true;
   for (const r of manifest.roles) {
     const actions = ["read", "update", "delete"].filter((action) => r.permissions.includes(`table:@${ref}:${action}`));

@@ -4638,11 +4638,17 @@
         "belongs": [
           {
             "column": "owner_id"
+          },
+          {
+            "column": "made_by_id"
           }
         ],
         "indexes": [
           [
             "owner_id"
+          ],
+          [
+            "made_by_id"
           ]
         ],
         "columns": [
@@ -4675,6 +4681,7 @@
             "type": "text",
             "maxLength": 36,
             "rules": {
+              "staff": true,
               "stamp": {
                 "set": "user-id",
                 "on": "create"
@@ -4784,11 +4791,17 @@
         "belongs": [
           {
             "column": "owner_id"
+          },
+          {
+            "column": "made_by_id"
           }
         ],
         "indexes": [
           [
             "owner_id"
+          ],
+          [
+            "made_by_id"
           ]
         ],
         "columns": [
@@ -4821,6 +4834,7 @@
             "type": "text",
             "maxLength": 36,
             "rules": {
+              "staff": true,
               "stamp": {
                 "set": "user-id",
                 "on": "create"
@@ -13906,7 +13920,7 @@
           {
             "ref": "leave_key",
             "type": "text",
-            "maxLength": 80,
+            "maxLength": 120,
             "nullable": true,
             "label": {
               "en-US": "The change a rule last read",
@@ -14125,6 +14139,55 @@
             }
           },
           {
+            "ref": "left_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "columns": [
+                    "day",
+                    "crew_id",
+                    "state"
+                  ]
+                }
+              }
+            },
+            "label": {
+              "en-US": "Day, crew or state last changed",
+              "de-DE": "Tag, Team oder Stand zuletzt geändert",
+              "fr-FR": "Jour, équipe ou état modifié pour la dernière fois",
+              "da-DK": "Dag, hold eller status sidst ændret",
+              "cs-CZ": "Den, četa nebo stav naposledy změněny",
+              "ar-EG": "آخر تغيير لليوم أو الطاقم أو الحالة",
+              "zh-CN": "日期、班组或状态最近一次变更",
+              "zh-TW": "日期、班組或狀態最近一次變更"
+            }
+          },
+          {
+            "ref": "deal_id",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "job_id",
+                "from": "deal_id",
+                "mode": "always"
+              }
+            },
+            "label": {
+              "en-US": "Deal",
+              "de-DE": "Deal",
+              "fr-FR": "Affaire",
+              "da-DK": "Deal",
+              "cs-CZ": "Obchod",
+              "ar-EG": "الصفقة",
+              "zh-CN": "商机",
+              "zh-TW": "案件"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -14289,7 +14352,7 @@
           {
             "ref": "leave_key",
             "type": "text",
-            "maxLength": 80,
+            "maxLength": 120,
             "nullable": true,
             "unique": true,
             "label": {
@@ -17785,6 +17848,16 @@
             "type": "fk",
             "references": "job_visits",
             "nullable": true,
+            "rules": {
+              "linkable": {
+                "same": [
+                  {
+                    "column": "deal_id",
+                    "as": "deal_id"
+                  }
+                ]
+              }
+            },
             "label": {
               "en-US": "Goes on visit",
               "de-DE": "Kommt mit zum Einsatz",
@@ -21891,6 +21964,7 @@
         "table:@job_visits:update",
         "table:@job_visits:delete",
         "table:@sign_offs:read",
+        "table:@refused_sign_offs:delete",
         "table:@refused_sign_offs:read",
         "table:@sign_offs:create",
         "table:@snags:read",
@@ -27459,7 +27533,7 @@
       }
     },
     {
-      "key": "approval-decided",
+      "key": "approval-given",
       "name": {
         "en-US": "A discount is approved or refused: the person who asked is told",
         "de-DE": "Ein Rabatt wird genehmigt oder abgelehnt: die anfragende Person wird benachrichtigt",
@@ -28297,7 +28371,7 @@
               "values": {
                 "was_day": "{{was.day}}",
                 "was_crew_id": "{{was.crew_id}}",
-                "leave_key": "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}"
+                "leave_key": "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}|{{was.left_at}}|{{record.left_at}}"
               }
             }
           },
@@ -28538,7 +28612,7 @@
               "values": {
                 "was_day": "{{was.day}}",
                 "was_crew_id": "{{was.crew_id}}",
-                "leave_key": "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}"
+                "leave_key": "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}|{{was.left_at}}|{{record.left_at}}"
               }
             }
           },
@@ -28732,7 +28806,7 @@
               "values": {
                 "was_day": "{{was.day}}",
                 "was_crew_id": "{{was.crew_id}}",
-                "leave_key": "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}"
+                "leave_key": "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}|{{was.left_at}}|{{record.left_at}}"
               }
             }
           },

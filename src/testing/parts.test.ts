@@ -139,7 +139,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       // What is said about a quote is said only while quotes are on.
       ["quote-runs-out", "quotes"],
       ["deal-handed-over", "selling"],
-      ["approval-decided", "quotes"],
+      ["approval-given", "quotes"],
       ["week-rep", "selling"],
       ["week-manager", "selling"],
       // A crew is told its day sheet changed only where jobs on site are done at all.

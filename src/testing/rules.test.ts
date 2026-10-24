@@ -71,7 +71,7 @@ const names = (text: string): string[] => [...text.matchAll(/\{\{([^}|]+)/g)].ma
 describe("the rules the app ships", () => {
   // What the app cannot work without is switched on as it is installed; what tells people is the owner's to switch on.
   const WORKS = ["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "quote-sent-amount", "approval-asked"];
-  const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-decided", "week-rep", "week-manager"];
+  const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "week-rep", "week-manager"];
   // Jobs on site tells a crew at once that today's or tomorrow's sheet changed (e-mail 10). It arrives with its part, which an
   // update brings switched off; the rule is on, so the day the owner switches the part on the crew is told.
   // A crew the visit LEFT is told too (plan 68 D17): two rules note it for that crew, one tells them.
@@ -277,7 +277,7 @@ describe("the rules the app ships", () => {
     expect(to("deal-handed-over")).toEqual({ column: "owner_id" });
     expect(rule("deal-handed-over").trigger).toEqual({ kind: "record", event: "updated", table: "deals", changedColumn: "owner_id" });
     // Given or refused, one rule (the 24-rule cap, plan 68 §10.10): decided only, the asker told which.
-    expect(rule("approval-decided").trigger).toEqual({
+    expect(rule("approval-given").trigger).toEqual({
       kind: "record",
       event: "updated",
       table: "quotes",
@@ -287,7 +287,7 @@ describe("the rules the app ships", () => {
         { left: { field: "approval" }, op: "is_not", right: "asked" },
       ],
     });
-    const fork = rule("approval-decided").graph.nodes.find((node) => node.kind === "branch")!;
+    const fork = rule("approval-given").graph.nodes.find((node) => node.kind === "branch")!;
     expect(fork.condition).toEqual({ left: { field: "approval" }, op: "is", right: "approved" });
     const [approved, refused] = fork.branches!.map((branch) => branch.nodes.map((node) => node.action!));
     for (const said of [approved, refused]) expect(said, "one notice a way").toHaveLength(1);

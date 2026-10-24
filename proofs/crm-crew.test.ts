@@ -347,6 +347,14 @@ for (const [dialect, reachable] of LEGS) {
       await jobs();
       const told = async (who: string): Promise<number> => ((await s.get(who, '/api/v1/me/notifications?limit=100')).json() as { data: { items: { title: string }[] } }).data.items.filter((item) => item.title === 'A sign-off was refused on arrival: Tandem Robotics').length;
       expect([await told('ada'), await told('yusuf'), await told('dana')]).toEqual([1, 0, 0]);
+      // The snag a record names cannot be removed while the record holds it, by the office or the CRM admin (T09)...
+      for (const who of ['ada', 'tessa']) expect((await s.send(who, 'DELETE', url('snags', `/${String(stopper)}?confirm=true`))).statusCode, who).toBe(409);
+      // ...and the CRM admin may delete the record (the office may not), after which the snag can go.
+      expect((await s.send('ada', 'DELETE', url('refused_sign_offs', `/${String(id)}?confirm=true`))).statusCode).toBeGreaterThanOrEqual(403);
+      const freed = await s.send('tessa', 'DELETE', url('refused_sign_offs', `/${String(id)}?confirm=true`));
+      expect(freed.statusCode, freed.body).toBeLessThan(300);
+      const gone = await s.send('ada', 'DELETE', url('snags', `/${String(stopper)}?confirm=true`));
+      expect(gone.statusCode, gone.body).toBeLessThan(300);
     });
 
     it("lets him raise and put right his crew's snags only, with the photo of it put right", async () => {
@@ -437,6 +445,27 @@ for (const [dialect, reachable] of LEGS) {
     }, 300_000);
     afterAll(async () => {
       await s?.close();
+    });
+
+    it("refuses a need on a visit of another deal's job, by the office or by moving the need's deal (T09)", async () => {
+      // Another customer's won deal, its job and a booked visit of Red's.
+      const company = Number((await s.rows(`select company_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['company_id']);
+      const stage = Number((await s.rows(`select stage_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['stage_id']);
+      const otherDeal = made(await s.make('dana', 'deals', { name: 'Archive racking', company_id: company, owner_id: s.ids['dana'], stage_id: stage, typed_amount: 9_000 }));
+      expect(said(await act('dana', 'deals', otherDeal, 'mark-won', 'open'))).toBe('ok');
+      await jobs();
+      const otherJob = Number((await s.rows(`select id from ${s.t('jobs')} where deal_id = ${String(otherDeal)}`))[0]!['id']);
+      const otherVisit = made(await s.make('ada', 'job_visits', { job_id: otherJob, kind: 'drop', what: 'racking drop', hours: 2, crew_size: 1 }));
+      // The visit carries its deal, copied from its job.
+      expect(Number((await s.rows(`select deal_id from ${s.t('job_visits')} where id = ${String(otherVisit)}`))[0]!['deal_id'])).toBe(otherDeal);
+      // The office may not put this deal's need on it...
+      const moved = await s.change('ada', 'deal_stock_needs', at.other, { visit_id: otherVisit });
+      expect([409, 422], moved.body).toContain(moved.statusCode);
+      // ...nor may the need's deal change under the visit it names.
+      const swapped = await s.change('ada', 'deal_stock_needs', at.other, { deal_id: otherDeal });
+      expect(swapped.statusCode, swapped.body).toBeGreaterThanOrEqual(400);
+      expect(Number((await s.rows(`select visit_id from ${s.t('deal_stock_needs')} where id = ${String(at.other)}`))[0]!['visit_id'])).toBe(at.redVisit);
+      expect(said(await s.send('ada', 'DELETE', url('job_visits', `/${String(otherVisit)}?confirm=true`)))).toBe('ok');
     });
 
     it("lets a crew member read the needs of his crew's visits, and refuses him another crew's by any door", async () => {

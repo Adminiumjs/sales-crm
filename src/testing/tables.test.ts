@@ -240,6 +240,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "site_phone",
       "access_note",
       "ask_for",
+      // When its day, crew or state last changed (in the change's key, T09); its deal, copied from its job (T09).
+      "left_at",
+      "deal_id",
     ],
   },
   // A correction names the sign-off it corrects; its version is one more (F19).
@@ -682,7 +685,8 @@ describe("the four private tables are reached by their own two people and nothin
   it("marks exactly those four private, and the two a person saves for herself", () => {
     expect(tables.filter((table) => table.private === true).map((table) => table.ref).sort()).toEqual([...Object.keys(PRIVATE), "saved_searches", "saved_views"].sort());
     // A saved view or search is its owner's alone (plan 68 D9): one way, its owner.
-    for (const ref of ["saved_views", "saved_searches"]) expect(byRef.get(ref)?.belongs, ref).toEqual([{ column: "owner_id" }]);
+    // Its owner's, and its maker's: a view 0.2.1 shared had no owner, and is its maker's after the update (T09).
+    for (const ref of ["saved_views", "saved_searches"]) expect(byRef.get(ref)?.belongs, ref).toEqual([{ column: "owner_id" }, { column: "made_by_id" }]);
   });
 
   it("gives each exactly two ways, both staff columns of its own", () => {

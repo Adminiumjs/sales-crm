@@ -162,7 +162,11 @@ putTable(
 /* ─── deal_stock_needs: the visit its stock goes on, and that visit's crew ─── */
 
 const needs = table("deal_stock_needs");
-column("deal_stock_needs", { ref: "visit_id", type: "fk", references: "job_visits", nullable: true, label: L("Goes on visit", "Kommt mit zum Einsatz", "Part avec l’intervention", "Kommer med på besøget", "Jede s výjezdem", "يُحمَّل مع الزيارة", "随此次上门装车", "隨此次到訪裝車") }, "qty");
+// T09: a visit's deal, copied from its job, so a stock need may name only a visit of its own deal's job (else another
+// customer's crew would read it under "Stock for this job"). Empty on a visit from before 0.2.2 until the engine fills
+// copies on update (E20).
+column("job_visits", { ref: "deal_id", type: "int", nullable: true, rules: { copy: { via: "job_id", from: "deal_id", mode: "always" } }, label: L("Deal", "Deal", "Affaire", "Deal", "Obchod", "الصفقة", "商机", "案件") });
+column("deal_stock_needs", { ref: "visit_id", type: "fk", references: "job_visits", nullable: true, rules: { linkable: { same: [{ column: "deal_id", as: "deal_id" }] } }, label: L("Goes on visit", "Kommt mit zum Einsatz", "Part avec l’intervention", "Kommer med på besøget", "Jede s výjezdem", "يُحمَّل مع الزيارة", "随此次上门装车", "隨此次到訪裝車") }, "qty");
 column("deal_stock_needs", { ref: "crew_id", type: "int", nullable: true, rules: { copy: { via: "visit_id", from: "crew_id", mode: "always", follow: true } }, label: L("Crew of that visit", "Team dieses Einsatzes", "Équipe de cette intervention", "Holdet på det besøg", "Četa toho výjezdu", "طاقم تلك الزيارة", "那次上门的班组", "那次到訪的班組") }, "visit_id");
 addOnce(needs.belongs, LINK_CREW);
 needs.indexes ??= [];
@@ -174,7 +178,12 @@ addOnce(needs.indexes, ["crew_id"]);
 column("job_visits", { ref: "was_day", type: "date", nullable: true, label: L("Day before the last change, as a rule last read it", "Tag vor der letzten Änderung, wie eine Regel ihn zuletzt las", "Jour avant la dernière modification, tel qu’une règle l’a lu en dernier", "Dag før den seneste ændring, som en regel sidst læste den", "Den před poslední změnou, jak jej naposledy přečetlo pravidlo", "اليوم قبل آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改前的日期", "規則最近讀到的上次變更前的日期") }, "cancel_reason");
 column("job_visits", { ref: "was_crew_id", type: "int", nullable: true, label: L("Crew before the last change, as a rule last read it", "Team vor der letzten Änderung, wie eine Regel es zuletzt las", "Équipe avant la dernière modification, telle qu’une règle l’a lue en dernier", "Hold før den seneste ændring, som en regel sidst læste det", "Četa před poslední změnou, jak ji naposledy přečetlo pravidlo", "الطاقم قبل آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改前的班组", "規則最近讀到的上次變更前的班組") }, "was_day");
 // Which change of which visit a rule last noted for the crew it left: a change heard twice is noted once.
-column("job_visits", { ref: "leave_key", type: "text", maxLength: 80, nullable: true, label: L("The change a rule last read", "Die Änderung, die eine Regel zuletzt las", "La modification qu’une règle a lue en dernier", "Den ændring, en regel sidst læste", "Změna, kterou pravidlo naposledy přečetlo", "التغيير الذي قرأته قاعدة آخر مرة", "规则最近读到的更改", "規則最近讀到的變更") }, "was_crew_id");
+column("job_visits", { ref: "leave_key", type: "text", maxLength: 120, nullable: true, label: L("The change a rule last read", "Die Änderung, die eine Regel zuletzt las", "La modification qu’une règle a lue en dernier", "Den ændring, en regel sidst læste", "Změna, kterou pravidlo naposledy přečetlo", "التغيير الذي قرأته قاعدة آخر مرة", "规则最近读到的更改", "規則最近讀到的變更") }, "was_crew_id");
+// T09: when the day, crew or state last changed, stamped by the server on that save. It goes in the change's key, so a
+// visit that leaves a crew the same way twice (moved out, back, out again) is noted twice; one save heard by two rules
+// (day and crew at once) still gives one key. The stamp before the change goes in too: MySQL keeps whole seconds, so two
+// quick moves may share a stamp, but never the one before them.
+column("job_visits", { ref: "left_at", type: "timestamptz", nullable: true, rules: { stamp: { set: "now", on: { columns: ["day", "crew_id", "state"] } } }, label: L("Day, crew or state last changed", "Tag, Team oder Stand zuletzt geändert", "Jour, équipe ou état modifié pour la dernière fois", "Dag, hold eller status sidst ændret", "Den, četa nebo stav naposledy změněny", "آخر تغيير لليوم أو الطاقم أو الحالة", "日期、班组或状态最近一次变更", "日期、班組或狀態最近一次變更") });
 
 /* ─── left_visits: a visit that left a crew's today or tomorrow (D17) ─── */
 
@@ -195,7 +204,7 @@ putTable(
       { ref: "site_name", type: "text", maxLength: 160, nullable: true, label: L("Site name", "Name des Standorts", "Nom du site", "Stedets navn", "Název místa", "اسم الموقع", "现场名称", "現場名稱") },
       { ref: "site_town", type: "text", maxLength: 120, nullable: true, label: L("Site town", "Ort des Standorts", "Ville du site", "Stedets by", "Obec místa", "مدينة الموقع", "现场所在城镇", "現場所在城鎮") },
       { ref: "day", type: "date", nullable: true, label: L("Day it was on", "Tag, an dem er war", "Jour où elle était", "Dagen, det lå på", "Den, na který byl", "اليوم الذي كانت فيه", "原定日期", "原定日期") },
-      { ref: "leave_key", type: "text", maxLength: 80, nullable: true, unique: true, label: L("The change it is about", "Die Änderung, um die es geht", "La modification concernée", "Den ændring, det drejer sig om", "Změna, o kterou jde", "التغيير المعني", "所涉及的更改", "所涉及的變更") },
+      { ref: "leave_key", type: "text", maxLength: 120, nullable: true, unique: true, label: L("The change it is about", "Die Änderung, um die es geht", "La modification concernée", "Den ændring, det drejer sig om", "Změna, o kterou jde", "التغيير المعني", "所涉及的更改", "所涉及的變更") },
       { ref: "now_day", type: "date", nullable: true, label: L("Day it is on now", "Tag, an dem er jetzt ist", "Jour où elle est maintenant", "Dagen, det ligger på nu", "Den, na který je teď", "اليوم الذي صارت فيه الآن", "现在的日期", "現在的日期") },
       {
         ref: "why",
@@ -288,7 +297,7 @@ manifest.automations = manifest.automations.filter((one) => !["day-sheet-left-da
 
 const TODAY_OR_TOMORROW = { amount: 1, unit: "days" };
 const trigger = (title) => ({ id: "t", kind: "trigger", title });
-const keyOfChange = "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}";
+const keyOfChange = "{{record.id}}|{{was.day}}|{{was.crew_id}}|{{record.day}}|{{record.crew_id}}|{{record.state}}|{{was.left_at}}|{{record.left_at}}";
 const keepWas = {
   id: "keep-was",
   kind: "action",

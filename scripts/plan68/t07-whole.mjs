@@ -137,6 +137,9 @@ for (const key of ["admin", "account-manager", "ops-manager", "read-only"]) {
   if (role(key).limits?.sign_offs?.rows !== undefined) fail(`role "${key}" now limits the sign-offs it reads`);
   grant(key, [READ]);
 }
+// T09: the CRM admin may delete one. A record holds its snag (the link refuses the snag's removal), and with nobody
+// able to delete records, a snag once named could never be removed, nor its visit called off.
+grant("admin", ["table:@refused_sign_offs:delete"]);
 grant("sales-manager", [READ], { rows: { read: { reach: "team" } } });
 grant("rep", [READ], { rows: { read: { reach: "own" } } });
 // Written by the crew alone: his crew's visit, a snag that stops it, when it was signed and by whom.

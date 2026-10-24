@@ -132,7 +132,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["sign_offs"], "RC", "R:team", "R:own", "R", "-", "-", "RC", "RC:own", "R"],
   // A sign-off refused on arrival (plan 68 S19): written by the crew's phone alone, for its own crew's visit, and read as far
   // as each reads sign-offs. Nobody changes or removes one.
-  [["refused_sign_offs"], "R", "R:team", "R:own", "R", "-", "-", "R", "RC:own", "R"],
+  // The CRM admin removes one, so the snag it names can go (T09).
+  [["refused_sign_offs"], "RD", "R:team", "R:own", "R", "-", "-", "R", "RC:own", "R"],
   [["snags"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["delivery_notes", "delivery_note_lines"], "RCUD", "-", "-", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["waste_removals"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
