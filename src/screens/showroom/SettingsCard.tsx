@@ -31,7 +31,9 @@ export function ShowroomSettings({ session, can }: { session: StaffSession; can:
   const again = useCoalesced(reloadRow);
   useLive(["settings"], again);
   const settings = rowLoad.state === "ready" && rowLoad.data !== null ? rowLoad.data : {};
-  const [busy, setBusy] = useState(false);
+  const [saving, setBusy] = useState(false);
+  // Until the row is read the fields show defaults, and a change made then has nothing to be saved on: they wait.
+  const busy = saving || rowLoad.state !== "ready" || rowLoad.data === null;
   const save = async (values: Record<string, unknown>, done: string): Promise<boolean> => {
     if (rowLoad.state !== "ready" || rowLoad.data === null) return false;
     const row = rowLoad.data;
