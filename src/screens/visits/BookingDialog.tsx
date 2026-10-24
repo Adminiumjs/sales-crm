@@ -9,7 +9,9 @@
  * was made or written up is not removed; a rep's two visits never overlap
  * (plan 68 X7: the dialog shows the one in the way and books nothing over
  * it, and a clash it could not see is the server's refusal, said in words).
- * "That time has passed" is this dialog's own until the server holds it.
+ * "That time has passed": the dialog books nothing in the past, and the
+ * server refuses a new visit that starts before now (plan 68 X7, D18), said
+ * in words; a visit brought in from a file (history) is not held to it.
  *
  * WHAT IS SAVED. A booking carries a key made when the dialog opened, so a
  * reply lost on the way back is sent again and makes one visit. A move names
@@ -174,7 +176,9 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
       const reason =
         saved.error.code === "BOOKING_TAKEN"
           ? t("visits.book.refused.taken", { rep: firstName(repName) })
-          : fields["rep_id"] !== undefined
+          : fields["starts_at"] === "out-of-range"
+            ? t("guards.visit.past")
+            : fields["rep_id"] !== undefined
             ? t("visits.book.refused.rep")
             : fields["deal_id"] !== undefined || saved.error.code === "FK_VIOLATION"
               ? t("visits.book.refused.deal")
