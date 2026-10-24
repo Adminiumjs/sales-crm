@@ -88,10 +88,22 @@ export function workDaysOf(row: Record<string, unknown> | null | undefined): Set
 /** The weekday of a calendar day: `2026-07-28` is `tue`. */
 export const dayOfKey = (dayKey: string): Day => DAYS[(new Date(`${dayKey}T12:00:00Z`).getUTCDay() + 6) % 7]!;
 
-/** Working days from one calendar day to another, both counted, by the business's working week. */
+/** Whole calendar days from one day to another (`2026-08-10` to `2026-08-12` is 2). */
+const daysApart = (from: string, to: string): number => Math.round((Date.parse(`${to}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / 86_400_000);
+
+/**
+ * Working days from one calendar day to another, both counted, by the
+ * business's working week. By arithmetic, never a walk along the days (plan
+ * 68 X5): the whole weeks each count the week's working days, and the few
+ * days left over (six at most) are looked at one by one.
+ */
 export function workingDaysBetween(from: string, to: string, days: ReadonlySet<Day>): number {
-  let count = 0;
-  for (let day = from; day <= to; day = addDays(day, 1)) if (days.has(dayOfKey(day))) count += 1;
+  if (to < from) return 0;
+  const span = daysApart(from, to) + 1;
+  const weeks = Math.floor(span / 7);
+  const first = DAYS.indexOf(dayOfKey(from));
+  let count = weeks * days.size;
+  for (let extra = 0; extra < span % 7; extra += 1) if (days.has(DAYS[(first + extra) % 7]!)) count += 1;
   return count;
 }
 
