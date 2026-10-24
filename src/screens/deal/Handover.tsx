@@ -279,7 +279,14 @@ export function Handover({ rest }: ScreenProps) {
                 noted = true;
               }
               const introducing = introduce && reachable;
-              const handed = await toasts.say(session.act("deals", deal.id, "hand-over", "open", { values: { owner_id: to, introduce: introducing } }), () => t("hand.toast", { deal: deal.name, name: firstName(nameOf(to)) }));
+              const acted = await session.act("deals", deal.id, "hand-over", "open", { values: { owner_id: to, introduce: introducing } });
+              // A visit that would go with the deal clashes with one of the new owner's own: nothing moved (R1c).
+              if (acted.state === "refused" && acted.error.code === "BOOKING_TAKEN") {
+                toasts.show(t("dealrules.carry.clash", { name: firstName(nameOf(to)) }), "danger", true);
+                setBusy(false);
+                return;
+              }
+              const handed = await toasts.say(Promise.resolve(acted), () => t("hand.toast", { deal: deal.name, name: firstName(nameOf(to)) }));
               if (handed === null) {
                 setBusy(false);
                 pool.reload();

@@ -120,6 +120,16 @@ export const dealrules = /*#__PURE__*/ tables({
     "已進行的拜訪保留 {name} 的名字；其他人在該案件上自己的拜訪和跟進仍歸本人，包括您的。",
     "تحتفظ الزيارات التي تمت باسم {name}، وتبقى زيارات الآخرين ومتابعاتهم الخاصة على الصفقة لهم، بما فيها زياراتك ومتابعاتك.",
   ],
+  "dealrules.carry.clash": [
+    "{name} already has a visit at the time of one that would go with the deal. Move one of the visits, or hand the deal to somebody else.",
+    "{name} hat zur Zeit eines Besuchs, der mit dem Deal ginge, schon einen Besuch. Verschieben Sie einen der Besuche oder übergeben Sie den Deal an jemand anderen.",
+    "{name} a déjà une visite à l’heure d’une visite qui suivrait l’affaire. Déplacez l’une des visites ou confiez l’affaire à quelqu’un d’autre.",
+    "{name} har allerede et besøg på samme tid som et besøg, der ville følge med dealen. Flyt et af besøgene, eller overdrag dealen til en anden.",
+    "{name} už má návštěvu v čase jedné z návštěv, které by šly s obchodem. Přesuňte jednu z návštěv, nebo předejte obchod někomu jinému.",
+    "{name} 在一次将随商机转移的拜访的同一时间已有拜访。请改约其中一次拜访，或把商机交给其他人。",
+    "{name} 在一次將隨案件移交的拜訪的同一時間已有拜訪。請改約其中一次拜訪，或把案件交給其他人。",
+    "لدى {name} زيارة بالفعل في موعد زيارة كانت ستنتقل مع الصفقة. انقل إحدى الزيارتين أو سلّم الصفقة لشخص آخر.",
+  ],
   "dealrules.carry.stayVisits.mine": [
     "Your visits on the deal stay yours, and a colleague’s own follow-ups on it stay with them.",
     "Ihre Besuche bei diesem Deal bleiben Ihre, und eigene Folgeschritte von Kolleginnen und Kollegen bleiben bei ihnen.",

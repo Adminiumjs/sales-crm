@@ -96,12 +96,11 @@ quotes.states.create = { requires: { where: [{ column: "deal_state", eq: "open" 
 
 /* ─── R1c: the hand-over carries the old owner's booked visits and open follow-ups (E12) ─── */
 
-// ENGINE GAP (0.3.35): a carried row of a table with `occupies` (site_visits: one rep, one slot) is refused as a
-// multi-row write, 409 CAPACITY_ONE_AT_A_TIME (apps/server/src/crud/write-service.ts:3265-3268, reached from
-// routes/data/index.ts `carriedChildren`), so a hand-over carrying visits fails for every deal with a booked visit.
-// Until the engine places each carried row under its slot's lock, the visits are not carried: flip CARRY_VISITS (and
-// `HAND_OVER_CARRIES_VISITS` in src/selling/handover.ts, which a unit test holds equal) when it does.
-const CARRY_VISITS = false;
+// Booked visits are carried too: the engine places each carried row of a table with `occupies` under its slot's lock,
+// as a single change is placed (plan-68-engine 4a7cf9c1a); the new owner's own clash refuses the whole hand-over
+// (409 BOOKING_TAKEN) and nothing moves. `HAND_OVER_CARRIES_VISITS` in src/selling/handover.ts says the same to the
+// sheet, and a unit test holds the two equal.
+const CARRY_VISITS = true;
 handOver.carries = [
   ...(CARRY_VISITS ? [{ table: "site_visits", via: "deal_id", column: "rep_id", where: [{ column: "state", eq: "booked" }] }] : []),
   { table: "follow_ups", via: "deal_id", column: "owner_id", where: [{ column: "done", eq: false }] },

@@ -6,7 +6,8 @@
  *  - R1a (E28): no new quote on a won or a lost deal, by any door; one on an open deal is made; the sample (history)
  *    still brings quotes on won deals;
  *  - R1c (E12): a hand-over moves the old owner's visits not yet made and her open follow-ups to the new owner in its
- *    own write, and nothing else: a made visit, a done follow-up, a helper's and a manager's own rows stay;
+ *    own write, and nothing else: a made visit, a done follow-up, a helper's and a manager's own rows stay; a clash of
+ *    the new owner's own refuses it whole;
  *  - R1d (E11): another team's manager whose rep helps on Dana's deal is refused the deal and every row of it (the
  *    list, the record, its history, figures and board totals, a search, an export, the bell), the helper's own visit
  *    and follow-up included; the helper reads and comments; the quiet line (the deal's mark) names Dana, no amount;
@@ -349,10 +350,8 @@ for (const [dialect, reachable] of LEGS) {
       for (const key of [mine, hers, past[0]!]) expect(said(await s.app.inject({ method: 'DELETE', url: url('quotes', `/${String(key)}?confirm=true`), headers: { cookie: who('tessa') } }))).toBe('ok');
     });
 
-    it('R1c: a hand-over moves the old owner\'s open follow-ups in its own write, and nothing else; her visits wait for the engine', async () => {
-      // ENGINE GAP (0.3.35): a carried row of a table that holds a time slot (site_visits' `occupies`) is refused as a
-      // multi-row write (409 CAPACITY_ONE_AT_A_TIME), so the app does not carry visits yet. Asserted AS IT IS: the day the
-      // engine carries them and the manifest says so, the visit lines below turn round.
+    it('R1c: a hand-over moves the old owner\'s booked visits and open follow-ups in its own write, and nothing else', async () => {
+      // The manifest says whether visits are carried (they are, since the engine places each under its slot's lock).
       const carriesVisits = JSON.stringify(((manifest()['requiredSchema'] as { tables: { ref: string; states?: { actions?: { id: string; carries?: { table: string }[] }[] } }[] }).tables.find((one) => one.ref === 'deals')!.states!.actions!.find((one) => one.id === 'hand-over')!.carries ?? []).map((carry) => carry.table)).includes('site_visits');
       const went = (from: string, to: string): string => owner(carriesVisits ? to : from);
       const handed = await deal('dana', 'P4 hand-over', 'dana');
@@ -388,6 +387,23 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(toLeo), toLeo.body).toBe('ok');
       expect(await visitsNow()).toEqual({ [booked]: [went('dana', 'leo'), owner('leo')], [madeVisit]: [owner('dana'), owner('leo')], [samsVisit]: [owner('sam'), owner('leo')] });
       expect(await stepsNow()).toEqual({ [open]: owner('leo'), [closed]: owner('dana'), [samsStep]: owner('sam'), [ivysStep]: owner('ivy') });
+    });
+
+    it('R1c: a hand-over onto a new owner whose own visit clashes with a carried one is refused whole, and nothing moves', async () => {
+      const handed = await deal('dana', 'P4 hand-over clash', 'dana');
+      const elsewhere = await deal('priya', 'P4 Priya elsewhere', 'priya');
+      const booked = await visit('tessa', handed, 'dana', 11);
+      // Priya is already out at that very time on a deal of her own.
+      await visit('tessa', elsewhere, 'priya', 11);
+      const open = await step('tessa', handed, 'dana', 'P4 Dana open, clash');
+      const refused = await press('dana', 'deals', handed, 'hand-over', 'open', { owner_id: owner('priya') });
+      expect(said(refused), refused.body).toBe('409 BOOKING_TAKEN');
+      expect(String((await one(`SELECT owner_id FROM ${s.real('deals')} WHERE id = ${String(handed)}`))['owner_id'])).toBe(owner('dana'));
+      expect(String((await one(`SELECT rep_id FROM ${s.real('site_visits')} WHERE id = ${String(booked)}`))['rep_id'])).toBe(owner('dana'));
+      expect(String((await one(`SELECT owner_id FROM ${s.real('follow_ups')} WHERE id = ${String(open)}`))['owner_id'])).toBe(owner('dana'));
+      // To Leo, who is free then, it goes, the visit with it.
+      expect(said(await press('dana', 'deals', handed, 'hand-over', 'open', { owner_id: owner('leo') }))).toBe('ok');
+      expect(String((await one(`SELECT rep_id FROM ${s.real('site_visits')} WHERE id = ${String(booked)}`))['rep_id'])).toBe(owner('leo'));
     });
 
     it('R1d: another team\'s manager whose rep helps on Dana\'s deal is refused it on every door; the helper reads and comments', async () => {
