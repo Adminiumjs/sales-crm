@@ -309,7 +309,7 @@ test("the sales manager sets no target of her own, nor her own first-year target
   const target = await made("targets", { rep_id: ivyId, year: 2026, amount: 300000 });
   try {
     await page.goto(`${STAFF}targets`);
-    const row = page.locator(".crm-tg-row", { hasText: "Ivy Sandoval" });
+    const row = page.locator(`.crm-tg-row[data-rep="${ivyId}"]`);
     await expect(row).toBeVisible();
     await expect(row.getByRole("button", { name: /^Change the target of Ivy/ })).toHaveCount(0);
     await expect(page.locator(".crm-tg-row", { hasText: "Dana Whitlock" }).getByRole("button", { name: /^Change the target of Dana/ })).toBeVisible();

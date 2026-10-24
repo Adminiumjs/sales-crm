@@ -376,8 +376,8 @@ test("Approvals: the four requests, a decline with its line, a question that lan
   await expect(ownDecided).toContainText("Declined by Tessa Marlow");
   await expect(ownDecided.getByRole("button", { name: "Reopen it" })).toHaveCount(0);
   await expect(page.locator(".crm-approval").filter({ hasText: "Quiet-room pods" }).getByRole("button", { name: "Reopen it" })).toBeVisible();
-  // A sent one (d1's) is not reopened: the customer holds it.
-  await expect(page.locator(".crm-approval").filter({ hasText: "Fourth-floor desk rows" }).getByRole("button", { name: "Reopen it" })).toHaveCount(0);
+  // An approved draft is a decision too (d1's version asked by Dana): reopened by whoever leads its owner.
+  await expect(page.locator(".crm-approval").filter({ hasText: "Fourth-floor desk rows" }).getByRole("button", { name: "Reopen it" })).toBeVisible();
   // The CRM admin reopens Ivy's, with a note: back to waiting, still Ivy's request, the decline kept in the history.
   await tessa.reload();
   await tessa.getByRole("group", { name: "Which requests" }).getByRole("button").nth(1).click();
