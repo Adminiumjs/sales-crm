@@ -44,6 +44,10 @@ async function tidy(api: (person: string) => Promise<APIRequestContext>, data: D
       expect((await owner.delete(data(table, `/${String(row.id)}?confirm=true`), { headers: ownerHeaders })).status()).toBeLessThan(300);
     }
   }
+  // A message a spec removed has no words left to find it by: the sample removes none.
+  for (const row of await rows<{ id: number }>(owner, data, "messages", { column: "state", op: "eq", value: "removed" })) {
+    expect((await owner.delete(data("messages", `/${String(row.id)}?confirm=true`), { headers: ownerHeaders })).status()).toBeLessThan(300);
+  }
   const ivy = await api("ivy");
   const ivyHeaders = await csrf(ivy);
   for (const row of await rows<{ id: number }>(ivy, data, "one_to_one_sessions", { column: "notes", op: "like", value: "Spec: %" })) {
@@ -389,11 +393,12 @@ test("the three action lists are one list: ticked in One-to-one notes, it is tic
   await priyaPage.goto(`${STAFF}today`);
   await go(priyaPage, "My coaching");
   await expect(priyaPage.getByRole("heading", { level: 1 })).toHaveText("My coaching");
-  // Her manager counts four steps on this plan (the ledger's "1 of 4"); Priya is answered the three that are hers.
-  // The fourth is her manager's own ("Ivy sits in on one first meeting"), and a rep reads the actions she owns or set.
+  // Her manager counts four steps on this plan (the ledger's "1 of 4"), and so does Priya now (plan 68 R4b): every step of
+  // her own plan, her manager's own ("Ivy sits in on one first meeting") included, which is not hers to tick.
   const hers = await rows<ActionRow>(priyaContext.request, data, "actions", { column: "source", op: "eq", value: "coaching" });
-  expect(hers.length + (await rows<ActionRow>(priyaContext.request, data, "actions", { and: [{ column: "source", op: "neq", value: "coaching" }, { column: "coaching_area_id", op: "not_null" }] })).length).toBe(3);
-  await expect(priyaPage.getByTestId("co-progress")).toContainText("1 of 3 done");
+  expect(hers.length + (await rows<ActionRow>(priyaContext.request, data, "actions", { and: [{ column: "source", op: "neq", value: "coaching" }, { column: "coaching_area_id", op: "not_null" }] })).length).toBe(4);
+  await expect(priyaPage.getByTestId("co-progress")).toContainText("1 of 4 done");
+  await expect(tick(priyaPage, "Ivy sits in on one first meeting")).toBeDisabled();
   await expect(tick(priyaPage, SHARED)).not.toBeChecked();
   await expect(priyaPage.locator(".crm-tw-action", { hasText: SHARED })).toContainText("also in one-to-one · also in the meeting");
 
@@ -415,7 +420,7 @@ test("the three action lists are one list: ticked in One-to-one notes, it is tic
 
   // Priya's open Coaching follows with no reload: the same row, ticked, and one more step done.
   await expect(tick(priyaPage, SHARED)).toBeChecked();
-  await expect(priyaPage.getByTestId("co-progress")).toContainText("2 of 3 done");
+  await expect(priyaPage.getByTestId("co-progress")).toContainText("2 of 4 done");
 
   // It is ticked in the manager's Coaching and in the meeting too.
   await go(page, "Coaching");
@@ -428,7 +433,7 @@ test("the three action lists are one list: ticked in One-to-one notes, it is tic
   await tick(page, SHARED).click();
   await expect(page.locator(".crm-toast")).toHaveText("Open again.");
   await expect(tick(priyaPage, SHARED)).not.toBeChecked();
-  await expect(priyaPage.getByTestId("co-progress")).toContainText("1 of 3 done");
+  await expect(priyaPage.getByTestId("co-progress")).toContainText("1 of 4 done");
   expect(problems).toEqual([]);
 });
 
@@ -559,6 +564,11 @@ test("Coaching: the ledger's plans for the manager; a rep adds a step to her own
   await expect(samPage.locator(".crm-toast")).toHaveText("Added. That is the work.");
   await expect(samPage.getByTestId("co-progress")).toContainText("1 of 4 done");
   await expect(samPage.locator(".crm-co-area").first().locator(".crm-tw-action", { hasText: "Spec: ask for the visit before the price" })).toHaveCount(1);
+  // His manager reads the step he set in her plan for him (plan 68 R4a), and does not tick it: it is his.
+  await page.reload();
+  await page.locator(".crm-tw-people").getByRole("button", { name: "Sam" }).click();
+  await expect(page.getByTestId("co-progress")).toContainText("1 of 4 done");
+  await expect(tick(page, "Spec: ask for the visit before the price")).toBeDisabled();
   // A step under a colleague's area is refused him, as a link to a row that is not there.
   const sam = samContext.request;
   const danasArea = (await rows<{ id: number; rep_id: string }>(await api("ivy"), data, "coaching_areas", { column: "rep_id", op: "eq", value: await me(await api("dana")) }))[0]!;
@@ -704,6 +714,69 @@ test("Messages: the ledger's four conversations and three unread; read, answered
     await tessaPage.goto(`${STAFF}messages`);
     await expect(tessaPage.locator(".crm-empty-title")).toHaveText("No conversation yet");
     expect(problems.filter((problem) => !/ERR_CONNECTION_RESET/.test(problem))).toEqual([]);
+  } finally {
+    await tidy(api, data);
+    await putMarksBack(api, data);
+  }
+});
+
+test("Messages: the author removes her own message and a line says so, live; nobody else removes it, and its words leave every staff door (R4d)", async ({ as, api, data }) => {
+  await putMarksBack(api, data);
+  try {
+    const context = await as("dana");
+    await room(context.request, data, 100);
+    const dana = context.request;
+    const page = await context.newPage();
+    const problems = watch(page);
+    await page.goto(`${STAFF}messages`);
+    await page.locator(".crm-ms-thread", { hasText: "Ivy Sandoval" }).click();
+    const talk = page.getByTestId("msgs-talk");
+    await expect(talk.locator(".crm-ms-msg")).toHaveCount(3);
+    await page.getByLabel("A message to Ivy Sandoval").fill("Spec: the code for the side door is 4417.");
+    await page.keyboard.press("Enter");
+    await expect(talk.locator(".crm-ms-msg")).toHaveCount(4);
+    // Her own messages offer Remove; Ivy's do not.
+    await expect(talk.locator('.crm-ms-msg[data-mine="1"]').getByRole("button", { name: /^Remove the message of/ })).toHaveCount(2);
+    await expect(talk.locator('.crm-ms-msg[data-mine="0"]').getByRole("button", { name: /^Remove the message of/ })).toHaveCount(0);
+
+    // Ivy has the conversation open.
+    const ivyContext = await as("ivy");
+    await room(ivyContext.request, data, 60);
+    const ivyPage = await ivyContext.newPage();
+    await ivyPage.goto(`${STAFF}messages`);
+    const hers = ivyPage.getByTestId("msgs-talk");
+    await expect(hers.locator(".crm-ms-msg").last()).toContainText("Spec: the code for the side door is 4417.");
+    await expect(hers.locator('.crm-ms-msg[data-mine="0"]').getByRole("button", { name: /^Remove the message of/ })).toHaveCount(0);
+
+    // Dana removes it: the dialog says what everybody will see, then the line replaces the words.
+    await talk.locator(".crm-ms-msg").last().getByRole("button", { name: /^Remove the message of/ }).click();
+    const dialog = page.getByRole("dialog", { name: "Remove this message?" });
+    await expect(dialog).toContainText("Everyone in the conversation sees that it was removed, and by whom.");
+    await dialog.getByRole("button", { name: "Remove it" }).click();
+    await expect(page.locator(".crm-toast")).toHaveText("Message removed.");
+    await expect(talk.locator(".crm-ms-msg").last().getByTestId("msg-removed")).toHaveText(/^Message removed by Dana Whitlock, \d{1,2}:\d{2}/);
+    await expect(talk).not.toContainText("4417");
+    await expect(page.locator(".crm-ms-thread", { hasText: "Ivy Sandoval" }).locator(".crm-ms-preview")).toHaveText("Message removed");
+    // Live on Ivy's page, with no reload.
+    await expect(hers.locator(".crm-ms-msg").last().getByTestId("msg-removed")).toHaveText(/^Message removed by Dana Whitlock/);
+    await expect(hers).not.toContainText("4417");
+    await picture(page, "messages-removed-dana");
+
+    // The server's side: the row holds no words, and who removed it and when are the server's.
+    const gone = (await rows<{ id: number; text: string; state: string; removed_by_id: string; removed_at: string }>(dana, data, "messages", { column: "state", op: "eq", value: "removed" }))[0]!;
+    expect([gone.text, gone.removed_by_id]).toEqual(["", await me(dana)]);
+    expect(Date.parse(gone.removed_at)).toBeGreaterThanOrEqual(Date.parse(LEDGER_NOW));
+    // Ivy's record history of it holds no words either; she does not remove Dana's other message.
+    const ivy = ivyContext.request;
+    const history = await ivy.get(data("messages", `/${String(gone.id)}/history`));
+    expect(history.status()).toBe(200);
+    expect(await history.text()).not.toContain("4417");
+    const danas = (await rows<{ id: number; state: string }>(ivy, data, "messages", { and: [{ column: "author_id", op: "eq", value: await me(dana) }, { column: "state", op: "eq", value: "live" }] }))[0]!;
+    expect((await ivy.post(data("messages", `/${String(danas.id)}/actions/remove`), { data: { from: "live" }, headers: await csrf(ivy) })).status()).toBe(404);
+    // The CRM admin is in none of these conversations: she removes nothing in them.
+    const tessa = await api("tessa");
+    expect((await tessa.post(data("messages", `/${String(danas.id)}/actions/remove`), { data: { from: "live" }, headers: await csrf(tessa) })).status()).toBe(404);
+    expect(problems).toEqual([]);
   } finally {
     await tidy(api, data);
     await putMarksBack(api, data);

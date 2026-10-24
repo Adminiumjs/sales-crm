@@ -92,6 +92,11 @@ test("the front desk books a visitor: the clash names the booking in the way, of
   await expect(card).toHaveCount(0);
   await expect(chip(page, "all")).toHaveText("9");
   expect(await rows(context.request, data, "showroom_bookings", spec)).toEqual([]);
+  // Its why is kept with the removed booking, read through its space (plan 68 S16).
+  await page.getByRole("button", { name: "Show cancelled bookings" }).click();
+  const gone = page.getByTestId("sh-removed").locator(".crm-removed-line", { hasText: "Spec: their move slipped" });
+  await expect(gone).toContainText("Why: Spec: their move slipped");
+  await expect(gone).toContainText(/Cancelled by Corin/);
   expect(problems).toEqual([]);
 });
 

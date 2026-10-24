@@ -266,6 +266,12 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(chip(page, "soon")).toHaveText("5");
   // The row is gone for everybody: there is no cancelled visit to list.
   expect(await named(dana, data, "Spec: check the door swing")).toEqual([]);
+  // Its why is kept with the removed visit, read through the deal (plan 68 S16): under the list, when asked.
+  await page.getByRole("button", { name: "Show cancelled visits" }).click();
+  const gone = page.getByTestId("visits-removed").locator(".crm-removed-line", { hasText: "Spec: check the door swing" });
+  await expect(gone).toContainText("Why: no: Spec, Ines is away");
+  await expect(gone).toContainText("Cancelled by Dana Whitlock");
+  await expect(gone).toContainText("Cobalt Legal");
   expect(await named(await api("tessa"), data, "Spec: check the door swing")).toEqual([]);
   // What the dialog said is what the server did: three messages about this deal in the log, as the CRM admin reads it
   // (booked, moved, cancelled). Ines is a sample person with an example address, so each is skipped, never sent.
