@@ -53,14 +53,16 @@ describe("the app's rows for Inventory", () => {
     // The past deliveries (below) are history by nature; every other row is typed bare, and Inventory's saves do the rest.
     const past = (row: Row): boolean => typeof row["@label"] === "string" && /^inv:(po|receipt):[a-z-]+:\d\d$/.test(row["@label"]);
     const typed = new Set(file.tables.flatMap((table) => table.rows.filter((row) => !past(row)).flatMap((row) => Object.keys(row).map((column) => `${table.ref}.${column}`))));
+    // An order's status and time received are Inventory's ledger's: no row of the file types them, a past one neither.
+    for (const order of rows("purchase_orders")) expect([order["status"], order["received_at"]], String(order["@label"])).toEqual([undefined, undefined]);
     for (const kept of ["items.cost_avg", "items.on_hand", "items.receipt_id", "purchase_orders.status", "purchase_orders.number", "purchase_orders.received_at", "receipts.status", "receipts.number", "receipt_lines.status"]) {
       expect(typed.has(kept), kept).toBe(false);
     }
     for (const never of ["stock_points", "levels", "movements", "batches", "on_order_moves", "postings", "reservations"]) expect(file.tables.some((table) => table.ref === never), never).toBe(false);
   });
 
-  it("hold the ledger's 123 deliveries of the last 90 days (screen 60), and one older a supplier: each an order received in one delivery, moving no stock", () => {
-    const orders = rows("purchase_orders").filter((row) => row["status"] === "received");
+  it("hold the ledger's 123 deliveries of the last 90 days (screen 60), and one older a supplier: each the one delivery of an order, moving no stock", () => {
+    const orders = rows("purchase_orders").filter((row) => typeof row["@label"] === "string" && /^inv:po:[a-z-]+:\d\d$/.test(row["@label"]));
     const deliveries = rows("receipts").filter((row) => row["kind"] === "delivery");
     expect([orders.length, deliveries.length]).toEqual([129, 129]);
     // No line: a past delivery says when it came, not what it brought, so the shelf's figures stay the opening receipt's.

@@ -80,8 +80,9 @@ for (const [dialect, reachable] of LEGS) {
       expect(await count(inv('movements'), 'receipt_id is null')).toBe(0);
     }, 600_000);
 
-    it('the ledger\'s deliveries (screen 60): 129 orders received in one delivery each, the days due copied from them, lateness worked out by the server', async () => {
-      expect(await count(inv('purchase_orders'), "status = 'received'")).toBe(129);
+    it('the ledger\'s deliveries (screen 60): 129 orders delivered once each, the days due copied from them, lateness worked out by the server', async () => {
+      // The orders stay drafts (their status is Inventory's ledger's to write, never a sample's); each says when it was due.
+      expect(await count(inv('purchase_orders'), "status = 'draft' and expected_on is not null")).toBe(129);
       expect(await count(inv('receipts'), "kind = 'delivery' and status = 'posted' and late is not null")).toBe(129);
       // Each delivery's day due is its order's, copied by the server; its lateness the add-on's own formula's.
       const off = await w.h.rows(`select count(*) as c from ${inv('receipts')} r join ${inv('purchase_orders')} o on o.id = r.po_id where r.expected_on is null or r.expected_on <> o.expected_on`);

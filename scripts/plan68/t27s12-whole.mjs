@@ -15,11 +15,16 @@
  *    its order (whose supplier it was), whether it is posted, the day it came
  *    in, and whether and by how many days it was late. Nothing of its money,
  *    its note or who took it in;
- *  - the sample: the ledger's 123 deliveries (screen 60), each one order of
- *    Inventory's received in one delivery, all inside the last 90 days, each
+ *  - the sample: the ledger's 123 deliveries (screen 60), each the one
+ *    delivery of an order of Inventory's, all inside the last 90 days, each
  *    supplier's late ones as many and as late as the ledger says; and one
  *    older delivery a supplier, on time, outside the 90 days (so the sample's
- *    score is "the last 90 days", not "from" its first day);
+ *    score is "the last 90 days", not "from" its first day). The orders stay
+ *    drafts: an order's status and its time received are Inventory's ledger's,
+ *    which an app's sample may not type (the engine refuses the file), and a
+ *    move to "received" is the ledger's alone, made by a receipt's lines,
+ *    which would put the goods on the shelf. A delivery carries no line, so
+ *    no stock moves: the shelf stays the opening receipt's;
  *  - the sample's moves: the four orders still to come are sent by their own
  *    labels (a move of the whole table would ask the received ones to be sent).
  */
@@ -100,13 +105,11 @@ const deliver = (name, slug, n, received, late) => {
     "@label": label,
     supplier_id: { "@ref": supplier["@label"] },
     place_id: { "@ref": place["@label"] },
-    status: "received",
+    // No status and no time received: those are Inventory's ledger's to write, and an app's sample brings none of its
+    // history (`sampleSectionIssues`). So the order stays a draft that says when it was sent and due.
     sent_how: "none",
     sent_on: { "@day": sent },
     expected_on: { "@day": expected },
-    sent_at: { "@day": sent, "@time": "09:15" },
-    received_at: { "@day": received, "@time": "10:30" },
-    closed_at: { "@day": received, "@time": "10:30" },
   });
   receipts.push({
     "@label": `inv:receipt:${slug}:${String(n).padStart(2, "0")}`,
@@ -164,4 +167,4 @@ if (moves.some((move) => move.table === "purchase_orders")) fail("a move still a
 
 writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
 writeFileSync(INVENTORY, `${JSON.stringify(inventory, null, 1)}\n`);
-console.log(`t27s12-whole: receipts read by ${SUPPLY_ROLES.join(", ")}; ${String(orders.length)} received orders and deliveries in the sample`);
+console.log(`t27s12-whole: receipts read by ${SUPPLY_ROLES.join(", ")}; ${String(orders.length)} orders and their deliveries in the sample`);

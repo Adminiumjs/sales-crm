@@ -298,25 +298,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -124
      },
      "expected_on": {
       "@day": -110
-     },
-     "sent_at": {
-      "@day": -124,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -110,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -110,
-      "@time": "10:30"
      }
     },
     {
@@ -327,25 +314,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -98
      },
      "expected_on": {
       "@day": -84
-     },
-     "sent_at": {
-      "@day": -98,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -84,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -84,
-      "@time": "10:30"
      }
     },
     {
@@ -356,25 +330,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -94
      },
      "expected_on": {
       "@day": -80
-     },
-     "sent_at": {
-      "@day": -94,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -81,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -81,
-      "@time": "10:30"
      }
     },
     {
@@ -385,25 +346,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -92
      },
      "expected_on": {
       "@day": -78
-     },
-     "sent_at": {
-      "@day": -92,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -78,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -78,
-      "@time": "10:30"
      }
     },
     {
@@ -414,25 +362,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -87
      },
      "expected_on": {
       "@day": -73
-     },
-     "sent_at": {
-      "@day": -87,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -75,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -75,
-      "@time": "10:30"
      }
     },
     {
@@ -443,25 +378,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -88
      },
      "expected_on": {
       "@day": -74
-     },
-     "sent_at": {
-      "@day": -88,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -74,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -74,
-      "@time": "10:30"
      }
     },
     {
@@ -472,25 +394,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -83
      },
      "expected_on": {
       "@day": -69
-     },
-     "sent_at": {
-      "@day": -83,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -69,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -69,
-      "@time": "10:30"
      }
     },
     {
@@ -501,25 +410,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -80
      },
      "expected_on": {
       "@day": -66
-     },
-     "sent_at": {
-      "@day": -80,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -67,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -67,
-      "@time": "10:30"
      }
     },
     {
@@ -530,25 +426,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -77
      },
      "expected_on": {
       "@day": -63
-     },
-     "sent_at": {
-      "@day": -77,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -63,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -63,
-      "@time": "10:30"
      }
     },
     {
@@ -559,25 +442,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -74
      },
      "expected_on": {
       "@day": -60
-     },
-     "sent_at": {
-      "@day": -74,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -60,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -60,
-      "@time": "10:30"
      }
     },
     {
@@ -588,25 +458,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -70
      },
      "expected_on": {
       "@day": -56
-     },
-     "sent_at": {
-      "@day": -70,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -57,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -57,
-      "@time": "10:30"
      }
     },
     {
@@ -617,25 +474,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -68
      },
      "expected_on": {
       "@day": -54
-     },
-     "sent_at": {
-      "@day": -68,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -54,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -54,
-      "@time": "10:30"
      }
     },
     {
@@ -646,25 +490,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -65
      },
      "expected_on": {
       "@day": -51
-     },
-     "sent_at": {
-      "@day": -65,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -53,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -53,
-      "@time": "10:30"
      }
     },
     {
@@ -675,25 +506,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -62
      },
      "expected_on": {
       "@day": -48
-     },
-     "sent_at": {
-      "@day": -62,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -48,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -48,
-      "@time": "10:30"
      }
     },
     {
@@ -704,25 +522,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -60
      },
      "expected_on": {
       "@day": -46
-     },
-     "sent_at": {
-      "@day": -60,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -46,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -46,
-      "@time": "10:30"
      }
     },
     {
@@ -733,25 +538,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -58
      },
      "expected_on": {
       "@day": -44
-     },
-     "sent_at": {
-      "@day": -58,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -42,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -42,
-      "@time": "10:30"
      }
     },
     {
@@ -762,25 +554,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -53
      },
      "expected_on": {
       "@day": -39
-     },
-     "sent_at": {
-      "@day": -53,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -39,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -39,
-      "@time": "10:30"
      }
     },
     {
@@ -791,25 +570,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -50
      },
      "expected_on": {
       "@day": -36
-     },
-     "sent_at": {
-      "@day": -50,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -36,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -36,
-      "@time": "10:30"
      }
     },
     {
@@ -820,25 +586,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -46
      },
      "expected_on": {
       "@day": -32
-     },
-     "sent_at": {
-      "@day": -46,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -33,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -33,
-      "@time": "10:30"
      }
     },
     {
@@ -849,25 +602,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -46
      },
      "expected_on": {
       "@day": -32
-     },
-     "sent_at": {
-      "@day": -46,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -32,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -32,
-      "@time": "10:30"
      }
     },
     {
@@ -878,25 +618,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -39
      },
      "expected_on": {
       "@day": -25
-     },
-     "sent_at": {
-      "@day": -39,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -27,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -27,
-      "@time": "10:30"
      }
     },
     {
@@ -907,25 +634,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -39
      },
      "expected_on": {
       "@day": -25
-     },
-     "sent_at": {
-      "@day": -39,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -25,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -25,
-      "@time": "10:30"
      }
     },
     {
@@ -936,25 +650,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -35
      },
      "expected_on": {
       "@day": -21
-     },
-     "sent_at": {
-      "@day": -35,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -21,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -21,
-      "@time": "10:30"
      }
     },
     {
@@ -965,25 +666,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -31
      },
      "expected_on": {
       "@day": -17
-     },
-     "sent_at": {
-      "@day": -31,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -18,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -18,
-      "@time": "10:30"
      }
     },
     {
@@ -994,25 +682,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -29
      },
      "expected_on": {
       "@day": -15
-     },
-     "sent_at": {
-      "@day": -29,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -15,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -15,
-      "@time": "10:30"
      }
     },
     {
@@ -1023,25 +698,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -26
      },
      "expected_on": {
       "@day": -12
-     },
-     "sent_at": {
-      "@day": -26,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -12,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -12,
-      "@time": "10:30"
      }
     },
     {
@@ -1052,25 +714,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -24
      },
      "expected_on": {
       "@day": -10
-     },
-     "sent_at": {
-      "@day": -24,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -11,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -11,
-      "@time": "10:30"
      }
     },
     {
@@ -1081,25 +730,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -20
      },
      "expected_on": {
       "@day": -6
-     },
-     "sent_at": {
-      "@day": -20,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -6,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -6,
-      "@time": "10:30"
      }
     },
     {
@@ -1110,25 +746,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -16
      },
      "expected_on": {
       "@day": -2
-     },
-     "sent_at": {
-      "@day": -16,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -4,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -4,
-      "@time": "10:30"
      }
     },
     {
@@ -1139,25 +762,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -127
      },
      "expected_on": {
       "@day": -113
-     },
-     "sent_at": {
-      "@day": -127,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -113,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -113,
-      "@time": "10:30"
      }
     },
     {
@@ -1168,25 +778,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -98
      },
      "expected_on": {
       "@day": -84
-     },
-     "sent_at": {
-      "@day": -98,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -84,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -84,
-      "@time": "10:30"
      }
     },
     {
@@ -1197,25 +794,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -94
      },
      "expected_on": {
       "@day": -80
-     },
-     "sent_at": {
-      "@day": -94,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -81,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -81,
-      "@time": "10:30"
      }
     },
     {
@@ -1226,25 +810,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -89
      },
      "expected_on": {
       "@day": -75
-     },
-     "sent_at": {
-      "@day": -89,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -75,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -75,
-      "@time": "10:30"
      }
     },
     {
@@ -1255,25 +826,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -83
      },
      "expected_on": {
       "@day": -69
-     },
-     "sent_at": {
-      "@day": -83,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -71,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -71,
-      "@time": "10:30"
      }
     },
     {
@@ -1284,25 +842,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -82
      },
      "expected_on": {
       "@day": -68
-     },
-     "sent_at": {
-      "@day": -82,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -67,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -67,
-      "@time": "10:30"
      }
     },
     {
@@ -1313,25 +858,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -76
      },
      "expected_on": {
       "@day": -62
-     },
-     "sent_at": {
-      "@day": -76,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -62,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -62,
-      "@time": "10:30"
      }
     },
     {
@@ -1342,25 +874,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -70
      },
      "expected_on": {
       "@day": -56
-     },
-     "sent_at": {
-      "@day": -70,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -57,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -57,
-      "@time": "10:30"
      }
     },
     {
@@ -1371,25 +890,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -67
      },
      "expected_on": {
       "@day": -53
-     },
-     "sent_at": {
-      "@day": -67,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -53,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -53,
-      "@time": "10:30"
      }
     },
     {
@@ -1400,25 +906,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -62
      },
      "expected_on": {
       "@day": -48
-     },
-     "sent_at": {
-      "@day": -62,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -48,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -48,
-      "@time": "10:30"
      }
     },
     {
@@ -1429,25 +922,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -56
      },
      "expected_on": {
       "@day": -42
-     },
-     "sent_at": {
-      "@day": -56,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -43,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -43,
-      "@time": "10:30"
      }
     },
     {
@@ -1458,25 +938,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -53
      },
      "expected_on": {
       "@day": -39
-     },
-     "sent_at": {
-      "@day": -53,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -39,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -39,
-      "@time": "10:30"
      }
     },
     {
@@ -1487,25 +954,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -46
      },
      "expected_on": {
       "@day": -32
-     },
-     "sent_at": {
-      "@day": -46,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -34,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -34,
-      "@time": "10:30"
      }
     },
     {
@@ -1516,25 +970,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -46
      },
      "expected_on": {
       "@day": -32
-     },
-     "sent_at": {
-      "@day": -46,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -32,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -32,
-      "@time": "10:30"
      }
     },
     {
@@ -1545,25 +986,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -39
      },
      "expected_on": {
       "@day": -25
-     },
-     "sent_at": {
-      "@day": -39,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -25,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -25,
-      "@time": "10:30"
      }
     },
     {
@@ -1574,25 +1002,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -38
      },
      "expected_on": {
       "@day": -24
-     },
-     "sent_at": {
-      "@day": -38,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -21,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -21,
-      "@time": "10:30"
      }
     },
     {
@@ -1603,25 +1018,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -32
      },
      "expected_on": {
       "@day": -18
-     },
-     "sent_at": {
-      "@day": -32,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -18,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -18,
-      "@time": "10:30"
      }
     },
     {
@@ -1632,25 +1034,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -26
      },
      "expected_on": {
       "@day": -12
-     },
-     "sent_at": {
-      "@day": -26,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -12,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -12,
-      "@time": "10:30"
      }
     },
     {
@@ -1661,25 +1050,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -20
      },
      "expected_on": {
       "@day": -6
-     },
-     "sent_at": {
-      "@day": -20,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -7,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -7,
-      "@time": "10:30"
      }
     },
     {
@@ -1690,25 +1066,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -18
      },
      "expected_on": {
       "@day": -4
-     },
-     "sent_at": {
-      "@day": -18,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -4,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -4,
-      "@time": "10:30"
      }
     },
     {
@@ -1719,25 +1082,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -137
      },
      "expected_on": {
       "@day": -116
-     },
-     "sent_at": {
-      "@day": -137,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -116,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -116,
-      "@time": "10:30"
      }
     },
     {
@@ -1748,25 +1098,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -105
      },
      "expected_on": {
       "@day": -84
-     },
-     "sent_at": {
-      "@day": -105,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -84,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -84,
-      "@time": "10:30"
      }
     },
     {
@@ -1777,25 +1114,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -102
      },
      "expected_on": {
       "@day": -81
-     },
-     "sent_at": {
-      "@day": -102,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -82,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -82,
-      "@time": "10:30"
      }
     },
     {
@@ -1806,25 +1130,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -102
      },
      "expected_on": {
       "@day": -81
-     },
-     "sent_at": {
-      "@day": -102,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -81,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -81,
-      "@time": "10:30"
      }
     },
     {
@@ -1835,25 +1146,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -102
      },
      "expected_on": {
       "@day": -81
-     },
-     "sent_at": {
-      "@day": -102,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -77,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -77,
-      "@time": "10:30"
      }
     },
     {
@@ -1864,25 +1162,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -96
      },
      "expected_on": {
       "@day": -75
-     },
-     "sent_at": {
-      "@day": -96,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -75,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -75,
-      "@time": "10:30"
      }
     },
     {
@@ -1893,25 +1178,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -95
      },
      "expected_on": {
       "@day": -74
-     },
-     "sent_at": {
-      "@day": -95,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -74,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -74,
-      "@time": "10:30"
      }
     },
     {
@@ -1922,25 +1194,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -90
      },
      "expected_on": {
       "@day": -69
-     },
-     "sent_at": {
-      "@day": -90,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -70,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -70,
-      "@time": "10:30"
      }
     },
     {
@@ -1951,25 +1210,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -88
      },
      "expected_on": {
       "@day": -67
-     },
-     "sent_at": {
-      "@day": -88,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -67,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -67,
-      "@time": "10:30"
      }
     },
     {
@@ -1980,25 +1226,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -88
      },
      "expected_on": {
       "@day": -67
-     },
-     "sent_at": {
-      "@day": -88,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -67,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -67,
-      "@time": "10:30"
      }
     },
     {
@@ -2009,25 +1242,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -82
      },
      "expected_on": {
       "@day": -61
-     },
-     "sent_at": {
-      "@day": -82,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -62,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -62,
-      "@time": "10:30"
      }
     },
     {
@@ -2038,25 +1258,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -87
      },
      "expected_on": {
       "@day": -66
-     },
-     "sent_at": {
-      "@day": -87,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -60,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -60,
-      "@time": "10:30"
      }
     },
     {
@@ -2067,25 +1274,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -76
      },
      "expected_on": {
       "@day": -55
-     },
-     "sent_at": {
-      "@day": -76,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -57,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -57,
-      "@time": "10:30"
      }
     },
     {
@@ -2096,25 +1290,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -76
      },
      "expected_on": {
       "@day": -55
-     },
-     "sent_at": {
-      "@day": -76,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -55,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -55,
-      "@time": "10:30"
      }
     },
     {
@@ -2125,25 +1306,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -74
      },
      "expected_on": {
       "@day": -53
-     },
-     "sent_at": {
-      "@day": -74,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -53,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -53,
-      "@time": "10:30"
      }
     },
     {
@@ -2154,25 +1322,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -70
      },
      "expected_on": {
       "@day": -49
-     },
-     "sent_at": {
-      "@day": -70,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -50,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -50,
-      "@time": "10:30"
      }
     },
     {
@@ -2183,25 +1338,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -68
      },
      "expected_on": {
       "@day": -47
-     },
-     "sent_at": {
-      "@day": -68,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -47,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -47,
-      "@time": "10:30"
      }
     },
     {
@@ -2212,25 +1354,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -67
      },
      "expected_on": {
       "@day": -46
-     },
-     "sent_at": {
-      "@day": -67,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -46,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -46,
-      "@time": "10:30"
      }
     },
     {
@@ -2241,25 +1370,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -70
      },
      "expected_on": {
       "@day": -49
-     },
-     "sent_at": {
-      "@day": -70,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -42,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -42,
-      "@time": "10:30"
      }
     },
     {
@@ -2270,25 +1386,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -61
      },
      "expected_on": {
       "@day": -40
-     },
-     "sent_at": {
-      "@day": -61,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -40,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -40,
-      "@time": "10:30"
      }
     },
     {
@@ -2299,25 +1402,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -58
      },
      "expected_on": {
       "@day": -37
-     },
-     "sent_at": {
-      "@day": -58,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -39,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -39,
-      "@time": "10:30"
      }
     },
     {
@@ -2328,25 +1418,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -56
      },
      "expected_on": {
       "@day": -35
-     },
-     "sent_at": {
-      "@day": -56,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -35,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -35,
-      "@time": "10:30"
      }
     },
     {
@@ -2357,25 +1434,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -53
      },
      "expected_on": {
       "@day": -32
-     },
-     "sent_at": {
-      "@day": -53,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -32,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -32,
-      "@time": "10:30"
      }
     },
     {
@@ -2386,25 +1450,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -52
      },
      "expected_on": {
       "@day": -31
-     },
-     "sent_at": {
-      "@day": -52,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -32,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -32,
-      "@time": "10:30"
      }
     },
     {
@@ -2415,25 +1466,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -56
      },
      "expected_on": {
       "@day": -35
-     },
-     "sent_at": {
-      "@day": -56,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -27,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -27,
-      "@time": "10:30"
      }
     },
     {
@@ -2444,25 +1482,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -46
      },
      "expected_on": {
       "@day": -25
-     },
-     "sent_at": {
-      "@day": -46,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -25,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -25,
-      "@time": "10:30"
      }
     },
     {
@@ -2473,25 +1498,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -42
      },
      "expected_on": {
       "@day": -21
-     },
-     "sent_at": {
-      "@day": -42,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -22,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -22,
-      "@time": "10:30"
      }
     },
     {
@@ -2502,25 +1514,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -41
      },
      "expected_on": {
       "@day": -20
-     },
-     "sent_at": {
-      "@day": -41,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -20,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -20,
-      "@time": "10:30"
      }
     },
     {
@@ -2531,25 +1530,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -37
      },
      "expected_on": {
       "@day": -16
-     },
-     "sent_at": {
-      "@day": -37,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -18,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -18,
-      "@time": "10:30"
      }
     },
     {
@@ -2560,25 +1546,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -36
      },
      "expected_on": {
       "@day": -15
-     },
-     "sent_at": {
-      "@day": -36,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -15,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -15,
-      "@time": "10:30"
      }
     },
     {
@@ -2589,25 +1562,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -33
      },
      "expected_on": {
       "@day": -12
-     },
-     "sent_at": {
-      "@day": -33,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -12,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -12,
-      "@time": "10:30"
      }
     },
     {
@@ -2618,25 +1578,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -42
      },
      "expected_on": {
       "@day": -21
-     },
-     "sent_at": {
-      "@day": -42,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -11,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -11,
-      "@time": "10:30"
      }
     },
     {
@@ -2647,25 +1594,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -28
      },
      "expected_on": {
       "@day": -7
-     },
-     "sent_at": {
-      "@day": -28,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -7,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -7,
-      "@time": "10:30"
      }
     },
     {
@@ -2676,25 +1610,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -26
      },
      "expected_on": {
       "@day": -5
-     },
-     "sent_at": {
-      "@day": -26,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -5,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -5,
-      "@time": "10:30"
      }
     },
     {
@@ -2705,25 +1626,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -24
      },
      "expected_on": {
       "@day": -3
-     },
-     "sent_at": {
-      "@day": -24,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -4,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -4,
-      "@time": "10:30"
      }
     },
     {
@@ -2734,25 +1642,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -133
      },
      "expected_on": {
       "@day": -119
-     },
-     "sent_at": {
-      "@day": -133,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -119,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -119,
-      "@time": "10:30"
      }
     },
     {
@@ -2763,25 +1658,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -98
      },
      "expected_on": {
       "@day": -84
-     },
-     "sent_at": {
-      "@day": -98,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -84,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -84,
-      "@time": "10:30"
      }
     },
     {
@@ -2792,25 +1674,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -94
      },
      "expected_on": {
       "@day": -80
-     },
-     "sent_at": {
-      "@day": -94,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -81,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -81,
-      "@time": "10:30"
      }
     },
     {
@@ -2821,25 +1690,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -91
      },
      "expected_on": {
       "@day": -77
-     },
-     "sent_at": {
-      "@day": -91,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -77,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -77,
-      "@time": "10:30"
      }
     },
     {
@@ -2850,25 +1706,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -86
      },
      "expected_on": {
       "@day": -72
-     },
-     "sent_at": {
-      "@day": -86,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -74,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -74,
-      "@time": "10:30"
      }
     },
     {
@@ -2879,25 +1722,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -83
      },
      "expected_on": {
       "@day": -69
-     },
-     "sent_at": {
-      "@day": -83,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -69,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -69,
-      "@time": "10:30"
      }
     },
     {
@@ -2908,25 +1738,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -86
      },
      "expected_on": {
       "@day": -72
-     },
-     "sent_at": {
-      "@day": -86,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -67,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -67,
-      "@time": "10:30"
      }
     },
     {
@@ -2937,25 +1754,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -74
      },
      "expected_on": {
       "@day": -60
-     },
-     "sent_at": {
-      "@day": -74,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -61,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -61,
-      "@time": "10:30"
      }
     },
     {
@@ -2966,25 +1770,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -71
      },
      "expected_on": {
       "@day": -57
-     },
-     "sent_at": {
-      "@day": -71,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -57,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -57,
-      "@time": "10:30"
      }
     },
     {
@@ -2995,25 +1786,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -67
      },
      "expected_on": {
       "@day": -53
-     },
-     "sent_at": {
-      "@day": -67,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -53,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -53,
-      "@time": "10:30"
      }
     },
     {
@@ -3024,25 +1802,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -62
      },
      "expected_on": {
       "@day": -48
-     },
-     "sent_at": {
-      "@day": -62,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -49,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -49,
-      "@time": "10:30"
      }
     },
     {
@@ -3053,25 +1818,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -60
      },
      "expected_on": {
       "@day": -46
-     },
-     "sent_at": {
-      "@day": -60,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -46,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -46,
-      "@time": "10:30"
      }
     },
     {
@@ -3082,25 +1834,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -54
      },
      "expected_on": {
       "@day": -40
-     },
-     "sent_at": {
-      "@day": -54,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -42,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -42,
-      "@time": "10:30"
      }
     },
     {
@@ -3111,25 +1850,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -53
      },
      "expected_on": {
       "@day": -39
-     },
-     "sent_at": {
-      "@day": -53,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -39,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -39,
-      "@time": "10:30"
      }
     },
     {
@@ -3140,25 +1866,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -48
      },
      "expected_on": {
       "@day": -34
-     },
-     "sent_at": {
-      "@day": -48,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -34,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -34,
-      "@time": "10:30"
      }
     },
     {
@@ -3169,25 +1882,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -45
      },
      "expected_on": {
       "@day": -31
-     },
-     "sent_at": {
-      "@day": -45,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -32,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -32,
-      "@time": "10:30"
      }
     },
     {
@@ -3198,25 +1898,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -40
      },
      "expected_on": {
       "@day": -26
-     },
-     "sent_at": {
-      "@day": -40,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -26,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -26,
-      "@time": "10:30"
      }
     },
     {
@@ -3227,25 +1914,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -45
      },
      "expected_on": {
       "@day": -31
-     },
-     "sent_at": {
-      "@day": -45,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -22,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -22,
-      "@time": "10:30"
      }
     },
     {
@@ -3256,25 +1930,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -31
      },
      "expected_on": {
       "@day": -17
-     },
-     "sent_at": {
-      "@day": -31,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -18,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -18,
-      "@time": "10:30"
      }
     },
     {
@@ -3285,25 +1946,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -28
      },
      "expected_on": {
       "@day": -14
-     },
-     "sent_at": {
-      "@day": -28,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -14,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -14,
-      "@time": "10:30"
      }
     },
     {
@@ -3314,25 +1962,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -23
      },
      "expected_on": {
       "@day": -9
-     },
-     "sent_at": {
-      "@day": -23,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -11,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -11,
-      "@time": "10:30"
      }
     },
     {
@@ -3343,25 +1978,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -20
      },
      "expected_on": {
       "@day": -6
-     },
-     "sent_at": {
-      "@day": -20,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -6,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -6,
-      "@time": "10:30"
      }
     },
     {
@@ -3372,25 +1994,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -18
      },
      "expected_on": {
       "@day": -4
-     },
-     "sent_at": {
-      "@day": -18,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -4,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -4,
-      "@time": "10:30"
      }
     },
     {
@@ -3401,25 +2010,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -165
      },
      "expected_on": {
       "@day": -123
-     },
-     "sent_at": {
-      "@day": -165,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -123,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -123,
-      "@time": "10:30"
      }
     },
     {
@@ -3430,25 +2026,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -138
      },
      "expected_on": {
       "@day": -96
-     },
-     "sent_at": {
-      "@day": -138,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -84,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -84,
-      "@time": "10:30"
      }
     },
     {
@@ -3459,25 +2042,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -119
      },
      "expected_on": {
       "@day": -77
-     },
-     "sent_at": {
-      "@day": -119,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -78,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -78,
-      "@time": "10:30"
      }
     },
     {
@@ -3488,25 +2058,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -132
      },
      "expected_on": {
       "@day": -90
-     },
-     "sent_at": {
-      "@day": -132,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -74,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -74,
-      "@time": "10:30"
      }
     },
     {
@@ -3517,25 +2074,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -107
      },
      "expected_on": {
       "@day": -65
-     },
-     "sent_at": {
-      "@day": -107,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -67,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -67,
-      "@time": "10:30"
      }
     },
     {
@@ -3546,25 +2090,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -121
      },
      "expected_on": {
       "@day": -79
-     },
-     "sent_at": {
-      "@day": -121,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -60,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -60,
-      "@time": "10:30"
      }
     },
     {
@@ -3575,25 +2106,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -95
      },
      "expected_on": {
       "@day": -53
-     },
-     "sent_at": {
-      "@day": -95,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -53,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -53,
-      "@time": "10:30"
      }
     },
     {
@@ -3604,25 +2122,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -110
      },
      "expected_on": {
       "@day": -68
-     },
-     "sent_at": {
-      "@day": -110,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -47,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -47,
-      "@time": "10:30"
      }
     },
     {
@@ -3633,25 +2138,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -104
      },
      "expected_on": {
       "@day": -62
-     },
-     "sent_at": {
-      "@day": -104,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -40,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -40,
-      "@time": "10:30"
      }
     },
     {
@@ -3662,25 +2154,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -76
      },
      "expected_on": {
       "@day": -34
-     },
-     "sent_at": {
-      "@day": -76,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -34,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -34,
-      "@time": "10:30"
      }
     },
     {
@@ -3691,25 +2170,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -94
      },
      "expected_on": {
       "@day": -52
-     },
-     "sent_at": {
-      "@day": -94,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -28,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -28,
-      "@time": "10:30"
      }
     },
     {
@@ -3720,25 +2186,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -63
      },
      "expected_on": {
       "@day": -21
-     },
-     "sent_at": {
-      "@day": -63,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -21,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -21,
-      "@time": "10:30"
      }
     },
     {
@@ -3749,25 +2202,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -82
      },
      "expected_on": {
       "@day": -40
-     },
-     "sent_at": {
-      "@day": -82,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -15,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -15,
-      "@time": "10:30"
      }
     },
     {
@@ -3778,25 +2218,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -53
      },
      "expected_on": {
       "@day": -11
-     },
-     "sent_at": {
-      "@day": -53,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -11,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -11,
-      "@time": "10:30"
      }
     },
     {
@@ -3807,25 +2234,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -75
      },
      "expected_on": {
       "@day": -33
-     },
-     "sent_at": {
-      "@day": -75,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -4,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -4,
-      "@time": "10:30"
      }
     },
     {
@@ -3836,25 +2250,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -174
      },
      "expected_on": {
       "@day": -125
-     },
-     "sent_at": {
-      "@day": -174,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -125,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -125,
-      "@time": "10:30"
      }
     },
     {
@@ -3865,25 +2266,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -133
      },
      "expected_on": {
       "@day": -84
-     },
-     "sent_at": {
-      "@day": -133,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -84,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -84,
-      "@time": "10:30"
      }
     },
     {
@@ -3894,25 +2282,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -116
      },
      "expected_on": {
       "@day": -67
-     },
-     "sent_at": {
-      "@day": -116,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -68,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -68,
-      "@time": "10:30"
      }
     },
     {
@@ -3923,25 +2298,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -102
      },
      "expected_on": {
       "@day": -53
-     },
-     "sent_at": {
-      "@day": -102,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -53,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -53,
-      "@time": "10:30"
      }
     },
     {
@@ -3952,25 +2314,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -82
      },
      "expected_on": {
       "@day": -33
-     },
-     "sent_at": {
-      "@day": -82,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -35,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -35,
-      "@time": "10:30"
      }
     },
     {
@@ -3981,25 +2330,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -68
      },
      "expected_on": {
       "@day": -19
-     },
-     "sent_at": {
-      "@day": -68,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -19,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -19,
-      "@time": "10:30"
      }
     },
     {
@@ -4010,25 +2346,12 @@
      "place_id": {
       "@ref": "inv:place:depot"
      },
-     "status": "received",
      "sent_how": "none",
      "sent_on": {
       "@day": -53
      },
      "expected_on": {
       "@day": -4
-     },
-     "sent_at": {
-      "@day": -53,
-      "@time": "09:15"
-     },
-     "received_at": {
-      "@day": -4,
-      "@time": "10:30"
-     },
-     "closed_at": {
-      "@day": -4,
-      "@time": "10:30"
      }
     }
    ]

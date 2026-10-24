@@ -425,7 +425,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('counts a delivery of 89 days back, and none of 91 days back, none not posted, none that cannot say whether it was late', async () => {
       const fenlow = suppliers.find((one) => one.name === 'Fenlow Acoustics')!;
-      const order = n((await rows(`select id from inventory_purchase_orders where supplier_id = ${String(fenlow.id)} and status = 'received' order by id limit 1`))[0]!['id']);
+      const order = n((await rows(`select id from inventory_purchase_orders where supplier_id = ${String(fenlow.id)} and status = 'draft' order by id limit 1`))[0]!['id']);
       const place = n((await rows("select place_id from inventory_receipts where kind = 'opening'"))[0]!['place_id']);
       const before = await lateness('ada', fenlow.id);
       const put = (status: string, day: string, late: number | null, days: number | null) =>
