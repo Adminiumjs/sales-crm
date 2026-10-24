@@ -38,13 +38,14 @@ async function until<T>(read: () => Promise<T>, check: (value: T) => boolean, ms
   for (;;) {
     const value = await read();
     if (check(value) || Date.now() > deadline) return value;
-    await new Promise((done) => setTimeout(done, 500));
+    await new Promise((done) => setTimeout(done, 2000));
   }
 }
 
 let call = 0;
 
 test("J-07 signed off: its aftercare call is Hugo's, a sample person who is not active, and the CRM admin sees it", async ({ api, as, data, stand }) => {
+  test.setTimeout(240_000);
   const owner: APIRequestContext = await api("owner");
   const headers = await csrf(owner);
   const hugo = stand.people["hugo"]!;
@@ -62,10 +63,11 @@ test("J-07 signed off: its aftercare call is Hugo's, a sample person who is not 
   const signed = await owner.post(data("sign_offs"), { headers, data: { values: { job_id: job!.id, check_1: true, signer_name: "Ines Holt" } } });
   expect(signed.status(), await signed.text()).toBe(201);
 
-  // The rule runs on the server's own time: its call comes within seconds.
+  // The rule runs on the server's own time: its run is queued to wake a minute after the sign-off, and its call comes then.
   const calls = await until(
     () => rows<{ id: number; owner_id: string | null; kind: string }>(owner, data as Data, "follow_ups", { column: "job_id", op: "eq", value: job!.id }),
     (found) => found.length > 0,
+    150_000,
   );
   expect(calls.map((one) => [one.owner_id, one.kind])).toEqual([[hugo.id, "aftercare"]]);
   call = calls[0]!.id;
@@ -83,6 +85,7 @@ test("J-07 signed off: its aftercare call is Hugo's, a sample person who is not 
 
 test("Remove sample data takes the call the rule made from the sample's job", async ({ api, data }) => {
   test.skip(call === 0, "the first test made no call");
+  test.setTimeout(180_000);
   const owner = await api("owner");
   const headers = await csrf(owner);
   const removed = await owner.post("/api/v1/apps/crm/sample-data/remove", { headers, data: { keepChanged: false } });

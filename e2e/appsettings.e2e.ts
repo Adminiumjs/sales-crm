@@ -240,9 +240,10 @@ test("the sales manager has Selling and nothing else: she writes her eight setti
     await type(page, "quote_valid_days", "45");
     await expect(toast(page)).toHaveText("A quote is valid for: saved.");
     expect((await settingsRow(direct, data))["quote_valid_days"]).toBe(45);
-    // Outside its bounds: not sent, and the field says what it takes.
+    // Outside its bounds: not sent, and the field says what it takes (more days than the warning before it runs out, which
+    // is 3: plan 68 X4 keeps the warning below the validity).
     await type(page, "quote_valid_days", "400");
-    await expect(setting(page, "quote_valid_days").getByRole("alert")).toHaveText("From 1 to 365.");
+    await expect(setting(page, "quote_valid_days").getByRole("alert")).toHaveText("From 4 to 365.");
     // Warm stays under stale.
     await type(page, "sitting_warm_days", "30");
     await expect(setting(page, "sitting_warm_days").getByRole("alert")).toHaveText("From 1 to 29.");
