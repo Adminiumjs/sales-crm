@@ -191,9 +191,10 @@ describe("every button", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("there are thirty-three", () => {
+  it("there are thirty-four", () => {
     // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row.
-    expect(buttons).toHaveLength(33);
+    // Plan 68 S2 adds a quote's "Reopen it".
+    expect(buttons).toHaveLength(34);
   });
 });
 

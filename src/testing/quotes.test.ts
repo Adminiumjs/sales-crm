@@ -265,16 +265,24 @@ describe("a version says whether it needs approval, and whether it may be sent",
     expect(version([line({ qty: 1, rate: 990, list_rate: 1000 })], { threshold_pct: null })).toMatchObject({ needs_approval: "1", may_send: "0" });
   });
 
-  it("writes the approval with three buttons, each on a draft only, and stamps who and when", () => {
+  it("writes the approval with four buttons, each on a draft only, and stamps who and when", () => {
     const actions = table("quotes").states?.actions ?? [];
     expect(actions.map((action) => [action.id, action.set, action.in, action.ask])).toEqual([
       ["ask-approval", { approval: "asked" }, ["draft"], ["ask_reason"]],
       ["approve", { approval: "approved" }, ["draft"], ["decision_note"]],
       ["refuse", { approval: "refused" }, ["draft"], ["decision_note"]],
+      // Plan 68 S2: a decision put back to asked, with a note; the decision before it stays in the record's history.
+      ["reopen-approval", { approval: "asked" }, ["draft"], ["decision_note"]],
     ]);
     const asked = { column: "approval", values: ["asked"] };
     const decided = { column: "approval", values: ["approved", "refused"] };
-    expect(column("quotes", "asked_by_id").rules?.stamp).toEqual({ set: "user-id", on: asked });
+    // Who asked is who wrote the reason: a reopen puts the request back to asked and leaves the asker as she was.
+    expect(column("quotes", "asked_by_id").rules?.stamp).toEqual({ set: "user-id", on: { column: "ask_reason", filled: true } });
+    // Decided only from asked, never by the asker nor the deal's owner; back to asked only on a draft (E1).
+    expect((column("quotes", "approval").rules as { changes?: unknown } | undefined)?.changes).toEqual([
+      { to: ["approved", "refused"], from: ["asked"], notBy: ["asked_by_id", "deal_id.owner_id"] },
+      { to: ["asked"], from: ["none", "approved", "refused"], while: { column: "status", in: ["draft"] } },
+    ]);
     expect(column("quotes", "asked_at").rules?.stamp).toEqual({ set: "now", on: asked });
     expect(column("quotes", "decided_by_id").rules?.stamp).toEqual({ set: "user-id", on: decided });
     expect(column("quotes", "approval_decided_at").rules?.stamp).toEqual({ set: "now", on: decided });

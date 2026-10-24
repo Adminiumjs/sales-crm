@@ -66,13 +66,14 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   },
   deal_stage_changes: { nullable: ["from_stage_id", "by_id", "move_key"] },
   deal_amount_changes: { nullable: [] },
-  follow_ups: { nullable: ["deal_id", "job_id", "call_no", "outcome", "done_by_id", "done_at"] },
+  follow_ups: { nullable: ["deal_id", "on_deal", "job_id", "call_no", "outcome", "done_by_id", "done_at"] },
   activities: { nullable: [] },
   lost_reasons: { nullable: [] },
   // Built on the quote shape of Invoices & Receipts. The first twelve are the
   // shape's, empty where the shape says so; the rest are the app's own.
   quotes: {
     nullable: [
+      "deal_owner_id",
       "number_seq",
       "number",
       "valid_until",
@@ -121,7 +122,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   nudge_snoozes: { nullable: [] },
   deal_members: { nullable: ["role_note", "deal_owner_id"] },
   deal_marks: { nullable: ["contact_id", "owner_id"] },
-  site_visits: { nullable: ["contact_id", "cancel_reason", "note"] },
+  site_visits: { nullable: ["contact_id", "deal_owner_id", "cancel_reason", "note"] },
   visit_notes: { nullable: ["saw", "said", "next", "photos"] },
   visit_agreed: { nullable: [] },
   // Accounts
@@ -162,7 +163,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   coaching_areas: { nullable: ["why", "good_looks_like", "measure"] },
   // An action keeps the one-to-one session it came from (F19), as well as the pair, the meeting and the coaching area.
   actions: { nullable: ["due_on", "done_at", "one_to_one_id", "session_id", "meeting_id", "coaching_area_id"] },
-  meetings: { nullable: [] },
+  meetings: { nullable: ["run_by_id"] },
   meeting_slots: { nullable: ["who_id"] },
   meeting_decisions: { nullable: ["who_id"] },
   threads: { nullable: ["title"] },
@@ -215,7 +216,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   display_pieces: { nullable: ["promised_booking_id", "lent_company_id", "lent_until", "item"] },
   // Jobs on site. A job's number and the count behind it are empty on a sample
   // row, which brings its own text.
-  jobs: { nullable: ["code_seq", "code", "contact_id", "address_lines", "town", "lat", "lng", "place", "access_note", "ask_for", "site_phone", "signed_off_at"] },
+  jobs: { nullable: ["code_seq", "code", "deal_owner_id", "contact_id", "address_lines", "town", "lat", "lng", "place", "access_note", "ask_for", "site_phone", "signed_off_at"] },
   crews: { nullable: ["vehicle_id", "day_hours"] },
   crew_members: { nullable: ["since", "phone", "vehicle_id"] },
   // The weekdays a crew works: a visit is not booked on a day it has no row for.
@@ -677,7 +678,7 @@ describe("a site visit that is cancelled is removed, never marked (F17)", () => 
   });
 
   it("has no column for a move's old day: it is read from the record's history", () => {
-    expect(visits.columns.map((one) => one.ref)).toEqual(["id", "deal_id", "contact_id", "rep_id", "starts_at", "minutes", "purpose", "state", "cancel_reason", "note", "written", "retry_key"]);
+    expect(visits.columns.map((one) => one.ref)).toEqual(["id", "deal_id", "contact_id", "rep_id", "deal_owner_id", "starts_at", "minutes", "purpose", "state", "cancel_reason", "note", "written", "retry_key"]);
   });
 });
 
@@ -952,8 +953,9 @@ describe("what Adminium copies, numbers and stamps on the jobs tables", () => {
     const followUps = byRef.get("follow_ups") as Table;
     expect(followUps.columns.find((c) => c.ref === "job_id")).toMatchObject({ type: "fk", references: "jobs", nullable: true });
     expect(followUps.indexes).toEqual([["owner_id", "done", "due_at"], ["deal_id"], ["job_id"]]);
-    // It is still reached by its own person: no way follows the link.
-    expect(followUps.belongs).toEqual([{ column: "owner_id", set: "team" }]);
+    // It is reached by its own person, and through its deal (plan 68 R1d: the sales manager judges it by the deal's owner).
+    // No way follows the job's link.
+    expect(followUps.belongs).toEqual([{ column: "owner_id", set: "team" }, { via: "deal_id" }]);
   });
 });
 
