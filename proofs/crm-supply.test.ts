@@ -428,8 +428,14 @@ for (const [dialect, reachable] of LEGS) {
       const order = n((await rows(`select id from inventory_purchase_orders where supplier_id = ${String(fenlow.id)} and status = 'draft' order by id limit 1`))[0]!['id']);
       const place = n((await rows("select place_id from inventory_receipts where kind = 'opening'"))[0]!['place_id']);
       const before = await lateness('ada', fenlow.id);
-      const put = (status: string, day: string, late: number | null, days: number | null) =>
-        rows(`insert into inventory_receipts (po_id, supplier_id, place_id, kind, status, received_on, late, days_late, total, units, lines, unposted, unreversed, lines_to_check) values (${String(order)}, ${String(fenlow.id)}, ${String(place)}, 'delivery', '${status}', '${day}', ${late === null ? 'null' : String(late)}, ${days === null ? 'null' : String(days)}, 0, 0, 0, 0, 0, 0)`);
+      const q = (name: string) => (dialect === 'mysql' ? `\`${name}\`` : `"${name}"`);
+      const columns = ['po_id', 'supplier_id', 'place_id', 'kind', 'status', 'received_on', 'late', 'days_late', 'total', 'units', 'lines', 'unposted', 'unreversed', 'lines_to_check'].map(q).join(', ');
+      // Written straight into the database, as no person can: the figures' cache is told, as a write through the routes tells it.
+      const cache = (app as unknown as { widgetDataCache: { invalidateTable: (connection: string, table: string) => void } }).widgetDataCache;
+      const put = async (status: string, day: string, late: number | null, days: number | null) => {
+        await rows(`insert into inventory_receipts (${columns}) values (${String(order)}, ${String(fenlow.id)}, ${String(place)}, 'delivery', '${status}', '${day}', ${late === null ? 'null' : String(late)}, ${days === null ? 'null' : String(days)}, 0, 0, 0, 0, 0, 0)`);
+        cache.invalidateTable(connectionId, tableId('inventory_receipts'));
+      };
       await put('posted', daysBack(91), 1, 30);
       await put('reversed', daysBack(10), 1, 30);
       await put('draft', daysBack(10), 1, 30);
@@ -438,7 +444,8 @@ for (const [dialect, reachable] of LEGS) {
       expect(await lateness('ada', fenlow.id)).toEqual(before);
       await put('posted', daysBack(89), 0, 0);
       expect(await lateness('ada', fenlow.id)).toEqual({ n: before.n + 1, late: before.late, avg: before.avg });
-      await rows(`delete from inventory_receipts where po_id = ${String(order)} and number is null`);
+      await rows(`delete from inventory_receipts where po_id = ${String(order)} and ${q('number')} is null`);
+      cache.invalidateTable(connectionId, tableId('inventory_receipts'));
       expect(await lateness('ada', fenlow.id)).toEqual(before);
     });
 
