@@ -340,6 +340,14 @@ const same = (a: unknown, b: unknown): boolean => {
 
 type Outcome = { state: "sent"; row: Row } | { state: "refused"; refusal: QueueRefusal } | { state: "offline" };
 
+/**
+ * An answer that says "not now" rather than "no" (T09): the session ran out or was signed out elsewhere (401), the
+ * minute's calls are spent (429, after the session's one wait), the request timed out (408), or the token went stale
+ * (403 CSRF_FAILED, after its one renewal). The line waits and keeps what it holds (a customer's signature included);
+ * a refusal would have thrown that away.
+ */
+export const notYet = (error: StaffError): boolean => error.status === 401 || error.status === 408 || error.status === 429 || (error.status === 403 && error.code === "CSRF_FAILED");
+
 export function openQueue(options: QueueOptions): Queue {
   const { session, store } = options;
   const online = options.online ?? (() => typeof navigator === "undefined" || navigator.onLine !== false);
@@ -440,7 +448,7 @@ export function openQueue(options: QueueOptions): Queue {
       try {
         line.uploaded[held] = await upload(file);
       } catch (error) {
-        if (error instanceof StaffError) return { state: "refused", refusal: refusalOf(error) };
+        if (error instanceof StaffError) return notYet(error) ? { state: "offline" } : { state: "refused", refusal: refusalOf(error) };
         if (error instanceof LostReply) return { state: "offline" };
         throw error;
       }
@@ -474,7 +482,7 @@ export function openQueue(options: QueueOptions): Queue {
       else throw error;
     }
     if (saved.state === "saved") return { state: "sent", row: saved.row };
-    if (saved.state === "unknown") return { state: "offline" };
+    if (saved.state === "unknown" || notYet(saved.error)) return { state: "offline" };
     // Refused. A create whose file a row holds WAS made (its answer was lost before): read it back by its key.
     if (Object.keys(line.uploaded).length > 0 && (await discard(line)) && op.type === "create") {
       const found = await session.list(op.table, { where: { column: keyColumn, op: "eq", value: op.key }, limit: 1 }).catch(() => null);
@@ -664,7 +672,8 @@ export function openQueue(options: QueueOptions): Queue {
       };
     },
 
-    busy: () => lines.some((line) => !line.quiet && line.state !== "sent"),
+    // A hidden line still to send counts too (the record of a refused sign-off): signing out would throw it away (T09).
+    busy: () => lines.some((line) => line.state !== "sent" && (!line.quiet || line.state === "waiting" || line.state === "sending")),
 
     async clear() {
       stopping = true;

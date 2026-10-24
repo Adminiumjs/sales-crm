@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { heldIn, latest, memoryStore, openQueue, queueView, type QueueLine, type QueueSession } from "./offlineQueue.ts";
+import { heldIn, latest, memoryStore, notYet, openQueue, queueView, type QueueLine, type QueueSession } from "./offlineQueue.ts";
 import { LostReply, StaffError, type Row, type Saved } from "./staffSession.ts";
 
 type Table = Map<number, Row>;
@@ -24,6 +24,8 @@ function fakeServer() {
     loseNextReply: false,
     /** Refuse creates on this table, as a rule would. */
     refuse: new Set<string>(),
+    /** Answer the next creates with this, whatever the table (a session gone, a full minute): then as usual. */
+    notNow: [] as StaffError[],
   };
   const table = (name: string): Table => {
     let found = tables.get(name);
@@ -39,6 +41,8 @@ function fakeServer() {
     now: () => new Date("2026-08-05T10:52:00.000Z"),
     async create<R extends Row>(ref: string, values: Row, key: string): Promise<Saved<R>> {
       reach(`create ${ref}`);
+      const notNow = state.notNow.shift();
+      if (notNow !== undefined) return { state: "refused", error: notNow };
       if (state.refuse.has(ref)) return { state: "refused", error: new StaffError(422, "VALIDATION", "refused", { fields: { job_id: { code: "not-allowed" } } }) };
       const rows = table(ref);
       const made = [...rows.values()].find((row) => row["retry_key"] === key);
@@ -276,6 +280,41 @@ describe("the offline queue", () => {
     expect(await store.fileIds()).toEqual([photo]);
     expect(await queue.remove(line.id)).toBe(true);
     expect(await store.fileIds()).toEqual([]);
+  });
+
+  it("a session gone (401), a full minute (429) or a stale token is not a refusal: the line waits and keeps the signature (T09)", async () => {
+    const { server, store, queue } = setUp();
+    const signature = await queue.hold(new Blob(["png"], { type: "image/png" }), { table: "crm_sign_offs", column: "signature", name: "signature.png" });
+    server.state.notNow.push(new StaffError(401, "UNAUTHENTICATED", "signed out"), new StaffError(429, "RATE_LIMITED", "slow down"), new StaffError(403, "CSRF_FAILED", "stale"));
+    await queue.add({ kind: "sign-off", op: { type: "create", table: "sign_offs", values: { visit_id: 7, signer_name: "Yusuf Demir", signature }, key: "SignKey0000000000000000000000009" }, dropOnRefusal: ["signature"] });
+    // Tried when added (401), then twice more (429, the stale token): each time it waits.
+    for (let round = 0; round < 3; round += 1) {
+      if (round > 0) await queue.send();
+      const line = queue.lines()[0]!;
+      expect(line.state, `round ${String(round)}`).toBe("waiting");
+      expect(heldIn(line.op.type === "create" ? line.op.values : {}), `round ${String(round)}`).toEqual([signature]);
+      expect(queue.busy()).toBe(true);
+    }
+    // The file went up once, before the first try, and is not sent again.
+    expect(server.calls.filter((call) => call.startsWith("POST"))).toHaveLength(1);
+    await queue.send();
+    expect(queue.lines()[0]?.state).toBe("sent");
+    expect(server.table("sign_offs").size).toBe(1);
+    expect(await store.fileIds()).toEqual([]);
+    // A refusal that IS a no still refuses.
+    expect([401, 408, 429].map((status) => notYet(new StaffError(status, "X", "x")))).toEqual([true, true, true]);
+    expect([notYet(new StaffError(403, "FORBIDDEN", "x")), notYet(new StaffError(409, "ROW_CHANGED", "x")), notYet(new StaffError(422, "VALIDATION", "x"))]).toEqual([false, false, false]);
+  });
+
+  it("counts a hidden line still to send as busy: signing out would throw away a refused sign-off's record (T09)", async () => {
+    const { server, queue } = setUp();
+    server.state.signal = false;
+    await queue.add({ kind: "refused-record", quiet: true, op: { type: "create", table: "refused_sign_offs", values: { visit_id: 7 }, key: "RecordKey00000000000000000000009" } });
+    expect(queueView(queue.lines()).waiting).toBe(0);
+    expect(queue.busy()).toBe(true);
+    server.state.signal = true;
+    await queue.send();
+    expect(queue.busy()).toBe(false);
   });
 
   it("lets the app write a line of its own after a refusal: sent next, before the lines behind", async () => {

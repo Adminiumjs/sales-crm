@@ -545,7 +545,7 @@ export function useGuardedSignOut(signOut: () => Promise<void>): { leave: () => 
   const t = useT();
   const f = useFormatters();
   const queue = useQueue();
-  const { view } = useQueueLines();
+  const { view, lines } = useQueueLines();
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
   const signOutRef = useRef(signOut);
@@ -554,7 +554,8 @@ export function useGuardedSignOut(signOut: () => Promise<void>): { leave: () => 
     if (queue.busy()) setAsking(true);
     else void queue.clear().then(() => signOutRef.current());
   }, [queue]);
-  const n = view.waiting + view.refused;
+  // With the hidden lines still to send (a refused sign-off's record), so the count is never "0 saves".
+  const n = view.waiting + view.refused + lines.filter((line) => line.quiet && (line.state === "waiting" || line.state === "sending")).length;
   const dialog = asking ? (
     <Dialog
       shape="box"
