@@ -26,6 +26,9 @@
  * CRM_STAND_NOW (the moment the sample is added at; the ledger's, unless set;
  * `real` for the real clock) and CRM_STAND_TZ (the server's time zone),
  * TEST_POSTGRES_URL / TEST_MYSQL_URL for the other two engines, and
+ * CRM_STAND_SAMPLE_PERSON=<key> to leave ONE sample person as the product leaves
+ * them all (status `sample`, no password: `hugo`, whom the sample's Settings
+ * names for aftercare calls; plan 68 K1, `e2e/k1-sample-person.e2e.ts`),
  * CRM_STAND_MAIL=1 to keep the mail it sends (`e2e/mail-catcher.mjs`: SMTP on
  * the stand's port + 100, the mails at port + 101; `mailbox()` reads them).
  * Adminium never mails a `.example` or `.test` address, so in mail mode the
@@ -478,15 +481,24 @@ export async function standUp() {
     const columns = meta.prepare("PRAGMA table_info(adminium_users)").all().map((column) => column.name);
     const col = (camel) => (columns.includes(camel) ? camel : camel.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`));
     const people = {};
+    // One sample person may be left as the product leaves every one (K1): not active, no password, nobody signs in as them.
+    const keptSample = process.env.CRM_STAND_SAMPLE_PERSON ?? "";
+    if (keptSample !== "" && !manifest.sampleData.people.some((person) => person.key === keptSample)) throw new Error(`CRM_STAND_SAMPLE_PERSON names no sample person: ${keptSample}`);
+    state.samplePerson = keptSample === "" ? null : keptSample;
     for (const person of manifest.sampleData.people) {
       const row = meta.prepare("SELECT id, status FROM adminium_users WHERE name = ?").get(person.name);
       if (!row) throw new Error(`the sample made no ${person.name}`);
+      if (person.key === keptSample) {
+        people[person.key] = { id: row.id, email: "", name: person.name, role: person.role, sample: true };
+        continue;
+      }
       meta.prepare(`UPDATE adminium_users SET status = 'active', ${col("passwordHash")} = ?, email = ? WHERE id = ?`).run(hash, `${person.key}@crm.test`, row.id);
       people[person.key] = { id: row.id, email: `${person.key}@crm.test`, name: person.name, role: person.role };
     }
     // With mail kept, the people's addresses are mailable too (`.test` is never mailed).
     if (state.mail) {
       for (const person of Object.values(people)) {
+        if (person.sample === true) continue;
         person.email = person.email.replace(/@crm\.test$/, "@crm.stand");
         meta.prepare("UPDATE adminium_users SET email = ? WHERE id = ?").run(person.email, person.id);
       }

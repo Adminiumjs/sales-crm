@@ -3,6 +3,8 @@ export interface StandPerson {
   email: string;
   name: string;
   role: string;
+  /** Left a sample person (`CRM_STAND_SAMPLE_PERSON`): not active, no password, never signed in as (its email is empty). */
+  sample?: true;
 }
 export interface StandState {
   pid: number;
@@ -26,6 +28,8 @@ export interface StandState {
   /** The stage of the app the stand installed, and the parts that stage holds. */
   stage: number;
   parts: string[];
+  /** The one sample person left as the product leaves them (`CRM_STAND_SAMPLE_PERSON`), or null. */
+  samplePerson?: string | null;
   ready?: boolean;
 }
 export const STAND_DIR: string;
