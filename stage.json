@@ -10,9 +10,11 @@
   ],
   "columns": [
     { "part": "jobs", "table": "settings", "columns": ["delivery_emails", "office_phone"] },
-    { "stage": 2, "table": "actions", "columns": ["session_id"] }
+    { "stage": 2, "table": "actions", "columns": ["session_id"] },
+    { "part": "fleet", "table": "deal_stock_needs", "columns": ["visit_id", "crew_id"] }
   ],
   "grants": [
-    { "part": "jobs", "role": "ops-manager", "permissions": ["table:@deals:read", "page:@crm-deals:view"], "limits": ["deals"] }
+    { "part": "jobs", "role": "ops-manager", "permissions": ["table:@deals:read", "page:@crm-deals:view"], "limits": ["deals"] },
+    { "part": "fleet", "role": "crew", "permissions": ["table:@deal_stock_needs:read", "page:@crm-deal-stock-needs:view"], "limits": ["deal_stock_needs"], "tables": ["inventory/items"] }
   ]
 }

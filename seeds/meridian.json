@@ -12549,20 +12549,20 @@
        "da-DK": "Lejet varevogn",
        "zh-CN": "租用货车",
        "zh-TW": "租用廂型車",
-       "ar-EG": "فان مستأجر"
+       "ar-EG": "مركبة مستأجرة"
       }
      },
      "plate": "ML24 VDR",
      "model": {
       "@t": {
-       "en-US": "Hired in for August",
-       "de-DE": "Für August angemietet",
-       "fr-FR": "Louée pour août",
-       "cs-CZ": "Najato na srpen",
-       "da-DK": "Lejet til august",
-       "zh-CN": "八月租用",
-       "zh-TW": "八月租用",
-       "ar-EG": "مستأجر لشهر أغسطس"
+       "en-US": "No crew of its own",
+       "de-DE": "Ohne eigenes Team",
+       "fr-FR": "Sans équipe attitrée",
+       "cs-CZ": "Bez vlastní čety",
+       "da-DK": "Uden eget hold",
+       "zh-CN": "没有固定班组",
+       "zh-TW": "沒有固定班組",
+       "ar-EG": "بلا طاقم خاص بها"
       }
      },
      "odometer": 8310,
@@ -12578,7 +12578,15 @@
       "@day": 246,
       "@week": true
      },
-     "hired": true
+     "hired": true,
+     "hired_from": {
+      "@day": -1,
+      "@week": true
+     },
+     "hired_to": {
+      "@day": 17,
+      "@week": true
+     }
     }
    ]
   },
@@ -12740,6 +12748,63 @@
       "@ref": "crew:red"
      },
      "weekday": "fri"
+    }
+   ]
+  },
+  {
+   "ref": "van_days",
+   "rows": [
+    {
+     "@label": "vanday:blue-4aug",
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "day": {
+      "@day": 7,
+      "@week": true
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     }
+    },
+    {
+     "@label": "vanday:blue-5aug",
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "day": {
+      "@day": 8,
+      "@week": true
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     }
+    },
+    {
+     "@label": "vanday:red-5aug",
+     "crew_id": {
+      "@ref": "crew:red"
+     },
+     "day": {
+      "@day": 8,
+      "@week": true
+     },
+     "vehicle_id": {
+      "@ref": "van:hire"
+     }
+    },
+    {
+     "@label": "vanday:blue-6aug",
+     "crew_id": {
+      "@ref": "crew:blue"
+     },
+     "day": {
+      "@day": 9,
+      "@week": true
+     },
+     "vehicle_id": {
+      "@ref": "van:blue"
+     }
     }
    ]
   },
@@ -13523,18 +13588,26 @@
      "job_id": {
       "@ref": "job:h5"
      },
-     "kind": "drop",
+     "kind": "return",
      "what": {
       "@t": {
-       "en-US": "Test-floor workbenches",
-       "de-DE": "Werkbänke für die Testfläche",
-       "fr-FR": "Établis du plateau d’essai",
-       "cs-CZ": "Pracovní stoly na zkušební halu",
-       "da-DK": "Arbejdsborde til testgulvet",
-       "zh-CN": "测试区工作台",
-       "zh-TW": "測試區工作檯",
-       "ar-EG": "طاولات عمل قاعة الاختبار"
+       "en-US": "Test-floor workbenches: return visit",
+       "de-DE": "Werkbänke für die Testfläche: erneuter Besuch",
+       "fr-FR": "Établis du plateau d’essai : second passage",
+       "cs-CZ": "Pracovní stoly na zkušební halu: opakovaná návštěva",
+       "da-DK": "Arbejdsborde til testgulvet: tilbagebesøg",
+       "zh-CN": "测试区工作台：回访",
+       "zh-TW": "測試區工作檯：回訪",
+       "ar-EG": "طاولات عمل قاعة الاختبار: زيارة عودة"
       }
+     },
+     "day": {
+      "@day": 8,
+      "@week": true
+     },
+     "start_time": "08:00",
+     "crew_id": {
+      "@ref": "crew:blue"
      },
      "hours": 7,
      "crew_size": 3,
@@ -13542,7 +13615,7 @@
       "@day": 8,
       "@week": true
      },
-     "state": "waiting",
+     "state": "booked",
      "tick_loaded": false,
      "tick_arrived": false,
      "tick_done": false,
@@ -14182,6 +14255,16 @@
      },
      "signed_name": "Sadie Moore",
      "damage": false
+    },
+    {
+     "@label": "note:dn6",
+     "job_id": {
+      "@ref": "job:h5"
+     },
+     "visit_id": {
+      "@ref": "jobvisit:j5"
+     },
+     "damage": false
     }
    ]
   },
@@ -14472,6 +14555,44 @@
      },
      "ordered": 40,
      "delivered": 40
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn6"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Cable tray, 2m",
+       "de-DE": "Kabelkanal, 2m",
+       "fr-FR": "Chemin de câbles, 2m",
+       "cs-CZ": "Kabelový žlab, 2m",
+       "da-DK": "Kabelbakke, 2m",
+       "zh-CN": "线槽，2m",
+       "zh-TW": "線槽，2m",
+       "ar-EG": "مسار كابلات 2 متر"
+      }
+     },
+     "ordered": 2,
+     "delivered": 0
+    },
+    {
+     "note_id": {
+      "@ref": "note:dn6"
+     },
+     "what": {
+      "@t": {
+       "en-US": "Bench top, laminate",
+       "de-DE": "Tischplatte, Laminat",
+       "fr-FR": "Plateau de bench, stratifié",
+       "cs-CZ": "Deska lavice, laminát",
+       "da-DK": "Bordplade, laminat",
+       "zh-CN": "台面，防火板",
+       "zh-TW": "檯面，美耐板",
+       "ar-EG": "سطح مكتب، لامينيت"
+      }
+     },
+     "ordered": 1,
+     "delivered": 0
     }
    ]
   },

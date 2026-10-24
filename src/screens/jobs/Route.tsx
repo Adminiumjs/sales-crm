@@ -33,6 +33,7 @@ import { reasonOf } from "../../ui/toast.tsx";
 import { dayKeyOf, ofDay, placeOf, readBooked, readDayHours, readJobs, startOf, weekColumns, type CrewFacts, type Job, type JobSettings, type Visit } from "./data.ts";
 import { pickSheet } from "./DaySheet.tsx";
 import { CrewChips, DayChips, dayLong, hoursOf, mondayOf, useCrewFacts, useJobsScreen, WeekBar } from "./parts.tsx";
+import { hasVanDays, readVanDays, rowOf, truthyHired } from "./vandays.ts";
 
 interface Stop {
   lat: number;
@@ -189,6 +190,10 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
     [session, day, crewId, visits.map((visit) => `${visit.id}:${String(visit.hours)}`).join(",")],
   );
   const onSite = figures.state === "ready" ? figures.data.hours : null;
+  // The crew's vehicle that day (plan 68 S14): the head names it, from the day's own row.
+  const { load: vanLoad, reload: reloadVan } = useLoad(() => (hasVanDays(session) ? readVanDays(session, day, day) : Promise.resolve([])), [session, day]);
+  useLive(hasVanDays(session) ? ["van_days"] : [], reloadVan);
+  const vanDay = vanLoad.state === "ready" ? rowOf(vanLoad.data, crewId, day) : undefined;
 
   // The legs of the placed stops, in order: [depot→1, 1→2, …, last→depot].
   const legOf = (index: number): Leg | null => answer?.legs[index] ?? null;
@@ -291,6 +296,19 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
         <div className="crm-jb-route-head">
           <span className="crm-jb-dot" data-colour={crewIndex < 0 ? undefined : crewIndex % 8} aria-hidden="true" />
           <h2 id="crm-jb-route-h">{crew?.name ?? ""}</h2>
+          {vanDay !== undefined && (
+            <>
+              <span className="crm-jb-route-dot" aria-hidden="true">
+                ·
+              </span>
+              <span className="crm-jb-route-vehicle" data-testid="jb-route-vehicle">
+                {t(truthyHired(vanDay) ? "vandays.rt.vehicle.hired" : "vandays.rt.vehicle", { plate: vanDay.plate ?? vanDay.vehicle_name ?? "" })}
+              </span>
+              <span className="crm-jb-route-dot" aria-hidden="true">
+                ·
+              </span>
+            </>
+          )}
           <span className="crm-jb-quiet">{dayLong(f, day)}</span>
         </div>
         <div className="crm-jb-route-stats">

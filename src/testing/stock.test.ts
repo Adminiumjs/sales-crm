@@ -39,9 +39,9 @@ describe("the app's rows for Inventory", () => {
     expect([file.format, file.app, file.addOn]).toEqual(["adminium.sample/1", "crm", "inventory"]);
   });
 
-  it("hold six suppliers, the depot, ten stock lines, and sixteen needs of the app's own", () => {
+  it("hold six suppliers, the depot, ten stock lines, and seventeen needs of the app's own", () => {
     expect(Object.fromEntries(file.tables.map((table) => [table.ref, table.rows.length]))).toEqual({
-      suppliers: 6, places: 1, items: 10, item_suppliers: 9, receipts: 1, receipt_lines: 7, purchase_orders: 4, po_lines: 4, deal_stock_needs: 16,
+      suppliers: 6, places: 1, items: 10, item_suppliers: 9, receipts: 1, receipt_lines: 7, purchase_orders: 4, po_lines: 4, deal_stock_needs: 17,
     });
     expect(file.tables.filter((table) => table.own === true).map((table) => table.ref)).toEqual(["deal_stock_needs"]);
     // The app's own table links into Inventory by a column the manifest marks so.
@@ -68,6 +68,8 @@ describe("the app's rows for Inventory", () => {
 
   it("every row names a row written before it, in this file or in the app's own sample", () => {
     const known = new Set(mainRows("deals").map((row) => String(row["@label"])));
+    // A need that goes on a visit (J-07's return visit, M3 BN-20) names the app's visit.
+    for (const row of mainRows("job_visits")) known.add(String(row["@label"]));
     // Inventory's own starting row: its unit "each".
     known.add("unit:each");
     const missing: string[] = [];
@@ -88,11 +90,11 @@ describe("the app's rows for Inventory", () => {
     const coming = new Map(rows("po_lines").map((line) => [ref(line["item_id"]), Number(line["packs"]) * Number(line["pack_size"])]));
     expect([...have.values()].reduce((sum, n) => sum + n, 0)).toBe(120 + 60 + 4 + 90 + 35 + 400 + 24);
     expect(Object.fromEntries([...coming].map(([item, n]) => [name.get(item), n]))).toEqual({ "Task seating, mesh back": 240, "Acoustic booths, single": 12, "Acoustic rooms, four-person": 6, "Lab bench stools": 40 });
-    // Every need is of an open deal.
+    // Every need is of an open deal but one: J-07's won deal, whose return visit takes two cable trays (M3 BN-20).
     const open = new Set(mainRows("deals").filter((deal) => deal["state"] === undefined || deal["state"] === "open").map((deal) => String(deal["@label"])));
-    expect(rows("deal_stock_needs").filter((need) => !open.has(ref(need["deal_id"])))).toEqual([]);
+    expect(rows("deal_stock_needs").filter((need) => !open.has(ref(need["deal_id"]))).map((need) => [ref(need["deal_id"]), ref(need["item"]), need["qty"], ref(need["visit_id"])])).toEqual([["deal:h5", "inv:item:s8", 2, "jobvisit:j5"]]);
     const asked = new Map<string, number>();
-    for (const need of rows("deal_stock_needs")) if (need["qty"] !== undefined) asked.set(ref(need["item"]), (asked.get(ref(need["item"])) ?? 0) + Number(need["qty"]));
+    for (const need of rows("deal_stock_needs")) if (need["qty"] !== undefined && open.has(ref(need["deal_id"]))) asked.set(ref(need["item"]), (asked.get(ref(need["item"])) ?? 0) + Number(need["qty"]));
     const short = [...asked].filter(([item, need]) => need > (have.get(item) ?? 0)).map(([item, need]) => `${name.get(item)!} need ${String(need)}, have ${String(have.get(item) ?? 0)}, short ${String(need - (have.get(item) ?? 0))}`);
     expect(short).toEqual(["Task seating, mesh back need 68, have 60, short 8", "Acoustic booths, single need 10, have 4, short 6", "Acoustic rooms, four-person need 2, have 0, short 2"]);
   });

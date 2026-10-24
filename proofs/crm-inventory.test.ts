@@ -64,7 +64,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('"Add sample data" brings the ten lines and six suppliers, and Inventory writes what is on hand and on order', async () => {
       const added = await service().add(await app(), { locale: 'en-US', ...who() });
-      expect(added.counts).toMatchObject({ deals: 40, deal_stock_needs: 16, 'inventory:items': 10, 'inventory:suppliers': 6, 'inventory:receipt_lines': 7, 'inventory:purchase_orders': 4 });
+      expect(added.counts).toMatchObject({ deals: 40, deal_stock_needs: 17, 'inventory:items': 10, 'inventory:suppliers': 6, 'inventory:receipt_lines': 7, 'inventory:purchase_orders': 4 });
       // On hand, line by line: the ledger's figures, kept by Inventory (a level's balance, added up to its item).
       expect(await bySku('on_hand')).toEqual({ 'MER-001': 120, 'MER-002': 60, 'MER-003': 4, 'MER-004': 0, 'MER-005': 90, 'MER-006': 35, 'MER-007': 0, 'MER-008': 400, 'MER-009': 0, 'MER-010': 24 });
       // What each cost, as the receipt said: Inventory's own average.
@@ -89,9 +89,9 @@ for (const [dialect, reachable] of LEGS) {
         'Acoustic rooms, four-person need 2, have 0, short 2',
         'Task seating, mesh back need 68, have 60, short 8',
       ]);
-      // Every need names an item of Inventory's, and a deal that is open.
+      // Every need names an item of Inventory's, and a deal that is open, but one: J-07's won deal, whose return visit takes two cable trays (plan 68 M3 BN-20).
       expect(await count('crm_deal_stock_needs', 'item is null')).toBe(0);
-      expect(n((await w.h.rows(`select count(*) as c from crm_deal_stock_needs d join crm_deals x on x.id = d.deal_id where x.state <> 'open'`))[0]!['c'])).toBe(0);
+      expect(n((await w.h.rows(`select count(*) as c from crm_deal_stock_needs d join crm_deals x on x.id = d.deal_id where x.state <> 'open'`))[0]!['c'])).toBe(1);
     });
 
     it('"Remove sample data" takes Inventory\'s part out with the rest, and adding it again brings the same stock', async () => {

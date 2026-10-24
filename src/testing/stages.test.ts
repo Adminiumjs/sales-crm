@@ -126,7 +126,7 @@ describe("stage 1, the first release", () => {
   it("holds six parts, 47 tables, and offers no Field crew", () => {
     expect(doc.modules.map((part) => part.id)).toEqual(["selling", "quotes", "accounts", "team", "inbox", "supply"]);
     expect(doc.requiredSchema.tables.length).toBe(47);
-    expect(gone.length).toBe(29);
+    expect(gone.length).toBe(31);
     expect(doc.roles.map((role) => role.key)).toEqual(["admin", "sales-manager", "rep", "account-manager", "marketer", "front-desk", "ops-manager", "read-only"]);
     expect(one.cut.roles).toEqual(["crew"]);
     // Each role keeps only the parts this stage has; the operations manager is left with Supply, the front desk with the Inbox.
@@ -146,7 +146,7 @@ describe("stage 1, the first release", () => {
     // The columns of kept tables that point into a later part (a follow-up's job; how many jobs a deal has; an e-mail's
     // visit to a job), the two settings only Jobs on site reads, and an action's link to its session, which comes with
     // stage 2 (`stage.json`): the released stage does not move.
-    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"] });
+    expect(one.cut.columns).toEqual({ follow_ups: ["job_id"], deals: ["job_count"], outbox: ["booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"], settings: ["delivery_emails", "office_phone"], actions: ["session_id"], deal_stock_needs: ["visit_id", "crew_id"] });
     expect(JSON.stringify(doc)).not.toContain('"session_id"');
     expect(Object.values((doc as unknown as { outbox: { links: Record<string, string> } }).outbox.links)).not.toContain("booking_id");
     // …and the showroom's three e-mails: no kind, no template.
@@ -161,7 +161,7 @@ describe("stage 1, the first release", () => {
     for (const role of doc.roles) for (const permission of role.permissions) if (permission.startsWith("page:@")) expect(pages.has(permission.split(":")[1]!.slice(1)), `${role.key}: ${permission}`).toBe(true);
     // The rules of Jobs on site (a won deal makes its job; a crew is told its day sheet changed) are not here to run.
     expect(doc.automations.map((rule) => rule.key)).not.toContain("deal-won-job");
-    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "sign-off-refused", "aftercare-call"]);
+    expect(one.cut.rules).toEqual(["deal-won-job", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told", "sign-off-refused", "aftercare-call"]);
     // Nor are the delivery e-mails, their templates, or the operations manager's read of won deals.
     expect(Object.keys((doc as unknown as { outbox: { kinds: Record<string, string> } }).outbox.kinds).filter((kind) => kind.startsWith("delivery-"))).toEqual([]);
     expect(JSON.stringify(doc).includes("crm-delivery-")).toBe(false);
@@ -219,6 +219,33 @@ describe("stage 1, the first release", () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+});
+
+describe("a crew's vehicle for the day comes with Vehicles and crew (plan 68 S14)", () => {
+  it("leaves stage 2 with no van_days, no vehicle on a visit and no occupancy of one, and no stock need a crew reads", () => {
+    const two = stage(2).manifest as unknown as { requiredSchema: { tables: { ref: string; occupies?: { resource: string }; columns: { ref: string }[]; belongs?: unknown[] }[] }; roles: { key: string; permissions: string[]; tables?: unknown[] }[] };
+    const tables = new Map(two.requiredSchema.tables.map((table) => [table.ref, table]));
+    expect(tables.has("van_days")).toBe(false);
+    expect(tables.get("job_visits")!.columns.map((column) => column.ref)).not.toContain("vehicle_id");
+    for (const table of two.requiredSchema.tables) expect(table.occupies?.resource, table.ref).not.toBe("vehicle_id");
+    expect(tables.get("deal_stock_needs")!.columns.map((column) => column.ref)).not.toEqual(expect.arrayContaining(["visit_id"]));
+    expect(tables.get("deal_stock_needs")!.belongs).toEqual([{ via: "deal_id" }]);
+    const crew = two.roles.find((role) => role.key === "crew")!;
+    expect(crew.permissions).not.toContain("table:@deal_stock_needs:read");
+    expect(crew.tables).toBeUndefined();
+    // The sample's stock need of J-07 is there, without the visit it goes on.
+    const inventory = JSON.parse(String(stage(2).files["seeds/meridian.inventory.json"])) as { tables: { ref: string; rows: Record<string, unknown>[] }[] };
+    expect(inventory.tables.find((table) => table.ref === "deal_stock_needs")!.rows.filter((row) => "visit_id" in row)).toEqual([]);
+    // The old crew is told from stage 2: the rules and their table are Jobs on site's.
+    expect(tables.has("left_visits")).toBe(true);
+  });
+
+  it("brings, at stage 3, one crew a vehicle a day, the hire days, and the crew's reach of its own days", () => {
+    const van = (whole.requiredSchema.tables as unknown as { ref: string; occupies?: unknown; unique?: unknown; belongs?: unknown }[]).find((table) => table.ref === "van_days")!;
+    expect(van.occupies).toEqual({ resource: "vehicle_id", day: "day" });
+    expect(van.unique).toEqual([["crew_id", "day"]]);
+    expect(van.belongs).toEqual([{ through: { table: "crew_members", link: "crew_id", on: "crew_id", user: "user_id" } }]);
   });
 });
 

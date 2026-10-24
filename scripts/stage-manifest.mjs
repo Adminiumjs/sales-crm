@@ -92,7 +92,8 @@ export function stageManifest(whole, stages, stage) {
   // A way a row is somebody's that runs through a table that went.
   for (const table of doc.requiredSchema.tables) {
     if (table.belongs === undefined) continue;
-    table.belongs = table.belongs.filter((way) => !goneTables.has(way.through?.table) && !(goneColumns[table.ref] ?? []).includes(way.column ?? way.via));
+    // …or matches a column of the row that went (a stock need's crew, before Vehicles and crew).
+    table.belongs = table.belongs.filter((way) => !goneTables.has(way.through?.table) && !(goneColumns[table.ref] ?? []).includes(way.column ?? way.via ?? way.through?.on));
     if (table.belongs.length === 0) delete table.belongs;
   }
 
@@ -143,6 +144,11 @@ export function stageManifest(whole, stages, stage) {
       if (keep.has(rule.part) || rule.role !== role.key) continue;
       role.permissions = role.permissions.filter((permission) => !(rule.permissions ?? []).includes(permission));
       for (const ref of rule.limits ?? []) if (role.limits !== undefined) delete role.limits[ref];
+      // An add-on's table the role reads only with the later part (`inventory/items`: the crew's "What to load").
+      if (role.tables !== undefined) {
+        role.tables = role.tables.filter((grant) => !(rule.tables ?? []).includes(`${grant.addOn}/${grant.table}`));
+        if (role.tables.length === 0) delete role.tables;
+      }
     }
     role.permissions = role.permissions.filter((permission) => {
       const [kind, target] = permission.split(":");
@@ -265,11 +271,31 @@ export function stageFiles(stage, stages = readStages(), whole = readWhole()) {
         delete manifest.sampleData.addOns[key];
         continue;
       }
-      files[addOn.file] = readFileSync(join(WHOLE, addOn.file), "utf8");
+      files[addOn.file] = addOnSample(readFileSync(join(WHOLE, addOn.file), "utf8"), cut);
     }
     files["manifest.json"] = `${JSON.stringify(manifest, null, 2)}\n`;
   }
   return { files, cut, manifest };
+}
+
+/**
+ * An add-on's sample file of a stage: the rows of the app's own tables in it (`own`: a deal's stock needs) lose the
+ * columns that went, as the app's sample does (the visit a need goes on, before Vehicles and crew). Untouched, as written,
+ * when nothing went.
+ */
+function addOnSample(text, cut) {
+  const doc = JSON.parse(text);
+  let changed = false;
+  for (const table of doc.tables ?? []) {
+    const gone = table.own === true ? (cut.columns[table.ref] ?? []) : [];
+    if (gone.length === 0) continue;
+    table.rows = table.rows.map((row) => {
+      const kept = Object.fromEntries(Object.entries(row).filter(([column]) => !gone.includes(column)));
+      if (Object.keys(kept).length !== Object.keys(row).length) changed = true;
+      return kept;
+    });
+  }
+  return changed ? `${JSON.stringify(doc, null, 1)}\n` : text;
 }
 
 const listed = (dir, under = "") => (existsSync(dir) ? readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? listed(join(dir, name), `${under}${name}/`) : [`${under}${name}`])) : []);

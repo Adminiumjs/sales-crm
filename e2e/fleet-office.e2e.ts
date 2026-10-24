@@ -88,7 +88,7 @@ test("Vehicles, as the operations manager: the ledger's figures, each the server
     await expect(card("Red van").getByTestId("fl-vn-service")).toHaveText("8 days over");
     await expect(card("Red van").getByTestId("fl-vn-inspection")).toHaveText("Aug 8, 2026 · in 11 days");
     await expect(card("Blue van").getByTestId("fl-vn-model")).toHaveText("Sprinter, long wheelbase · Blue crew");
-    await expect(card("Hired van").getByTestId("fl-vn-model")).toHaveText("Hired in for August · no crew");
+    await expect(card("Hired van").getByTestId("fl-vn-model")).toHaveText("No crew of its own");
     await picture(page, "p25-1-ada-vehicles");
 
     // A vehicle added, with a lost reply on its way back: the same key answers the row the first one made.
@@ -210,14 +210,14 @@ test("Subcontractors: the ledger's figures; \"Chase the certificate\" sends e-ma
       spent: await figure(ada, stand, "subcontractors", { fn: "sum", column: "spent", alias: "s" }),
       undated: await figure(ada, stand, "job_visits", undefined, [{ column: "state", op: "eq", value: "waiting" }, { column: "day", op: "is_null" }]),
     };
-    expect(served).toEqual({ all: 5, covered: 4, out: 1, days: 53, spent: 17800, undated: 5 });
+    expect(served).toEqual({ all: 5, covered: 4, out: 1, days: 53, spent: 17800, undated: 4 });
     await expect(page.locator('[data-figure="on-books"] [data-value]')).toHaveText("5");
     await expect(page.locator('[data-figure="on-books"]')).toContainText("covered 4");
     await expect(page.locator('[data-figure="days"] [data-value]')).toHaveText("53");
     await expect(page.locator('[data-figure="days"]')).toContainText("£17,800 of outside help");
     await expect(page.locator('[data-figure="out"] [data-value]')).toHaveText("1");
     await expect(page.getByTestId("fl-sb-out")).toHaveText("Marek Sowa’s insurance ran out 28 days ago. They do not go on a site until we have seen the new certificate.");
-    await expect(page.getByTestId("fl-sb-undated")).toContainText("5 visits have no day yet.");
+    await expect(page.getByTestId("fl-sb-undated")).toContainText("4 visits have no day yet.");
     const row = (name: string) => page.locator("[data-sub]").filter({ has: page.getByRole("heading", { name, exact: true }) });
     await expect(row("Marek Sowa").locator('[data-cell="insurance"]')).toHaveText("ran out 28 days ago");
     await expect(row("Bright Lane Interiors").locator('[data-cell="spent"]')).toHaveText("£7,200");

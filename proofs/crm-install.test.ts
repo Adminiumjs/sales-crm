@@ -406,7 +406,7 @@ for (const [dialect, reachable] of LEGS) {
       const s = await read('settings', 'approval_threshold_pct, quote_valid_days, certificate_warn_days, week_starts, distance_unit', st['id']);
       expect([Number(s['approval_threshold_pct']), Number(s['quote_valid_days']), Number(s['certificate_warn_days']), s['week_starts'], s['distance_unit']]).toEqual([5, 30, 42, 'mon', 'km']);
       const tables = await h.rows(dialect === 'sqlite' ? `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name LIKE 'crm\\_%' ESCAPE '\\' AND name NOT LIKE '%sample_data'` : dialect === 'postgres' ? `SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = current_schema() AND table_name LIKE 'crm\\_%'` : `SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE 'crm\\_%'`);
-      expect(Number(tables[0]!['n'])).toBe(76);
+      expect(Number(tables[0]!['n'])).toBe(78);
     });
   });
 }

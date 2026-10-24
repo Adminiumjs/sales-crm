@@ -136,15 +136,20 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["snags"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["delivery_notes", "delivery_note_lines"], "RCUD", "-", "-", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["waste_removals"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
+  // A visit that left a crew's today or tomorrow is the rules' to write (plan 68 D17); the crew it left reads its own.
+  [["left_visits"], "RD", "-", "-", "-", "-", "-", "R", "R:own", "R"],
   [["feedback"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "R", "-", "R"],
   [["complaints"], "RCUD", "R:team", "RU:own", "RCUD", "-", "-", "R", "-", "R"],
   [["warranty_claims"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
   // …and for the same reason she changes and removes a deal's stock need, and a rep (who reads the deal) makes it.
-  [["deal_stock_needs"], "RCUD", "R:team", "RCU:own", "-", "-", "-", "RUD", "-", "R"],
+  // The crew reads the needs of its own visits, what to load (S14): a need names the visit its stock goes on.
+  [["deal_stock_needs"], "RCUD", "R:team", "RCU:own", "-", "-", "-", "RUD", "R:own", "R"],
   // A crew member is given his crew's vehicle (P25): he reads that one, and its faults, and makes a check, a fault and a
   // fill only for it (a link to a vehicle out of his reach is refused as one that is not there).
   [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
   [["vehicle_faults"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
+  // A crew's vehicle for a day (S14, D16): the office puts it on; the crew reads its own days.
+  [["van_days"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
   [["vehicle_checks", "fuel_fills"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
   // The sign-off and the send-back are the sheet's: a line has no state, so the manager (and the CRM admin, P25) reads the lines.
   [["time_sheets"], "RU", "-", "-", "-", "-", "-", "RU", "RCU:own", "R"],
@@ -198,10 +203,10 @@ const PARTS: readonly (readonly [string, readonly string[]])[] = [
   ["team", ["reps", "targets", "one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas", "actions", "meetings", "meeting_slots", "meeting_decisions", "threads", "thread_members", "messages", "starters", "starter_steps", "covers", "cover_notes"]],
   ["inbox", ["enquiries", "shows"]],
   ["showroom", ["showroom_spaces", "showroom_bookings", "samples", "sample_loans", "sample_chases", "display_pieces"]],
-  ["jobs", ["jobs", "crews", "crew_members", "crew_days", "job_visits", "sign_offs", "refused_sign_offs", "snags", "delivery_notes", "delivery_note_lines", "waste_removals"]],
+  ["jobs", ["jobs", "crews", "crew_members", "crew_days", "job_visits", "left_visits", "sign_offs", "refused_sign_offs", "snags", "delivery_notes", "delivery_note_lines", "waste_removals"]],
   ["aftercare", ["feedback", "complaints", "warranty_claims"]],
   ["supply", ["deal_stock_needs"]],
-  ["fleet", ["vehicles", "vehicle_checks", "vehicle_faults", "fuel_fills", "time_sheets", "time_sheet_lines", "certificates", "subcontractors", "insurance_incidents"]],
+  ["fleet", ["vehicles", "van_days", "vehicle_checks", "vehicle_faults", "fuel_fills", "time_sheets", "time_sheet_lines", "certificates", "subcontractors", "insurance_incidents"]],
   ["setup", ["outbox", "settings"]],
 ];
 
@@ -439,6 +444,11 @@ describe("the app brings nine roles", () => {
     };
     for (const r of roles) {
       const tables = (r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables;
+      // The crew reads a line's name and unit, to load the van (S14): nothing else of Inventory, and nothing it costs.
+      if (r.key === "crew") {
+        expect(tables, r.key).toEqual([{ addOn: "inventory", table: "items", actions: ["read"], limit: { readable: ["id", "name", "unit"] } }]);
+        continue;
+      }
       if (!["admin", "ops-manager", "read-only"].includes(r.key)) {
         expect(tables, r.key).toBeUndefined();
         continue;
@@ -485,13 +495,13 @@ describe("the matrix covers every table, and every table's every role", () => {
   it("lists each of the manifest's tables once", () => {
     expect(MATRIX_TABLES.length).toBe(new Set(MATRIX_TABLES).size);
     expect([...MATRIX_TABLES].sort()).toEqual(tables.map((table) => table.ref).sort());
-    expect(MATRIX_TABLES).toHaveLength(76);
+    expect(MATRIX_TABLES).toHaveLength(78);
   });
 
-  it("has nine roles by seventy-six tables: 684 cells", () => {
+  it("has nine roles by seventy-eight tables: 702 cells", () => {
     let cells = 0;
     for (const key of ROLES) cells += EXPECTED.get(key)?.size ?? 0;
-    expect(cells).toBe(684);
+    expect(cells).toBe(702);
   });
 });
 
@@ -722,7 +732,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 75, "sales-manager": 63, rep: 61, "account-manager": 37, marketer: 8, "front-desk": 11, "ops-manager": 26, crew: 17, "read-only": 69 });
+    expect(menu).toEqual({ admin: 77, "sales-manager": 63, rep: 61, "account-manager": 37, marketer: 8, "front-desk": 11, "ops-manager": 28, crew: 20, "read-only": 71 });
   });
 });
 
@@ -1094,7 +1104,7 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "account-manager: quotes", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "read-only: quotes", "read-only: covers"]);
+    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "account-manager: quotes", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "crew: deal_stock_needs", "read-only: quotes", "read-only: covers"]);
     // A crew member reads the notes of his crew's visits, not the totals Adminium keeps of every line (a line is reached by
     // its own crew, so a total over another crew's lines would show through): he counts his lines himself.
     expect(limitOf("crew", "delivery_notes")?.readable).not.toContain("ordered");

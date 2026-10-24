@@ -16,6 +16,8 @@ import { CircleOff, Frown, MessageSquareOff, PackageX, PhoneCall, PhoneOff, Shie
 import { Camera, CircleX, Hourglass, Navigation, RefreshCw, WifiOff } from "lucide-react";
 // Time sheets and training; Vehicles and crew, part A.
 import { BadgeCheck, Fuel, Shield, ShieldX } from "lucide-react";
+// A crew's vehicle for the day (plan 68 S14).
+import { Ban, ChevronsUpDown, Info } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   activity: Activity, "alarm-clock": AlarmClock, "calendar-plus": CalendarPlus, "calendar-sync": CalendarSync, "calendar-x": CalendarX, "clock-alert": ClockAlert, "calendar-arrow-up": CalendarArrowUp, "calendar-days": CalendarDays, check: Check, "check-check": CheckCheck,
@@ -32,6 +34,8 @@ const ICONS: Record<string, LucideIcon> = {
   camera: Camera, navigation: Navigation, "refresh-cw": RefreshCw, "wifi-off": WifiOff, hourglass: Hourglass, "circle-x": CircleX,
   // Time sheets and training; Vehicles and crew, part A.
   "badge-check": BadgeCheck, fuel: Fuel, shield: Shield, "shield-x": ShieldX,
+  // A crew's vehicle for the day.
+  ban: Ban, "chevrons-up-down": ChevronsUpDown, info: Info,
   "notebook-tabs": NotebookTabs, route: Route, "clipboard-check": ClipboardCheck, recycle: Recycle, printer: Printer, "file-check": FileCheck, "file-x": FileX, "file-warning": FileWarning, "pen-line": PenLine, "hard-hat": HardHat,
 };
 

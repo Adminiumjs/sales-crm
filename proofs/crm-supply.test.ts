@@ -126,8 +126,10 @@ for (const [dialect, reachable] of LEGS) {
 
     it('keeps a need\'s deal state with the deal, and keeps it out of the rep\'s and the operations manager\'s writes', async () => {
       const needs = await h.rows('select d.deal_state as s, x.state as t from crm_deal_stock_needs d join crm_deals x on x.id = d.deal_id');
-      expect(needs).toHaveLength(16);
-      expect(needs.every((row) => row['s'] === row['t'] && row['s'] === 'open')).toBe(true);
+      // Sixteen of open deals, and J-07's won deal's cable trays for its return visit (plan 68 M3 BN-20).
+      expect(needs).toHaveLength(17);
+      expect(needs.every((row) => row['s'] === row['t'])).toBe(true);
+      expect(needs.filter((row) => row['s'] !== 'open').map((row) => row['s'])).toEqual(['won']);
       // The ledger's "short today", now held to open deals by the server's own column.
       const short = await h.rows(
         "select i.name, sum(d.qty) as need, max(i.on_hand) as have from crm_deal_stock_needs d join inventory_items i on i.id = d.item where d.qty is not null and d.deal_state = 'open' group by i.name having sum(d.qty) > max(i.on_hand) order by i.name",

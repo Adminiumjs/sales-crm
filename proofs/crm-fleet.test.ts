@@ -205,6 +205,66 @@ for (const [dialect, reachable] of LEGS) {
       expect(await ids('yusuf', 'vehicles')).toEqual([van['Blue van']]);
     });
 
+    it("puts one vehicle on a crew's day (S14, D16): one crew a vehicle a day, a hired one only inside its hire days, and each crew reads its own days only", async () => {
+      const on = '2026-08-05';
+      const days: number[] = [];
+      const day = async (who: string, crewName: string, vehicle: string, when: string): Promise<Reply> => {
+        const res = await s.make(who, 'van_days', { crew_id: crew[crewName], day: when, vehicle_id: van[vehicle] });
+        if (res.statusCode === 201) days.push(made(res));
+        return res;
+      };
+      // The hired van is hired from Mon 27 Jul to Fri 14 Aug: the office writes the days; nobody else does.
+      expect(said(await s.change('ada', 'vehicles', van['Hired van']!, { hired_from: '2026-07-27', hired_to: '2026-08-14' }))).toBe('ok');
+      for (const who of ['grace', 'yusuf', 'dana']) expect((await s.change(who, 'vehicles', van['Hired van']!, { hired_to: '2026-09-30' })).statusCode, who).toBe(403);
+      // Blue crew on its own van, Red crew on the hired one, the same day.
+      expect((await day('ada', 'Blue crew', 'Blue van', on)).statusCode).toBe(201);
+      expect((await day('ada', 'Red crew', 'Hired van', on)).statusCode).toBe(201);
+      // One vehicle on two crews the same day: refused, whichever vehicle, and nothing is written.
+      const twice = await day('ada', 'Red crew', 'Blue van', '2026-08-06');
+      expect(twice.statusCode).toBe(201);
+      const clash = await s.make('ada', 'van_days', { crew_id: crew['Blue crew'], day: '2026-08-06', vehicle_id: van['Blue van'] });
+      expect(clash.statusCode, clash.body).toBe(409);
+      expect((await s.make('tessa', 'van_days', { crew_id: crew['Blue crew'], day: on, vehicle_id: van['Hired van'] })).statusCode).toBe(409);
+      // …and a crew on two vehicles the same day: its one row is changed instead (a crew's visits that day share it).
+      expect((await s.make('ada', 'van_days', { crew_id: crew['Red crew'], day: on, vehicle_id: van['Red van'] })).statusCode).toBe(409);
+      expect(await s.rows(`select id from ${s.t('van_days')} where day = '${on}' order by id`)).toHaveLength(2);
+      // Moving a row onto the other crew's vehicle that day is refused as well.
+      expect((await s.change('ada', 'van_days', days[1]!, { vehicle_id: van['Blue van'] })).statusCode).toBe(409);
+      // The hired van goes on a day inside its hire days only: before, after, and a hire shortened past a day it is given.
+      for (const outside of ['2026-07-24', '2026-08-17']) {
+        const refused = await s.make('ada', 'van_days', { crew_id: crew['Blue crew'], day: outside, vehicle_id: van['Hired van'] });
+        expect(refused.statusCode, `${outside}: ${refused.body}`).toBe(422);
+        expect(Object.keys((refused.json() as { error: { details?: { fields?: Record<string, unknown> } } }).error.details?.fields ?? {}), outside).toEqual(['day']);
+      }
+      expect((await day('ada', 'Blue crew', 'Hired van', '2026-08-14')).statusCode).toBe(201);
+      // A van of our own (no hire days) goes on any day.
+      expect((await day('ada', 'Blue crew', 'Blue van', '2026-12-01')).statusCode).toBe(201);
+      // The row keeps the vehicle's plate, name and whether it is hired, for the crew who reads no other vehicle.
+      const red = (await rowOf('van_days', days[1]!)) as Record<string, unknown>;
+      expect([red['plate'], red['vehicle_name'], Boolean(Number(red['hired']) || red['hired'] === true)]).toEqual(['PHIR', 'Hired van', true]);
+
+      // Each crew reads its own days, and no other crew's, by any door; nor the vehicle another crew is given that day.
+      const blueDays = (await s.rows(`select id from ${s.t('van_days')} where crew_id = ${String(crew['Blue crew'])} order by id`)).map((one) => Number(one['id']));
+      const redDays = (await s.rows(`select id from ${s.t('van_days')} where crew_id = ${String(crew['Red crew'])} order by id`)).map((one) => Number(one['id']));
+      expect(await ids('yusuf', 'van_days')).toEqual(blueDays);
+      expect(await ids('rina', 'van_days')).toEqual(redDays);
+      for (const id of redDays) {
+        expect((await one('yusuf', 'van_days', id)).statusCode).toBe(404);
+        expect((await s.get('yusuf', url('van_days', `/${String(id)}/history`))).statusCode).toBe(404);
+      }
+      expect(valueOf(await figure('yusuf', 'van_days'))).toBe(blueDays.length);
+      expect((await one('rina', 'vehicles', van['Blue van']!)).statusCode).toBe(404);
+      expect((await one('yusuf', 'vehicles', van['Hired van']!)).statusCode).toBe(404);
+      // The crew writes no day of its own: not one, not a change, not a removal.
+      expect((await s.make('yusuf', 'van_days', { crew_id: crew['Blue crew'], day: '2026-08-07', vehicle_id: van['Blue van'] })).statusCode).toBe(403);
+      expect((await s.change('rina', 'van_days', days[1]!, { vehicle_id: van['Red van'] })).statusCode).toBe(403);
+      expect((await s.send('rina', 'DELETE', url('van_days', `/${String(days[1])}?confirm=true`))).statusCode).toBe(403);
+      // Read-only reads every day; a rep and a sales manager none.
+      expect((await ids('grace', 'van_days')).length).toBe(blueDays.length + redDays.length);
+      for (const who of ['dana', 'ivy']) expect((await list(who, 'van_days')).statusCode, who).toBe(403);
+      for (const id of days) expect(said(await s.send('ada', 'DELETE', url('van_days', `/${String(id)}?confirm=true`)))).toBe('ok');
+    });
+
     it("measures a fill from the vehicle's reading before it, and the fill becomes the vehicle's reading", async () => {
       // The first fill: from the typed 1,000 to 1,250.
       const first = await rowOf('fuel_fills', at.fill);

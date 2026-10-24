@@ -37,12 +37,17 @@ export interface Vehicle extends Row {
   service_due: string | null;
   tax_to: string | null;
   hired: boolean | number;
+  /** A hired vehicle's days (plan 68 S14); empty for our own. Not read by the crew (the office's columns). */
+  hired_from?: string | null;
+  hired_to?: string | null;
 }
 
 const VEHICLE_COLUMNS = ["id", "name", "plate", "model", "odometer", "reading", "inspection_due", "service_due", "tax_to", "hired"];
+/** The office reads a vehicle's hire days too. */
+const OFFICE_COLUMNS = [...VEHICLE_COLUMNS, "hired_from", "hired_to"];
 
-export const readVehicles = (session: StaffSession): Promise<Vehicle[]> =>
-  session.list<Vehicle>("vehicles", { select: VEHICLE_COLUMNS, order: ["hired", "name", "id"], limit: 200 }).then((page) => page.rows);
+export const readVehicles = (session: StaffSession, withHire = false): Promise<Vehicle[]> =>
+  session.list<Vehicle>("vehicles", { select: withHire ? OFFICE_COLUMNS : VEHICLE_COLUMNS, order: ["hired", "name", "id"], limit: 200 }).then((page) => page.rows);
 
 /** The five ticks of a walk-round, in the crew's order. */
 export const CHECK_TICKS = ["tyres", "fluids", "lights", "straps", "tail_lift"] as const;

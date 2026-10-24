@@ -368,3 +368,109 @@ for (const [dialect, reachable] of LEGS) {
     });
   });
 }
+
+/**
+ * WHAT TO LOAD (plan 68 S14): a deal's stock need names the visit its stock goes on, and the crew of that visit reads it
+ * (`deal_stock_needs.crew_id`, the visit's crew kept by the server). The need's reach is the manifest's own, whether or
+ * not Inventory is installed: so Supply is put on here without the add-on (its link to a stock line is a plain number),
+ * and Inventory's item name and unit, a grant of the add-on's, are held by the unit tests.
+ */
+const withoutInventory = (): Record<string, unknown> => {
+  const doc = manifest() as { modules: { id: string; feature?: string }[]; addOns: { features?: { id: string }[] } };
+  for (const part of doc.modules) if (part.id === 'supply') delete part.feature;
+  doc.addOns.features = (doc.addOns.features ?? []).filter((feature) => feature.id !== 'supply');
+  return doc as unknown as Record<string, unknown>;
+};
+
+for (const [dialect, reachable] of LEGS) {
+  describe.skipIf(!reachable)(`what the crew loads: the stock needs of its own visits only, on ${dialect}`, () => {
+    let s: WholeServer;
+    const crew: Record<string, number> = {};
+    const at = { blueVisit: 0, redVisit: 0, need: 0, other: 0, deal: 0 };
+    const made = (res: Reply): number => {
+      expect(res.statusCode, res.body).toBe(201);
+      return Number((res.json() as { data: { id: number } }).data.id);
+    };
+    const url = (ref: string, rest = ''): string => `/api/v1/data/${s.connectionId}/${s.t(ref)}${rest}`;
+    const ids = async (who: string, ref: string): Promise<number[]> => {
+      const res = await s.get(who, url(ref, '?limit=200'));
+      expect(res.statusCode, res.body).toBe(200);
+      return (res.json() as { data: { id: number }[] }).data.map((row) => Number(row.id)).sort((a, b) => a - b);
+    };
+    const one = (who: string, ref: string, id: number): Promise<Reply> => s.get(who, url(ref, `/${String(id)}`));
+    const count = async (who: string, ref: string): Promise<number> => {
+      const res = await s.send(who, 'POST', '/api/v1/widget-data/query', { descriptor: { connectionId: s.connectionId, source: { name: s.t(ref) }, shape: 'single-metric', aggregations: [{ fn: 'count', alias: 'n' }] } });
+      expect(res.statusCode, res.body).toBe(200);
+      return Number((res.json() as { result: { value?: number } }).result.value ?? 0);
+    };
+    const act = (who: string, ref: string, id: number, action: string, from: string): Promise<Reply> => s.send(who, 'POST', url(ref, `/${String(id)}/actions/${action}`), { from });
+    const day = (days: number): string => new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
+    const jobs = (): Promise<void> => s.jobs({ except: ['digest.send'] });
+
+    beforeAll(async () => {
+      s = await wholeServer(dialect, withoutInventory(), {
+        people: { dana: ['rep'], ada: ['ops-manager'], grace: ['read-only'], yusuf: ['crew'], cal: ['crew'], rina: ['crew'] },
+        install: { modules: { jobs: true, fleet: true, supply: true } },
+      });
+      const stage = made(await s.make('owner', 'stages', { label: 'Proposal', odds: 0.5, position: 3 }));
+      const company = made(await s.make('owner', 'companies', { name: 'Tandem Robotics' }));
+      for (const [name, people] of [['blue', ['yusuf', 'cal']], ['red', ['rina']]] as const) {
+        crew[name] = made(await s.make('ada', 'crews', { name: `${name} crew` }));
+        for (const [i, person] of people.entries()) made(await s.make('ada', 'crew_members', { crew_id: crew[name], user_id: s.ids[person], lead: i === 0 }));
+        for (const weekday of WEEK) made(await s.make('ada', 'crew_days', { crew_id: crew[name], weekday }));
+      }
+      // Dana's deal asks for two lines of stock (a rep writes a need on her own deal); won, the rule makes its job.
+      at.deal = made(await s.make('dana', 'deals', { name: 'Test-floor workbenches', company_id: company, owner_id: s.ids['dana'], stage_id: stage, typed_amount: 48_000 }));
+      at.need = made(await s.make('dana', 'deal_stock_needs', { deal_id: at.deal, qty: 2 }));
+      at.other = made(await s.make('dana', 'deal_stock_needs', { deal_id: at.deal, qty: 1 }));
+      expect(said(await act('dana', 'deals', at.deal, 'mark-won', 'open'))).toBe('ok');
+      await jobs();
+      const job = Number((await s.rows(`select id from ${s.t('jobs')} where deal_id = ${String(at.deal)}`))[0]!['id']);
+      for (const [name, key] of [['blue', 'blueVisit'], ['red', 'redVisit']] as const) {
+        at[key] = made(await s.make('ada', 'job_visits', { job_id: job, kind: 'drop', what: `${name} drop`, hours: 3, crew_size: 1 }));
+        expect(said(await s.change('ada', 'job_visits', at[key], { day: day(3), start_time: '08:00', crew_id: crew[name] }))).toBe('ok');
+        expect(said(await act('ada', 'job_visits', at[key], 'book', 'waiting'))).toBe('ok');
+      }
+      // The office puts the first need on Blue's visit, the second on Red's.
+      expect(said(await s.change('ada', 'deal_stock_needs', at.need, { visit_id: at.blueVisit }))).toBe('ok');
+      expect(said(await s.change('ada', 'deal_stock_needs', at.other, { visit_id: at.redVisit }))).toBe('ok');
+    }, 300_000);
+    afterAll(async () => {
+      await s?.close();
+    });
+
+    it("lets a crew member read the needs of his crew's visits, and refuses him another crew's by any door", async () => {
+      // The need carries its visit's crew, kept by the server.
+      expect(Number((await s.rows(`select crew_id from ${s.t('deal_stock_needs')} where id = ${String(at.need)}`))[0]!['crew_id'])).toBe(crew['blue']);
+      expect(await ids('yusuf', 'deal_stock_needs')).toEqual([at.need]);
+      expect(await ids('cal', 'deal_stock_needs')).toEqual([at.need]);
+      expect(await ids('rina', 'deal_stock_needs')).toEqual([at.other]);
+      expect((await one('yusuf', 'deal_stock_needs', at.other)).statusCode).toBe(404);
+      expect((await s.get('yusuf', url('deal_stock_needs', `/${String(at.other)}/history`))).statusCode).toBe(404);
+      expect((await one('rina', 'deal_stock_needs', at.need)).statusCode).toBe(404);
+      expect(await count('yusuf', 'deal_stock_needs')).toBe(1);
+      // Of a need he reads its line, its count and the visit; nothing of the deal it is for (no amount, no name, no state).
+      const mine = (await one('yusuf', 'deal_stock_needs', at.need)).json() as { data: Record<string, unknown> };
+      expect(Object.keys(mine.data).filter((key) => !key.startsWith('_')).sort()).toEqual(['crew_id', 'deal_id', 'id', 'item', 'qty', 'visit_id']);
+      const through = await s.get('yusuf', url('deal_stock_needs', `/${String(at.need)}?lookup=${encodeURIComponent('deal:deal_id.name')}`));
+      expect((through.json() as { data: Record<string, unknown> }).data['deal'] ?? null).toBeNull();
+      expect((await s.get('yusuf', url('deals', '?limit=5'))).statusCode).toBe(403);
+      // He writes none of it.
+      expect((await s.change('yusuf', 'deal_stock_needs', at.need, { qty: 9 })).statusCode).toBe(403);
+      expect((await s.make('yusuf', 'deal_stock_needs', { deal_id: at.deal, qty: 1 })).statusCode).toBe(403);
+      // The visit given to Red: the need goes with it.
+      expect(said(await s.change('ada', 'job_visits', at.blueVisit, { crew_id: crew['red'] }))).toBe('ok');
+      try {
+        expect(await ids('yusuf', 'deal_stock_needs')).toEqual([]);
+        expect(await ids('rina', 'deal_stock_needs')).toEqual([at.need, at.other]);
+      } finally {
+        expect(said(await s.change('ada', 'job_visits', at.blueVisit, { crew_id: crew['blue'] }))).toBe('ok');
+      }
+      // The office reads every need, and of a deal no more than before: a won deal's name, state, close day and jobs.
+      expect(await ids('ada', 'deal_stock_needs')).toEqual([at.need, at.other].sort((a, b) => a - b));
+      const deal = (await one('ada', 'deals', at.deal)).json() as { data: Record<string, unknown> };
+      expect(Object.keys(deal.data).filter((key) => !key.endsWith('_id') && !key.startsWith('_') && !['id', 'name', 'state', 'closed_on', 'job_count'].includes(key))).toEqual([]);
+      expect(await ids('grace', 'deal_stock_needs')).toEqual([at.need, at.other].sort((a, b) => a - b));
+    });
+  });
+}

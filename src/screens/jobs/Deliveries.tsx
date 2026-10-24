@@ -48,6 +48,7 @@ import {
 } from "./data.ts";
 import { dayLong, dayWords, hoursOf, mondayOf, useCrewFacts, useJobsScreen, WeekBar } from "./parts.tsx";
 import { VisitDialog, type VisitBooking } from "./VisitDialog.tsx";
+import { dropIfEmpty, vanDayForMove } from "./vandays.ts";
 
 const DRAG = "application/x-crm-job-visit";
 
@@ -160,10 +161,25 @@ export function Deliveries({ rest }: ScreenProps) {
                           return;
                         }
                         const crew = crews.crews.find((one) => one.id === visit.crew_id)?.name ?? "";
+                        // The crew's vehicle that new day (plan 68 S14): its row there, or its own vehicle, unless another crew has it.
+                        const van = await vanDayForMove(session, visit.crew_id, day).catch(() => ({ made: null, facts: null }));
+                        if ("refused" in van) {
+                          const refused = van.refused;
+                          const vehicle = refused.kind === "other" ? undefined : van.facts.vehicles.find((one) => one.id === refused.vehicleId);
+                          const holder = refused.kind === "with" ? (crews.crews.find((one) => one.id === refused.crewId)?.name ?? null) : null;
+                          const reason = holder !== null ? t("vandays.isWith", { plate: vehicle?.plate ?? vehicle?.name ?? "", crew: holder, day: dayWords(f, day) }) : t("vandays.isWith.other", { plate: vehicle?.plate ?? vehicle?.name ?? "", day: dayWords(f, day) });
+                          const text = t("jb.dv.refused", { reason });
+                          setBounce({ day, text });
+                          toasts.show(text, "danger");
+                          setTimeout(() => setBounce((was) => (was?.day === day ? null : was)), 3600);
+                          return;
+                        }
                         const saved = await toasts.say(
                           moveVisit(session, visit, { day, start: startOf(visit.start_time) ?? "08:00", crewId: visit.crew_id ?? 0, hours: num(visit.hours), size: visit.crew_size ?? 1, note: visit.note ?? "" }),
                           () => `${t("jb.toast.moved", { site: visit.site_name, day: dayWords(f, day), crew })}${check.over === null ? "" : ` ${t("jb.bk.over", { crew, hours: hoursOf(f, check.over.hours), of: hoursOf(f, check.over.of), day: dayWords(f, day) })}`}`,
                         );
+                        if (saved === null && van.made !== null) await session.remove("van_days", van.made.id).catch(() => undefined);
+                        if (saved !== null) await dropIfEmpty(session, visit.crew_id, dayKeyOf(visit.day)).catch(() => undefined);
                         if (saved !== null) again();
                       }}
                     />

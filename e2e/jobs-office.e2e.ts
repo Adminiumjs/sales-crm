@@ -22,8 +22,9 @@ import { request, type APIRequestContext, type Page } from "@playwright/test";
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, inArabic, removeDeals, rows, STAFF, unfoldMenu, watch, type Data } from "./helpers.ts";
 import { readState, STAND_DIR, type StandState } from "./stand.mjs";
+import { restoreVanDays } from "./vandays-helpers.ts";
 
-/** The sample's visits still to come, by id (the ledger's "Deliveries"). */
+/** The sample's visits still to come, by id (the ledger's "Deliveries"). J-07's return visit (tandem) is booked for Blue on Wed 5 Aug (plan 68 M3 BN-19). */
 const V = { cobaltReturn: 12, nordwind: 13, fernway: 14, veldt: 15, tandem: 16, juno: 17, cobaltTopUp: 18, harbor: 19 } as const;
 const BLUE = 1;
 const RED = 2;
@@ -103,6 +104,14 @@ async function putBack(person: APIRequestContext, data: Data, id: number, was: {
   await dropMessages(data, id);
 }
 
+/** Book a sample visit back on its day, as the sample has it (J-07's return visit, after a spec booked it elsewhere). */
+async function rebook(person: APIRequestContext, data: Data, id: number, on: { day: string; crew: number; start: string }): Promise<void> {
+  const headers = await csrf(person);
+  expect((await person.patch(data("job_visits", `/${String(id)}`), { data: { values: { day: on.day, start_time: on.start, crew_id: on.crew } }, headers })).status()).toBe(200);
+  expect((await person.post(data("job_visits", `/${String(id)}/actions/book`), { data: { from: "waiting" }, headers })).status()).toBe(200);
+  await dropMessages(data, id);
+}
+
 const pill = (page: Page, name: string) => page.locator(`.crm-screen-actions [data-figure="${name}"]`);
 const dayColumn = (page: Page, day: string) => page.locator(`[data-testid="jb-week-days"] section[data-day="${day}"]`);
 const toBook = (page: Page) => page.locator('[data-testid="jb-tobook"] li[data-visit]');
@@ -124,8 +133,8 @@ test("the operations manager's home: the week's bookings, the visits with no day
   await expect(menu.getByRole("link", { name: "Settings" })).toBeVisible();
 
   const server = await served(context.request, stand);
-  // The ledger: three visits booked in the week of 3 August, 17 hours; five with no day.
-  expect([server.week, server.weekHours, server.waiting]).toEqual([3, 17, 5]);
+  // The ledger: four visits booked in the week of 3 August, 24 hours; four with no day.
+  expect([server.week, server.weekHours, server.waiting]).toEqual([4, 24, 4]);
   const stopping = Number((await figure(context.request, stand, { source: { name: "crm_snags" }, shape: "single-metric", filters: [{ column: "state", op: "in", value: ["open", "waiting-part"] }, { column: "stops_sign_off", op: "eq", value: true }], aggregations: [{ fn: "count", alias: "n" }] })).value);
   expect(stopping).toBe(2);
   const tile = (name: string) => page.locator(`.crm-jb-stats [data-figure="${name}"]`);
@@ -138,7 +147,7 @@ test("the operations manager's home: the week's bookings, the visits with no day
   await expect(tile("still").locator(".crm-kpi-sub")).toHaveText("Every won deal has its job");
   // Each crew's week: Red is over its day on Wednesday (9 h of 8), as the server adds it up.
   await expect(page.locator('[data-row="crew-2"]')).toContainText("Wed, Aug 5 is 9 h of 8 h");
-  await expect(page.locator('[data-row="crew-1"]')).toContainText("Tue, Aug 4 · J-01 Cobalt Legal · 6 h; Thu, Aug 6 · J-06 Cobalt Legal · 2 h");
+  await expect(page.locator('[data-row="crew-1"]')).toContainText("Tue, Aug 4 · J-01 Cobalt Legal · 6 h; Wed, Aug 5 · J-07 Tandem Robotics · 7 h; Thu, Aug 6 · J-06 Cobalt Legal · 2 h");
   await expect(page.locator('[data-row^="visit-"]')).toHaveCount(server.waiting);
   await expect(page.locator('[data-row^="snag-"]')).toHaveCount(stopping);
   await picture(page, "p20-1-ada-home");
@@ -155,8 +164,8 @@ test("Deliveries as the operations manager: the week of 3 August, its hours by d
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Deliveries");
   await expect(page.getByTestId("jb-week")).toHaveText("Mon, Aug 3 – Sun, Aug 9");
   const server = await served(context.request, stand);
-  expect([server.toCome, server.booked, server.waiting, server.hours]).toEqual([8, 3, 5, 41]);
-  expect(server.byDay).toEqual({ "2026-08-04": 6, "2026-08-05": 9, "2026-08-06": 2 });
+  expect([server.toCome, server.booked, server.waiting, server.hours]).toEqual([8, 4, 4, 41]);
+  expect(server.byDay).toEqual({ "2026-08-04": 6, "2026-08-05": 16, "2026-08-06": 2 });
   await expect(pill(page, "booked")).toHaveText(`${String(server.booked)} booked`);
   await expect(pill(page, "waiting")).toHaveText(`${String(server.waiting)} to book`);
   await expect(page.getByTestId("jb-weeknote")).toHaveText(`${String(server.toCome)} visits to come · ${String(server.hours)} h in all · ${String(server.week)} visits in the week shown · 2 crews, 8 h a day each`);
@@ -165,18 +174,17 @@ test("Deliveries as the operations manager: the week of 3 August, its hours by d
   for (const day of ["2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07"]) {
     await expect(dayColumn(page, day).locator('[data-figure="day-hours"]')).toHaveAttribute("data-hours", String(server.byDay[day] ?? 0));
   }
-  await expect(dayColumn(page, "2026-08-05").locator("article")).toHaveText([/Nordwind Logistics.*J-04 · Warehouse office desks and screens.*Red crew · 3 crew members.*08:00 · 9 h/]);
-  await expect(dayColumn(page, "2026-08-05").locator('[data-figure="day-hours"]')).toHaveAttribute("aria-label", "9 hours booked of 16");
-  // The alerts: Red over its day; two visits waiting for their stock.
+  await expect(dayColumn(page, "2026-08-05").locator("article")).toHaveText([/Nordwind Logistics.*J-04 · Warehouse office desks and screens.*Red crew · 3 crew members.*08:00 · 9 h/, /Tandem Robotics.*J-07 · Test-floor workbenches: return visit.*Blue crew · 3 crew members.*08:00 · 7 h/]);
+  await expect(dayColumn(page, "2026-08-05").locator('[data-figure="day-hours"]')).toHaveAttribute("aria-label", "16 hours booked of 16");
+  // The alerts: Red over its day; one visit waiting for its stock.
   await expect(page.getByTestId("jb-alerts").locator("li")).toHaveText([
     "Red crew: 9 h of 8 on Wed, Aug 5. Booked and flagged.",
-    "J-07 Tandem Robotics waits for stock. The first day it may be booked is Wed, Aug 5.",
     "J-03 Juno Analytics waits for stock. The first day it may be booked is Fri, Aug 7.",
   ]);
-  // To book: the five with no day, from the server's list.
+  // To book: the four with no day, from the server's list.
   const waiting = await rows<{ id: number }>(context.request, data, "job_visits", WAITING);
   await expect(toBook(page)).toHaveCount(waiting.length);
-  await expect(page.locator(`[data-testid="jb-tobook"] li[data-visit="${String(V.tandem)}"]`)).toContainText("Stock lands Wed, Aug 5");
+  await expect(page.locator(`[data-testid="jb-tobook"] li[data-visit="${String(V.juno)}"]`)).toContainText("Stock lands Fri, Aug 7");
   await expect(page.locator(`[data-testid="jb-tobook"] li[data-visit="${String(V.fernway)}"]`)).toContainText("Stock in");
   await expect(page.getByTestId("jb-still")).toHaveCount(0);
   // The week before: nothing booked; the days gone by say so.
@@ -192,17 +200,19 @@ test("book from the list: a day before the stock lands is refused and the first 
   const context = await as("ada");
   const page = await context.newPage();
   const problems = watch(page);
+  // J-07's return visit is booked in the sample: it waits again for this spec, and is booked back for Blue after it.
+  await putBack(context.request, data, V.tandem, null);
   try {
     await page.goto(`${STAFF}deliveries`);
-    await page.getByRole("button", { name: "Book Test-floor workbenches at Tandem Robotics" }).click();
+    await page.getByRole("button", { name: "Book Test-floor workbenches: return visit at Tandem Robotics" }).click();
     const dialog = page.getByRole("dialog", { name: "Book a visit to a job" });
     await expect(dialog.getByTestId("jb-bk-job")).toContainText("Tandem Robotics · J-07 · Test-floor workbenches");
     // It opens on the first day it may be booked, with the first crew that has three people.
-    await expect(dialog.getByLabel("Day")).toHaveValue("2026-08-05");
+    await expect(dialog.getByLabel("Day", { exact: true })).toHaveValue("2026-08-05");
     await expect(dialog.getByLabel("Crew", { exact: true })).toHaveValue(String(RED));
     await expect(dialog.getByTestId("jb-told")).toHaveText("The customer is e-mailed that the visit is booked.");
     // A day before the stock: refused here, nothing sent, and the first day that would do offered.
-    await dialog.getByLabel("Day").fill("2026-08-04");
+    await dialog.getByLabel("Day", { exact: true }).fill("2026-08-04");
     await expect(dialog.getByTestId("jb-refusal")).toHaveAttribute("data-kind", "stock");
     await expect(dialog.getByTestId("jb-refusal")).toContainText("J-07 waits for stock that lands Wed, Aug 5. The first day it may be booked is Wed, Aug 5.");
     await expect(dialog.locator("[data-go]")).toBeDisabled();
@@ -214,7 +224,7 @@ test("book from the list: a day before the stock lands is refused and the first 
     expect((await early.json()) as unknown).toMatchObject({ error: { details: { fields: { day: { code: "out-of-range" } } } } });
     expect((await context.request.patch(data("job_visits", `/${String(V.tandem)}`), { data: { values: { day: null, crew_id: null, start_time: null } }, headers })).status()).toBe(200);
     await dialog.getByTestId("jb-offer").click();
-    await expect(dialog.getByLabel("Day")).toHaveValue("2026-08-05");
+    await expect(dialog.getByLabel("Day", { exact: true })).toHaveValue("2026-08-05");
     // Red already has 9 h that day: booked, and flagged.
     await expect(dialog.getByTestId("jb-over")).toHaveText("Red crew: 16 h of 8 on Wed, Aug 5. It can still be booked.");
     await dialog.locator("[data-go]").click();
@@ -234,7 +244,7 @@ test("book from the list: a day before the stock lands is refused and the first 
     const move = page.getByRole("dialog", { name: "Move this visit to a job" });
     await expect(move.getByTestId("jb-was")).toHaveText("WasWed, Aug 5, 08:00 · 7 h · Red crew");
     await expect(move.getByTestId("jb-told")).toHaveText("The day and the start stay as they were: the customer is not e-mailed.");
-    await move.getByLabel("Day").fill("2026-08-06");
+    await move.getByLabel("Day", { exact: true }).fill("2026-08-06");
     await expect(move.getByTestId("jb-told")).toHaveText("The customer is e-mailed the new day.");
     await expect(move.getByTestId("jb-over")).toHaveCount(0);
     await move.locator("[data-go]").click();
@@ -251,6 +261,8 @@ test("book from the list: a day before the stock lands is refused and the first 
     expect(problems).toEqual([]);
   } finally {
     await putBack(context.request, data, V.tandem, null);
+    await rebook(context.request, data, V.tandem, { day: "2026-08-05", crew: BLUE, start: "08:00" });
+    await restoreVanDays(context.request, data);
   }
 });
 
@@ -264,7 +276,7 @@ test("dragging onto a day follows the rules of booking: a visit that waits opens
     // J-03 waits for stock that lands on Friday: dropped on Tuesday, the dialog opens on Tuesday and says why not.
     await page.locator(`[data-testid="jb-tobook"] li[data-visit="${String(V.juno)}"]`).dragTo(dayColumn(page, "2026-08-04"));
     const dialog = page.getByRole("dialog", { name: "Book a visit to a job" });
-    await expect(dialog.getByLabel("Day")).toHaveValue("2026-08-04");
+    await expect(dialog.getByLabel("Day", { exact: true })).toHaveValue("2026-08-04");
     await expect(dialog.getByTestId("jb-refusal")).toContainText("J-03 waits for stock that lands Fri, Aug 7.");
     await expect(dialog.getByTestId("jb-offer")).toHaveText("Use Fri, Aug 7");
     await page.keyboard.press("Escape");
@@ -286,6 +298,7 @@ test("dragging onto a day follows the rules of booking: a visit that waits opens
     expect(problems).toEqual([]);
   } finally {
     await putBack(context.request, data, V.cobaltTopUp, { day: "2026-08-06", crew: BLUE, start: "08:00" });
+    await restoreVanDays(context.request, data);
   }
 });
 
@@ -304,7 +317,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     await dialog.getByLabel("Hours on site").fill("2");
     await dialog.getByLabel("Crew members").fill("1");
     // No day: it waits in To book.
-    await dialog.getByLabel("Day").fill("");
+    await dialog.getByLabel("Day", { exact: true }).fill("");
     await expect(dialog.getByTestId("jb-told")).toHaveCount(0);
     const sent: { key: string; replayed: boolean | null }[] = [];
     let dropped = false;
@@ -328,8 +341,8 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     expect(sent[1]).toEqual({ key: sent[0]!.key, replayed: true });
     const added = await rows<{ id: number; state: string; job_id: number }>(context.request, data, "job_visits", { column: "what", op: "eq", value: what });
     expect(added.map((one) => [one.state, one.job_id])).toEqual([["waiting", 2]]);
-    await expect(toBook(page)).toHaveCount(6);
-    await expect(pill(page, "waiting")).toHaveText("6 to book");
+    await expect(toBook(page)).toHaveCount(5);
+    await expect(pill(page, "waiting")).toHaveText("5 to book");
 
     // A visit that waits was never announced: calling it off says no e-mail goes. Kept.
     await page.getByRole("button", { name: `Call off ${what} at Harbor & Finch` }).click();
@@ -342,7 +355,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     // Booked from To book for Friday, Blue: the customer is told once.
     await page.getByRole("button", { name: `Book ${what} at Harbor & Finch` }).click();
     const book = page.getByRole("dialog", { name: "Book a visit to a job" });
-    await book.getByLabel("Day").fill("2026-08-07");
+    await book.getByLabel("Day", { exact: true }).fill("2026-08-07");
     await expect(book.getByLabel("Crew", { exact: true })).toHaveValue(String(BLUE));
     await book.locator("[data-go]").click();
     await expect(page.locator(".crm-toast").last()).toHaveText("Booked: Harbor & Finch, Fri, Aug 7, Blue crew.");
@@ -357,7 +370,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     await cancel.getByRole("button", { name: "Cancel it" }).click();
     await expect(page.locator(".crm-toast").last()).toHaveText("Cancelled: J-02 Harbor & Finch.");
     await expect(card).toHaveCount(0);
-    await expect(toBook(page)).toHaveCount(5);
+    await expect(toBook(page)).toHaveCount(4);
     expect(await rows(context.request, data, "job_visits", { column: "what", op: "eq", value: what })).toEqual([]);
     expect((await messagesOfJob(data, 2)).map((one) => one.kind)).toEqual(["delivery-booked", "delivery-cancelled"]);
 
@@ -370,6 +383,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     const headers = await csrf(context.request);
     for (const left of await rows<{ id: number }>(context.request, data, "job_visits", { column: "what", op: "eq", value: what })) await context.request.delete(data("job_visits", `/${String(left.id)}?confirm=true`), { headers });
     await dropMessagesOfJob(data, 2);
+    await restoreVanDays(context.request, data);
   }
 });
 
@@ -471,21 +485,21 @@ test("jobs still to make: a won deal with no job is listed for the operations ma
 test("live, two people: the CRM admin books a visit and puts it back, and the operations manager's Deliveries follows", async ({ as, api, data }) => {
   const page = await (await as("ada")).newPage();
   await page.goto(`${STAFF}deliveries`);
-  await expect(pill(page, "waiting")).toHaveText("5 to book");
+  await expect(pill(page, "waiting")).toHaveText("4 to book");
   const tessa = await api("tessa");
   const headers = await csrf(tessa);
   try {
     expect((await tessa.patch(data("job_visits", `/${String(V.harbor)}`), { data: { values: { day: "2026-08-03", start_time: "09:00", crew_id: BLUE }, seen: { state: "waiting" } }, headers })).status()).toBe(200);
     expect((await tessa.post(data("job_visits", `/${String(V.harbor)}/actions/book`), { data: { from: "waiting" }, headers })).status()).toBe(200);
     await expect(dayColumn(page, "2026-08-03").locator(`article[data-visit="${String(V.harbor)}"]`)).toContainText("Harbor & Finch");
-    await expect(pill(page, "waiting")).toHaveText("4 to book");
-    await expect(pill(page, "booked")).toHaveText("4 booked");
+    await expect(pill(page, "waiting")).toHaveText("3 to book");
+    await expect(pill(page, "booked")).toHaveText("5 booked");
     await expect(dayColumn(page, "2026-08-03").locator('[data-figure="day-hours"]')).toHaveAttribute("data-hours", "1");
   } finally {
     await putBack(tessa, data, V.harbor, null);
   }
   await expect(dayColumn(page, "2026-08-03").locator("article")).toHaveCount(0);
-  await expect(pill(page, "waiting")).toHaveText("5 to book");
+  await expect(pill(page, "waiting")).toHaveText("4 to book");
 });
 
 test("in Arabic, at 390 wide and dark: the home and Deliveries read right to left and fit the screen", async ({ as }) => {

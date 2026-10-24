@@ -23,6 +23,7 @@ import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { fileSrc } from "../crew/data.ts";
 import { CHECK_TICKS, changedOf, daysSince, dayKeyOf, fixFault, missingTicks, num, readLastChecks, readOpenFaults, readVehicleFigures, readVehicles, truthy, vehicleValues, type Check, type Fault, type Vehicle, type VehicleDraft } from "./data.ts";
 import { dateWords, dayWords, distanceOf, Figure, FormError, useFleetScreen, useFleetSettings, useOpens, useUnitWords, type FleetSettings } from "./parts.tsx";
+import { AddHiredDialog, HireDialog, HireLine, readHireFacts, type HireFacts } from "./HireDays.tsx";
 
 interface Crewed extends Record<string, unknown> {
   id: number;
@@ -30,7 +31,7 @@ interface Crewed extends Record<string, unknown> {
   vehicle_id: number | null;
 }
 
-export function Vehicles(_props: ScreenProps) {
+export function Vehicles({ rest }: ScreenProps) {
   const t = useT();
   const { session, f, today, tick } = useFleetScreen();
   const opens = useOpens();
@@ -41,14 +42,16 @@ export function Vehicles(_props: ScreenProps) {
   const { load, reload } = useLoad(async () => {
     // The window of "inspection due" is a setting: read once it is known, not twice.
     if (!settled) return new Promise<never>(() => undefined);
-    const [vehicles, figures, faults, crewRows] = await Promise.all([
-      readVehicles(session),
+    const [vehicles, figures, faults, crewRows, hire] = await Promise.all([
+      readVehicles(session, true),
       readVehicleFigures(session, today, addDays(today, settings.inspectionWarnDays)),
       readOpenFaults(session),
       crews ? session.list<Crewed>("crews", { select: ["id", "name", "vehicle_id"], limit: 50 }).then((page) => page.rows) : Promise.resolve([] as Crewed[]),
+      // Where a hired vehicle goes, and the days a hire may not leave out (plan 68 S14).
+      readHireFacts(session, today).catch(() => null),
     ]);
     const checks = await readLastChecks(session, vehicles);
-    return { vehicles, figures, faults, crews: crewRows, checks };
+    return { vehicles, figures, faults, crews: crewRows, checks, hire };
   }, [session, today, settings.inspectionWarnDays, crews, settled]);
   const again = useCoalesced(
     useCallback(() => {
@@ -57,9 +60,13 @@ export function Vehicles(_props: ScreenProps) {
     }, [tick, reload]),
   );
   // A fill moves a vehicle's reading (the server's total of its fills), so the fills are heard too.
-  useLive(["vehicles", "vehicle_checks", "vehicle_faults", "fuel_fills", ...(crews ? ["crews"] : [])], again);
+  useLive(["vehicles", "vehicle_checks", "vehicle_faults", "fuel_fills", ...(crews ? ["crews"] : []), ...(session.can("van_days", "read") ? ["van_days"] : [])], again);
   const [editing, setEditing] = useState<{ vehicle: Vehicle | null; focus: "name" | "service" } | null>(null);
   const canAdd = session.can("vehicles", "create");
+  // "Change the hire days" from the booking dialog opens here on that vehicle (`vehicles/hire/<id>`).
+  const [hiring, setHiring] = useState<number | null>(() => (rest[0] === "hire" && /^\d+$/.test(rest[1] ?? "") ? Number(rest[1]) : null));
+  const [adding, setAdding] = useState(false);
+  const hireOf = (data: { vehicles: Vehicle[] }) => data.vehicles.find((vehicle) => vehicle.id === hiring);
 
   return (
     <div className="crm-screen crm-fl mr-screen" data-screen="vehicles">
@@ -69,10 +76,16 @@ export function Vehicles(_props: ScreenProps) {
           {load.state === "ready" && <p className="crm-screen-sub crm-fl-lead">{t("fl.vn.sub", { ours: f.number(load.data.figures.ours), hired: f.number(load.data.figures.hired) })}</p>}
         </div>
         {canAdd && (
-          <button type="button" className="crm-btn crm-btn-primary crm-btn-40 mr-btn" data-testid="fl-vn-add" onClick={() => setEditing({ vehicle: null, focus: "name" })}>
-            <Icon name="plus" />
-            {t("fl.vn.add")}
-          </button>
+          <div className="crm-vd-adds">
+            <button type="button" className="crm-btn crm-btn-ghost crm-btn-40 mr-gi" data-testid="vd-add-hired" onClick={() => setAdding(true)}>
+              <Icon name="calendar-range" />
+              {t("vandays.add")}
+            </button>
+            <button type="button" className="crm-btn crm-btn-primary crm-btn-40 mr-btn" data-testid="fl-vn-add" onClick={() => setEditing({ vehicle: null, focus: "name" })}>
+              <Icon name="plus" />
+              {t("fl.vn.add")}
+            </button>
+          </div>
         )}
       </div>
       <Loaded load={load} reload={reload} skeleton={<Skeleton rows={3} height={150} />}>
@@ -125,6 +138,8 @@ export function Vehicles(_props: ScreenProps) {
                       faults={data.faults.filter((fault) => fault.vehicle_id === vehicle.id)}
                       faultCount={data.figures.faultsBy.get(vehicle.id) ?? 0}
                       settings={settings}
+                      hire={data.hire}
+                      onHire={() => setHiring(vehicle.id)}
                       onEdit={(focus) => setEditing({ vehicle, focus })}
                       onRoute={opens("route")}
                       onChanged={again}
@@ -137,11 +152,13 @@ export function Vehicles(_props: ScreenProps) {
         }}
       </Loaded>
       {editing !== null && <VehicleDialog vehicle={editing.vehicle} focus={editing.focus} unit={settings.unit} onClose={() => setEditing(null)} onDone={again} />}
+      {hiring !== null && load.state === "ready" && hireOf(load.data) !== undefined && <HireDialog vehicle={hireOf(load.data)!} facts={load.data.hire} onClose={() => setHiring(null)} onDone={again} />}
+      {adding && <AddHiredDialog onClose={() => setAdding(false)} onDone={again} />}
     </div>
   );
 }
 
-function VehicleCard({ vehicle, crew, crewsKnown, check, faults, faultCount, settings, onEdit, onRoute, onChanged }: { vehicle: Vehicle; crew: Crewed | null; crewsKnown: boolean; check: Check | null; faults: Fault[]; faultCount: number; settings: FleetSettings; onEdit: (focus: "name" | "service") => void; onRoute: boolean; onChanged: () => void }) {
+function VehicleCard({ vehicle, crew, crewsKnown, check, faults, faultCount, settings, hire, onHire, onEdit, onRoute, onChanged }: { vehicle: Vehicle; crew: Crewed | null; crewsKnown: boolean; check: Check | null; faults: Fault[]; faultCount: number; settings: FleetSettings; hire: HireFacts | null; onHire: () => void; onEdit: (focus: "name" | "service") => void; onRoute: boolean; onChanged: () => void }) {
   const t = useT();
   const toasts = useToasts();
   const { session, f, today } = useFleetScreen();
@@ -182,7 +199,12 @@ function VehicleCard({ vehicle, crew, crewsKnown, check, faults, faultCount, set
             {truthy(vehicle.hired) && <span className="crm-pill">{t("fl.vn.hired")}</span>}
           </div>
           <div className="crm-fl-quiet" data-testid="fl-vn-model">
-            {[vehicle.model, crewsKnown ? (crew === null ? t("fl.vn.noCrew") : crew.name) : null].filter((part) => part !== null && part !== "").join(" · ")}
+            {truthy(vehicle.hired) && crew === null
+              ? // A hired vehicle has no crew of its own; its model line says so (M3 4.7).
+                vehicle.model !== null && vehicle.model !== ""
+                ? vehicle.model
+                : t("vandays.vn.noCrew")
+              : [vehicle.model, crewsKnown ? (crew === null ? t("fl.vn.noCrew") : crew.name) : null].filter((part) => part !== null && part !== "").join(" · ")}
           </div>
         </div>
         <div className="crm-fl-card-end">
@@ -194,6 +216,7 @@ function VehicleCard({ vehicle, crew, crewsKnown, check, faults, faultCount, set
           </div>
         </div>
       </div>
+      {truthy(vehicle.hired) && <HireLine vehicle={vehicle} facts={hire} canChange={canEdit} onChange={onHire} />}
       <div className="crm-fl-facts">
         <span className="crm-fl-fact" data-fact="service">
           {t("fl.vn.service")}
