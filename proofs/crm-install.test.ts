@@ -405,7 +405,8 @@ for (const [dialect, reachable] of LEGS) {
       await w.update('deals', other['id'], { state: 'lost', lost_reason_id: reason['id'] });
       expect(Number((await read('deals', 'target_value', other['id']))['target_value'])).toBe(0);
       // a visit, its note, an agreed line three links from the deal
-      const visit = await w.create('site_visits', { deal_id: deal['id'], rep_id: dana.id, starts_at: '2026-07-29T10:30:00Z', minutes: 90, purpose: 'Walk the floor' });
+      // A visit is never booked to start in the past (plan 68 X7): this one is the day after tomorrow.
+      const visit = await w.create('site_visits', { deal_id: deal['id'], rep_id: dana.id, starts_at: new Date(Date.now() + 2 * 86_400_000).toISOString(), minutes: 90, purpose: 'Walk the floor' });
       const note = await w.create('visit_notes', { visit_id: visit['id'], saw: 'x'.repeat(1500) });
       const agreed = await w.create('visit_agreed', { visit_note_id: note['id'], text: 'Layout by Friday', position: 0 });
       expect(Number((await read('visit_agreed', 'visit_id', agreed['id']))['visit_id'])).toBe(Number(visit['id']));
