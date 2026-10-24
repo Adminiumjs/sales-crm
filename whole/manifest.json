@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.30",
+    "minAdminiumVersion": "0.3.35",
     "engines": [
       "postgres",
       "mysql",

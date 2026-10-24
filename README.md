@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.30 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.35 or newer.
 
 ## What installs
 
