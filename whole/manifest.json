@@ -22378,6 +22378,23 @@
         },
         {
           "addOn": "inventory",
+          "table": "receipts",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "po_id",
+              "status",
+              "received_on",
+              "late",
+              "days_late"
+            ]
+          }
+        },
+        {
+          "addOn": "inventory",
           "table": "po_lines",
           "actions": [
             "read"
@@ -25358,6 +25375,23 @@
         },
         {
           "addOn": "inventory",
+          "table": "receipts",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "po_id",
+              "status",
+              "received_on",
+              "late",
+              "days_late"
+            ]
+          }
+        },
+        {
+          "addOn": "inventory",
           "table": "po_lines",
           "actions": [
             "read"
@@ -26078,6 +26112,23 @@
               "expected_on",
               "lead_days",
               "received_at"
+            ]
+          }
+        },
+        {
+          "addOn": "inventory",
+          "table": "receipts",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "po_id",
+              "status",
+              "received_on",
+              "late",
+              "days_late"
             ]
           }
         },

@@ -41,7 +41,7 @@ describe("the app's rows for Inventory", () => {
 
   it("hold six suppliers, the depot, ten stock lines, and seventeen needs of the app's own", () => {
     expect(Object.fromEntries(file.tables.map((table) => [table.ref, table.rows.length]))).toEqual({
-      suppliers: 6, places: 1, items: 10, item_suppliers: 9, receipts: 1, receipt_lines: 7, purchase_orders: 4, po_lines: 4, deal_stock_needs: 17,
+      suppliers: 6, places: 1, items: 10, item_suppliers: 9, purchase_orders: 133, receipts: 130, receipt_lines: 7, po_lines: 4, deal_stock_needs: 17,
     });
     expect(file.tables.filter((table) => table.own === true).map((table) => table.ref)).toEqual(["deal_stock_needs"]);
     // The app's own table links into Inventory by a column the manifest marks so.
@@ -49,12 +49,46 @@ describe("the app's rows for Inventory", () => {
     expect(needs.columns.find((column) => column.ref === "item")?.rules?.addOnLink).toEqual({ addOn: "inventory", table: "items" });
   });
 
-  it("type no history: nothing on hand, no cost kept, no state, no number, no receipt", () => {
-    const typed = new Set(file.tables.flatMap((table) => table.rows.flatMap((row) => Object.keys(row).map((column) => `${table.ref}.${column}`))));
+  it("type no history for what stocks the shelf: nothing on hand, no cost kept, no state, no number, no receipt", () => {
+    // The past deliveries (below) are history by nature; every other row is typed bare, and Inventory's saves do the rest.
+    const past = (row: Row): boolean => typeof row["@label"] === "string" && /^inv:(po|receipt):[a-z-]+:\d\d$/.test(row["@label"]);
+    const typed = new Set(file.tables.flatMap((table) => table.rows.filter((row) => !past(row)).flatMap((row) => Object.keys(row).map((column) => `${table.ref}.${column}`))));
     for (const kept of ["items.cost_avg", "items.on_hand", "items.receipt_id", "purchase_orders.status", "purchase_orders.number", "purchase_orders.received_at", "receipts.status", "receipts.number", "receipt_lines.status"]) {
       expect(typed.has(kept), kept).toBe(false);
     }
     for (const never of ["stock_points", "levels", "movements", "batches", "on_order_moves", "postings", "reservations"]) expect(file.tables.some((table) => table.ref === never), never).toBe(false);
+  });
+
+  it("hold the ledger's 123 deliveries of the last 90 days (screen 60), and one older a supplier: each an order received in one delivery, moving no stock", () => {
+    const orders = rows("purchase_orders").filter((row) => row["status"] === "received");
+    const deliveries = rows("receipts").filter((row) => row["kind"] === "delivery");
+    expect([orders.length, deliveries.length]).toEqual([129, 129]);
+    // No line: a past delivery says when it came, not what it brought, so the shelf's figures stay the opening receipt's.
+    const withLines = new Set(rows("receipt_lines").map((line) => ref(line["receipt_id"])));
+    expect(deliveries.filter((row) => withLines.has(String(row["@label"])))).toEqual([]);
+    expect(new Set(rows("po_lines").map((line) => ref(line["po_id"])))).toEqual(new Set(["inv:po:s2", "inv:po:s3", "inv:po:s4", "inv:po:s9"]));
+    const day = (value: unknown): number => (value as { "@day": number })["@day"];
+    const orderOf = new Map(orders.map((row) => [String(row["@label"]), row]));
+    const per: Record<string, { n: number; late: number[] }> = {};
+    for (const receipt of deliveries) {
+      const order = orderOf.get(ref(receipt["po_id"]))!;
+      expect(ref(order["supplier_id"]), String(receipt["@label"])).toBe(ref(receipt["supplier_id"]));
+      // Posted on a weekday (day 0 is the ledger's Tuesday), on the day it was received.
+      const on = day(receipt["received_on"]);
+      expect([on, day(receipt["received_at"])]).toEqual([on, on]);
+      expect(((((1 + on) % 7) + 7) % 7) < 5, String(receipt["@label"])).toBe(true);
+      if (on < -89) continue;
+      const one = (per[ref(receipt["supplier_id"]).replace("inv:supplier:", "")] ??= { n: 0, late: [] });
+      one.n += 1;
+      const late = on - day(order["expected_on"]);
+      if (late > 0) one.late.push(late);
+    }
+    const weeks = (late: number[]) => (late.length === 0 ? 0 : Math.round(late.reduce((a, b) => a + b, 0) / late.length / 7));
+    expect(Object.fromEntries(Object.entries(per).map(([slug, one]) => [slug, [one.n, one.late.length, weeks(one.late)]]))).toEqual({
+      "halvard-werke": [28, 1, 0], "kirkwall-steel": [19, 2, 0], "ostrom-seating": [34, 5, 1], "trellis-textiles": [22, 2, 1], "fenlow-acoustics": [14, 8, 3], "marchmont-joinery": [6, 0, 0],
+    });
+    // Each older one outside the 90 days, on time.
+    expect(deliveries.filter((row) => day(row["received_on"]) < -89).map((row) => String(row["@label"]).split(":")[3])).toEqual(["00", "00", "00", "00", "00", "00"]);
   });
 
   it("ask Inventory for the stock, in the order a person would: the receipt opened, its lines posted, the receipt closed, the orders sent", () => {
@@ -62,7 +96,11 @@ describe("the app's rows for Inventory", () => {
       { ref: "inv:opening", to: "posting" },
       { table: "receipt_lines", to: "posted" },
       { ref: "inv:opening", to: "posted" },
-      { table: "purchase_orders", to: "sent" },
+      // The four orders still to come, by name: the received ones stay received.
+      { ref: "inv:po:s2", to: "sent" },
+      { ref: "inv:po:s3", to: "sent" },
+      { ref: "inv:po:s4", to: "sent" },
+      { ref: "inv:po:s9", to: "sent" },
     ]);
   });
 
