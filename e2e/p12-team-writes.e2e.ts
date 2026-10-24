@@ -194,7 +194,7 @@ test("Coaching: each area's why, what good looks like and live number; the manag
   expect(problems).toEqual([]);
 });
 
-test("One-to-one notes: what to cover ticked off and something else raised, kept with the session, its length, and its action under it", async ({ as, data }) => {
+test("One-to-one notes: what to cover ticked off and something else raised, kept with the session, its length, and its action under it", async ({ as, data, stand }) => {
   const context = await as("ivy");
   await room(context.request, data, 100);
   const ivy = context.request;
@@ -225,11 +225,14 @@ test("One-to-one notes: what to cover ticked off and something else raised, kept
   const first = page.locator(".crm-no-session").first();
   await expect(first.getByTestId("notes-minutes")).toHaveText("30 minutes");
   await expect(first.getByTestId("notes-covered").locator("li")).toHaveText(["The deal longest in its stage", "Follow-ups past due", "Spec: the August cover"]);
-  await expect(first.getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveText(/Spec: brief Sam on Cobalt Legal/);
+  // An action keeps its session from stage 2 on (T04): stage 1 has no `actions.session_id`, and lists none under it.
+  const keepsSession = stand.stage >= 2;
+  if (keepsSession) await expect(first.getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveText(/Spec: brief Sam on Cobalt Legal/);
+  else await expect(first.getByTestId("notes-session-actions")).toHaveCount(0);
   const session = (await rows<Record<string, unknown>>(ivy, data, "one_to_one_sessions", { column: "notes", op: "like", value: "Spec: %" }))[0]!;
   expect([isYes(session["cover_sitting"]), isYes(session["cover_biggest"]), isYes(session["cover_target"]), isYes(session["cover_late"]), session["raised"], Number(session["minutes"])]).toEqual([true, false, false, true, "Spec: the August cover", 30]);
   const action = (await rows<{ session_id: number | null }>(ivy, data, "actions", { column: "text", op: "eq", value: "Spec: brief Sam on Cobalt Legal" }))[0]!;
-  expect(action.session_id).toBe(session["id"]);
+  expect(action.session_id).toBe(keepsSession ? session["id"] : undefined);
 
   // Dana reads what was covered, and ticks nothing of the agenda.
   const dana = await as("dana");

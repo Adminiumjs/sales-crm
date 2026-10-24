@@ -204,7 +204,7 @@ test("the manager's Team targets in the ledger's figures; she sets Leo's and his
 
 /* ─── One-to-one notes, and the one action list ───────────────────────────── */
 
-test("One-to-one notes: the ledger's record for Dana and Priya; a new session with its actions (a lost reply makes one)", async ({ as, data }) => {
+test("One-to-one notes: the ledger's record for Dana and Priya; a new session with its actions (a lost reply makes one)", async ({ as, data, stand }) => {
   const context = await as("ivy");
   await room(context.request, data, 140);
   const ivy = context.request;
@@ -296,9 +296,15 @@ test("One-to-one notes: the ledger's record for Dana and Priya; a new session wi
   expect(made.find((action) => action.text.includes("layout"))!.due_on?.slice(0, 10)).toBe("2026-07-31");
   await expect(page.getByTestId("notes-open").locator(".crm-tw-action", { hasText: "Spec: send Fernway the full-floor layout" })).toContainText("Priya · due Fri, Jul 31");
 
-  // The session lists the two actions it set (T04: an action keeps its session).
-  await expect(page.locator(".crm-no-session").first().getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveCount(2);
-  expect(made.every((action) => (action as { session_id?: number | null }).session_id !== null)).toBe(true);
+  // The session lists the two actions it set (T04: an action keeps its session, from stage 2 on; stage 1 has no
+  // `actions.session_id` and lists none under it).
+  if (stand.stage >= 2) {
+    await expect(page.locator(".crm-no-session").first().getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveCount(2);
+    expect(made.every((action) => typeof (action as { session_id?: number | null }).session_id === "number")).toBe(true);
+  } else {
+    await expect(page.locator(".crm-no-session").first().getByTestId("notes-session-actions")).toHaveCount(0);
+    expect(made.every((action) => !("session_id" in action))).toBe(true);
+  }
   // Ticked here, it is done on the server and moves under "Ticked off".
   await tick(page.getByTestId("notes-open"), "Spec: Ivy rings the Fernway buyer").click();
   await expect(page.locator(".crm-toast")).toHaveText("Done.");
@@ -374,7 +380,7 @@ test("a one-to-one is private to its two people: the CRM admin, Read-only and th
   await picture(samPage, "notes-2-sam");
 });
 
-test("the three action lists are one list: ticked in One-to-one notes, it is ticked in Coaching and the meeting, and a rep's open page follows (two people)", async ({ as, data }) => {
+test("the three action lists are one list: ticked in One-to-one notes, it is ticked in Coaching and the meeting, and a rep's open page follows (two people)", async ({ as, data, stand }) => {
   const ivyContext = await as("ivy");
   await room(ivyContext.request, data, 120);
   const priyaContext = await as("priya");
@@ -397,8 +403,8 @@ test("the three action lists are one list: ticked in One-to-one notes, it is tic
   await page.goto(`${STAFF}one-to-ones`);
   await page.locator(".crm-tw-people").getByRole("button", { name: "Priya" }).click();
   await expect(page.getByTestId("notes-open-count")).toHaveText("1 of 2");
-  // The row is listed under the session that set it too (T04): it is ticked in "Still open".
-  await expect(page.locator(".crm-no-session").getByRole("checkbox", { name: SHARED, exact: true })).toHaveCount(1);
+  // The row is listed under the session that set it too (T04, stage 2 on): it is ticked in "Still open".
+  await expect(page.locator(".crm-no-session").getByRole("checkbox", { name: SHARED, exact: true })).toHaveCount(stand.stage >= 2 ? 1 : 0);
   await tick(page.getByTestId("notes-open"), SHARED).click();
   await expect(page.locator(".crm-toast")).toHaveText("Done.");
   await expect(page.getByTestId("notes-open-count")).toHaveText("0 of 2");
