@@ -104,6 +104,22 @@ test("the console's Pipeline: odds, count and both totals on each heading, the c
   await expect(depot).toContainText("£14,250");
   // Leo, by his initials (the board draws a person as a tile named after them).
   await expect(depot).toContainText("LV");
+  // Plan 68 S8 (E16): the days say what they are, and a second money line is the weighted value (25% of £14,250).
+  await expect(depot).toContainText("34 days in stage");
+  await expect(depot).toContainText("w £3,562.50");
+  // The toolbar: the server's count and amount over every card the reader reaches (§2: 14 open deals, £286,300), and a
+  // person filter that narrows the board and the total to one person's cards (Dana: 6, £143,400).
+  const total = page.getByTestId("board-total");
+  await expect(total).toContainText("14");
+  await expect(total).toContainText("£286,300");
+  const people = page.getByTestId("board-person-filter");
+  await expect(people.getByRole("button", { name: "Everyone" })).toHaveAttribute("aria-pressed", "true");
+  await people.getByRole("button", { name: "Dana Whitlock" }).click();
+  await expect(total).toContainText("6");
+  await expect(total).toContainText("£143,400");
+  await expect(column(page, "Qualified").locator('[role="button"]').filter({ hasText: "Depot supervisor stations" })).toHaveCount(0);
+  await people.getByRole("button", { name: "Everyone" }).click();
+  await expect(total).toContainText("£286,300");
   // The note says where the columns come from, and opens that page by keyboard.
   const note = page.getByTestId("board-note");
   await expect(note).toHaveText("Columns come from Stages");

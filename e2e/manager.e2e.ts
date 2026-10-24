@@ -341,6 +341,20 @@ test("Stage health: the ledger's five stages, their ages and the deal sitting lo
     await expect(stage(one.label).locator('.crm-hl-buckets [data-figure="stale"]')).toHaveText(String(stale));
   }
 
+  // Plan 68 S15: "typical age" is the server's middle moment of each stage's open deals (of an even count, the earlier of
+  // the two middle ones), counted in days to 28 July where the business is. Nothing on the page sorts rows.
+  const london = (at: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(at));
+  const middles = await figure<{ items: { key: string; values: { middle: string | null } }[] }>(context.request, stand, "deals", { shape: "categorical", filters: [OPEN], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }, { fn: "median", column: "entered_stage_at", alias: "middle" }], limit: 50 });
+  for (const one of stages) {
+    const entered = open.filter((deal) => deal.stage_id === one.id).map((deal) => deal.entered_stage_at).sort();
+    if (entered.length === 0) continue;
+    const middle = entered[Math.floor((entered.length - 1) / 2)]!;
+    const answered = middles.result.items.find((it) => String(it.key) === String(one.id))!.values.middle!;
+    expect(new Date(answered).getTime(), one.label).toBe(new Date(middle).getTime());
+    const days = Math.round((Date.parse(`${"2026-07-28"}T12:00:00Z`) - Date.parse(`${london(middle)}T12:00:00Z`)) / 86_400_000);
+    await expect(stage(one.label).locator('[data-figure="typical"]'), one.label).toHaveText(`${String(days)} ${days === 1 ? "day" : "days"}`);
+  }
+
   // Narrowed to Leo: his two, and the other three stages say nothing is there.
   await page.getByRole("group", { name: "Whose deals" }).getByRole("button", { name: "Leo" }).click();
   await expect(stage("Qualified").locator('[data-figure="count"]')).toHaveText("1");

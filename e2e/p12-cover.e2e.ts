@@ -387,3 +387,32 @@ test("Cover at 390 wide in the dark, its dialog too; and in Arabic right to left
     await arabic.close();
   });
 });
+
+/**
+ * Plan 68 X5 (D11): a cover lasts a year at most; longer is "until further notice". The dialog says so before anything is
+ * sent, and the server refuses a longer one whoever asks (proved as each role in `crm-p4-guards`). Nothing is made.
+ */
+test("a cover longer than a year: the dialog says to leave the end empty, and the server refuses it", async ({ as, api, data }) => {
+  const context = await as("tessa");
+  const tessa = context.request;
+  const page = await context.newPage();
+  await page.goto(`${STAFF}cover`);
+  await page.getByTestId("cover-new").click();
+  const dialog = page.getByRole("dialog", { name: "New cover" });
+  await dialog.getByLabel("Who is away").selectOption({ label: "Leo Vance" });
+  await dialog.getByLabel("Who covers").selectOption({ label: "Sam Okonjo" });
+  await dialog.getByLabel("From").fill("2026-10-05");
+  await dialog.getByLabel("To", { exact: true }).fill("2027-10-06");
+  await expect(dialog.getByRole("alert")).toHaveText("A cover lasts a year at most. For longer, leave the last day empty: until further notice.");
+  await expect(dialog.getByRole("button", { name: "Set the cover" })).toBeDisabled();
+  // A year to the day is a cover.
+  await dialog.getByLabel("To", { exact: true }).fill("2027-10-05");
+  await expect(dialog.getByRole("button", { name: "Set the cover" })).toBeEnabled();
+  await page.keyboard.press("Escape");
+  const before = (await rows<CoverRow>(tessa, data, "covers")).length;
+  const leo = await me(await api("leo"));
+  const sam = await me(await api("sam"));
+  const longer = await tessa.post(data("covers"), { data: { values: { owner_id: leo, cover_id: sam, starts_on: "2026-10-05", ends_on: "2027-10-06" } }, headers: await csrf(tessa) });
+  expect(longer.status()).toBe(422);
+  expect((await rows<CoverRow>(tessa, data, "covers")).length).toBe(before);
+});
