@@ -13,6 +13,7 @@ import { newClientKey, type StaffSession } from "../../staffSession.ts";
 import { useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { Card } from "../appsettings/parts.tsx";
+import { withPairWords } from "../appsettings/pairs.ts";
 import { clockMinutes, isClock, readSpaces, type Space } from "./data.ts";
 
 const yes = (value: unknown): boolean => value === true || value === 1 || value === "1" || value === "true";
@@ -38,7 +39,8 @@ export function ShowroomSettings({ session, can }: { session: StaffSession; can:
     if (rowLoad.state !== "ready" || rowLoad.data === null) return false;
     const row = rowLoad.data;
     setBusy(true);
-    const saved = await toasts.say(session.update("settings", Number(row["id"]), values, { seen: Object.fromEntries(Object.keys(values).map((column) => [column, row[column]])) }), () => done);
+    // Opening after closing is refused by the server naming both (plan 68 X4): said in the reader's words.
+    const saved = await toasts.say(withPairWords(session.update("settings", Number(row["id"]), values, { seen: Object.fromEntries(Object.keys(values).map((column) => [column, row[column]])) }), t), () => done);
     setBusy(false);
     again();
     return saved !== null;

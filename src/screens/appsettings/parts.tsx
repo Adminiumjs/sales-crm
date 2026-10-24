@@ -6,6 +6,7 @@ import type { Formatters } from "../../lib/format.ts";
 import type { Saved, StaffSession } from "../../staffSession.ts";
 import { useToasts } from "../../ui/toast.tsx";
 import { BOUNDS, MANAGER_WRITES, num, readNumber, type SettingsRow } from "./data.ts";
+import { withPairWords } from "./pairs.ts";
 
 export function Card({ title, sub, aside, children, flush = false, name }: { title: string; sub?: string; aside?: ReactNode; children: ReactNode; flush?: boolean; name: string }) {
   const id = useId();
@@ -41,6 +42,7 @@ export function rightsOf(session: StaffSession): Rights {
 
 /** Save one or more columns of the settings row, naming what the screen saw, and say how it ended. */
 export function useSaveSettings(session: StaffSession, row: SettingsRow | null, after: () => void): { save: (values: Record<string, unknown>, done: string, seen?: boolean) => Promise<boolean>; busy: boolean } {
+  const t = useT();
   const toasts = useToasts();
   const [busy, setBusy] = useState(false);
   /**
@@ -53,7 +55,8 @@ export function useSaveSettings(session: StaffSession, row: SettingsRow | null, 
     if (row === null) return false;
     setBusy(true);
     const saw = Object.fromEntries(Object.keys(values).map((column) => [column, row[column]]));
-    const saved = await toasts.say(session.update("settings", row.id, values, seen ? { seen: saw } : {}) as Promise<Saved<SettingsRow>>, () => done);
+    // A pair the server keeps apart (warm below stale, the day's start before its end: plan 68 X4) is refused naming both.
+    const saved = await toasts.say(withPairWords(session.update("settings", row.id, values, seen ? { seen: saw } : {}) as Promise<Saved<SettingsRow>>, t), () => done);
     setBusy(false);
     after();
     return saved !== null;

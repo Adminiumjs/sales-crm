@@ -29,7 +29,7 @@ import { Loaded, Skeleton, useCoalesced, useLoad } from "../../ui/load.tsx";
 import { useToasts } from "../../ui/toast.tsx";
 import { peopleOf } from "../team/data.ts";
 import { Dialog } from "../../ui/dialog.tsx";
-import { ASKING_LENGTH, ASKING_MAX, askingOf, num, readSelling, type PriceRow, type ReasonRow, type RepRow, type SellingData, type StageRow } from "./data.ts";
+import { ASKING_LENGTH, ASKING_MAX, askingOf, num, readSelling, type PriceRow, type ReasonRow, type RepRow, type SellingData, type StageRow, LIST_PAGE } from "./data.ts";
 import { AskLine, Card, NumField, useSaveSettings, type Rights } from "./parts.tsx";
 
 type ListTable = "stages" | "lost_reasons";
@@ -68,6 +68,8 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   const canRemove = session.can(table, "delete");
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  // Every row is read; fifty are shown, then fifty more a press (plan 68 X4).
+  const [shown, setShown] = useState(LIST_PAGE);
   // The stage whose "worth asking" questions are open (S11).
   const [asking, setAsking] = useState<Listed | null>(null);
   /**
@@ -153,7 +155,7 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   return (
     <>
       <div role="list" aria-label={t(k("title"))} ref={list} className="crm-ast-rows" aria-busy={busy}>
-        {rows.map((row, at) => {
+        {rows.slice(0, shown).map((row, at) => {
           const name = drafts[`name:${String(row.id)}`] ?? row.label;
           const odds = drafts[`odds:${String(row.id)}`] ?? String(Math.round(num(row.odds) * 100));
           const badOdds = !/^\d+$/.test(odds.trim()) || Number(odds) > 100;
@@ -227,6 +229,14 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
           );
         })}
       </div>
+      {rows.length > shown && (
+        <div className="crm-ast-more" data-more={table}>
+          <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" onClick={() => setShown((now) => now + LIST_PAGE)}>
+            {t("guards.settings.more", { count: f.number(Math.min(LIST_PAGE, rows.length - shown)) })}
+          </button>
+          <span className="crm-mono">{t("guards.settings.shown", { shown: f.number(shown), total: f.number(rows.length) })}</span>
+        </div>
+      )}
       {(canAdd || canRemove) && (
         <div className="crm-ast-foot">
           {canAdd && (
@@ -625,8 +635,8 @@ export function Selling({ session, f, rights }: { session: StaffSession; f: Form
                   <Card name="quotes" title={t("aset.quotes.title")} sub={t("aset.quotes.sub")}>
                     <div className="crm-ast-fields">
                       {field("approval_threshold_pct", "aset.quotes.approval", t("aset.unit.underList"), undefined, { whole: false })}
-                      {field("quote_valid_days", "aset.quotes.valid", days(num(value("quote_valid_days"))))}
-                      {field("quote_warn_days", "aset.quotes.warn", days(num(value("quote_warn_days"))))}
+                      {field("quote_valid_days", "aset.quotes.valid", days(num(value("quote_valid_days"))), undefined, { min: num(value("quote_warn_days")) + 1 })}
+                      {field("quote_warn_days", "aset.quotes.warn", days(num(value("quote_warn_days"))), undefined, { max: num(value("quote_valid_days")) - 1 })}
                     </div>
                     <AskLine>{t(linkState === "set" ? "aset.links.set" : linkState === "unset" ? "aset.links.unset" : "aset.links.unknown")}</AskLine>
                   </Card>
