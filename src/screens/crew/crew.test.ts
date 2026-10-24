@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import { StaffError } from "../../staffSession.ts";
-import { addressLines, checksOf, crewsOf, fileIds, lastShift, mapsHref, offersSignOff, putRightLine, signOffLine, snagLine, snagOrder, stoppers, telHref, tickLine, ticksOpen, timeSpan, weekDays, type CrewSnag } from "./data.ts";
+import { addressLines, checksOf, crewsOf, fileIds, lastShift, mapsHref, offersSignOff, putRightLine, signOffLine, SNAGS_AT_SIGNING_MAX, snagLine, snagsAtSigning, snagOrder, stoppers, telHref, tickLine, ticksOpen, timeSpan, weekDays, type CrewSnag } from "./data.ts";
 import { recordKey, signWhy } from "./queue.tsx";
 
 const snag = (over: Partial<CrewSnag>): CrewSnag => ({ id: 1, job_id: 7, visit_id: 7, text: "Cable trays", stops_sign_off: false, state: "open", raised_on: "2026-07-21", raised_by_id: null, raised_by_contact_id: null, due_on: "2026-07-27", put_right_on: null, put_right_note: null, code: null, title: null, site: null, photo: null, put_right_photo: null, ...over });
@@ -119,12 +119,51 @@ describe("a save of the phone's: a line of the offline queue (plan 68 S19)", () 
     expect(of(new StaffError(403, "FORBIDDEN", ""))).toBe("other");
   });
 
-  it("makes a sign-off ONE create carrying its key: the five checks, the name, the signature and the photos; refused, the signature goes", () => {
-    const line = signOffLine({ visitId: 7, jobId: 3, site: "Tandem Robotics", checks: [true, true, true, true, true], signer: " Yusuf Demir ", signature: HELD_SIG, photos: [HELD_PHOTO] }, "KEY");
-    expect(line.op).toEqual({ type: "create", table: "sign_offs", key: "KEY", values: { visit_id: 7, signer_name: "Yusuf Demir", signature: HELD_SIG, photos: [HELD_PHOTO], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true } });
+  it("makes a sign-off ONE create carrying its key: the five checks, the name, the signature and the photos, and what the customer was shown; refused, the signature goes", () => {
+    const open = [
+      { text: " Edge trim lifting ", due_on: "2026-08-03", put_right_note: null },
+      { text: "Wrong castors", due_on: "2026-07-30T00:00:00.000Z", put_right_note: " Right castors go out on Thursday. " },
+    ];
+    const words = ["Everything on the list is on site", "Nothing damaged,\n nothing marked", "Keys", "Floor", "Shown"];
+    const line = signOffLine({ visitId: 7, jobId: 3, site: "Tandem Robotics", checks: [true, true, true, true, true], signer: " Yusuf Demir ", signature: HELD_SIG, photos: [HELD_PHOTO], open, checkWords: words }, "KEY");
+    expect(line.op).toEqual({
+      type: "create",
+      table: "sign_offs",
+      key: "KEY",
+      values: {
+        visit_id: 7,
+        signer_name: "Yusuf Demir",
+        signature: HELD_SIG,
+        photos: [HELD_PHOTO],
+        check_1: true,
+        check_2: true,
+        check_3: true,
+        check_4: true,
+        check_5: true,
+        snags_at_signing: JSON.stringify([
+          { what: "Edge trim lifting", by: "2026-08-03", note: "" },
+          { what: "Wrong castors", by: "2026-07-30", note: "Right castors go out on Thursday." },
+        ]),
+        // One check a line, whatever line breaks a translation holds.
+        check_words: "Everything on the list is on site\nNothing damaged, nothing marked\nKeys\nFloor\nShown",
+      },
+    });
+    // Nothing open: an empty list, which the copy prints as "Nothing was left to put right."
+    const none = signOffLine({ visitId: 7, jobId: 3, site: "T", checks: [true, true, true, true, true], signer: "Y", signature: HELD_SIG, photos: [], open: [], checkWords: words }, "KEY2");
+    expect(none.op.type === "create" && none.op.values["snags_at_signing"]).toBe("[]");
     expect(line.dropOnRefusal).toEqual(["signature"]);
     expect(line.meta).toMatchObject({ visit: 7, job: 3, signer: "Yusuf Demir", checks: 5, photos: 1 });
     expect(line.op.type === "create" && checksOf(line.op.values)).toEqual([true, true, true, true, true]);
+  });
+
+  it("keeps the open snags within the column's bound by dropping the last ones, never the list's shape", () => {
+    const open = Array.from({ length: 120 }, (_, i) => ({ text: `Snag ${String(i)} ${"x".repeat(380)}`, due_on: "2026-08-03", put_right_note: "n".repeat(100) }));
+    const text = snagsAtSigning(open);
+    expect(text.length).toBeLessThanOrEqual(SNAGS_AT_SIGNING_MAX);
+    const kept = JSON.parse(text) as { what: string }[];
+    expect(kept.length).toBeGreaterThan(10);
+    expect(kept.length).toBeLessThan(120);
+    expect(kept[0]!.what.startsWith("Snag 0 ")).toBe(true);
   });
 
   it("makes a put-right a change that names the state it saw, and a tick a change of the visit alone", () => {

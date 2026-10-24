@@ -306,17 +306,44 @@ export interface SignOffDraft {
   /** The files, as the phone holds them (`phone_…`). */
   signature: string;
   photos: readonly string[];
+  /** The job's snags still open, as the screen showed them to the customer. */
+  open: readonly Pick<CrewSnag, "text" | "due_on" | "put_right_note">[];
+  /** The five checks' words, as the screen said them, in the columns' order. */
+  checkWords: readonly string[];
+}
+
+/** The longest list of open snags a sign-off holds (`sign_offs.snags_at_signing`'s own bound). */
+export const SNAGS_AT_SIGNING_MAX = 20_000;
+
+/**
+ * The snags open when the customer signed, as the signed copy reads them: a
+ * JSON list of `{ what, by, note }` (`by` a `YYYY-MM-DD` day), in the order the
+ * screen showed them; `[]` when none was. Kept within the column's bound: a
+ * list too long for it loses its last snags, never its shape.
+ */
+export function snagsAtSigning(open: SignOffDraft["open"]): string {
+  const entries = open.map((snag) => ({ what: snag.text.trim(), by: dayKeyOf(snag.due_on) ?? "", note: (snag.put_right_note ?? "").trim() }));
+  let text = JSON.stringify(entries);
+  while (text.length > SNAGS_AT_SIGNING_MAX && entries.length > 0) {
+    entries.pop();
+    text = JSON.stringify(entries);
+  }
+  return text;
 }
 
 /**
  * Sign a job off: ONE create, with a key, naming the five checks, the
- * signer's name, the signature and the photos. Refused, the signature goes
+ * signer's name, the signature and the photos, and what the customer was
+ * shown: the job's open snags and the checks' words. Refused, the signature goes
  * (the customer signs for what is true when they sign) and the checks, the
  * name and the photos stay on the phone for the next try.
  */
 export function signOffLine(draft: SignOffDraft, key: string): NewLine {
   const values: Row = { visit_id: draft.visitId, signer_name: draft.signer.trim(), signature: draft.signature, photos: draft.photos.length === 0 ? null : [...draft.photos] };
   CHECKS.forEach((check, i) => (values[check] = draft.checks[i] === true));
+  // What the customer was shown, written with the sign-off: the signed copy prints these (plan 68 S13).
+  values["snags_at_signing"] = snagsAtSigning(draft.open);
+  values["check_words"] = draft.checkWords.map((words) => words.replace(/\s+/g, " ").trim()).join("\n").slice(0, 1000);
   return {
     kind: "sign-off",
     dropOnRefusal: ["signature"],

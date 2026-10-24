@@ -18,6 +18,8 @@ import { Camera, CircleX, Hourglass, Navigation, RefreshCw, WifiOff } from "luci
 import { BadgeCheck, Fuel, Shield, ShieldX } from "lucide-react";
 // A crew's vehicle for the day (plan 68 S14).
 import { Ban, ChevronsUpDown, Info } from "lucide-react";
+// The signed copy (plan 68 S13).
+import { Download } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   activity: Activity, "alarm-clock": AlarmClock, "calendar-plus": CalendarPlus, "calendar-sync": CalendarSync, "calendar-x": CalendarX, "clock-alert": ClockAlert, "calendar-arrow-up": CalendarArrowUp, "calendar-days": CalendarDays, check: Check, "check-check": CheckCheck,
@@ -36,6 +38,8 @@ const ICONS: Record<string, LucideIcon> = {
   "badge-check": BadgeCheck, fuel: Fuel, shield: Shield, "shield-x": ShieldX,
   // A crew's vehicle for the day.
   ban: Ban, "chevrons-up-down": ChevronsUpDown, info: Info,
+  // The signed copy.
+  download: Download,
   "notebook-tabs": NotebookTabs, route: Route, "clipboard-check": ClipboardCheck, recycle: Recycle, printer: Printer, "file-check": FileCheck, "file-x": FileX, "file-warning": FileWarning, "pen-line": PenLine, "hard-hat": HardHat,
 };
 

@@ -1305,3 +1305,64 @@ button.crm-jb-tick {
 .crm-jb-panel > .crm-btn {
   align-self: flex-start;
 }
+
+/* ─── The signed copy's file row, under "Who signed" (plan 68 S13; M2 note 1) ─── */
+.crm-sc-file {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-inline-size: 420px;
+  margin-block-start: 10px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.crm-sc-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 22px;
+  padding-inline: 6px;
+  border-radius: 6px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.crm-sc-words {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-inline-size: 0;
+}
+.crm-sc-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+.crm-sc-size {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-sc-hint {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.crm-sc-btn {
+  block-size: 30px;
+  border: 1px solid var(--border-strong);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+@media (max-width: 390px) {
+  .crm-sc-btn {
+    inline-size: 100%;
+    justify-content: center;
+  }
+}

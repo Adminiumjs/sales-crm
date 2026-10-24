@@ -13736,6 +13736,30 @@
       "@day": -252,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[]",
+       "de-DE": "[]",
+       "fr-FR": "[]",
+       "da-DK": "[]",
+       "cs-CZ": "[]",
+       "ar-EG": "[]",
+       "zh-CN": "[]",
+       "zh-TW": "[]"
+      }
      }
     },
     {
@@ -13755,6 +13779,30 @@
       "@day": -195,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[]",
+       "de-DE": "[]",
+       "fr-FR": "[]",
+       "da-DK": "[]",
+       "cs-CZ": "[]",
+       "ar-EG": "[]",
+       "zh-CN": "[]",
+       "zh-TW": "[]"
+      }
      }
     },
     {
@@ -13774,6 +13822,30 @@
       "@day": -139,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[]",
+       "de-DE": "[]",
+       "fr-FR": "[]",
+       "da-DK": "[]",
+       "cs-CZ": "[]",
+       "ar-EG": "[]",
+       "zh-CN": "[]",
+       "zh-TW": "[]"
+      }
      }
     },
     {
@@ -13793,6 +13865,30 @@
       "@day": -104,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[{\"what\":\"Two screens marked in transit\",\"note\":\"\"}]",
+       "de-DE": "[{\"what\":\"Zwei Trennwände auf dem Transport beschädigt\",\"note\":\"\"}]",
+       "fr-FR": "[{\"what\":\"Deux écrans marqués pendant le transport\",\"note\":\"\"}]",
+       "da-DK": "[{\"what\":\"To skærme med mærker fra transporten\",\"note\":\"\"}]",
+       "cs-CZ": "[{\"what\":\"Dva paravány poškozené při přepravě\",\"note\":\"\"}]",
+       "ar-EG": "[{\"what\":\"فاصلان بهما علامات من النقل\",\"note\":\"\"}]",
+       "zh-CN": "[{\"what\":\"两块屏风运输中受损\",\"note\":\"\"}]",
+       "zh-TW": "[{\"what\":\"兩片屏風運送途中有痕\",\"note\":\"\"}]"
+      }
      }
     },
     {
@@ -13812,6 +13908,30 @@
       "@day": -97,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[]",
+       "de-DE": "[]",
+       "fr-FR": "[]",
+       "da-DK": "[]",
+       "cs-CZ": "[]",
+       "ar-EG": "[]",
+       "zh-CN": "[]",
+       "zh-TW": "[]"
+      }
      }
     },
     {
@@ -13831,6 +13951,30 @@
       "@day": -83,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[{\"what\":\"Paint scuffed by the lift door\",\"note\":\"\"}]",
+       "de-DE": "[{\"what\":\"Lack an der Aufzugstür abgeschrammt\",\"note\":\"\"}]",
+       "fr-FR": "[{\"what\":\"Peinture éraflée près de la porte de l’ascenseur\",\"note\":\"\"}]",
+       "da-DK": "[{\"what\":\"Maling slidt ved elevatordøren\",\"note\":\"\"}]",
+       "cs-CZ": "[{\"what\":\"Barva odřená u dveří výtahu\",\"note\":\"\"}]",
+       "ar-EG": "[{\"what\":\"الدهان مخدوش عند باب المصعد\",\"note\":\"\"}]",
+       "zh-CN": "[{\"what\":\"电梯门旁的漆面被蹭花\",\"note\":\"\"}]",
+       "zh-TW": "[{\"what\":\"電梯門邊的漆面被刮花\",\"note\":\"\"}]"
+      }
      }
     },
     {
@@ -13850,6 +13994,30 @@
       "@day": -3,
       "@time": "16:00",
       "@week": true
+     },
+     "check_words": {
+      "@t": {
+       "en-US": "Everything on the list is on site\nNothing damaged, nothing marked\nKeys and spares handed over\nFloor left as we found it\nShown them how it works",
+       "de-DE": "Alles auf der Liste ist vor Ort\nNichts beschädigt, nichts verkratzt\nSchlüssel und Ersatzteile übergeben\nBoden so hinterlassen, wie wir ihn vorfanden\nBedienung gezeigt",
+       "fr-FR": "Tout ce qui est sur la liste est sur place\nRien d’abîmé, rien de marqué\nClés et pièces de rechange remises\nSol laissé comme nous l’avons trouvé\nMontré comment ça marche",
+       "da-DK": "Alt på listen er på stedet\nIntet beskadiget, intet mærket\nNøgler og reservedele afleveret\nGulvet efterladt, som vi fandt det\nVist dem, hvordan det virker",
+       "cs-CZ": "Vše ze seznamu je na místě\nNic poškozeného, nic poškrábaného\nKlíče a náhradní díly předány\nPodlaha zanechána, jak jsme ji našli\nUkázáno, jak to funguje",
+       "ar-EG": "كل ما في القائمة موجود في الموقع\nلا تلف ولا خدوش\nسُلّمت المفاتيح وقطع الغيار\nتُركت الأرضية كما وجدناها\nعرضنا عليهم طريقة العمل",
+       "zh-CN": "清单上的东西都已到场\n无损坏、无划痕\n钥匙和备件已交付\n地面已恢复原样\n已演示使用方法",
+       "zh-TW": "清單上的東西都已到場\n無損壞、無刮痕\n鑰匙和備件已交付\n地面已恢復原樣\n已示範使用方法"
+      }
+     },
+     "snags_at_signing": {
+      "@t": {
+       "en-US": "[{\"what\":\"Edge trim lifting on the small table\",\"note\":\"\"},{\"what\":\"Wrong castors on two of the chairs\",\"note\":\"\"}]",
+       "de-DE": "[{\"what\":\"Kantenleiste am kleinen Tisch löst sich\",\"note\":\"\"},{\"what\":\"Falsche Rollen an zwei Stühlen\",\"note\":\"\"}]",
+       "fr-FR": "[{\"what\":\"Chant décollé sur la petite table\",\"note\":\"\"},{\"what\":\"Mauvaises roulettes sur deux des chaises\",\"note\":\"\"}]",
+       "da-DK": "[{\"what\":\"Kantliste løfter sig på det lille bord\",\"note\":\"\"},{\"what\":\"Forkerte hjul på to af stolene\",\"note\":\"\"}]",
+       "cs-CZ": "[{\"what\":\"Odlepuje se hranová lišta na malém stole\",\"note\":\"\"},{\"what\":\"Špatná kolečka na dvou židlích\",\"note\":\"\"}]",
+       "ar-EG": "[{\"what\":\"شريط الحافة منفصل على الطاولة الصغيرة\",\"note\":\"\"},{\"what\":\"عجلات خاطئة على كرسيين\",\"note\":\"\"}]",
+       "zh-CN": "[{\"what\":\"小桌子的封边条翘起\",\"note\":\"\"},{\"what\":\"两把椅子脚轮装错了\",\"note\":\"\"}]",
+       "zh-TW": "[{\"what\":\"小桌的封邊條翹起\",\"note\":\"\"},{\"what\":\"兩張椅子裝錯了腳輪\",\"note\":\"\"}]"
+      }
      }
     }
    ]

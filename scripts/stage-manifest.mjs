@@ -128,6 +128,11 @@ export function stageManifest(whole, stages, stage) {
   }
 
   if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id));
+  // A document drawn from a table of a later part (the signed copy, before Jobs on site) goes with it.
+  if (doc.documents !== undefined) {
+    doc.documents = doc.documents.filter((document) => partOf(document) && !goneTables.has(document.table) && !JSON.stringify(document.mapping).match(/"(?:via|column)":"([a-z0-9_]+)"/g)?.some((pair) => (goneColumns[document.table] ?? []).includes(pair.split(":")[1].replace(/"/g, ""))));
+    if (doc.documents.length === 0) delete doc.documents;
+  }
   if (doc.outbox?.producers !== undefined) doc.outbox.producers = doc.outbox.producers.filter((producer) => partOf(producer) && !goneTables.has(producer.onChange?.table));
   if (doc.outbox !== undefined) cutOutbox(doc, whole, goneColumns);
 
