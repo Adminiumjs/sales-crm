@@ -725,6 +725,9 @@ test("Messages: a member brings a colleague into a group conversation, who reads
   await takeOut();
   try {
     const context = await as("dana");
+    // Dana and Ivy each work a whole screen here after the team's other specs: each starts with a fresh minute of
+    // requests (in the whole run Ivy's ran out, a 429 on her first read, and her list stayed empty).
+    await room(context.request, data, 100);
     const page = await context.newPage();
     const problems = watch(page);
     await page.goto(`${STAFF}messages`);
@@ -751,7 +754,9 @@ test("Messages: a member brings a colleague into a group conversation, who reads
     // From its start: every message already in it, and its five people.
     expect((await rows(ivy, data, "messages", { column: "thread_id", op: "eq", value: group.id })).length).toBe(4);
     expect((await rows(ivy, data, "thread_members", { column: "thread_id", op: "eq", value: group.id })).length).toBe(5);
-    const ivyPage = await (await as("ivy")).newPage();
+    const ivyContext = await as("ivy");
+    await room(ivyContext.request, data, 60);
+    const ivyPage = await ivyContext.newPage();
     await ivyPage.goto(`${STAFF}messages`);
     await expect(ivyPage.locator(".crm-ms-thread")).toHaveCount(2);
     // The server refuses a third person on a two-person conversation, whatever a screen offers.
