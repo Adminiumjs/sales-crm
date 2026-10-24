@@ -112,7 +112,7 @@ describe("a deal", () => {
     expect(closedAt.nullable).toBe(true);
     expect(closedAt.rules?.stamp).toEqual({ set: "now", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
     // A closed deal carries its closed moment: a file's line without one is named and not brought in (plan 68 R5, E13).
-    expect(closedAt.rules?.requiredWhen).toEqual({ column: "state", in: ["won", "lost"] });
+    expect((closedAt.rules as { requiredWhen?: unknown } | undefined)?.requiredWhen).toEqual({ column: "state", in: ["won", "lost"] });
     expect(table("deals").columns.find((one) => one.ref === "lost_reason_id")!.nullable).toBe(true);
   });
 
