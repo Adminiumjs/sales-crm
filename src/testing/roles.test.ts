@@ -65,7 +65,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // the job of one won before Jobs on site was switched on ("jobs still to make", P15); nothing of an open deal.
   // The account manager reads every won deal, and an open one only while he is listed on it (R6, T37): its quote, its
   // notes and its history, and he comments on it.
-  [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
+  // The CRM admin also brings a list of past deals in (plan 68 R5): a closed one carries its closed date.
+  [["deals"], "RCUDXI", "RCUX:team", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
   [["deal_stage_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
   [["deal_amount_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; a note or a comment is reworded by whoever wrote it, of the deals they
@@ -631,9 +632,10 @@ describe("a file out of a table is three roles' to take", () => {
   });
 
   it("brings a list in only where a role already types the rows one by one", () => {
-    // Companies and contacts by the three who keep the book; enquiries (a trade show's leads) by the marketer and the CRM admin.
+    // Companies and contacts by the three who keep the book; enquiries (a trade show's leads) by the marketer and the CRM
+    // admin; past deals by the CRM admin (plan 68 R5).
     const of = (key: RoleKey) => role(key).permissions.filter((grant) => grant.endsWith(":import")).map((grant) => grant.split(":")[1]?.slice(1));
-    expect(of("admin")).toEqual(["companies", "contacts", "enquiries"]);
+    expect(of("admin")).toEqual(["companies", "contacts", "enquiries", "deals"]);
     expect(of("sales-manager")).toEqual(["companies", "contacts"]);
     expect(of("rep")).toEqual(["companies", "contacts"]);
     expect(of("marketer")).toEqual(["enquiries"]);
@@ -757,7 +759,23 @@ describe("the pipeline is a board whose columns are the stages people keep", () 
         only: { state: "open" },
         // A card: the company, whose it is, the amount, days in its stage (amber from 14, red from 30, as the screens'
         // sitting defaults: a card cannot read the settings), and when it is expected to close (D10).
-        card: { link: "company_id.name", person: "owner_id", amount: "amount", daysSince: { column: "entered_stage_at", warnFrom: 14, alertFrom: 30 }, date: "expected_close" },
+        // Plan 68 S8 (E16): a second money line, the weighted value ("w"), and the days' unit ("in stage").
+        card: {
+          link: "company_id.name",
+          person: "owner_id",
+          amount: "amount",
+          secondAmount: { column: "weighted_value", label: "w", labels: { "de-DE": "gew.", "fr-FR": "pond.", "da-DK": "vægt.", "cs-CZ": "váž.", "ar-EG": "مرجّح", "zh-CN": "加权", "zh-TW": "加權" } },
+          daysSince: {
+            column: "entered_stage_at",
+            warnFrom: 14,
+            alertFrom: 30,
+            label: "in stage",
+            labels: { "de-DE": "in der Phase", "fr-FR": "dans l’étape", "da-DK": "i fasen", "cs-CZ": "ve fázi", "ar-EG": "في المرحلة", "zh-CN": "在此阶段", "zh-TW": "在此階段" },
+          },
+          date: "expected_close",
+        },
+        // The toolbar: how many cards and their totals, over every card the reader reaches, and one person's cards.
+        toolbar: { total: true, person: "owner_id" },
         note: {
           text: "Columns come from Stages",
           texts: {
