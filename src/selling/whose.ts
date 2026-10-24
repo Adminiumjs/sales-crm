@@ -61,3 +61,12 @@ export async function openOwnersAt(session: StaffSession, companies: readonly nu
   }
   return out;
 }
+
+/**
+ * Whether the person is the sales manager, whom the server keeps from a row
+ * that names her herself (plan 68 X2: her own target, her own first-year
+ * target) and from a meeting she does not run. The CRM admin is not held.
+ */
+export function heldFromOwn(session: StaffSession): boolean {
+  return leadRole((session.config.access?.roles ?? []).map((role) => role.slug)) === "sales-manager";
+}

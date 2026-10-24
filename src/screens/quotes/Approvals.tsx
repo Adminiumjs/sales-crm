@@ -5,9 +5,14 @@
  *
  * A decision is one of the quote's own buttons on the server (`approve`,
  * `refuse`), with a line of why. The server keeps those buttons for the roles
- * that decide. A manager is not offered her own request here: somebody else
- * decides it. (That is this screen's rule; the server does not yet tell a
- * manager's own request from anybody else's.)
+ * that decide, and holds the decision (Adminium 0.3.35, `column.changes`):
+ * only from asked, never by the person who asked nor by the deal's owner. A
+ * manager reads only the requests on deals somebody she leads owns. The
+ * buttons are not offered to the two people the server refuses.
+ *
+ * "Reopen it" (`reopen-approval`) puts a decision on a draft back to asked,
+ * with a note: still the asker's request (who asked is who wrote the
+ * reason), and the decision before it stays in the quote's history.
  *
  * "Ask for more" is a comment on the deal that mentions the rep who asked, so
  * the question has a record and an answer has somewhere to go.
@@ -27,7 +32,7 @@ import { useToasts } from "../../ui/toast.tsx";
 import { num, readNames, readQuotes, type Quote } from "./data.ts";
 
 type Filter = "waiting" | "decided" | "all";
-type Doing = { id: number; what: "approve" | "refuse" | "more" } | null;
+type Doing = { id: number; what: "approve" | "refuse" | "more" | "reopen" } | null;
 
 interface Data {
   asked: Quote[];
@@ -76,6 +81,16 @@ export function Approvals(_props: ScreenProps) {
     if (done !== null) open(null);
     again();
   };
+  const reopen = async (quote: Quote): Promise<void> => {
+    setBusy(true);
+    const done = await toasts.say(session.act("quotes", quote.id, "reopen-approval", "draft", { values: { decision_note: why.trim() }, stateColumn: "approval" }), () => t("dealrules.ap.reopen.toast"));
+    setBusy(false);
+    if (done !== null) {
+      open(null);
+      setFilter("waiting");
+    }
+    again();
+  };
   const askMore = async (quote: Quote, asker: string): Promise<void> => {
     if (quote.asked_by_id === null) return;
     setBusy(true);
@@ -117,6 +132,10 @@ export function Approvals(_props: ScreenProps) {
                   const decider = quote.decided_by_id === null ? "" : (data.names[quote.decided_by_id] ?? t("closed.someone"));
                   const isWaiting = quote.status === "draft" && quote.approval === "asked";
                   const mine = quote.asked_by_id !== null && quote.asked_by_id === me;
+                  // The server never takes a decision from the deal's owner either (E1): her own deal is decided by whoever leads her.
+                  const ownDeal = quote.owner_id !== null && quote.owner_id === me;
+                  const held = mine || ownDeal;
+                  const reopened = isWaiting && quote.approval_decided_at !== null;
                   const stands = data.deals[quote.deal_id] ?? 0;
                   const active = doing?.id === quote.id ? doing.what : null;
                   const moment = (value: string | null): string => (value === null ? "" : `${f.dayShort(new Date(value))}, ${f.time(new Date(value))}`);
@@ -172,9 +191,25 @@ export function Approvals(_props: ScreenProps) {
                         </p>
                       )}
 
-                      {isWaiting && decides && mine && <p className="crm-approval-own">{t("approvals.own")}</p>}
+                      {reopened && (
+                        <p className="crm-approval-decided" data-testid="approval-reopened">
+                          {t("dealrules.ap.reopened", { when: moment(quote.approval_decided_at) })}
+                          {quote.decision_note === null || quote.decision_note === "" ? "" : ` · “${quote.decision_note}”`}
+                        </p>
+                      )}
 
-                      {isWaiting && decides && !mine && active === null && (
+                      {isWaiting && decides && mine && <p className="crm-approval-own">{t("approvals.own")}</p>}
+                      {isWaiting && decides && !mine && ownDeal && <p className="crm-approval-own">{t("dealrules.ap.ownDeal")}</p>}
+
+                      {!isWaiting && quote.status === "draft" && decides && !held && active === null && (
+                        <div className="crm-approval-actions">
+                          <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi" onClick={() => open({ id: quote.id, what: "reopen" })}>
+                            {t("dealrules.ap.reopen")}
+                          </button>
+                        </div>
+                      )}
+
+                      {isWaiting && decides && !held && active === null && (
                         <div className="crm-approval-actions">
                           <button type="button" className="crm-btn crm-btn-primary crm-btn-38 mr-btn" onClick={() => open({ id: quote.id, what: "approve" })}>
                             {t("approvals.approve")}
@@ -193,20 +228,26 @@ export function Approvals(_props: ScreenProps) {
                       {active !== null && (
                         <div className="crm-approval-box">
                           <label className="crm-label" htmlFor={`crm-ap-why-${String(quote.id)}`}>
-                            {active === "approve" ? t("approvals.box.approve", { amount: f.money(quote.subtotal) }) : active === "refuse" ? t("approvals.box.refuse") : t("approvals.box.more", { name: firstName(asker) })}
+                            {active === "approve" ? t("approvals.box.approve", { amount: f.money(quote.subtotal) }) : active === "refuse" ? t("approvals.box.refuse") : active === "reopen" ? t("dealrules.ap.reopen.box") : t("approvals.box.more", { name: firstName(asker) })}
                           </label>
                           <textarea id={`crm-ap-why-${String(quote.id)}`} className="crm-input crm-textarea mr-fld" value={why} maxLength={600} disabled={busy} placeholder={t("approvals.box.hint")} autoFocus onChange={(event) => setWhy(event.target.value)} />
                           <p className="crm-field-note">
-                            {active === "approve" ? t("approvals.note.approve", { name: firstName(asker) }) : active === "refuse" ? t("approvals.note.refuse", { amount: f.money(stands), name: firstName(asker) }) : t("approvals.note.more", { name: firstName(asker) })}
+                            {active === "approve"
+                              ? t("approvals.note.approve", { name: firstName(asker) })
+                              : active === "refuse"
+                                ? t("approvals.note.refuse", { amount: f.money(stands), name: firstName(asker) })
+                                : active === "reopen"
+                                  ? t("dealrules.ap.reopen.note", { name: firstName(asker) })
+                                  : t("approvals.note.more", { name: firstName(asker) })}
                           </p>
                           <div className="crm-approval-actions">
                             <button
                               type="button"
                               className="crm-btn crm-btn-primary crm-btn-38 mr-btn"
                               disabled={busy || why.trim() === ""}
-                              onClick={() => void (active === "more" ? askMore(quote, asker) : decide(quote, active, asker))}
+                              onClick={() => void (active === "more" ? askMore(quote, asker) : active === "reopen" ? reopen(quote) : decide(quote, active, asker))}
                             >
-                              {busy ? t("ui.saving") : t(active === "approve" ? "approvals.approve.confirm" : active === "refuse" ? "approvals.refuse.confirm" : "approvals.more.confirm")}
+                              {busy ? t("ui.saving") : t(active === "approve" ? "approvals.approve.confirm" : active === "refuse" ? "approvals.refuse.confirm" : active === "reopen" ? "dealrules.ap.reopen.confirm" : "approvals.more.confirm")}
                             </button>
                             <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi" disabled={busy} onClick={() => open(null)}>
                               {t("ui.cancel")}

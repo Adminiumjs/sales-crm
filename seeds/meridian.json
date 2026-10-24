@@ -9053,7 +9053,10 @@
       "@time": "09:30",
       "@week": true
      },
-     "minutes": 30
+     "minutes": 30,
+     "run_by_id": {
+      "@person": "ivy"
+     }
     }
    ]
   },

@@ -11,6 +11,7 @@
 import { describe, expect, it } from "vitest";
 
 import manifest from "../../whole/manifest.json";
+import { HAND_OVER_CARRIES_VISITS } from "../selling/handover.ts";
 
 type Move = string | { to: string; requires?: { where?: { column: string; isNull?: boolean; eq?: unknown; gt?: unknown }[]; children?: Record<string, number> }; roles?: string[]; undo?: true; clears?: string[] };
 interface States {
@@ -159,6 +160,12 @@ describe("a deal", () => {
     ]);
     // A deal is handed over while it is open; a closed one is locked, owner and all.
     expect(deal.actions!.find((one) => one.id === "hand-over")).toMatchObject({ set: {}, in: ["open"] });
+    // Plan 68 R1c: in the same write, the old owner's open follow-ups go to the new owner, and her visits not yet made
+    // once the engine carries a row that holds a time slot (0.3.35 refuses it); the sheet says what the manifest does.
+    expect((deal.actions!.find((one) => one.id === "hand-over") as { carries?: unknown }).carries).toEqual([
+      ...(HAND_OVER_CARRIES_VISITS ? [{ table: "site_visits", via: "deal_id", column: "rep_id", where: [{ column: "state", eq: "booked" }] }] : []),
+      { table: "follow_ups", via: "deal_id", column: "owner_id", where: [{ column: "done", eq: false }] },
+    ]);
   });
 });
 
@@ -193,9 +200,10 @@ describe("every button", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("there are thirty-four", () => {
-    // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row. A message's "Remove" came with plan 68 R4d.
-    expect(buttons).toHaveLength(34);
+  it("there are thirty-five", () => {
+    // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row.
+    // Plan 68 adds a message's "Remove" (R4d) and a quote's "Reopen it" (S2).
+    expect(buttons).toHaveLength(35);
   });
 });
 

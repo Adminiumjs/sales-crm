@@ -21,7 +21,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { noonOf, type Formatters } from "../../lib/format.ts";
-import { readUs } from "../../selling/whose.ts";
+import { heldFromOwn, readUs } from "../../selling/whose.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
@@ -189,7 +189,9 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
   const ours = (person: string | null): boolean => usLoad.state === "ready" && (usLoad.data === "anybody" || (person !== null && usLoad.data.has(person)));
   const canTick = session.can("starter_steps", "update");
   const mayTick = (step: StepRow): boolean => canTick && (ours(step.owner_id) || ours(starter.manager_id));
-  const canSet = session.can("starters", "update") && ours(starter.manager_id);
+  // Her own starter row is never hers to change (plan 68 X2): its first-year target is set by the CRM admin.
+  const ownRow = heldFromOwn(session) && starter.user_id !== null && starter.user_id === session.config.user?.id;
+  const canSet = session.can("starters", "update") && ours(starter.manager_id) && !ownRow;
 
   const tick = async (step: StepRow): Promise<void> => {
     if (busy !== null) return;
@@ -262,11 +264,16 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
                   </div>
                 </div>
               )}
-              {(stored !== null || canSet) && (
+              {(stored !== null || canSet || ownRow) && (
                 <div className="crm-stat" data-testid="st-target">
                   <div className="crm-stat-label">{t("starter.stat.target")}</div>
                   <div className="crm-stat-value crm-mono">{stored !== null ? f.money(stored) : t("starter.stat.target.none")}</div>
                   <div className="crm-stat-sub">{t("starter.stat.target.sub")}</div>
+                  {ownRow && session.can("starters", "update") && (
+                    <div className="crm-stat-sub" data-testid="st-target-own">
+                      {t("dealrules.starter.own")}
+                    </div>
+                  )}
                   {stored === null && canSet && offered !== null && offered > 0 && (
                     <button type="button" className="crm-btn crm-btn-ghost crm-btn-28 mr-gi crm-st-use" disabled={busy !== null} onClick={() => void setTarget(offered)}>
                       <Icon name="target" size={12} />

@@ -16,6 +16,8 @@ export interface Meeting extends Record<string, unknown> {
   id: number;
   at: string;
   minutes: number;
+  /** Who runs it, stamped by the server when it is made (plan 68 X2); empty on a meeting made before 0.2.2. */
+  run_by_id?: string | null;
 }
 export interface Slot extends Record<string, unknown> {
   id: number;
@@ -66,8 +68,8 @@ export interface MeetingData {
 export async function readMeeting(session: StaffSession, now: Date, f: Formatters): Promise<MeetingData | null> {
   const today = f.dayKey(now);
   const from = f.at(today, "00:00").toISOString();
-  const coming = await session.list<Meeting>("meetings", { select: ["id", "at", "minutes"], where: { column: "at", op: "gte", value: from }, order: ["at"], limit: 1 });
-  const meeting = coming.rows[0] ?? (await session.list<Meeting>("meetings", { select: ["id", "at", "minutes"], order: ["at.desc"], limit: 1 })).rows[0];
+  const coming = await session.list<Meeting>("meetings", { select: ["id", "at", "minutes", "run_by_id"], where: { column: "at", op: "gte", value: from }, order: ["at"], limit: 1 });
+  const meeting = coming.rows[0] ?? (await session.list<Meeting>("meetings", { select: ["id", "at", "minutes", "run_by_id"], order: ["at.desc"], limit: 1 })).rows[0];
   if (meeting === undefined) return null;
   const mine: Condition = { column: "meeting_id", op: "eq", value: meeting.id };
   const open: Condition = { column: "state", op: "eq", value: "open" };

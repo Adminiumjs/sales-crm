@@ -346,7 +346,20 @@
                 "owner_id",
                 "introduce"
               ],
-              "handOver": true
+              "handOver": true,
+              "carries": [
+                {
+                  "table": "follow_ups",
+                  "via": "deal_id",
+                  "column": "owner_id",
+                  "where": [
+                    {
+                      "column": "done",
+                      "eq": false
+                    }
+                  ]
+                }
+              ]
             }
           ],
           "children": {
@@ -1490,6 +1503,9 @@
           {
             "column": "owner_id",
             "set": "team"
+          },
+          {
+            "via": "deal_id"
           }
         ],
         "indexes": [
@@ -1525,6 +1541,32 @@
               "ar-EG": "الصفقة",
               "zh-CN": "商机",
               "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "on_deal",
+            "type": "int",
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "isNull": "deal_id"
+                  },
+                  0,
+                  1
+                ]
+              }
+            },
+            "label": {
+              "en-US": "On a deal",
+              "de-DE": "Zu einem Deal",
+              "fr-FR": "Liée à une affaire",
+              "da-DK": "På en deal",
+              "cs-CZ": "U obchodu",
+              "ar-EG": "على صفقة",
+              "zh-CN": "关联商机",
+              "zh-TW": "關聯案件"
             }
           },
           {
@@ -2756,6 +2798,31 @@
             }
           },
           {
+            "ref": "deal_owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "copy": {
+                "via": "deal_id",
+                "from": "owner_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Deal's owner",
+              "de-DE": "Inhaber des Deals",
+              "fr-FR": "Responsable de l’affaire",
+              "da-DK": "Sagens ejer",
+              "cs-CZ": "Vlastník obchodu",
+              "ar-EG": "صاحب الصفقة",
+              "zh-CN": "商机负责人",
+              "zh-TW": "商機負責人"
+            }
+          },
+          {
             "ref": "replaces_deal_id",
             "type": "int",
             "nullable": true,
@@ -3057,7 +3124,38 @@
                     "zh-TW": "已駁回"
                   }
                 }
-              }
+              },
+              "changes": [
+                {
+                  "to": [
+                    "approved",
+                    "refused"
+                  ],
+                  "from": [
+                    "asked"
+                  ],
+                  "notBy": [
+                    "asked_by_id",
+                    "deal_id.owner_id"
+                  ]
+                },
+                {
+                  "to": [
+                    "asked"
+                  ],
+                  "from": [
+                    "none",
+                    "approved",
+                    "refused"
+                  ],
+                  "while": {
+                    "column": "status",
+                    "in": [
+                      "draft"
+                    ]
+                  }
+                }
+              ]
             },
             "label": {
               "en-US": "Approval",
@@ -3252,10 +3350,8 @@
               "stamp": {
                 "set": "user-id",
                 "on": {
-                  "column": "approval",
-                  "values": [
-                    "asked"
-                  ]
+                  "column": "ask_reason",
+                  "filled": true
                 }
               }
             },
@@ -3849,6 +3945,28 @@
               "ask": [
                 "decision_note"
               ]
+            },
+            {
+              "id": "reopen-approval",
+              "label": {
+                "en-US": "Reopen it",
+                "de-DE": "Wieder öffnen",
+                "fr-FR": "Rouvrir",
+                "da-DK": "Genåbn",
+                "cs-CZ": "Znovu otevřít",
+                "ar-EG": "أعِد فتحه",
+                "zh-CN": "重新打开",
+                "zh-TW": "重新開啟"
+              },
+              "set": {
+                "approval": "asked"
+              },
+              "in": [
+                "draft"
+              ],
+              "ask": [
+                "decision_note"
+              ]
             }
           ],
           "effects": [
@@ -3861,7 +3979,17 @@
                 "status": "withdrawn"
               }
             }
-          ]
+          ],
+          "create": {
+            "requires": {
+              "where": [
+                {
+                  "column": "deal_state",
+                  "eq": "open"
+                }
+              ]
+            }
+          }
         }
       },
       {
@@ -5641,6 +5769,31 @@
               "ar-EG": "مندوب المبيعات",
               "zh-CN": "销售",
               "zh-TW": "業務"
+            }
+          },
+          {
+            "ref": "deal_owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "copy": {
+                "via": "deal_id",
+                "from": "owner_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Deal's owner",
+              "de-DE": "Inhaber des Deals",
+              "fr-FR": "Responsable de l’affaire",
+              "da-DK": "Sagens ejer",
+              "cs-CZ": "Vlastník obchodu",
+              "ar-EG": "صاحب الصفقة",
+              "zh-CN": "商机负责人",
+              "zh-TW": "商機負責人"
             }
           },
           {
@@ -8985,6 +9138,30 @@
             }
           },
           {
+            "ref": "run_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": "create",
+                "strict": true
+              }
+            },
+            "label": {
+              "en-US": "Run by",
+              "de-DE": "Geleitet von",
+              "fr-FR": "Animée par",
+              "da-DK": "Ledes af",
+              "cs-CZ": "Vede",
+              "ar-EG": "يديره",
+              "zh-CN": "主持人",
+              "zh-TW": "主持人"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -9004,6 +9181,16 @@
               "zh-TW": "重試鍵"
             }
           }
+        ],
+        "belongs": [
+          {
+            "column": "run_by_id"
+          }
+        ],
+        "indexes": [
+          [
+            "run_by_id"
+          ]
         ]
       },
       {
@@ -9333,6 +9520,11 @@
               "zh-CN": "重试键",
               "zh-TW": "重試鍵"
             }
+          }
+        ],
+        "belongs": [
+          {
+            "via": "meeting_id"
           }
         ]
       },
@@ -12602,6 +12794,31 @@
               "ar-EG": "الصفقة",
               "zh-CN": "商机",
               "zh-TW": "案件"
+            }
+          },
+          {
+            "ref": "deal_owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "copy": {
+                "via": "deal_id",
+                "from": "owner_id",
+                "mode": "always",
+                "follow": true
+              }
+            },
+            "label": {
+              "en-US": "Deal's owner",
+              "de-DE": "Inhaber des Deals",
+              "fr-FR": "Responsable de l’affaire",
+              "da-DK": "Sagens ejer",
+              "cs-CZ": "Vlastník obchodu",
+              "ar-EG": "صاحب الصفقة",
+              "zh-CN": "商机负责人",
+              "zh-TW": "商機負責人"
             }
           },
           {
@@ -22883,24 +23100,30 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "by": "owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "by": "owner_id"
             }
           }
         },
         "deal_stage_changes": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
         "deal_amount_changes": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
@@ -22917,18 +23140,59 @@
             "done"
           ],
           "rows": {
-            "read": {
-              "reach": "team"
-            },
-            "update": {
-              "reach": "team"
-            }
-          }
+            "read": [
+              {
+                "reach": "team",
+                "via": "deal_id",
+                "by": "owner_id"
+              },
+              {
+                "reach": "team",
+                "by": "owner_id",
+                "while": {
+                  "column": "on_deal",
+                  "in": [
+                    0
+                  ]
+                }
+              }
+            ],
+            "update": [
+              {
+                "reach": "team",
+                "via": "deal_id",
+                "by": "owner_id"
+              },
+              {
+                "reach": "team",
+                "by": "owner_id",
+                "while": {
+                  "column": "on_deal",
+                  "in": [
+                    0
+                  ]
+                }
+              }
+            ]
+          },
+          "creatable": [
+            "deal_id",
+            "job_id",
+            "owner_id",
+            "due_at",
+            "text",
+            "kind",
+            "call_no",
+            "outcome",
+            "done"
+          ]
         },
         "activities": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
@@ -22970,10 +23234,14 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
@@ -23000,13 +23268,19 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "document_id",
+              "by": "deal_owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "via": "document_id",
+              "by": "deal_owner_id"
             },
             "delete": {
-              "reach": "team"
+              "reach": "team",
+              "via": "document_id",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -23016,10 +23290,14 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
@@ -23084,7 +23362,9 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             },
             "update": {
               "reach": "team",
@@ -23118,7 +23398,9 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             },
             "update": {
               "reach": "team",
@@ -23133,10 +23415,14 @@
         "visit_notes": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "visit_id",
+              "by": "deal_owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "via": "visit_id",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -23148,10 +23434,14 @@
           ],
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "visit_id",
+              "by": "deal_owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "via": "visit_id",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -23184,7 +23474,8 @@
               "reach": "team"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "notBy": "rep_id"
             }
           }
         },
@@ -23341,13 +23632,19 @@
         "cover_notes": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             },
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             },
             "delete": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
@@ -23384,35 +23681,45 @@
         "jobs": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
         "job_visits": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "job_id",
+              "by": "deal_owner_id"
             }
           }
         },
         "sign_offs": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "job_id",
+              "by": "deal_owner_id"
             }
           }
         },
         "snags": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "job_id",
+              "by": "deal_owner_id"
             }
           }
         },
         "feedback": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "job_id",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -23426,14 +23733,18 @@
         "warranty_claims": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "job_id",
+              "by": "deal_owner_id"
             }
           }
         },
         "deal_stock_needs": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "deal_id",
+              "by": "owner_id"
             }
           }
         },
@@ -23452,7 +23763,9 @@
         "refused_sign_offs": {
           "rows": {
             "read": {
-              "reach": "team"
+              "reach": "team",
+              "via": "job_id",
+              "by": "deal_owner_id"
             }
           }
         },
@@ -23491,7 +23804,8 @@
         "starters": {
           "rows": {
             "update": {
-              "reach": "team"
+              "reach": "team",
+              "notBy": "user_id"
             },
             "delete": {
               "reach": "team"
@@ -23519,6 +23833,26 @@
             "delete": {
               "reach": "team",
               "unowned": true
+            }
+          }
+        },
+        "meetings": {
+          "writable": [
+            "at",
+            "minutes"
+          ]
+        },
+        "meeting_decisions": {
+          "rows": {
+            "update": {
+              "reach": "own",
+              "via": "meeting_id",
+              "by": "run_by_id"
+            },
+            "delete": {
+              "reach": "own",
+              "via": "meeting_id",
+              "by": "run_by_id"
             }
           }
         }
@@ -23799,15 +24133,29 @@
           ],
           "rows": {
             "read": {
-              "reach": "own"
+              "reach": "own",
+              "by": "owner_id"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "by": "owner_id"
             },
             "delete": {
-              "reach": "own"
+              "reach": "own",
+              "by": "owner_id"
             }
-          }
+          },
+          "creatable": [
+            "deal_id",
+            "job_id",
+            "owner_id",
+            "due_at",
+            "text",
+            "kind",
+            "call_no",
+            "outcome",
+            "done"
+          ]
         },
         "activities": {
           "writable": [
@@ -24558,12 +24906,25 @@
           ],
           "rows": {
             "read": {
-              "reach": "own"
+              "reach": "own",
+              "by": "owner_id"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "by": "owner_id"
             }
-          }
+          },
+          "creatable": [
+            "deal_id",
+            "job_id",
+            "owner_id",
+            "due_at",
+            "text",
+            "kind",
+            "call_no",
+            "outcome",
+            "done"
+          ]
         },
         "saved_views": {
           "writable": [
@@ -24800,7 +25161,8 @@
             "answered_by_id",
             "withdrawn_at",
             "yes_seen_at",
-            "deal_state"
+            "deal_state",
+            "deal_owner_id"
           ]
         },
         "quote_lines": {
@@ -26273,7 +26635,8 @@
             "answered_by_id",
             "withdrawn_at",
             "yes_seen_at",
-            "deal_state"
+            "deal_state",
+            "deal_owner_id"
           ]
         },
         "covers": {
@@ -27119,24 +27482,24 @@
     {
       "key": "approval-asked",
       "name": {
-        "en-US": "A discount is put to approval: the asker’s team lead is told",
-        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung der anfragenden Person wird benachrichtigt",
-        "fr-FR": "Une remise est soumise à approbation : le responsable d’équipe du demandeur est prévenu",
-        "da-DK": "En rabat sendes til godkendelse: lederen af spørgerens team får besked",
-        "cs-CZ": "Sleva jde ke schválení: vedoucí týmu žadatele dostane zprávu",
-        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق مقدّم الطلب",
-        "zh-CN": "折扣提交审批：通知申请人的团队负责人",
-        "zh-TW": "折扣送交核准：通知申請人的團隊負責人"
+        "en-US": "A discount is put to approval: the deal owner’s team lead is told",
+        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung der Person, der der Deal gehört, wird benachrichtigt",
+        "fr-FR": "Une remise est soumise à approbation : le responsable d’équipe du titulaire de l’affaire est prévenu",
+        "da-DK": "En rabat sendes til godkendelse: lederen af teamet for sagens ejer får besked",
+        "cs-CZ": "Sleva jde ke schválení: vedoucí týmu vlastníka obchodu dostane zprávu",
+        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق صاحب الصفقة",
+        "zh-CN": "折扣提交审批：通知商机负责人的团队负责人",
+        "zh-TW": "折扣送交核准：通知商機負責人的團隊負責人"
       },
       "description": {
-        "en-US": "When somebody asks for approval of a quote, tells whoever leads a team they are in and can open the quote; when nobody does, the CRM admin. Never the person who asked.",
-        "de-DE": "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt, die Leitung eines Teams, in dem diese Person ist, sofern sie das Angebot öffnen kann; gibt es niemanden, den CRM-Admin. Nie die anfragende Person selbst.",
-        "fr-FR": "Dès qu’une approbation de devis est demandée, prévient la personne qui dirige une équipe dont le demandeur fait partie et qui peut ouvrir le devis ; à défaut, l’administrateur CRM. Jamais le demandeur lui-même.",
-        "da-DK": "Når nogen beder om godkendelse af et tilbud, får lederen af et team, personen er med i, besked, hvis lederen kan åbne tilbuddet; er der ingen, får CRM-administratoren besked. Aldrig den, der spurgte.",
-        "cs-CZ": "Když někdo požádá o schválení nabídky, dá vědět vedoucímu týmu, jehož je členem, pokud nabídku otevře; když takový není, správci CRM. Nikdy tomu, kdo žádal.",
-        "ar-EG": "عند طلب اعتماد عرض سعر، يُبلِّغ من يقود فريقًا ينتمي إليه مقدّم الطلب ويستطيع فتح العرض؛ وإن لم يوجد، يُبلِّغ مسؤول CRM. ولا يُبلِّغ مقدّم الطلب أبدًا.",
-        "zh-CN": "有人为报价申请审批时，通知其所在团队中能打开该报价的负责人；没有这样的人时，通知 CRM 管理员。从不通知申请人本人。",
-        "zh-TW": "有人為報價申請核准時，通知其所在團隊中能開啟該報價的負責人；沒有這樣的人時，通知 CRM 管理員。從不通知申請人本人。"
+        "en-US": "When somebody asks for approval of a quote, or a decision is reopened, tells whoever leads a team the deal’s owner is in and can open the quote; when nobody does, the CRM admin. Never the lead of a colleague who only helps on the deal.",
+        "de-DE": "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt oder eine Entscheidung wieder geöffnet wird, die Leitung eines Teams, in dem die Person ist, der der Deal gehört, sofern sie das Angebot öffnen kann; gibt es niemanden, den CRM-Admin. Nie die Leitung einer Kollegin oder eines Kollegen, die oder der nur am Deal mithilft.",
+        "fr-FR": "Dès qu’une approbation de devis est demandée ou qu’une décision est rouverte, prévient la personne qui dirige une équipe dont fait partie le titulaire de l’affaire et qui peut ouvrir le devis ; à défaut, l’administrateur CRM. Jamais le responsable d’un collègue qui ne fait qu’aider sur l’affaire.",
+        "da-DK": "Når nogen beder om godkendelse af et tilbud, eller en afgørelse genåbnes, får lederen af et team, sagens ejer er med i, besked, hvis lederen kan åbne tilbuddet; er der ingen, får CRM-administratoren besked. Aldrig lederen for en kollega, der kun hjælper på sagen.",
+        "cs-CZ": "Když někdo požádá o schválení nabídky nebo se rozhodnutí znovu otevře, dá vědět vedoucímu týmu, jehož je vlastník obchodu členem, pokud nabídku otevře; když takový není, správci CRM. Nikdy vedoucímu kolegy, který na obchodu jen pomáhá.",
+        "ar-EG": "عند طلب اعتماد عرض سعر أو إعادة فتح قرار، يُبلِّغ من يقود فريقًا ينتمي إليه صاحب الصفقة ويستطيع فتح العرض؛ وإن لم يوجد، يُبلِّغ مسؤول CRM. ولا يُبلِّغ أبدًا قائد زميل يساعد في الصفقة فقط.",
+        "zh-CN": "有人为报价申请审批或重新打开某个审批决定时，通知商机负责人所在团队中能打开该报价的负责人；没有这样的人时，通知 CRM 管理员。从不通知只是协助该商机的同事的负责人。",
+        "zh-TW": "有人為報價申請核准或重新開啟某個核准決定時，通知商機負責人所在團隊中能開啟該報價的負責人；沒有這樣的人時，通知 CRM 管理員。從不通知只是協助該案件的同事的負責人。"
       },
       "enabled": true,
       "module": "quotes",
@@ -27161,16 +27524,16 @@
           {
             "id": "t",
             "kind": "trigger",
-            "title": "A discount is put to approval: the asker’s team lead is told"
+            "title": "A discount is put to approval: the deal owner’s team lead is told"
           },
           {
             "id": "tell",
             "kind": "action",
-            "title": "Tell the asker’s team lead",
+            "title": "Tell the deal owner’s team lead",
             "action": {
               "kind": "notification",
               "to": {
-                "column": "asked_by_id",
+                "column": "deal_id.owner_id",
                 "lead": true,
                 "else": {
                   "roles": [

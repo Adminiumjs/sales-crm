@@ -333,21 +333,25 @@ for (const [dialect, reachable] of LEGS) {
         ['price_list', 'all all all - - - - - all'],
         // The operations manager reads the won deals, to make the jobs still to make (P15; stage 2).
         // The account manager also reads an open deal he is listed on, its notes, history and quotes (R6, T37).
-        ['deals', 'all team own won+own - - won - all'],
-        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all team own own - - - - all'],
-        ['follow_ups', 'all team own own - - - - all'],
+        // Plan 68 R1d: the sales manager reads a deal only when somebody she leads OWNS it (`owned`), never through a helper
+        // or a cover, and every row of a deal by that deal's owner (`deal`), whoever else the row names.
+        ['deals', 'all owned own won+own - - won - all'],
+        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all deal own own - - - - all'],
+        // A follow-up on a deal is judged by the deal's owner for the manager; one on no deal by its own; a rep's are those she owns.
+        ['follow_ups', 'all deal mine mine - - - - all'],
         // Private (plan 68 D9): each person's own, and a view nobody owns is read by nobody.
         ['saved_views saved_searches', 'own own own own - - - - own'],
         ['nudge_snoozes', 'own own own - - - - - -'],
         // F14: who is on a deal is read by whoever is on it (and by who leads its owner).
-        ['deal_members', 'all team own own - - - - all'],
+        ['deal_members', 'all deal own own - - - - all'],
         // F14: the marketer reads a deal's mark (which company, open or closed) and nothing else of a deal.
         ['deal_marks', 'all all all all all - - - all'],
-        ['site_visits visit_notes visit_agreed', 'all team own - - - - - all'],
+        ['site_visits visit_notes visit_agreed', 'all deal own - - - - - all'],
         ['companies contacts', 'all all all all all all - - all'],
         ['territories territory_places', 'all all all all all - - - all'],
         ['renewals referrals reps covers', 'all all all all - - - - all'],
-        ['targets cover_notes', 'all team own - - - - - all'],
+        ['targets', 'all team own - - - - - all'],
+        ['cover_notes', 'all deal own - - - - - all'],
         ['one_to_ones one_to_one_sessions coaching_plans coaching_areas', '- own own - - - - - -'],
         // Plan 68 R4a: the manager also reads the meeting actions her reps set.
         ['actions', 'own own+meeting own - - - - - -'],
@@ -357,8 +361,9 @@ for (const [dialect, reachable] of LEGS) {
         ['enquiries', 'all team+free own+free - all own+free - - all'],
         ['shows', 'all all all - all all - - all'],
         ['showroom_spaces samples display_pieces showroom_bookings sample_loans sample_chases', 'all all all - - all - - all'],
-        ['jobs feedback complaints warranty_claims', 'all team own all - - all - all'],
-        ['job_visits sign_offs refused_sign_offs snags', 'all team own all - - all own all'],
+        ['jobs feedback warranty_claims', 'all deal own all - - all - all'],
+        ['complaints', 'all team own all - - all - all'],
+        ['job_visits sign_offs refused_sign_offs snags', 'all deal own all - - all own all'],
         ['delivery_notes delivery_note_lines', 'all - - all - - all own all'],
         ['crews crew_members crew_days', 'all - - - - - all all all'],
         // P25: a crew member reads the vehicle his crew is given, and its faults; a check and a fill also through that vehicle.
@@ -369,7 +374,7 @@ for (const [dialect, reachable] of LEGS) {
         // Supply is on only with Inventory, which is not here: its own roles (CRM admin, Operations manager, Read-only) hold
         // nothing on its table, and the sales roles, of other parts, go on reading it.
         // The crew, of no Supply role, reads the needs of its own visits (plan 68 S14).
-        ['deal_stock_needs', '- team own - - - - own -'],
+        ['deal_stock_needs', '- deal own - - - - own -'],
         ['vehicle_checks fuel_fills time_sheets time_sheet_lines certificates', 'all - - - - - all own all'],
         ['outbox', 'all - - - - - - - -'],
         ['settings', 'all all all all all all all all all'],
@@ -429,6 +434,19 @@ for (const [dialect, reachable] of LEGS) {
           return above !== undefined && reaches(parent, above, me, wide, depth + 1);
         });
       };
+      // The deal a row belongs through (its own `via` links, as far as a deal), or null: a follow-up on no deal.
+      const dealOf = (ref: string, row: Record<string, unknown>, depth = 0): Record<string, unknown> | null => {
+        if (ref === 'deals') return row;
+        const table = tables.find((one) => one.ref === ref)!;
+        for (const way of table.belongs ?? []) {
+          if (way.via === undefined || depth > 2) continue;
+          const parent = table.columns.find((column) => column.ref === way.via)!.references!;
+          const above = raw[parent]!.find((one) => String(one['id']) === String(row[way.via!]));
+          if (above !== undefined) return dealOf(parent, above, depth + 1);
+        }
+        return null;
+      };
+      const ledOrMe = (me: string, person: unknown): boolean => person === me || (typeof person === 'string' && (led[me]?.has(person) ?? false));
       const free = (ref: string, row: Record<string, unknown>): boolean => {
         const columns = (tables.find((one) => one.ref === ref)!.belongs ?? []).flatMap((way) => (way.column === undefined ? [] : [way.column]));
         return columns.length > 0 && columns.every((column) => row[column] === null);
@@ -454,6 +472,12 @@ for (const [dialect, reachable] of LEGS) {
               if (reach === 'all') return true;
               if (reach === 'won') return row['state'] === 'won' || (plus === 'own' && reaches(table.ref, row, me, false));
               if (plus === 'meeting') return reaches(table.ref, row, me, false) || (row['source'] === 'meeting' && (row['set_by_id'] === me || (led[me]?.has(String(row['set_by_id'])) ?? false)));
+              if (reach === 'owned') return ledOrMe(me, row['owner_id']);
+              if (reach === 'mine') return row['owner_id'] === me;
+              if (reach === 'deal') {
+                const parent = dealOf(table.ref, row);
+                return parent === null ? ledOrMe(me, row['owner_id']) : ledOrMe(me, parent['owner_id']);
+              }
               return reaches(table.ref, row, me, reach === 'team') || (plus === 'free' && free(table.ref, row));
             })
             .map((row) => Number(row['id']))

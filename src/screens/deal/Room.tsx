@@ -318,8 +318,8 @@ export function Room({ id }: { id: string }) {
 
     const startQuote = () =>
       save(async () => {
-        const { saved, missing } = await createQuote(session, { deal_id: deal.id, ...(deal.contact_id === null ? {} : { sent_to_contact_id: deal.contact_id }) }, [{ description: deal.name, qty: 1, rate: num(deal.typed_amount ?? deal.amount) }]);
-        const made = await toasts.say(Promise.resolve(saved), (row) => t(missing > 0 ? "quotes.toast.started.bare" : "quotes.toast.started", { number: row.number ?? "" }));
+        const { saved } = await createQuote(session, { deal_id: deal.id, ...(deal.contact_id === null ? {} : { sent_to_contact_id: deal.contact_id }) }, [{ description: deal.name, qty: 1, rate: num(deal.typed_amount ?? deal.amount) }]);
+        const made = await toasts.say(Promise.resolve(saved), (row) => t("quotes.toast.started", { number: row.number ?? "" }));
         if (made !== null) nav.go("quotes", made.id);
       });
 

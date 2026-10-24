@@ -20,6 +20,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { scopeOf } from "../../selling/figures.ts";
+import { heldFromOwn } from "../../selling/whose.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink } from "../../shell/nav.tsx";
@@ -128,6 +129,9 @@ export function Meeting(_: ScreenProps) {
           const people = [...new Set(data.slots.map((slot) => slot.who_id).filter((id): id is string => id !== null && id !== ""))];
           const covered = data.slots.filter((slot) => truthy(slot.covered)).length;
           const n = data.numbers;
+          // A meeting's decisions are marked by who runs it (plan 68 X2); the CRM admin is not held.
+          const runner = data.meeting.run_by_id ?? null;
+          const marks = canDecide && (!heldFromOwn(session) || runner === me);
           let clock = at.getTime();
           return (
             <>
@@ -275,7 +279,7 @@ export function Meeting(_: ScreenProps) {
                             <span className="crm-pill" data-tone={PILL[decision.state]}>
                               {t(`meeting.decision.${decision.state}`)}
                             </span>
-                            {decision.state === "open" && canDecide && (
+                            {decision.state === "open" && marks && (
                               <span className="crm-mt-decide">
                                 <button type="button" className="crm-btn crm-btn-ghost crm-btn-28 mr-gi" disabled={moving !== null} aria-label={t("meeting.decide.done.label", { text: decision.text })} onClick={() => void decide(decision, "done")}>
                                   <Icon name="check" size={12} />
@@ -291,6 +295,11 @@ export function Meeting(_: ScreenProps) {
                       ))}
                     </ul>
                     {data.decisions.length === 0 && <p className="crm-cv-none">{t("meeting.last.none")}</p>}
+                    {canDecide && !marks && data.decisions.length > 0 && (
+                      <p className="crm-tw-quiet" data-testid="mt-runner">
+                        {runner === null || who.names[runner] === undefined ? t("dealrules.meeting.runner.none") : t("dealrules.meeting.runner", { name: firstName(who.names[runner] ?? "") })}
+                      </p>
+                    )}
                   </section>
 
                   {isBuilt("notes") && session.can("one_to_ones", "read") && inMenu("notes", (session.config.access?.roles ?? []).map((role) => role.slug)) && (

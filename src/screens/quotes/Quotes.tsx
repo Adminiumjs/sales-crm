@@ -96,8 +96,8 @@ function QuoteList({ rest }: { rest: string[] }) {
   /** A first version from what was typed on the deal: one line, the deal's name and its amount. It is a draft. */
   const start = async (deal: Bare): Promise<void> => {
     setBusy(deal.id);
-    const { saved, missing } = await createQuote(session, { deal_id: deal.id, ...(deal.contact_id === null ? {} : { sent_to_contact_id: deal.contact_id }) }, [{ description: deal.name, qty: 1, rate: Number(deal.typed_amount ?? deal.amount) || 0 }]);
-    const made = await toasts.say(Promise.resolve(saved), (row) => (missing > 0 ? t("quotes.toast.started.bare", { number: row.number ?? "" }) : t("quotes.toast.started", { number: row.number ?? "" })));
+    const { saved } = await createQuote(session, { deal_id: deal.id, ...(deal.contact_id === null ? {} : { sent_to_contact_id: deal.contact_id }) }, [{ description: deal.name, qty: 1, rate: Number(deal.typed_amount ?? deal.amount) || 0 }]);
+    const made = await toasts.say(Promise.resolve(saved), (row) => t("quotes.toast.started", { number: row.number ?? "" }));
     setBusy(null);
     if (made !== null) nav.go("quotes", made.id);
   };

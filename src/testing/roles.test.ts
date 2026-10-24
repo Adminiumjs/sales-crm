@@ -65,32 +65,32 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // the job of one won before Jobs on site was switched on ("jobs still to make", P15); nothing of an open deal.
   // The account manager reads every won deal, and an open one only while he is listed on it (R6, T37): its quote, its
   // notes and its history, and he comments on it.
-  [["deals"], "RCUDX", "RCUX:team", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
-  [["deal_stage_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
-  [["deal_amount_changes"], "R", "R:team", "R:own", "R:own", "-", "-", "-", "-", "R"],
+  [["deals"], "RCUDX", "RCUX:team-owned", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
+  [["deal_stage_changes"], "R", "R:deal", "R:own", "R:own", "-", "-", "-", "-", "R"],
+  [["deal_amount_changes"], "R", "R:deal", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; a note or a comment is reworded by whoever wrote it, of the deals they
   // are on (plan 68 X6: a manager no longer rewords her rep's). The manager and the CRM admin reword none: they change no
   // call note, and of a comment only `settled_at` (the manager her team's threads, the CRM admin any).
-  [["activities"], "RCD", "RC:team", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
-  [["comments"], "RCUD", "RCU:team", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
-  [["follow_ups"], "RCUD", "RCU:team", "RCUD:own", "RCU:own", "-", "-", "-", "-", "R"],
-  [["quotes"], "RCUDX", "RCU:team", "RCU:own", "R:own", "-", "-", "-", "-", "RX"],
+  [["activities"], "RCD", "RC:deal", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
+  [["comments"], "RCUD", "RCU:deal", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
+  [["follow_ups"], "RCUD", "RCU:deal+free-standing", "RCUD:own-owned", "RCU:own-owned", "-", "-", "-", "-", "R"],
+  [["quotes"], "RCUDX", "RCU:deal", "RCU:own", "R:own", "-", "-", "-", "-", "RX"],
   // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
-  [["quote_lines"], "RCUDX", "RCUD:team", "RCUD:own", "R:own", "-", "-", "-", "-", "RX"],
+  [["quote_lines"], "RCUDX", "RCUD:deal-quote", "RCUD:own", "R:own", "-", "-", "-", "-", "RX"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   // Private (plan 68 D9): each person's own, and nobody else's, the install's owner included. A view nobody owns is nobody's.
   [["saved_views", "saved_searches"], "RCUD:own", "RCUD:own", "RCUD:own", "RCUD:own", "-", "-", "-", "-", "R:own"],
   [["nudge_snoozes"], "RCD:own", "RCD:own", "RCD:own", "-", "-", "-", "-", "-", "-"],
   // Who is on a deal is read by whoever is on it, and written by its owner (or who leads her): `owner's` below.
-  [["deal_members"], "RCUD", "RCUD;r=team;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R:own", "-", "-", "-", "-", "R"],
+  [["deal_members"], "RCUD", "RCUD;r=deal;u=team-owner's;d=team-owner's", "RCUD;r=own;u=own-owner's;d=own-owner's", "R:own", "-", "-", "-", "-", "R"],
   // The marketer counts a company's open deals from the mark, and reads nothing else of a deal.
   [["deal_marks"], "R", "R", "R", "R", "R", "-", "-", "-", "R"],
   // A visit is read by whoever reaches its deal; it is moved and cancelled by the rep it names (a manager, those of her people).
-  [["site_visits"], "RCUD", "RCUD;r=team;u=team-named;d=team-named", "RCUD;r=own;u=own-named;d=own-named", "-", "-", "-", "-", "-", "R"],
+  [["site_visits"], "RCUD", "RCUD;r=deal;u=team-named;d=team-named", "RCUD;r=own;u=own-named;d=own-named", "-", "-", "-", "-", "-", "R"],
   // A rep takes an agreed point back; nobody but the CRM admin removes a visit's write-up (a helper could remove the owner's).
-  [["visit_notes"], "RCUD", "RCU:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
-  [["visit_agreed"], "RCUD", "RCU:team", "RCUD:own", "-", "-", "-", "-", "-", "R"],
+  [["visit_notes"], "RCUD", "RCU:deal-visit", "RCU:own", "-", "-", "-", "-", "-", "R"],
+  [["visit_agreed"], "RCUD", "RCU:deal-visit", "RCUD:own", "-", "-", "-", "-", "-", "R"],
   // Everybody reads every company. A rep (and the account manager) changes one she is the account owner of, has an open
   // deal at, or that nobody owns; the manager her team's and nobody's; the CRM admin any (plan 68 X3, Q5 = B).
   [["companies"], "RCUDXI", "RCUXI;u=team+free", "RCUI;u=own+free", "RCU;u=own+free", "R", "R", "-", "-", "RX"],
@@ -100,12 +100,14 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // A rep reads what came after a sale and writes none of it: no screen of hers does, and a thank-you mails a contact (the review).
   [["renewals", "referrals"], "RCUD", "R", "R", "RCUD", "-", "-", "-", "-", "R"],
   [["reps"], "RCUD", "RU;u=own", "RU;u=own", "RU;u=own", "-", "-", "-", "-", "R"],
-  [["targets"], "RCUD", "RCU:team", "R:own", "-", "-", "-", "-", "-", "R"],
+  [["targets"], "RCUD", "RCU;r=team;u=team-not-own", "R:own", "-", "-", "-", "-", "-", "R"],
   [["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"], ...PAIR],
   // A step is also the rep's and the manager's of the coaching area it hangs on, and the manager's of its one-to-one
   // (plan 68 R4a/R4b, E27); each changes only the ones she owns or set.
   [["actions"], "R:own", "RCUD;r=own+reps-meeting;u=own-or-set;d=own-or-set", "RCU;r=own;u=own-or-set", "-", "-", "-", "-", "-", "-"],
-  [["meetings", "meeting_decisions"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
+  [["meetings"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
+  // A meeting's decisions are changed by who runs the meeting (plan 68 X2), whom the server stamps on it.
+  [["meeting_decisions"], "RCUD", "RCUD;u=runs;d=runs", "R", "-", "-", "-", "-", "-", "R"],
   // An agenda item is its speaker's: the manager changes her team's, and the ones that name nobody (plan 68 X1).
   [["meeting_slots"], "RCUD", "RCUD;u=team+free;d=team+free", "R", "-", "-", "-", "-", "-", "R"],
   [["threads"], ...talk("RC:own")],
@@ -114,40 +116,40 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // A message is removed by its author, and by the CRM admin in a conversation she is in (plan 68 R4d).
   [["messages"], "RCU:own", ...talk("RCU;r=own;u=own-written").slice(1)],
   // A starter is her manager's; a step its owner's and its starter's manager's: a rep ticks her own (plan 68 X1).
-  [["starters"], "RCUD", "RCUD;u=team;d=team", "R", "-", "-", "-", "-", "-", "R"],
+  [["starters"], "RCUD", "RCUD;u=team-not-starter;d=team", "R", "-", "-", "-", "-", "-", "R"],
   [["starter_steps"], "RCUD", "RCUD;u=team+free;d=team+free", "RU;u=own", "-", "-", "-", "-", "-", "R"],
   // NARROWER THAN "EVERY COVER": a sales manager does not hold every cover. A cover opens
   // its rep's deals to whoever it names, so a manager who could write one for any rep could read any
   // team's deals by covering for them. They read every cover, and write one for the people they lead.
   // A manager changes or removes a cover only of somebody she leads who is the one AWAY: leading whoever covers is not enough (the review, 2026-10-14).
   [["covers"], "RCUD", "RCUD;u=team-away;d=team-away", "R", "R", "-", "-", "-", "-", "R"],
-  [["cover_notes"], "RCUD", "RCUD:team", "RCU:own", "-", "-", "-", "-", "-", "R"],
+  [["cover_notes"], "RCUD", "RCUD:deal", "RCU:own", "-", "-", "-", "-", "-", "R"],
   [["enquiries"], "RCUDI", "RCU:team+free", "RCU:own+free", "-", "RCI", "RCU:own+free", "-", "-", "R"],
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
   [["showroom_spaces", "samples", "display_pieces"], "RCUD", "R", "R", "-", "-", "RCUD", "-", "-", "R"],
   [["showroom_bookings", "sample_loans", "sample_chases"], "RCUD", "R", "RCU", "-", "-", "RCUD", "-", "-", "R"],
   // A job is made by the rule when its deal is won, and by the operations manager for a deal won before the part was on:
   // she names a won deal, the only kind she reads.
-  [["jobs"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCU", "-", "R"],
+  [["jobs"], "RCUD", "R:deal", "R:own", "R", "-", "-", "RCU", "-", "R"],
   [["crews", "crew_members", "crew_days"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R", "R"],
-  [["job_visits"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
+  [["job_visits"], "RCUD", "R:deal-job", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
   // A sign-off is never changed or removed once made, by anybody: a correction is a new row that names the one it corrects.
-  [["sign_offs"], "RC", "R:team", "R:own", "R", "-", "-", "RC", "RC:own", "R"],
+  [["sign_offs"], "RC", "R:deal-job", "R:own", "R", "-", "-", "RC", "RC:own", "R"],
   // A sign-off refused on arrival (plan 68 S19): written by the crew's phone alone, for its own crew's visit, and read as far
   // as each reads sign-offs. Nobody changes or removes one.
   // The CRM admin removes one, so the snag it names can go (T09).
-  [["refused_sign_offs"], "RD", "R:team", "R:own", "R", "-", "-", "R", "RC:own", "R"],
-  [["snags"], "RCUD", "R:team", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
+  [["refused_sign_offs"], "RD", "R:deal-job", "R:own", "R", "-", "-", "R", "RC:own", "R"],
+  [["snags"], "RCUD", "R:deal-job", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["delivery_notes", "delivery_note_lines"], "RCUD", "-", "-", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["waste_removals"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
   // A visit that left a crew's today or tomorrow is the rules' to write (plan 68 D17); the crew it left reads its own.
   [["left_visits"], "RD", "-", "-", "-", "-", "-", "R", "R:own", "R"],
-  [["feedback"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "R", "-", "R"],
+  [["feedback"], "RCUD", "R:deal-job", "R:own", "RCUD", "-", "-", "R", "-", "R"],
   [["complaints"], "RCUD", "R:team", "RU:own", "RCUD", "-", "-", "R", "-", "R"],
-  [["warranty_claims"], "RCUD", "R:team", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
+  [["warranty_claims"], "RCUD", "R:deal-job", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
   // …and for the same reason she changes and removes a deal's stock need, and a rep (who reads the deal) makes it.
   // The crew reads the needs of its own visits, what to load (S14): a need names the visit its stock goes on.
-  [["deal_stock_needs"], "RCUD", "R:team", "RCU:own", "-", "-", "-", "RUD", "R:own", "R"],
+  [["deal_stock_needs"], "RCUD", "R:deal", "RCU:own", "-", "-", "-", "RUD", "R:own", "R"],
   // A crew member is given his crew's vehicle (P25): he reads that one, and its faults, and makes a check, a fault and a
   // fill only for it (a link to a vehicle out of his reach is refused as one that is not there).
   [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
@@ -225,8 +227,10 @@ type RowAction = "read" | "update" | "delete";
 interface Reach {
   reach: "own" | "team" | "all";
   unowned?: true;
-  while?: { column: string; in: string[] };
+  while?: { column: string; in: (string | number)[] };
   by?: string;
+  via?: string;
+  notBy?: string;
 }
 type Rows = Partial<Record<RowAction, Reach>>;
 interface Cell {
@@ -259,6 +263,23 @@ const REACHES: Record<string, Reach> = {
   "own-or-set": [{ reach: "own", by: "owner_id" }, { reach: "own", by: "set_by_id" }] as unknown as Reach,
   // Her own, and the meeting actions her reps set; never another manager's one-to-one or coaching (plan 68 R4a).
   "own+reps-meeting": [{ reach: "own" }, { reach: "team", by: "set_by_id", while: { column: "source", in: ["meeting"] } }] as unknown as Reach,
+  // Plan 68 R1d: a deal is the sales manager's only when somebody she leads OWNS it (never through a helper or a cover)…
+  "team-owned": { reach: "team", by: "owner_id" },
+  // …and a row of a deal is judged by that deal's owner, also where the row names a helper (E11).
+  deal: { reach: "team", via: "deal_id", by: "owner_id" },
+  // Two links down, by the parent's copy of the deal's owner: a quote's lines, a visit's notes, a job's rows.
+  "deal-quote": { reach: "team", via: "document_id", by: "deal_owner_id" },
+  "deal-visit": { reach: "team", via: "visit_id", by: "deal_owner_id" },
+  "deal-job": { reach: "team", via: "job_id", by: "deal_owner_id" },
+  // A follow-up on a deal by its deal's owner; one on no deal (a job's call) by its own owner.
+  "deal+free-standing": [{ reach: "team", via: "deal_id", by: "owner_id" }, { reach: "team", by: "owner_id", while: { column: "on_deal", in: [0] } }] as unknown as Reach,
+  // A follow-up is its owner's, whatever deal it is on.
+  "own-owned": { reach: "own", by: "owner_id" },
+  // Plan 68 X2: never the row that names the manager herself (her own target, her own first-year target).
+  "team-not-own": { reach: "team", notBy: "rep_id" },
+  "team-not-starter": { reach: "team", notBy: "user_id" },
+  // Only the decisions of a meeting the person runs.
+  runs: { reach: "own", via: "meeting_id", by: "run_by_id" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
@@ -1033,7 +1054,7 @@ describe("a listing a table is read through is not a way in", () => {
     const own = { reach: "own", by: "deal_owner_id" };
     const team = { reach: "team", by: "deal_owner_id" };
     expect(limitOf("rep", "deal_members")).toEqual({ writable: ["user_id", "role_note"], creatable: ["deal_id", "user_id", "role_note"], rows: { read: { reach: "own" }, update: own, delete: own } });
-    expect(limitOf("sales-manager", "deal_members")).toEqual({ writable: ["user_id", "role_note"], creatable: ["deal_id", "user_id", "role_note"], rows: { read: { reach: "team" }, update: team, delete: team } });
+    expect(limitOf("sales-manager", "deal_members")).toEqual({ writable: ["user_id", "role_note"], creatable: ["deal_id", "user_id", "role_note"], rows: { read: { reach: "team", via: "deal_id", by: "owner_id" }, update: team, delete: team } });
     // Nobody but the CRM admin moves a member's row to another deal.
     for (const key of ROLES) if (key !== "admin" && holds(key, "deal_members", "update")) expect(limitOf(key, "deal_members")?.writable, key).not.toContain("deal_id");
     expect(ROLES.filter((key) => holds(key, "deal_members", "create"))).toEqual(["admin", "sales-manager", "rep"]);

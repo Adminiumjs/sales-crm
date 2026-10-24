@@ -86,7 +86,9 @@ for (const [dialect, reachable] of LEGS) {
       // More than 5 % under list and not approved: the send is refused, on the write itself.
       await expect(w.update('quotes', v2['id'], { status: 'sent' })).rejects.toThrow();
       expect((await one('quotes', 'status', v2['id']))['status']).toBe('draft');
-      await w.update('quotes', v2['id'], { approval: 'asked', ask_reason: 'Another supplier on the desks' });
+      // Dana asks (the deal is hers); whoever decides is somebody else (plan 68 S2: never the asker nor the deal's owner).
+      const asDana = { ...w.desk, actor: { kind: 'user' as const, id: dana.id, label: 'Dana' } };
+      await w.update('quotes', v2['id'], { approval: 'asked', ask_reason: 'Another supplier on the desks' }, asDana);
       await expect(w.update('quotes', v2['id'], { status: 'sent' })).rejects.toThrow();
       await w.update('quotes', v2['id'], { approval: 'approved' });
       q = await one('quotes', 'may_send, asked_at, asked_by_id, approval_decided_at, decided_by_id, approved_pct, approved_unlisted_lines', v2['id']);
@@ -108,7 +110,7 @@ for (const [dialect, reachable] of LEGS) {
       await w.create('quote_lines', { document_id: v2['id'], qty: 1, rate: 0, description: 'Site survey, free' });
       q = await one('quotes', 'unlisted_lines, needs_approval, may_send', v2['id']);
       expect([Number(q['unlisted_lines']), Number(q['needs_approval']), Number(q['may_send'])]).toEqual([1, 1, 0]);
-      await w.update('quotes', v2['id'], { approval: 'asked', ask_reason: 'A free survey line' });
+      await w.update('quotes', v2['id'], { approval: 'asked', ask_reason: 'A free survey line' }, asDana);
       await w.update('quotes', v2['id'], { approval: 'approved' });
       q = await one('quotes', 'may_send, approved_unlisted_lines', v2['id']);
       expect([Number(q['may_send']), Number(q['approved_unlisted_lines'])]).toEqual([1, 1]);
@@ -124,13 +126,13 @@ for (const [dialect, reachable] of LEGS) {
       expect([Number(q['under_list_pct']), Number(q['unlisted_lines']), Number(q['unlisted_value']), Number(q['needs_approval']), Number(q['may_send'])]).toEqual([0, 1, 99000, 1, 0]);
       await expect(w.update('quotes', v3['id'], { status: 'sent' })).rejects.toThrow();
       // Asked and refused: the same version is changed and asked again (no new version is made), and once approved it may go.
-      await w.update('quotes', v3['id'], { approval: 'asked', ask_reason: 'A bespoke desk' });
+      await w.update('quotes', v3['id'], { approval: 'asked', ask_reason: 'A bespoke desk' }, asDana);
       await w.update('quotes', v3['id'], { approval: 'refused' });
       q = await one('quotes', 'approval, may_send, status', v3['id']);
       expect([q['approval'], Number(q['may_send']), q['status']]).toEqual(['refused', 0, 'draft']);
       await expect(w.update('quotes', v3['id'], { status: 'sent' })).rejects.toThrow();
       await w.create('quote_lines', { document_id: v3['id'], qty: 1, rate: 2970, price_id: price['install'] });
-      await w.update('quotes', v3['id'], { approval: 'asked', ask_reason: 'With fitting at list' });
+      await w.update('quotes', v3['id'], { approval: 'asked', ask_reason: 'With fitting at list' }, asDana);
       expect((await one('quotes', 'approval', v3['id']))['approval']).toBe('asked');
       await w.update('quotes', v3['id'], { approval: 'approved' });
       expect(Number((await one('quotes', 'may_send', v3['id']))['may_send'])).toBe(1);
