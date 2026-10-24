@@ -27,7 +27,7 @@ import type { ScreenProps } from "../../shell/screens.tsx";
 import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
-import { ActionRow, Avatar, Empty, Head, NOBODY, PersonChips, readWho, tickAction, truthy, useF, type Action, type Who } from "./common.tsx";
+import { ActionRow, Avatar, Empty, Head, mayTick, NOBODY, PersonChips, readWho, tickAction, truthy, useF, type Action, type Who } from "./common.tsx";
 import { firstName } from "../../ui/people.ts";
 import { raisedOf, readOneToOnes, readPair, saveSession, topicColumn, TOPICS, type DraftAction, type OneToOne, type Pair, type Topic } from "./notes.ts";
 import { coverOf, leftOf } from "./targets.ts";
@@ -104,6 +104,7 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
   const inDays = next === null ? 0 : f.dayDiff(now, next);
   const canWrite = session.can("one_to_one_sessions", "create") && leads;
   const canTick = session.can("actions", "update");
+  const me = session.config.user?.id ?? "";
 
   const tick = async (action: Action, done: boolean): Promise<void> => {
     setTicking(action.id);
@@ -229,7 +230,7 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
                           {set.length > 0 && (
                             <ul className="crm-tw-actions crm-no-session-actions" data-testid="notes-session-actions">
                               {set.map((action) => (
-                                <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick ? (row, on) => void tick(row, on) : null} busy={ticking === action.id} />
+                                <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick && mayTick(action, me) ? (row, on) => void tick(row, on) : null} busy={ticking === action.id} />
                               ))}
                             </ul>
                           )}
@@ -254,7 +255,7 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
                   ) : (
                     <ul className="crm-tw-actions">
                       {open.map((action) => (
-                        <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick ? (one, on) => void tick(one, on) : null} busy={ticking === action.id} />
+                        <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick && mayTick(action, me) ? (one, on) => void tick(one, on) : null} busy={ticking === action.id} />
                       ))}
                     </ul>
                   )}
@@ -263,7 +264,7 @@ function PairView({ pair, who, f, now, today, round, leads, onChanged }: { pair:
                       <div className="crm-tw-kicker crm-no-done-head">{t("notes.done")}</div>
                       <ul className="crm-tw-actions" data-testid="notes-done">
                         {done.map((action) => (
-                          <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick ? (one, on) => void tick(one, on) : null} busy={ticking === action.id} />
+                          <ActionRow key={action.id} action={action} here="one-to-one" names={who.names} f={f} onTick={canTick && mayTick(action, me) ? (one, on) => void tick(one, on) : null} busy={ticking === action.id} />
                         ))}
                       </ul>
                     </>

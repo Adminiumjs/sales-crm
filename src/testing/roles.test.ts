@@ -102,14 +102,17 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["reps"], "RCUD", "RU;u=own", "RU;u=own", "RU;u=own", "-", "-", "-", "-", "R"],
   [["targets"], "RCUD", "RCU:team", "R:own", "-", "-", "-", "-", "-", "R"],
   [["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"], ...PAIR],
-  [["actions"], "R:own", "RCUD:own", "RCU:own", "-", "-", "-", "-", "-", "-"],
+  // A step is also the rep's and the manager's of the coaching area it hangs on, and the manager's of its one-to-one
+  // (plan 68 R4a/R4b, E27); each changes only the ones she owns or set.
+  [["actions"], "R:own", "RCUD;r=own+reps-meeting;u=own-or-set;d=own-or-set", "RCU;r=own;u=own-or-set", "-", "-", "-", "-", "-", "-"],
   [["meetings", "meeting_decisions"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
   // An agenda item is its speaker's: the manager changes her team's, and the ones that name nobody (plan 68 X1).
   [["meeting_slots"], "RCUD", "RCUD;u=team+free;d=team+free", "R", "-", "-", "-", "-", "-", "R"],
   [["threads"], ...talk("RC:own")],
   // Who is in a conversation is read by its members and the CRM admin (plan 68 R4c); each moves only her own mark.
   [["thread_members"], "RCU;u=own-self", ...talk("RCU;r=own;u=own-self").slice(1)],
-  [["messages"], ...talk("RC:own")],
+  // A message is removed by its author, and by the CRM admin in a conversation she is in (plan 68 R4d).
+  [["messages"], "RCU:own", ...talk("RCU;r=own;u=own-written").slice(1)],
   // A starter is her manager's; a step its owner's and its starter's manager's: a rep ticks her own (plan 68 X1).
   [["starters"], "RCUD", "RCUD;u=team;d=team", "R", "-", "-", "-", "-", "-", "R"],
   [["starter_steps"], "RCUD", "RCUD;u=team+free;d=team+free", "RU;u=own", "-", "-", "-", "-", "-", "R"],
@@ -252,6 +255,10 @@ const REACHES: Record<string, Reach> = {
   "team-away": { reach: "team", by: "owner_id" },
   // Of the people of the conversations they are in, only their own row.
   "own-self": { reach: "own", by: "user_id" },
+  // Of the actions they reach, only the ones they own or set (plan 68 R4a/R4b: a rep reads every step of her plan).
+  "own-or-set": [{ reach: "own", by: "owner_id" }, { reach: "own", by: "set_by_id" }] as unknown as Reach,
+  // Her own, and the meeting actions her reps set; never another manager's one-to-one or coaching (plan 68 R4a).
+  "own+reps-meeting": [{ reach: "own" }, { reach: "team", by: "set_by_id", while: { column: "source", in: ["meeting"] } }] as unknown as Reach,
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 
@@ -1041,8 +1048,10 @@ describe("a listing a table is read through is not a way in", () => {
       expect(limitOf(key, "thread_members")?.rows?.update, key).toEqual({ reach: "own", by: "user_id" });
       expect(holds(key, "thread_members", "delete"), key).toBe(false);
     }
-    // Nobody changes a conversation or a message once written, so no row is added under one by a change of it.
-    for (const key of ROLES) for (const ref of ["threads", "messages"]) for (const action of ["update", "delete"] as const) expect(holds(key, ref, action), `${key}: ${ref}`).toBe(false);
+    // Nobody changes a conversation once made, nor removes a message's row; a message changes only its state (by its button).
+    for (const key of ROLES) for (const action of ["update", "delete"] as const) expect(holds(key, "threads", action), `${key}: threads`).toBe(false);
+    for (const key of ROLES) expect(holds(key, "messages", "delete"), `${key}: messages`).toBe(false);
+    for (const key of ROLES) if (holds(key, "messages", "update")) expect(limitOf(key, "messages")?.writable, key).toEqual(["state"]);
   });
 
   it("lets a manager write cover for the people they lead, and for nobody else's rep", () => {

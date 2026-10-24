@@ -29,7 +29,7 @@ import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
-import { ActionRow, Avatar, Empty, Head, NOBODY, readWho, tickAction, truthy, useF, type Action } from "./common.tsx";
+import { ActionRow, Avatar, Empty, Head, mayTick, NOBODY, readWho, tickAction, truthy, useF, type Action } from "./common.tsx";
 import { readMeeting, type Decision, type Slot } from "./meeting.ts";
 
 const PILL = { done: "pos", carried: "warn", open: undefined } as const;
@@ -229,7 +229,7 @@ export function Meeting(_: ScreenProps) {
                       <>
                         <ul className="crm-tw-actions">
                           {data.actions.map((action) => (
-                            <ActionRow key={action.id} action={action} here="meeting" names={who.names} f={f} onTick={canTick ? (one, on) => void tick(one, on) : null} busy={ticking === action.id} />
+                            <ActionRow key={action.id} action={action} here="meeting" names={who.names} f={f} onTick={canTick && mayTick(action, me) ? (one, on) => void tick(one, on) : null} busy={ticking === action.id} />
                           ))}
                         </ul>
                         {data.actions.length === 0 && <p className="crm-cv-none">{t("meeting.actions.none")}</p>}

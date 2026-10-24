@@ -5289,7 +5289,10 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "removal": {
+          "history": true
+        }
       },
       {
         "ref": "deal_marks",
@@ -5813,6 +5816,10 @@
           "resource": "rep_id",
           "start": "starts_at",
           "minutes": "minutes"
+        },
+        "removal": {
+          "reason": true,
+          "history": true
         }
       },
       {
@@ -8630,6 +8637,18 @@
           },
           {
             "column": "set_by_id"
+          },
+          {
+            "column": "coaching_area_id",
+            "person": "rep_id"
+          },
+          {
+            "column": "coaching_area_id",
+            "person": "manager_id"
+          },
+          {
+            "column": "one_to_one_id",
+            "person": "manager_id"
           }
         ],
         "indexes": [
@@ -9656,7 +9675,8 @@
             "rules": {
               "validation": {
                 "maxLength": 4000
-              }
+              },
+              "history": "audit"
             },
             "label": {
               "en-US": "Text",
@@ -9690,6 +9710,107 @@
             }
           },
           {
+            "ref": "state",
+            "type": "enum",
+            "enum": [
+              "live",
+              "removed"
+            ],
+            "default": "live",
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "live": {
+                    "en-US": "Live",
+                    "de-DE": "Sichtbar",
+                    "fr-FR": "Visible",
+                    "da-DK": "Synlig",
+                    "cs-CZ": "Viditelná",
+                    "ar-EG": "ظاهرة",
+                    "zh-CN": "可见",
+                    "zh-TW": "可見"
+                  },
+                  "removed": {
+                    "en-US": "Removed",
+                    "de-DE": "Entfernt",
+                    "fr-FR": "Retiré",
+                    "da-DK": "Fjernet",
+                    "cs-CZ": "Odstraněná",
+                    "ar-EG": "محذوفة",
+                    "zh-CN": "已删除",
+                    "zh-TW": "已刪除"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "State",
+              "de-DE": "Status",
+              "fr-FR": "État",
+              "da-DK": "Status",
+              "cs-CZ": "Stav",
+              "ar-EG": "الحالة",
+              "zh-CN": "状态",
+              "zh-TW": "狀態"
+            }
+          },
+          {
+            "ref": "removed_by_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true,
+              "stamp": {
+                "set": "user-id",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "removed"
+                  ]
+                },
+                "strict": true
+              }
+            },
+            "label": {
+              "en-US": "Removed by",
+              "de-DE": "Entfernt von",
+              "fr-FR": "Retiré par",
+              "da-DK": "Fjernet af",
+              "cs-CZ": "Odstranil(a)",
+              "ar-EG": "حذفها",
+              "zh-CN": "删除人",
+              "zh-TW": "刪除人"
+            }
+          },
+          {
+            "ref": "removed_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "state",
+                  "values": [
+                    "removed"
+                  ]
+                },
+                "strict": true
+              }
+            },
+            "label": {
+              "en-US": "Removed at",
+              "de-DE": "Entfernt am",
+              "fr-FR": "Retiré le",
+              "da-DK": "Fjernet den",
+              "cs-CZ": "Odstraněno",
+              "ar-EG": "وقت الحذف",
+              "zh-CN": "删除时间",
+              "zh-TW": "刪除時間"
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -9709,7 +9830,58 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "states": {
+          "column": "state",
+          "initial": "live",
+          "moves": {
+            "live": [
+              {
+                "to": "removed",
+                "requires": {
+                  "where": [
+                    {
+                      "column": "text",
+                      "eq": ""
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "id": "remove",
+              "label": {
+                "en-US": "Remove the message",
+                "de-DE": "Nachricht entfernen",
+                "fr-FR": "Retirer le message",
+                "da-DK": "Fjern beskeden",
+                "cs-CZ": "Odstranit zprávu",
+                "ar-EG": "احذف الرسالة",
+                "zh-CN": "删除消息",
+                "zh-TW": "刪除訊息"
+              },
+              "move": {
+                "to": "removed"
+              },
+              "set": {
+                "text": ""
+              },
+              "tone": "danger",
+              "confirm": {
+                "en-US": "Remove this message? Everyone in the conversation sees that it was removed, and by whom. Its words are gone from the conversation.",
+                "de-DE": "Diese Nachricht entfernen? Alle in der Unterhaltung sehen, dass sie entfernt wurde und von wem. Ihr Text ist aus der Unterhaltung verschwunden.",
+                "fr-FR": "Retirer ce message ? Tous les participants verront qu’il a été retiré, et par qui. Son texte disparaît de la conversation.",
+                "da-DK": "Fjern denne besked? Alle i samtalen kan se, at den er fjernet, og af hvem. Dens ord er væk fra samtalen.",
+                "cs-CZ": "Odstranit tuto zprávu? Všichni v konverzaci uvidí, že byla odstraněna a kým. Její text z konverzace zmizí.",
+                "ar-EG": "هل تحذف هذه الرسالة؟ سيرى كل من في المحادثة أنها حُذفت ومن حذفها. ولن يبقى نصها في المحادثة.",
+                "zh-CN": "删除这条消息？对话中的每个人都会看到它已被删除以及删除人。它的内容将从对话中消失。",
+                "zh-TW": "刪除這則訊息？對話中的每個人都會看到它已被刪除以及刪除人。它的內容將從對話中消失。"
+              }
+            }
+          ]
+        }
       },
       {
         "ref": "starters",
@@ -11559,7 +11731,11 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "removal": {
+          "reason": true,
+          "history": true
+        }
       },
       {
         "ref": "samples",
@@ -14207,7 +14383,11 @@
               "zh-TW": "重試鍵"
             }
           }
-        ]
+        ],
+        "removal": {
+          "reason": true,
+          "history": true
+        }
       },
       {
         "ref": "left_visits",
@@ -21893,6 +22073,7 @@
         "table:@thread_members:update",
         "table:@messages:read",
         "table:@messages:create",
+        "table:@messages:update",
         "table:@starters:read",
         "table:@starters:create",
         "table:@starters:update",
@@ -22184,8 +22365,18 @@
           "rows": {
             "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own"
             }
-          }
+          },
+          "writable": [
+            "state"
+          ],
+          "creatable": [
+            "thread_id",
+            "text"
+          ]
         },
         "quotes": {
           "writable": [
@@ -22539,6 +22730,7 @@
         "table:@thread_members:update",
         "table:@messages:read",
         "table:@messages:create",
+        "table:@messages:update",
         "table:@starters:read",
         "table:@starters:create",
         "table:@starters:update",
@@ -23044,15 +23236,41 @@
             "coaching_area_id"
           ],
           "rows": {
-            "read": {
-              "reach": "own"
-            },
-            "update": {
-              "reach": "own"
-            },
-            "delete": {
-              "reach": "own"
-            }
+            "read": [
+              {
+                "reach": "own"
+              },
+              {
+                "reach": "team",
+                "by": "set_by_id",
+                "while": {
+                  "column": "source",
+                  "in": [
+                    "meeting"
+                  ]
+                }
+              }
+            ],
+            "update": [
+              {
+                "reach": "own",
+                "by": "owner_id"
+              },
+              {
+                "reach": "own",
+                "by": "set_by_id"
+              }
+            ],
+            "delete": [
+              {
+                "reach": "own",
+                "by": "owner_id"
+              },
+              {
+                "reach": "own",
+                "by": "set_by_id"
+              }
+            ]
           }
         },
         "threads": {
@@ -23077,8 +23295,19 @@
           "rows": {
             "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "author_id"
             }
-          }
+          },
+          "writable": [
+            "state"
+          ],
+          "creatable": [
+            "thread_id",
+            "text"
+          ]
         },
         "covers": {
           "rows": {
@@ -23385,6 +23614,7 @@
         "table:@thread_members:update",
         "table:@messages:read",
         "table:@messages:create",
+        "table:@messages:update",
         "table:@starters:read",
         "table:@starter_steps:read",
         "table:@starter_steps:update",
@@ -23880,9 +24110,16 @@
             "read": {
               "reach": "own"
             },
-            "update": {
-              "reach": "own"
-            }
+            "update": [
+              {
+                "reach": "own",
+                "by": "owner_id"
+              },
+              {
+                "reach": "own",
+                "by": "set_by_id"
+              }
+            ]
           }
         },
         "threads": {
@@ -23907,8 +24144,19 @@
           "rows": {
             "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "author_id"
             }
-          }
+          },
+          "writable": [
+            "state"
+          ],
+          "creatable": [
+            "thread_id",
+            "text"
+          ]
         },
         "starters": {
           "readable": [
@@ -24200,6 +24448,7 @@
         "table:@thread_members:update",
         "table:@messages:read",
         "table:@messages:create",
+        "table:@messages:update",
         "table:@covers:read",
         "table:@jobs:read",
         "table:@job_visits:read",
@@ -24377,8 +24626,19 @@
           "rows": {
             "read": {
               "reach": "own"
+            },
+            "update": {
+              "reach": "own",
+              "by": "author_id"
             }
-          }
+          },
+          "writable": [
+            "state"
+          ],
+          "creatable": [
+            "thread_id",
+            "text"
+          ]
         },
         "complaints": {
           "writable": [

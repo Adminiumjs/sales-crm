@@ -23,6 +23,7 @@ import { useScreen } from "../team/data.ts";
 import { readNames } from "../visits/data.ts";
 import { BOOKING_FILTERS, cameIn, confirmBooking, inFilter, readShowroom, readWeek, spanOf, visitorOf, type Booking, type BookingFilter } from "./data.ts";
 import { ShowDialog, type ShowBooking } from "./ShowDialog.tsx";
+import { readRemovedUnder, RemovedPanel } from "../removed.tsx";
 
 const STATE_TONE: Record<Booking["state"], "warn" | "pos" | "plain"> = { tentative: "warn", confirmed: "pos", done: "plain" };
 
@@ -242,6 +243,18 @@ export function Bookings(_props: ScreenProps) {
                 </div>
               )}
 
+              <RemovedPanel<{ visitor_name?: string | null; starts_at?: string | null; party?: number | null }>
+                title={t("rm.bookings.title")}
+                testId="sh-removed"
+                f={f}
+                // A cancelled booking is read through its space, by whoever reads the space now (plan 68 S16).
+                read={() => readRemovedUnder(session, data.spaces.map((space) => ({ ref: "showroom_spaces", id: space.id, label: space.name })), "showroom_bookings")}
+                what={(item) => {
+                  const at = item.row.starts_at === null || item.row.starts_at === undefined ? null : new Date(item.row.starts_at);
+                  const who = item.row.visitor_name ?? "";
+                  return { title: who === "" ? item.parent.label : who, detail: at === null ? item.parent.label : t("rm.list.for", { what: item.parent.label, when: `${f.dayShort(at)}, ${f.time(at)}` }) };
+                }}
+              />
               {dialog !== null && <ShowDialog booking={dialog} spaces={data.spaces} names={names} onClose={() => setDialog(null)} onDone={again} />}
             </>
           );

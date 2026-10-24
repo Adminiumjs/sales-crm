@@ -154,16 +154,16 @@ export async function lastMove(session: StaffSession, id: number): Promise<Moved
 }
 
 /**
- * Cancel a visit: the why first, then the row is removed. A reply lost on the
- * way back is read back by the session (`remove` answers saved once the row
- * is no longer there), so a second press never finds a visit to cancel twice.
+ * Cancel a visit: one removal that carries the why (plan 68 S16). The server
+ * keeps the why with the removed visit, read through its deal by whoever
+ * reads the deal. A reply lost on the way back is read back by the session
+ * (`remove` answers saved once the row is no longer there), so a second press
+ * never finds a visit to cancel twice; one already gone is cancelled.
  */
 export async function cancelVisit(session: StaffSession, visit: Pick<Visit, "id">, why: string): Promise<Saved> {
-  const noted = await session.update("site_visits", visit.id, { cancel_reason: why }, { seen: { state: "booked" } });
-  // Already gone (a second press after a lost reply, or a colleague cancelled it): there is nothing left to remove.
-  if (noted.state === "refused" && noted.error.status === 404 && (await session.get("site_visits", visit.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
-  if (noted.state !== "saved") return noted;
-  return session.remove("site_visits", visit.id);
+  const done = await session.remove("site_visits", visit.id, { reason: why });
+  if (done.state === "refused" && done.error.status === 404 && (await session.get("site_visits", visit.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
+  return done;
 }
 
 export interface Note extends Record<string, unknown> {

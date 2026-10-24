@@ -167,7 +167,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   meeting_decisions: { nullable: ["who_id"] },
   threads: { nullable: ["title"] },
   thread_members: { nullable: ["read_at"] },
-  messages: { nullable: [] },
+  messages: { nullable: ["removed_by_id", "removed_at"] },
   starters: { nullable: ["first_year_target", "user_id", "patch"] },
   starter_steps: { nullable: ["owner_id"] },
   covers: { nullable: ["ends_on", "note"] },

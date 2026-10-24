@@ -17,6 +17,7 @@
  */
 import type { StaffSession } from "../../staffSession.ts";
 import { readQuotes, type Quote } from "../quotes/data.ts";
+import { readRemoved, type Removed } from "../removed.tsx";
 
 export interface Stage extends Record<string, unknown> {
   id: number;
@@ -147,6 +148,9 @@ export interface TimelineData {
   stageChanges: StageChange[];
   amountLines: AmountLine[];
   history: HistoryRow[];
+  /** Who is on the deal, with who added them and on what day; and who was taken off, by whom and when (plan 68 S3). */
+  members?: Member[];
+  removedMembers?: Removed<{ user_id?: string | null }>[];
 }
 
 export const num = (value: unknown): number => (typeof value === "number" ? value : Number(value) || 0);
@@ -223,7 +227,14 @@ export async function readTimeline(session: StaffSession, id: number): Promise<T
       () => [] as HistoryRow[],
     ),
   ]);
-  return { activities, stageChanges, amountLines, history };
+  // Who was added and who was taken off: the people on it now, and the removed ones the server keeps under the deal.
+  const [members, removedMembers] = session.can("deal_members", "read")
+    ? await Promise.all([
+        session.list<Member>("deal_members", { select: ["id", "deal_id", "user_id", "since", "added_by_id"], where: ofDeal(id), order: ["id"], limit: 200 }).then((page) => page.rows, () => [] as Member[]),
+        readRemoved<{ user_id?: string | null }>(session, { ref: "deals", id, label: "" }, "deal_members").catch(() => []),
+      ])
+    : [[] as Member[], [] as Removed<{ user_id?: string | null }>[]];
+  return { activities, stageChanges, amountLines, history, members, removedMembers };
 }
 
 const moment = (value: number | string): number => (typeof value === "number" ? value : Date.parse(value));
@@ -253,7 +264,9 @@ export type Line =
   | { key: string; at: number; type: "activity"; kind: Activity["kind"]; who: string | null; text: string }
   | { key: string; at: number; type: "stage"; who: string | null; whoLabel: string | null; from: number | null; to: number }
   | { key: string; at: number; type: "quoted"; amount: number; quote: string | null }
-  | { key: string; at: number; type: "change"; whoLabel: string | null; change: Change };
+  | { key: string; at: number; type: "change"; whoLabel: string | null; change: Change }
+  /** Somebody added to the deal (on a day: `since` keeps no time) or taken off it (at a moment), and by whom. */
+  | { key: string; at: number; type: "member"; off: boolean; person: string | null; by: string | null; byLabel: string | null; dayOnly: boolean };
 
 const asNumber = (value: unknown): number | null => (value === null || value === undefined || value === "" ? null : num(value));
 const asText = (value: unknown): string | null => (value === null || value === undefined || value === "" ? null : String(value));
@@ -317,6 +330,14 @@ export function timelineOf(read: TimelineData): Line[] {
   for (const line of data.amountLines) lines.push({ key: `q${String(line.id)}`, at: moment(line.at), type: "quoted", amount: num(line.amount), quote: line.quote ?? null });
   for (const entry of history) {
     for (const change of changesOf(entry)) lines.push({ key: `h${entry.id}:${change.column}`, at: moment(entry.createdAt), type: "change", whoLabel: entry.actorLabel, change });
+  }
+  for (const member of read.members ?? []) {
+    const since = member.since === null ? null : String(member.since).slice(0, 10);
+    if (since === null || !/^\d{4}-\d{2}-\d{2}$/.test(since)) continue;
+    lines.push({ key: `p${String(member.id)}`, at: Date.parse(`${since}T12:00:00Z`), type: "member", off: false, person: member.user_id, by: member.added_by_id, byLabel: null, dayOnly: true });
+  }
+  for (const gone of read.removedMembers ?? []) {
+    lines.push({ key: `r${gone.key}:${String(gone.at.getTime())}`, at: gone.at.getTime(), type: "member", off: true, person: gone.row.user_id ?? null, by: null, byLabel: gone.by, dayOnly: false });
   }
   return lines.sort((a, b) => b.at - a.at || (a.key < b.key ? 1 : -1));
 }
