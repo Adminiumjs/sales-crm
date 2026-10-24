@@ -414,6 +414,10 @@ for (const [dialect, reachable] of LEGS) {
       await makeDeal('owner', 'Depot', 'noor', { stage_id: stage['b'], typed_amount: 90000 });
       for (const [rep, amount] of [['dana', 50000], ['priya', 40000], ['noor', 100000]] as const) made(await s.make('owner', 'targets', { rep_id: s.ids[rep], year, amount }));
       made(await s.make('owner', 'follow_ups', { deal_id: danaBig, owner_id: s.ids['dana'], due_at: at(-2), text: 'Send the revised layout', kind: 'step' }));
+      // Noor, of Omar's team, helps on Dana's Atrium and has a follow-up of her own there (plan 68 R1d): it is Dana's deal, so
+      // it is in no week of Omar's.
+      made(await s.make('owner', 'deal_members', { deal_id: danaBig, user_id: s.ids['noor'] }));
+      made(await s.make('owner', 'follow_ups', { deal_id: danaBig, owner_id: s.ids['noor'], due_at: at(-1), text: 'Noor surveys the atrium', kind: 'step' }));
       await jobs();
       await s.tick();
       await s.jobs({ all: true });
@@ -457,7 +461,7 @@ for (const [dialect, reachable] of LEGS) {
       const omars = figure(to('omar')[0]!.text);
       expect(omars).toMatch(/45,000(\.00)? weighted and .{0,4}90,000(\.00)? at full value/);
       expect(omars).toContain('Noor');
-      for (const other of ['Dana', 'Priya', 'Atrium', 'Harbour', '32,500']) expect(omars, other).not.toContain(other);
+      for (const other of ['Dana', 'Priya', 'Atrium', 'Harbour', '32,500', 'Noor surveys']) expect(omars, other).not.toContain(other);
       for (const who of ['dana', 'ivy']) expect(to(who)[0]!.text, who).not.toContain('{{');
     });
 
