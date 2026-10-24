@@ -15,6 +15,7 @@ import { request, type APIRequestContext, type Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { room } from "./p12-helpers.ts";
 import { readState, STAND_DIR, type StandState } from "./stand.mjs";
 
 const BLUE = 1;
@@ -355,8 +356,10 @@ test("the crews in Settings: their days, their people and phones, kept by the op
   }
 });
 
-test("in Arabic, at 390 wide and dark: the Day sheet, the Route and Sign-off read right to left and fit the screen", async ({ as }) => {
+test("in Arabic, at 390 wide and dark: the Day sheet, the Route and Sign-off read right to left and fit the screen", async ({ as, data }) => {
   const ada = await as("ada", { viewport: { width: 390, height: 844 }, colorScheme: "dark" });
+  // Four screens as Ada after the file's other specs: she starts on a fresh minute (in the whole run hers ran out, a 429).
+  await room(ada.request, data, 120);
   await inArabic(ada.request, async () => {
     const page = await ada.newPage();
     const problems = watch(page);
