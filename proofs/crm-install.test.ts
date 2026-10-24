@@ -18,6 +18,14 @@ async function invoices(meta: MetaDb): Promise<void> {
   await manifestsRepo(meta, { encrypt: (v) => v, decrypt: (v) => v }).install({ manifestKey: 'invoices', version: '1.1.0', kind: 'add-on', source: 'file', document: document as never });
 }
 
+/**
+ * A person the rows name is one who can open them: since Adminium 0.3.35 every writer (the console's included) is held to
+ * the listing rule, so a deal's owner, a thread's member, a one-to-one's pair hold a CRM role here, as they would at work.
+ */
+async function withRole(meta: MetaDb, userId: string, role: string): Promise<void> {
+  await rolesRepo(meta).assignToUser(userId, (await rolesRepo(meta).findBySlug(`crm-${role}`))!.id);
+}
+
 for (const [dialect, reachable] of LEGS) {
   describe.skipIf(!reachable)(`the CRM's first tables install and work on ${dialect}`, () => {
     let h: InvoicingHarness;
@@ -33,6 +41,7 @@ for (const [dialect, reachable] of LEGS) {
     it('a deal takes the total of its newest sent quote, each version a document of its own', async () => {
       const w = await writerFor(h);
       const dana = await usersRepo(h.meta).create({ email: `dana-q-${dialect}@crm.dev`, name: 'Dana' });
+      await withRole(h.meta, dana.id, 'rep');
       // The settings row is the install's own (the app's one starting row): nobody makes it here.
       expect((h.reply as { seeds?: unknown }).seeds).toEqual({ written: { settings: 1 }, kept: [] });
       expect(Number((await h.rows(`SELECT COUNT(*) AS n FROM ${h.real('settings')}`))[0]!['n'])).toBe(1);
@@ -208,6 +217,8 @@ for (const [dialect, reachable] of LEGS) {
       const users = usersRepo(h.meta);
       const ivy = await users.create({ email: `ivy-t-${dialect}@crm.dev`, name: 'Ivy' });
       const dana = await users.create({ email: `dana-t-${dialect}@crm.dev`, name: 'Dana' });
+      await withRole(h.meta, ivy.id, 'sales-manager');
+      await withRole(h.meta, dana.id, 'rep');
       const one = async (ref: string, cols: string, id: unknown) => (await h.rows(`SELECT ${cols} FROM ${h.real(ref)} WHERE id = ${String(id)}`))[0]!;
       // A one-to-one and its session: private, the pair in two staff columns each.
       const oo = await w.create('one_to_ones', { manager_id: ivy.id, rep_id: dana.id });
@@ -256,6 +267,7 @@ for (const [dialect, reachable] of LEGS) {
       const w = await writerFor(h);
       const users = usersRepo(h.meta);
       const yusuf = await users.create({ email: `yusuf-j-${dialect}@crm.dev`, name: 'Yusuf' });
+      await withRole(h.meta, yusuf.id, 'rep');
       const one = async (ref: string, cols: string, id: unknown) => (await h.rows(`SELECT ${cols} FROM ${h.real(ref)} WHERE id = ${String(id)}`))[0]!;
       // A snag reads its due days from the settings row: on an install with no sample that is the row the install wrote.
       expect(Number((await h.rows(`SELECT COUNT(*) AS n FROM ${h.real('settings')}`))[0]!['n'])).toBe(1);
@@ -346,6 +358,7 @@ for (const [dialect, reachable] of LEGS) {
     it('installs its tables and keeps its figures, copies and stamps', async () => {
       const w = await writerFor(h);
       const dana = await usersRepo(h.meta).create({ email: `dana-${dialect}@crm.dev`, name: 'Dana' });
+      await withRole(h.meta, dana.id, 'rep');
       const terr = await w.create('territories', { name: 'North', owner_id: dana.id });
       const co = await w.create('companies', { name: 'Nordwind', town: 'Hull', territory_id: terr['id'], account_owner_id: dana.id });
       const ct = await w.create('contacts', { company_id: co['id'], name: 'Petra', may_email: true });

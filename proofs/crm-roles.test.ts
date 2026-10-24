@@ -789,8 +789,8 @@ for (const [dialect, reachable] of LEGS) {
       // ── THE MARKETER'S COUNT ─────────────────────────────────────────────────
       const marks = (await get('lena', 'deal_marks', '?limit=200')).json() as { data: Record<string, unknown>[] };
       t('11 the marketer reads a mark per deal', marks.data.length, await count('deal_marks'));
-      // A link is always shown, so she also reads the number of the deal, of its stage and of its main contact (whom she reads anyway); she reads no stage's name (she holds nothing on `stages`).
-      t('11 each says which company and whether it is open: no owner, no title, no amount', [...new Set(marks.data.flatMap((row) => Object.keys(row)))].filter((key) => !key.startsWith('_')).sort(), ['company_id', 'contact_id', 'deal_id', 'id', 'stage_id', 'state']);
+      // Since Adminium 0.3.35 a link her read limit leaves out is hidden like any column: no deal, stage or contact number.
+      t('11 each says which company and whether it is open: no owner, no title, no amount', [...new Set(marks.data.flatMap((row) => Object.keys(row)))].filter((key) => !key.startsWith('_')).sort(), ['company_id', 'id', 'state']);
       t('11 she reads no stage', refused(await get('lena', 'stages', '?limit=5')), '403');
       t('11 she opens no deal', refused(await get('lena', 'deals', `/${String(danas)}`)), '403');
       t('11 she writes no mark', refused(await patch('lena', 'deal_marks', marks.data[0]!['id'], { state: 'won' })), '403');

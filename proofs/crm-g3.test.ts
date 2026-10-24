@@ -659,7 +659,8 @@ for (const [dialect, reachable] of LEGS) {
       const same = await send('ada', 'POST', '/api/v1/geo/route', { stops: [bristol, { ...bristol }, stops[0]] });
       expect(same.statusCode, same.body).toBe(200);
       const legs = (same.json() as { data: { legs: Record<string, unknown>[] } }).data.legs;
-      expect(legs[0]).toEqual({ distanceM: null, durationS: null, estimate: true, unknown: true });
+      // Since Adminium 0.3.35 the leg also says why (E10): both stops are pinned to the town.
+      expect(legs[0]).toEqual({ distanceM: null, durationS: null, estimate: true, unknown: true, why: 'same-town' });
       expect(legs[1]).toMatchObject({ durationS: null, estimate: true });
       expect(Number(legs[1]!['distanceM'])).toBeGreaterThan(250_000);
     });

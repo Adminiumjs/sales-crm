@@ -6,13 +6,14 @@
  * rep's week by e-mail, of her own deals only, and a sales manager's, of her team's; a
  * notice's e-mail held to the end of the reader's quiet hours; a mention in a
  * comment, to somebody who can open the deal and to two who cannot; the
- * nudges' days read from the settings row; and a part switched off and on.
+ * nudges' days read from the settings row; a part switched off and on; and a
+ * notice written in each reader's own language.
  *
  * To run: copy into `~/Work/lanes/p67/apps/server/test/` as `zz-crm-rules.test.ts`, run, remove.
  */
 import { readFileSync } from 'node:fs';
 
-import { automationsRepo, pagesRepo, teamsRepo } from '@adminium/meta';
+import { automationsRepo, pagesRepo, teamsRepo, userPrefsRepo } from '@adminium/meta';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type WholeServer } from './whole-server.helpers.js';
@@ -256,6 +257,29 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await s.send('owner', 'PUT', '/api/v1/apps/crm/parts/selling', { on: false }))).toMatch(/^4/);
       expect(said(await flip(true))).toBe('ok');
       expect(said(await s.get('dana', `/api/v1/pages/${enquiries.id}`))).toBe('ok');
+    });
+
+    it('writes each reader the notice in her own language: German for Noor, Arabic for Ivy, English for Dana', async () => {
+      const prefs = userPrefsRepo(s.meta);
+      await prefs.set(s.ids['noor']!, { locale: 'de_DE' });
+      await prefs.set(s.ids['ivy']!, { locale: 'ar_EG' });
+      try {
+        expect(said(await s.change('owner', 'deals', deal['fresh'], { owner_id: s.ids['noor'] }))).toBe('ok');
+        expect(said(await s.change('owner', 'deals', deal['yard'], { owner_id: s.ids['ivy'] }))).toBe('ok');
+        expect(said(await s.change('owner', 'deals', deal['atrium'], { owner_id: s.ids['ivy'] }))).toBe('ok');
+        await s.jobs({ except: ['digest.send'] });
+        expect(said(await s.change('owner', 'deals', deal['atrium'], { owner_id: s.ids['dana'] }))).toBe('ok');
+        await s.jobs({ except: ['digest.send'] });
+        expect(await titles('noor')).toContain('An Sie übergeben: Fresh');
+        expect(await titles('ivy')).toContain('سُلِّمت إليك: Atrium');
+        expect(await titles('dana')).toContain('Handed to you: Atrium');
+        // Nobody reads another language's words for the same notice.
+        expect((await titles('noor')).filter((title) => title.startsWith('Handed to you'))).toEqual([]);
+        expect((await titles('ivy')).filter((title) => title.startsWith('Handed to you'))).toEqual([]);
+      } finally {
+        await prefs.set(s.ids['noor']!, { locale: null });
+        await prefs.set(s.ids['ivy']!, { locale: null });
+      }
     });
   });
 }
