@@ -95,7 +95,10 @@ export function Room({ id }: { id: string }) {
   const againTimeline = useCoalesced(timeline.reload);
   const reads = useCallback((tables: string[]): string[] => tables.filter((table) => session.can(table, "read") && (table !== "quotes" || session.part("quotes"))), [session]);
   useLive(reads(["deals", "deal_members", "quotes", "comments", "cover_notes"]), againRoom);
-  useLive(reads(["deals", "activities", "deal_stage_changes", "deal_amount_changes", "deal_members"]), againTimeline);
+  useLive(reads(["deals", "activities", "deal_stage_changes", "deal_amount_changes"]), againTimeline);
+  // A member taken off is read from the deal's removed people: only when somebody is, not on every change of the room.
+  const againOff = useCoalesced(timeline.reload);
+  useLive(reads(["deal_members"]), againOff);
   /*
    * THE AMOUNT A QUOTE WAS SENT AT is a line the app's rule writes, once the
    * sending can no longer be undone: a minute after it. The server tells a
@@ -211,7 +214,7 @@ export function Room({ id }: { id: string }) {
           return body({
             data,
             side: side.load.state === "ready" ? side.load.data : null,
-            lines: timeline.load.state === "ready" && timeline.load.data !== null ? timelineOf(timeline.load.data) : null,
+            lines: timeline.load.state === "ready" && timeline.load.data !== null ? timelineOf(timeline.load.data, data.members) : null,
             timelineFailed: timeline.load.state === "failed" || timeline.load.state === "refused",
             back: back(data.deal.state === "open"),
           });

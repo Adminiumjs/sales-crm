@@ -19,7 +19,7 @@ import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
-import { room } from "./p12-helpers.ts";
+import { room as freshMinute } from "./p12-helpers.ts";
 
 interface Made {
   id: number;
@@ -181,7 +181,7 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   const context = await as("dana");
   const dana = context.request;
   // Dana's minute of requests is shared by every spec that runs as her just before this one (Today, Site visits, This week, the room): wait for a fresh one when it is short.
-  await room(dana, data, 200);
+  await freshMinute(dana, data, 200);
   const deal = await makeDeal(dana, data, "Room spec: work");
   const [discovery, qualified, proposal] = deal.stages as [Made["stages"][number], Made["stages"][number], Made["stages"][number]];
   const page = await context.newPage();
@@ -563,6 +563,8 @@ test("Read-only reads the room with nothing to press, the marketer's address is 
 test("comments: threads and replies, mentions through Adminium's own box, the quiet line, settling; a colleague's reply arrives live", async ({ as, api, data }) => {
   const context = await as("dana");
   const dana = context.request;
+  // Two pages of Dana's hear every comment: the test starts her on a fresh minute (the server counts 300 a minute).
+  await freshMinute(dana, data, 200);
   const d1 = await dealNamed(dana, data, "Fourth-floor desk rows");
   const page = await context.newPage();
   const problems = watch(page);

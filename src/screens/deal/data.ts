@@ -148,7 +148,7 @@ export interface TimelineData {
   stageChanges: StageChange[];
   amountLines: AmountLine[];
   history: HistoryRow[];
-  /** Who is on the deal, with who added them and on what day; and who was taken off, by whom and when (plan 68 S3). */
+  /** Who is on the deal, with who added them and on what day (the room passes its own read); and who was taken off, by whom and when (plan 68 S3). */
   members?: Member[];
   removedMembers?: Removed<{ user_id?: string | null }>[];
 }
@@ -227,14 +227,9 @@ export async function readTimeline(session: StaffSession, id: number): Promise<T
       () => [] as HistoryRow[],
     ),
   ]);
-  // Who was added and who was taken off: the people on it now, and the removed ones the server keeps under the deal.
-  const [members, removedMembers] = session.can("deal_members", "read")
-    ? await Promise.all([
-        session.list<Member>("deal_members", { select: ["id", "deal_id", "user_id", "since", "added_by_id"], where: ofDeal(id), order: ["id"], limit: 200 }).then((page) => page.rows, () => [] as Member[]),
-        readRemoved<{ user_id?: string | null }>(session, { ref: "deals", id, label: "" }, "deal_members").catch(() => []),
-      ])
-    : [[] as Member[], [] as Removed<{ user_id?: string | null }>[]];
-  return { activities, stageChanges, amountLines, history, members, removedMembers };
+  // Who was taken off, read from the removed people the server keeps under the deal (who is on it now is the room's own read).
+  const removedMembers = session.can("deal_members", "read") ? await readRemoved<{ user_id?: string | null }>(session, { ref: "deals", id, label: "" }, "deal_members").catch(() => []) : [];
+  return { activities, stageChanges, amountLines, history, removedMembers };
 }
 
 const moment = (value: number | string): number => (typeof value === "number" ? value : Date.parse(value));
@@ -307,7 +302,7 @@ export function changesOf(entry: HistoryRow): Change[] {
  * stage of the row before it.
  */
 const SAME_WRITE_MS = 5_000;
-export function timelineOf(read: TimelineData): Line[] {
+export function timelineOf(read: TimelineData, members: readonly Member[] = read.members ?? []): Line[] {
   const history = ownHistory(read.history);
   const data = { ...read, history };
   const lines: Line[] = [];
@@ -331,7 +326,7 @@ export function timelineOf(read: TimelineData): Line[] {
   for (const entry of history) {
     for (const change of changesOf(entry)) lines.push({ key: `h${entry.id}:${change.column}`, at: moment(entry.createdAt), type: "change", whoLabel: entry.actorLabel, change });
   }
-  for (const member of read.members ?? []) {
+  for (const member of members) {
     const since = member.since === null ? null : String(member.since).slice(0, 10);
     if (since === null || !/^\d{4}-\d{2}-\d{2}$/.test(since)) continue;
     lines.push({ key: `p${String(member.id)}`, at: Date.parse(`${since}T12:00:00Z`), type: "member", off: false, person: member.user_id, by: member.added_by_id, byLabel: null, dayOnly: true });
