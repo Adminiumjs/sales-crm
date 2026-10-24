@@ -406,6 +406,10 @@ for (const [dialect, reachable] of LEGS) {
       await makeDeal('owner', 'Loft', 'dana', { stage_id: stage['a'], typed_amount: 10000 });
       const won = await makeDeal('owner', 'Yard', 'dana', { stage_id: stage['c'], typed_amount: 8000 });
       expect(said(await s.change('owner', 'deals', won, { state: 'won' }))).toBe('ok');
+      // And 6,000 Dana won LAST year: it counts toward last year's target, never this year's cover (E25, Adminium 0.3.35).
+      const old = await makeDeal('owner', 'Old mill', 'dana', { stage_id: stage['c'], typed_amount: 6000 });
+      expect(said(await s.change('owner', 'deals', old, { state: 'won' }))).toBe('ok');
+      await s.rows(`update crm_deals set closed_on = '${String(year - 1)}-06-01' where id = ${String(old)}`);
       await makeDeal('owner', 'Harbour', 'priya', { stage_id: stage['b'], typed_amount: 20000 });
       await makeDeal('owner', 'Depot', 'noor', { stage_id: stage['b'], typed_amount: 90000 });
       for (const [rep, amount] of [['dana', 50000], ['priya', 40000], ['noor', 100000]] as const) made(await s.make('owner', 'targets', { rep_id: s.ids[rep], year, amount }));
@@ -427,7 +431,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(danas).toMatch(/30,500/);
       expect(danas).toMatch(/61 ?%/);
       expect(danas).toContain('Send the revised layout');
-      for (const other of ['Harbour', 'Depot', '90,000', '45,000']) expect(danas, other).not.toContain(other);
+      for (const other of ['Harbour', 'Depot', '90,000', '45,000', '36,500', 'Old mill']) expect(danas, other).not.toContain(other);
 
       // Priya: her one deal, 10,000 weighted of a 40,000 target, 25 %.
       const priyas = figure(to('priya')[0]!.text);
@@ -447,7 +451,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(ivys).toMatch(/45 ?%/);
       expect(ivys).toContain('Send the revised layout');
       // …and nothing of the other team: not the rep, not the deal, not a sum that holds it.
-      for (const other of ['Noor', 'Depot', '45,000', '77,500', '160,000', '100,000']) expect(ivys, other).not.toContain(other);
+      for (const other of ['Noor', 'Depot', '45,000', '77,500', '160,000', '100,000', '46,500']) expect(ivys, other).not.toContain(other);
 
       // Omar leads Noor: her 45,000 weighted of 100,000, 45 %, and none of Ivy's team.
       const omars = figure(to('omar')[0]!.text);

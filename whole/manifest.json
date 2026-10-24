@@ -27795,7 +27795,12 @@
                     "year": "year",
                     "of": "target_value"
                   },
-                  "limit": 50
+                  "limit": 50,
+                  "within": {
+                    "column": "closed_on",
+                    "this": "year",
+                    "orEmpty": true
+                  }
                 },
                 {
                   "key": "due",
@@ -28014,7 +28019,12 @@
                     "year": "year",
                     "of": "target_value"
                   },
-                  "limit": 50
+                  "limit": 50,
+                  "within": {
+                    "column": "closed_on",
+                    "this": "year",
+                    "orEmpty": true
+                  }
                 },
                 {
                   "key": "closing",

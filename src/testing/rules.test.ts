@@ -340,7 +340,7 @@ describe("the rules the app ships", () => {
     expect(section("week-manager", "reps")).toMatchObject({ table: "deals", owner: "owner_id", reach: "team", by: "owner", sum: ["amount", "weighted_value"] });
     // Cover: what counts toward the target (a won deal's amount, an open deal's weighted value: one stored column) over the year's target.
     const target = { table: "targets", owner: "rep_id", column: "amount", year: "year", of: "target_value" };
-    for (const key of ["week-rep", "week-manager"]) expect(section(key, "cover"), key).toMatchObject({ table: "deals", owner: "owner_id", by: "owner", sum: ["target_value"], target, where: [{ left: { field: "state" }, op: "is_not", right: "lost" }] });
+    for (const key of ["week-rep", "week-manager"]) expect(section(key, "cover"), key).toMatchObject({ table: "deals", owner: "owner_id", by: "owner", sum: ["target_value"], target, where: [{ left: { field: "state" }, op: "is_not", right: "lost" }], within: { column: "closed_on", this: "year", orEmpty: true } });
     expect(staff("targets", "rep_id")).toBe(true);
     // A figure a reader cannot be answered is left out, so each target and cover is written with a backup.
     for (const template of ["crm-week-rep", "crm-week-manager"]) {
