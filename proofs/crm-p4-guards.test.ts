@@ -181,6 +181,26 @@ for (const [dialect, reachable] of LEGS) {
       }
     });
 
+    it('R5: a closed date given as a day alone is that day, where the business is', async () => {
+      await zone('Europe/London');
+      try {
+        const owner = s.ids['dana']!;
+        const brought = await bring('tessa', 'deals', `Name,Company,Owner,Stage,State,Closed\nR5 a day alone,${String(company)},${owner},${String(stage)},won,2025-07-01\n`, [
+          { from: 'Name', to: 'name' },
+          { from: 'Company', to: 'company_id' },
+          { from: 'Owner', to: 'owner_id' },
+          { from: 'Stage', to: 'stage_id' },
+          { from: 'State', to: 'state' },
+          { from: 'Closed', to: 'closed_at' },
+        ]);
+        expect(brought.lines.map((line) => line.status)).toEqual(['new']);
+        const row = (await one(`select closed_at, closed_on from crm_deals where name = 'R5 a day alone'`))!;
+        expect(day(row['closed_on'])).toBe('2025-07-01');
+      } finally {
+        await zone('UTC');
+      }
+    });
+
     it('R8: who ticked "may be e-mailed" and when are never taken from a file, the CRM admin\'s or a rep\'s, nor from a save', async () => {
       for (const [who, name] of [['tessa', 'Ines Holt'], ['dana', 'Ola Berg']] as const) {
         for (const stamp of ['may_email_by_id', 'may_email_at'] as const) {

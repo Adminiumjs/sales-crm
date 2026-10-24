@@ -21,7 +21,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { authOf, expect, picture, stand, test } from "./fixtures.ts";
-import { csrf, inArabic, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
+import { csrf, inArabic, removeDeals, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
 const LIST = ["Name\tSector\tTown\tCustomer number", "P07 List Kestrel Print\tPrinting\tYork\tP07LK", "P07 List Verity Insurance\tInsurance\tDurham\tP07LV", "P07 List Halden Foods\tFood\tRipon\tP07LH"].join("\n");
 /** What each line of the preview would do, in order. */
@@ -142,6 +142,64 @@ test("the CRM admin has it under Settings and may also update; contacts are matc
   await expect(wizard(page).getByTestId("import-match-on")).toHaveValue("");
   expect(await wizard(page).locator('[data-part="mapping-row"] [data-part="mapping-target"]').first().locator("option").allTextContents()).toEqual(expect.arrayContaining(["Company (its number)", "Name", "Job title", "Email", "Phone", "May be emailed (yes or no)"]));
   await picture(page, "3-tessa-paste-contacts");
+});
+
+/**
+ * Plan 68 R5: the CRM admin brings past deals in, in a wizard of their own. A won deal with its closed date comes in with
+ * that day; one without is named, in the reader's words, and not brought in. R8: the page says who ticked "may be
+ * emailed" is never a list's to say. The deals it makes are called "P68 Past …" and taken away at the end.
+ */
+test("the CRM admin brings past deals in: one without its closed date is named and not brought in", async ({ as, data }) => {
+  const context = await as("tessa");
+  const admin = context.request;
+  await removeDeals(admin, data, "P68 Past");
+  try {
+    const page = await context.newPage();
+    const problems = watch(page);
+    await page.goto(`${STAFF}paste-a-list`);
+    await expect(page.locator('[data-note="stamps"]')).toHaveText("Who ticked “may be emailed”, and when, are kept by the CRM itself: a list that carries either is refused. A blank “may be emailed” is no for a new contact, and leaves a saved contact’s answer as it is.");
+    const deals = page.locator('[data-section="deals"]');
+    await expect(deals.getByRole("heading", { level: 2 })).toHaveText("Past deals");
+    await expect(deals.locator('[data-note="closed"]')).toHaveText("A won or lost deal needs its closed date. A line without one is named and not brought in: no deal is dated by the day it was brought in.");
+    const [stage] = await rows<{ id: number; label: string }>(admin, data, "stages", undefined, "&order=position");
+    const [company] = await rows<{ id: number }>(admin, data, "companies", undefined, "&order=id");
+    // The numbers a line names are listed on the page.
+    await expect(deals.locator('[data-legend="stages"] li').first()).toContainText(stage!.label);
+    const kit = deals.locator('[data-kit-part="import"]');
+    await expect(kit.getByRole("group", { name: "Past deals" })).toBeVisible({ timeout: 30_000 });
+    const list = [
+      "Name\tCompany (its number)\tStage (its number)\tState (open, won or lost)\tClosed (a date)",
+      `P68 Past mill roof\t${String(company!.id)}\t${String(stage!.id)}\twon\t2025-05-01T12:00:00Z`,
+      `P68 Past no date\t${String(company!.id)}\t${String(stage!.id)}\twon\t`,
+    ].join("\n");
+    await kit.getByRole("textbox").fill(list);
+    await kit.getByTestId("import-paste-use").click();
+    // Every line is given its owner (the CRM admin herself, unless she picks another) before the columns are matched.
+    await expect.poll(() => kit.locator('[data-part="mapping-row"] [data-part="mapping-target"]').evaluateAll((all) => all.map((select) => (select as HTMLSelectElement).value))).toEqual(["owner_id", "name", "company_id", "stage_id", "state", "closed_at"]);
+    await kit.getByTestId("wizard-validate").click();
+    const lines = kit.locator('[data-testid="import-preview"] [data-line]');
+    await expect(lines).toHaveCount(2);
+    expect(await lines.evaluateAll((all) => all.map((line) => line.getAttribute("data-status")))).toEqual(["new", "refused"]);
+    await expect(lines.nth(1)).toContainText("Needs a closed date: a won or lost deal comes in with the day it closed.");
+    await expect(lines.nth(1)).not.toContainText("closed_at");
+    await picture(page, "6-tessa-paste-past-deals");
+    await kit.getByTestId("wizard-run").click();
+    await expect(kit.getByTestId("import-review")).toBeVisible({ timeout: 30_000 });
+    const made = await rows<{ name: string; state: string; closed_on: string | null; owner_id: string }>(admin, data, "deals", { column: "name", op: "like", value: "P68 Past %" });
+    expect(made.map((deal) => [deal.name, deal.state, String(deal.closed_on).slice(0, 10), deal.owner_id])).toEqual([["P68 Past mill roof", "won", "2025-05-01", stand().people["tessa"]!.id]]);
+    expect(problems).toEqual([]);
+  } finally {
+    await removeDeals(admin, data, "P68 Past");
+  }
+});
+
+test("past deals are the CRM admin's alone: a rep's page has no such wizard, and the server refuses her the import", async ({ as }) => {
+  const context = await as("dana");
+  const page = await context.newPage();
+  await page.goto(`${STAFF}paste-a-list`);
+  await expect(wizard(page).getByRole("group", { name: "Paste a list" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-section="deals"]')).toHaveCount(0);
+  expect(await direct(context.request, "deals")).toBe("403 TABLE_FORBIDDEN import");
 });
 
 test("below the admin a contact is matched on its name or on nothing, never on an e-mail", async ({ as }) => {
