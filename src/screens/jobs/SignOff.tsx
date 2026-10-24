@@ -10,6 +10,9 @@
  * is never changed, by anybody (F19): a correction would be a new one that
  * names it, and the newest stands.
  *
+ * Under "Who signed", the signed copy Invoices & Receipts draws, to download
+ * (plan 68 S13, `SignedCopy.tsx`): only once it is drawn.
+ *
  * What the office does here: adds a snag (one that stops the sign-off or not),
  * and keeps a job's site (`SiteDialog`). Addresses: `sign-off/<job>`, and
  * `sign-off/refused/<record>` from the bell (a sign-off refused on arrival,
@@ -27,6 +30,7 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { useToasts } from "../../ui/toast.tsx";
 import { CHECKS, crewPeople, dayKeyOf, num, readJobs, readSignOffs, readSnags, readSnagsByJob, signatureSrc, truthy, type CrewFacts, type Job, type SignOff, type Snag, type Visit, VISIT_LOOKUPS } from "./data.ts";
 import { hoursOf, useCrewFacts, useJobsScreen } from "./parts.tsx";
+import { SignedCopyRow } from "./SignedCopy.tsx";
 import { SiteDialog } from "./SiteDialog.tsx";
 import { RefusedOnArrival, useRefusals, type RefusedSignOff } from "../crew/RefusedOffice.tsx";
 import { usePeopleNames } from "../crew/queue.tsx";
@@ -352,6 +356,7 @@ function JobSignOff({ job, install, signOff, refused, snags, counts, crews, onDo
               <p className="crm-jb-quiet">{t("jb.so.signature.none")}</p>
             )}
             {signOff.copy_sent_to !== null && signOff.copy_sent_to !== "" && <p className="crm-jb-quiet">{t("jb.so.copy", { to: signOff.copy_sent_to })}</p>}
+            <SignedCopyRow signOff={signOff} work={job.title} />
             <p className="crm-jb-quiet" data-testid="jb-so-sealed">
               {t("jb.so.sealed")}
             </p>

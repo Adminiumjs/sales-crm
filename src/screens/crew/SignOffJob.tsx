@@ -312,7 +312,8 @@ function OpenSignOff({ visit, snags, refused, onDone, f }: { visit: CrewVisit; s
   const press = async (): Promise<void> => {
     if (!ready || signature === null || busy) return;
     setBusy(true);
-    const line = signOffLine({ visitId: visit.id, jobId: visit.job_id, site: visit.site_name, checks, signer, signature, photos: [...held, ...photos] }, key);
+    // The customer signs for what this screen shows them: the job's open snags and the checks in these words.
+    const line = signOffLine({ visitId: visit.id, jobId: visit.job_id, site: visit.site_name, checks, signer, signature, photos: [...held, ...photos], open: live, checkWords: CHECK_WORDS.map((words) => t(words)) }, key);
     const done = await save(line, { keepRefused: true });
     // The refused try this one takes over: its photos are this one's now.
     if (refused !== undefined) await queue.remove(refused.id);

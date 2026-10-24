@@ -15159,6 +15159,42 @@
             }
           },
           {
+            "ref": "snags_at_signing",
+            "type": "text",
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "maxLength": 20000
+              }
+            },
+            "label": {
+              "en-US": "Still to put right when it was signed",
+              "de-DE": "Bei der Unterschrift noch zu beheben",
+              "fr-FR": "Restait à reprendre à la signature",
+              "da-DK": "Manglede at blive udbedret ved underskriften",
+              "cs-CZ": "Zbývalo odstranit při podpisu",
+              "ar-EG": "ما بقي لإصلاحه عند التوقيع",
+              "zh-CN": "签字时仍待整改",
+              "zh-TW": "簽名時仍待改善"
+            }
+          },
+          {
+            "ref": "check_words",
+            "type": "text",
+            "maxLength": 1000,
+            "nullable": true,
+            "label": {
+              "en-US": "The checks, as worded when signed",
+              "de-DE": "Die Prüfpunkte im Wortlaut der Unterschrift",
+              "fr-FR": "Les points de contrôle tels que signés",
+              "da-DK": "Kontrolpunkterne, som de lød ved underskriften",
+              "cs-CZ": "Kontrolní body ve znění při podpisu",
+              "ar-EG": "بنود الفحص كما صيغت عند التوقيع",
+              "zh-CN": "签字时的检查项措辞",
+              "zh-TW": "簽名時的檢查項措辭"
+            }
+          },
+          {
             "ref": "signed_at",
             "type": "timestamptz",
             "rules": {
@@ -25766,6 +25802,8 @@
             "signer_name",
             "signature",
             "photos",
+            "check_words",
+            "snags_at_signing",
             "copy_sent_to",
             "corrects_id"
           ]
@@ -26208,6 +26246,8 @@
             "signer_name",
             "signature",
             "photos",
+            "check_words",
+            "snags_at_signing",
             "copy_sent_to"
           ],
           "rows": {
@@ -38745,13 +38785,21 @@
         "zh-CN": "验收签字副本",
         "zh-TW": "驗收簽名副本"
       },
+      "attach": {
+        "kind": "signed-copy",
+        "link": "sign_off",
+        "optional": true
+      },
       "vars": [
         "recipient.first_name",
         "job.title",
-        "job.code",
         "job.site_name",
-        "sign_off.signer_name",
         "sign_off.signed_at.date",
+        "sign_off.check_1",
+        "sign_off.check_2",
+        "sign_off.check_3",
+        "sign_off.check_4",
+        "sign_off.check_5",
         "practice.office_phone"
       ],
       "locales": {
@@ -38767,7 +38815,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hello {{recipient.first_name}}, thank you for signing off {{job.title}}. This is your copy of what was signed."
+                "text": "Hello {{recipient.first_name}}, thank you for signing off {{job.title}} on {{sign_off.signed_at.date}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Your signed copy is attached.",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "What you signed"
               }
             },
             {
@@ -38775,20 +38836,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "Job",
-                    "amount": "{{job.code|}}"
+                    "label": "Everything on the list is on site",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "Signed by",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "Nothing damaged, nothing marked",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "Signed",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "Keys and spares handed over",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "Where",
-                    "amount": "{{job.site_name|}}"
+                    "label": "Floor left as we found it",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "Shown them how it works",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -38819,9 +38884,10 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "by {{row.due_on.day_month}}",
+                  "note": "{{row.put_right_note|}}"
                 },
-                "empty": "Nothing is left to put right."
+                "empty": "Nothing was left to put right."
               }
             },
             {
@@ -38848,7 +38914,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hallo {{recipient.first_name}}, vielen Dank, dass Sie {{job.title}} abgenommen haben. Dies ist Ihre Kopie dessen, was unterschrieben wurde."
+                "text": "Hallo {{recipient.first_name}}, vielen Dank, dass Sie {{job.title}} am {{sign_off.signed_at.date}} abgenommen haben."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Ihre unterschriebene Kopie ist angehängt.",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Was Sie unterschrieben haben"
               }
             },
             {
@@ -38856,20 +38935,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "Auftrag",
-                    "amount": "{{job.code|}}"
+                    "label": "Alles auf der Liste ist vor Ort",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "Unterschrieben von",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "Nichts beschädigt, nichts verkratzt",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "Unterschrieben am",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "Schlüssel und Ersatzteile übergeben",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "Ort",
-                    "amount": "{{job.site_name|}}"
+                    "label": "Boden so hinterlassen, wie wir ihn vorfanden",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "Bedienung gezeigt",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -38900,9 +38983,10 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "bis {{row.due_on.day_month}}",
+                  "note": "{{row.put_right_note|}}"
                 },
-                "empty": "Es ist nichts mehr zu beheben."
+                "empty": "Es blieb nichts zu beheben."
               }
             },
             {
@@ -38929,7 +39013,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Bonjour {{recipient.first_name}}, merci d’avoir réceptionné {{job.title}}. Voici votre copie de ce qui a été signé."
+                "text": "Bonjour {{recipient.first_name}}, merci d’avoir réceptionné {{job.title}} le {{sign_off.signed_at.date}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Votre copie signée est jointe.",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ce que vous avez signé"
               }
             },
             {
@@ -38937,20 +39034,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "Chantier",
-                    "amount": "{{job.code|}}"
+                    "label": "Tout ce qui est sur la liste est sur place",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "Signé par",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "Rien d’abîmé, rien de marqué",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "Signé le",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "Clés et pièces de rechange remises",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "Lieu",
-                    "amount": "{{job.site_name|}}"
+                    "label": "Sol laissé comme nous l’avons trouvé",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "Montré comment ça marche",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -38981,9 +39082,10 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "avant le {{row.due_on.day_month}}",
+                  "note": "{{row.put_right_note|}}"
                 },
-                "empty": "Plus rien à reprendre."
+                "empty": "Il ne restait rien à reprendre."
               }
             },
             {
@@ -39010,7 +39112,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hej {{recipient.first_name}}, tak fordi du godkendte {{job.title}}. Her er din kopi af det, der blev underskrevet."
+                "text": "Hej {{recipient.first_name}}, tak fordi du godkendte {{job.title}} den {{sign_off.signed_at.date}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Din underskrevne kopi er vedhæftet.",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Det, du skrev under på"
               }
             },
             {
@@ -39018,20 +39133,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "Opgave",
-                    "amount": "{{job.code|}}"
+                    "label": "Alt på listen er på stedet",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "Underskrevet af",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "Intet beskadiget, intet mærket",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "Underskrevet",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "Nøgler og reservedele afleveret",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "Sted",
-                    "amount": "{{job.site_name|}}"
+                    "label": "Gulvet efterladt, som vi fandt det",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "Vist dem, hvordan det virker",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -39062,9 +39181,10 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "senest {{row.due_on.day_month}}",
+                  "note": "{{row.put_right_note|}}"
                 },
-                "empty": "Der er intet tilbage at udbedre."
+                "empty": "Der var intet tilbage at udbedre."
               }
             },
             {
@@ -39091,7 +39211,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Dobrý den, {{recipient.first_name}}, děkujeme za převzetí zakázky {{job.title}}. Toto je vaše kopie toho, co bylo podepsáno."
+                "text": "Dobrý den, {{recipient.first_name}}, děkujeme za převzetí zakázky {{job.title}} dne {{sign_off.signed_at.date}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Podepsanou kopii najdete v příloze.",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Co jste podepsali"
               }
             },
             {
@@ -39099,20 +39232,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "Zakázka",
-                    "amount": "{{job.code|}}"
+                    "label": "Vše ze seznamu je na místě",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "Podepisující",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "Nic poškozeného, nic poškrábaného",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "Podepsáno",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "Klíče a náhradní díly předány",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "Místo",
-                    "amount": "{{job.site_name|}}"
+                    "label": "Podlaha zanechána, jak jsme ji našli",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "Ukázáno, jak to funguje",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -39143,9 +39280,10 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "do {{row.due_on.day_month}}",
+                  "note": "{{row.put_right_note|}}"
                 },
-                "empty": "Nic dalšího k odstranění nezbývá."
+                "empty": "Nezbylo nic k odstranění."
               }
             },
             {
@@ -39172,7 +39310,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "مرحبًا {{recipient.first_name}}، شكرًا لاعتمادك استلام {{job.title}}. هذه نسختك مما تم توقيعه."
+                "text": "مرحبًا {{recipient.first_name}}، شكرًا لاعتمادك استلام {{job.title}} يوم {{sign_off.signed_at.date}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "نسختك الموقّعة مرفقة.",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "ما وقّعت عليه"
               }
             },
             {
@@ -39180,20 +39331,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "أمر العمل",
-                    "amount": "{{job.code|}}"
+                    "label": "كل ما في القائمة موجود في الموقع",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "الموقِّع",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "لا تلف ولا خدوش",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "تاريخ التوقيع",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "سُلّمت المفاتيح وقطع الغيار",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "المكان",
-                    "amount": "{{job.site_name|}}"
+                    "label": "تُركت الأرضية كما وجدناها",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "عرضنا عليهم طريقة العمل",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -39224,7 +39379,8 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "بحلول {{row.due_on.day_month}}",
+                  "note": "{{row.put_right_note|}}"
                 },
                 "empty": "لم يتبقَّ شيء لمعالجته."
               }
@@ -39253,7 +39409,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "{{recipient.first_name}}，您好！感谢您对 {{job.title}} 进行验收。这是您签字内容的副本。"
+                "text": "{{recipient.first_name}}，您好！感谢您于 {{sign_off.signed_at.date}} 对 {{job.title}} 进行验收。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "随信附上您的签字副本。",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您签字确认的内容"
               }
             },
             {
@@ -39261,20 +39430,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "工单",
-                    "amount": "{{job.code|}}"
+                    "label": "清单上的东西都已到场",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "签字人",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "无损坏、无划痕",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "签字时间",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "钥匙和备件已交付",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "地点",
-                    "amount": "{{job.site_name|}}"
+                    "label": "地面已恢复原样",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "已演示使用方法",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -39305,7 +39478,8 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "{{row.due_on.day_month}} 前",
+                  "note": "{{row.put_right_note|}}"
                 },
                 "empty": "已无待整改项。"
               }
@@ -39334,7 +39508,20 @@
             {
               "block": "email.text",
               "data": {
-                "text": "{{recipient.first_name}}，您好！感謝您對 {{job.title}} 進行驗收。這是您簽名內容的副本。"
+                "text": "{{recipient.first_name}}，您好！感謝您於 {{sign_off.signed_at.date}} 對 {{job.title}} 進行驗收。"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "隨信附上您的簽名副本。",
+                "withAttachment": true
+              }
+            },
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您簽名確認的內容"
               }
             },
             {
@@ -39342,20 +39529,24 @@
               "data": {
                 "lines": [
                   {
-                    "label": "工單",
-                    "amount": "{{job.code|}}"
+                    "label": "清單上的東西都已到場",
+                    "amount": "{{sign_off.check_1}}"
                   },
                   {
-                    "label": "簽名人",
-                    "amount": "{{sign_off.signer_name}}"
+                    "label": "無損壞、無刮痕",
+                    "amount": "{{sign_off.check_2}}"
                   },
                   {
-                    "label": "簽名時間",
-                    "amount": "{{sign_off.signed_at.date}}"
+                    "label": "鑰匙和備件已交付",
+                    "amount": "{{sign_off.check_3}}"
                   },
                   {
-                    "label": "地點",
-                    "amount": "{{job.site_name|}}"
+                    "label": "地面已恢復原樣",
+                    "amount": "{{sign_off.check_4}}"
+                  },
+                  {
+                    "label": "已示範使用方法",
+                    "amount": "{{sign_off.check_5}}"
                   }
                 ]
               }
@@ -39386,7 +39577,8 @@
                 },
                 "row": {
                   "title": "{{row.text}}",
-                  "meta": "{{row.due_on.day_month|}}"
+                  "meta": "{{row.due_on.day_month}} 前",
+                  "note": "{{row.put_right_note|}}"
                 },
                 "empty": "已無待改善項目。"
               }
@@ -44032,6 +44224,68 @@
       },
       "to": {
         "screen": "settings"
+      }
+    }
+  ],
+  "documents": [
+    {
+      "kind": "signed-copy",
+      "addOn": "invoices",
+      "table": "sign_offs",
+      "name": {
+        "en-US": "Signed copy",
+        "de-DE": "Abnahmekopie",
+        "fr-FR": "Copie signée",
+        "da-DK": "Underskrevet kopi",
+        "cs-CZ": "Podepsaná kopie",
+        "ar-EG": "نسخة الاستلام الموقّعة",
+        "zh-CN": "验收签字副本",
+        "zh-TW": "驗收簽名副本"
+      },
+      "module": "jobs",
+      "mapping": {
+        "work": {
+          "via": "job_id",
+          "column": "title"
+        },
+        "site": {
+          "via": "job_id",
+          "column": "site_name"
+        },
+        "doneOn": {
+          "via": "visit_id",
+          "column": "day"
+        },
+        "signedAt": {
+          "column": "signed_at"
+        },
+        "signerName": {
+          "column": "signer_name"
+        },
+        "signature": {
+          "column": "signature"
+        },
+        "checks": {
+          "column": "check_words"
+        },
+        "check1": {
+          "column": "check_1"
+        },
+        "check2": {
+          "column": "check_2"
+        },
+        "check3": {
+          "column": "check_3"
+        },
+        "check4": {
+          "column": "check_4"
+        },
+        "check5": {
+          "column": "check_5"
+        },
+        "snags": {
+          "column": "snags_at_signing"
+        }
       }
     }
   ]

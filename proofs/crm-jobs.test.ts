@@ -384,7 +384,8 @@ for (const [dialect, reachable] of LEGS) {
       expect(mails.map((mail) => mail.to)).toEqual([ANA, 'reception@fernway-clinics.com']);
       for (const mail of mails) {
         expect(mail.subject).toBe('Your signed copy: Clinic reception desk');
-        expect(mail.text).toContain('Ana Belova');
+        // The day it was signed, and what is still to put right (plan 68 S13: no facts table, no job code).
+        expect(mail.text).toContain('thank you for signing off Clinic reception desk on ');
         expect(mail.text).toContain('Edge trim lifting on the small table');
         expect(mail.text).toContain(OFFICE);
         expect(`${mail.subject} ${mail.text}`).not.toMatch(/\{\{/);
