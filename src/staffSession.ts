@@ -137,7 +137,7 @@ export interface Figure {
   table: string;
   shape: "single-metric" | "metric+delta" | "categorical" | "timeseries" | "multi-timeseries" | "matrix" | "distribution";
   filters?: Condition[];
-  aggregations?: { fn: "count" | "sum" | "avg" | "min" | "max"; column?: string; alias: string }[];
+  aggregations?: { fn: "count" | "sum" | "avg" | "min" | "max" | "median"; column?: string; alias: string }[];
   groupBy?: string[];
   /** `link.column`: what a group keyed by a link is called. */
   groupLabel?: string;
