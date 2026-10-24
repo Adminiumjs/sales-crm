@@ -11,6 +11,7 @@
 import { describe, expect, it } from "vitest";
 
 import manifest from "../../whole/manifest.json";
+import { HAND_OVER_CARRIES_VISITS } from "../selling/handover.ts";
 
 type Move = string | { to: string; requires?: { where?: { column: string; isNull?: boolean; eq?: unknown; gt?: unknown }[]; children?: Record<string, number> }; roles?: string[]; undo?: true; clears?: string[] };
 interface States {
@@ -157,9 +158,10 @@ describe("a deal", () => {
     ]);
     // A deal is handed over while it is open; a closed one is locked, owner and all.
     expect(deal.actions!.find((one) => one.id === "hand-over")).toMatchObject({ set: {}, in: ["open"] });
-    // Plan 68 R1c: in the same write, the old owner's visits not yet made and her open follow-ups go to the new owner.
+    // Plan 68 R1c: in the same write, the old owner's open follow-ups go to the new owner, and her visits not yet made
+    // once the engine carries a row that holds a time slot (0.3.35 refuses it); the sheet says what the manifest does.
     expect((deal.actions!.find((one) => one.id === "hand-over") as { carries?: unknown }).carries).toEqual([
-      { table: "site_visits", via: "deal_id", column: "rep_id", where: [{ column: "state", eq: "booked" }] },
+      ...(HAND_OVER_CARRIES_VISITS ? [{ table: "site_visits", via: "deal_id", column: "rep_id", where: [{ column: "state", eq: "booked" }] }] : []),
       { table: "follow_ups", via: "deal_id", column: "owner_id", where: [{ column: "done", eq: false }] },
     ]);
   });

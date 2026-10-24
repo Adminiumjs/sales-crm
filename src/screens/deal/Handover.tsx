@@ -22,6 +22,7 @@ import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { formatters, noonOf } from "../../lib/format.ts";
 import { scopeOf } from "../../selling/figures.ts";
+import { HAND_OVER_CARRIES_VISITS } from "../../selling/handover.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
@@ -109,7 +110,7 @@ async function readBrief(session: StaffSession, dealId: number, owner: string | 
     session.can("activities", "read") ? session.list<Activity>("activities", { select: ["id", "kind", "text", "author_id", "at"], where: of, order: ["at.desc", "id.desc"], limit: 3 }).then((page) => page.rows) : Promise.resolve([] as Activity[]),
     session.can("follow_ups", "read") ? session.list<Step>("follow_ups", { select: ["id", "owner_id", "due_at", "text"], where: { and: [of, { column: "done", op: "eq", value: false }] }, order: ["due_at"], limit: 50, count: "exact" }) : Promise.resolve({ rows: [] as Step[], total: 0 }),
     // What the server carries: the owner's booked visits on the deal, and her open follow-ups on it.
-    counted("site_visits", { and: [of, { column: "state", op: "eq", value: "booked" }, theirs("rep_id")] }),
+    HAND_OVER_CARRIES_VISITS ? counted("site_visits", { and: [of, { column: "state", op: "eq", value: "booked" }, theirs("rep_id")] }) : Promise.resolve(0),
     counted("follow_ups", { and: [of, { column: "done", op: "eq", value: false }, theirs("owner_id")] }),
   ]);
   return { last, steps: steps.rows, open: steps.total ?? 0, carries: { visits, steps: carried } };
@@ -336,7 +337,15 @@ export function Handover({ rest }: ScreenProps) {
                     {carries !== null && (
                       <div className="crm-room-note" data-testid="hand-carries">
                         <p>{carryLine()}</p>
-                        <p className="crm-room-quiet">{isMine ? t("dealrules.carry.stay.mine") : t("dealrules.carry.stay.theirs", { name: firstName(from) })}</p>
+                        <p className="crm-room-quiet">
+                          {HAND_OVER_CARRIES_VISITS
+                            ? isMine
+                              ? t("dealrules.carry.stay.mine")
+                              : t("dealrules.carry.stay.theirs", { name: firstName(from) })
+                            : isMine
+                              ? t("dealrules.carry.stayVisits.mine")
+                              : t("dealrules.carry.stayVisits.theirs", { name: firstName(from) })}
+                        </p>
                       </div>
                     )}
                     <div className="crm-hand-tell" data-testid="hand-tell">

@@ -349,17 +349,6 @@
               "handOver": true,
               "carries": [
                 {
-                  "table": "site_visits",
-                  "via": "deal_id",
-                  "column": "rep_id",
-                  "where": [
-                    {
-                      "column": "state",
-                      "eq": "booked"
-                    }
-                  ]
-                },
-                {
                   "table": "follow_ups",
                   "via": "deal_id",
                   "column": "owner_id",

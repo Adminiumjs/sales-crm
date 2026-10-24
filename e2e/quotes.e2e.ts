@@ -276,6 +276,11 @@ test("what Quotes shows and does is the server's to refuse: Read-only, another r
   const danaHeaders = await csrf(dana);
   expect((await dana.post(data("quotes", `/${String(draft.id)}/actions/approve`), { data: { from: "draft", values: { decision_note: "mine" } }, headers: danaHeaders })).status()).toBe(403);
   expect((await dana.patch(data("quotes", `/${String(draft.id)}`), { data: { values: { approval: "approved" } }, headers: danaHeaders })).status()).toBe(403);
+  // No new quote on a closed deal (plan 68 R1a): the server refuses Dana's direct create on her won deal, lines and all.
+  const wonDeal = (await rows<{ id: number }>(dana, data, "deals", { column: "state", op: "eq", value: "won" }))[0]!;
+  const onWon = await dana.post(data("quotes"), { data: { values: { deal_id: wonDeal.id }, children: { quote_lines: [{ values: { description: "Late", qty: 1, rate: 1 } }] } }, headers: danaHeaders });
+  expect(onWon.status()).toBe(409);
+  expect(((await onWon.json()) as { error: { code: string } }).error.code).toBe("STATE_MOVE_REFUSED");
   // Reps have no Approvals page.
   const danaPage = await (await as("dana")).newPage();
   await danaPage.goto(`${STAFF}approvals`);
@@ -362,6 +367,41 @@ test("Approvals: the four requests, a decline with its line, a question that lan
   await expect(tessa.locator(".crm-toast")).toHaveText("Declined. The deal stays as it is.");
   const now = (await rows<Record<string, unknown>>(ivy, data, "quotes", { column: "id", op: "eq", value: quoteId }))[0]!;
   expect([now["approval"], now["decision_note"], now["status"]]).toEqual(["refused", "No list price, no sale.", "draft"]);
+
+  // "REOPEN IT" (plan 68 S2). Ivy's own request, declined: not hers to reopen (she asked it, and the deal is hers), as the
+  // server holds; another rep's declined draft (Q-1007, on Dana's Quiet-room pods) is offered to her.
+  await page.reload();
+  await filters.nth(1).click();
+  const ownDecided = page.locator(".crm-approval").filter({ hasText: "Spec: the manager's own" });
+  await expect(ownDecided).toContainText("Declined by Tessa Marlow");
+  await expect(ownDecided.getByRole("button", { name: "Reopen it" })).toHaveCount(0);
+  await expect(page.locator(".crm-approval").filter({ hasText: "Quiet-room pods" }).getByRole("button", { name: "Reopen it" })).toBeVisible();
+  // A sent one (d1's) is not reopened: the customer holds it.
+  await expect(page.locator(".crm-approval").filter({ hasText: "Fourth-floor desk rows" }).getByRole("button", { name: "Reopen it" })).toHaveCount(0);
+  // The CRM admin reopens Ivy's, with a note: back to waiting, still Ivy's request, the decline kept in the history.
+  await tessa.reload();
+  await tessa.getByRole("group", { name: "Which requests" }).getByRole("button").nth(1).click();
+  const reopen = tessa.locator(".crm-approval").filter({ hasText: "Spec: the manager's own" });
+  await reopen.getByRole("button", { name: "Reopen it" }).click();
+  await expect(reopen).toContainText("It goes back to Waiting with your note, still Ivy’s request. The decision before it stays in the quote’s history.");
+  await reopen.getByLabel("Why are you reopening this decision?").fill("Spec: the list price moved");
+  await reopen.getByRole("button", { name: "Reopen the decision" }).click();
+  await expect(tessa.locator(".crm-toast")).toHaveText("Back in the queue.");
+  const back = tessa.locator(".crm-approval").filter({ hasText: "Spec: the manager's own" });
+  await expect(back.getByTestId("approval-reopened")).toContainText("Reopened after a decision on");
+  await expect(back.getByTestId("approval-reopened")).toContainText("“Spec: the list price moved”");
+  await expect(back).toContainText("asked by Ivy");
+  const reopened = (await rows<Record<string, unknown>>(ivy, data, "quotes", { column: "id", op: "eq", value: quoteId }))[0]!;
+  expect([reopened["approval"], reopened["asked_by_id"], reopened["decision_note"]]).toEqual(["asked", me, "Spec: the list price moved"]);
+  const history = await ivy.get(data("quotes", `/${String(quoteId)}/history?limit=50`));
+  expect(history.status()).toBe(200);
+  expect(await history.text()).toContain("No list price, no sale.");
+  // Still Ivy's own: no decision offered to her, and the server refuses one by a direct call.
+  await page.reload();
+  await expect(own).toContainText("This is your own request.");
+  await expect(own.getByRole("button", { name: "Approve…" })).toHaveCount(0);
+  expect((await ivy.post(data("quotes", `/${String(quoteId)}/actions/approve`), { data: { from: "draft", values: { decision_note: "Mine" } }, headers })).status()).toBe(403);
+
   const reason = (await rows<{ id: number }>(ivy, data, "lost_reasons"))[0]!;
   expect((await ivy.post(data("deals", `/${String(deal)}/actions/mark-lost`), { data: { from: "open", values: { lost_reason_id: reason.id } }, headers })).status()).toBe(200);
 });

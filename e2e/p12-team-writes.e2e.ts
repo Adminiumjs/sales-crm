@@ -285,3 +285,68 @@ test("New starter: her patch, the server's count; a starter made with the last o
   expect(refused.status()).toBe(403);
   expect(problems).toEqual([]);
 });
+
+test("the sales manager sets no target of her own, nor her own first-year target, and marks only the decisions of a meeting she runs (plan 68 X2)", async ({ as, api, data }) => {
+  const admin = await api("tessa");
+  const adminHeaders = await csrf(admin);
+  const context = await as("ivy");
+  await room(context.request, data, 80);
+  const ivy = context.request;
+  const ivyHeaders = await csrf(ivy);
+  const ivyId = await me(ivy);
+  const page = await context.newPage();
+  const problems = watch(page);
+  const made = async (ref: string, values: Record<string, unknown>): Promise<number> => {
+    const res = await admin.post(data(ref), { data: { values }, headers: adminHeaders });
+    expect(res.status(), await res.text()).toBe(201);
+    return ((await res.json()) as { data: { id: number } }).data.id;
+  };
+  const drop = async (ref: string, id: number): Promise<void> => {
+    expect((await admin.delete(data(ref, `/${String(id)}?confirm=true`), { headers: adminHeaders })).status()).toBeLessThan(300);
+  };
+
+  // HER OWN TARGET, set by the CRM admin: her row is shown with no button, the page says who sets it, the server says no.
+  const target = await made("targets", { rep_id: ivyId, year: 2026, amount: 300000 });
+  try {
+    await page.goto(`${STAFF}targets`);
+    const row = page.locator(".crm-tg-row", { hasText: "Ivy Sandoval" });
+    await expect(row).toBeVisible();
+    await expect(row.getByRole("button", { name: /^Change the target of Ivy/ })).toHaveCount(0);
+    await expect(page.locator(".crm-tg-row", { hasText: "Dana Whitlock" }).getByRole("button", { name: /^Change the target of Dana/ })).toBeVisible();
+    await expect(page.getByTestId("tg-own")).toHaveText("Your own target is set by the CRM admin.");
+    expect((await ivy.patch(data("targets", `/${String(target)}`), { data: { values: { amount: 1 } }, headers: ivyHeaders })).status()).toBe(404);
+  } finally {
+    await drop("targets", target);
+  }
+
+  // HER OWN STARTER ROW: its first-year target is not hers to set, and the page says who does.
+  const starter = await made("starters", { name: "Spec: Ivy Sandoval", starts_on: "2026-09-07", manager_id: ivyId, user_id: ivyId });
+  try {
+    await page.goto(`${STAFF}new-starter`);
+    await page.getByRole("group", { name: "Which starter" }).getByRole("button", { name: /Spec: Ivy Sandoval/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Spec: Ivy Sandoval");
+    await expect(page.getByTestId("st-target-own")).toHaveText("Your own first-year target is set by the CRM admin.");
+    await expect(page.getByRole("button", { name: /half the average target/ })).toHaveCount(0);
+    expect((await ivy.patch(data("starters", `/${String(starter)}`), { data: { values: { first_year_target: 1 } }, headers: ivyHeaders })).status()).toBe(404);
+  } finally {
+    await drop("starters", starter);
+  }
+
+  // A MEETING THE CRM ADMIN RUNS, before the sample's: its decisions are hers to mark, not Ivy's.
+  const next = (await rows<{ id: number; at: string }>(ivy, data, "meetings", undefined, "&order=at"))[0]!;
+  const meeting = await made("meetings", { at: new Date(Date.parse(next.at) - 2 * 3_600_000).toISOString(), minutes: 30 });
+  const decision = await made("meeting_decisions", { meeting_id: meeting, text: "Spec: the CRM admin's own decision", who_id: ivyId });
+  try {
+    expect((await rows<{ run_by_id: string }>(admin, data, "meetings", { column: "id", op: "eq", value: meeting }))[0]!.run_by_id).toBe(await me(admin));
+    await page.goto(`${STAFF}weekly-meeting`);
+    const last = page.getByTestId("mt-last");
+    await expect(last.locator("li", { hasText: "Spec: the CRM admin's own decision" })).toBeVisible();
+    await expect(last.getByRole("button", { name: /^Mark done|^Carry over/ })).toHaveCount(0);
+    await expect(page.getByTestId("mt-runner")).toHaveText("The decisions are marked by Tessa, who runs this meeting.");
+    expect((await ivy.patch(data("meeting_decisions", `/${String(decision)}`), { data: { values: { state: "done" } }, headers: ivyHeaders })).status()).toBe(404);
+  } finally {
+    await drop("meeting_decisions", decision);
+    await drop("meetings", meeting);
+  }
+  expect(problems).toEqual([]);
+});

@@ -52,6 +52,10 @@ async function retire(api: (person: string) => Promise<APIRequestContext>, data:
     for (const step of await rows<{ id: number }>(admin, data, "follow_ups", { column: "deal_id", op: "eq", value: deal.id })) {
       expect((await admin.delete(data("follow_ups", `/${String(step.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
     }
+    // A visit not yet made would go with the hand-over below (plan 68 R1c): the spec's own are taken away first.
+    for (const visit of await rows<{ id: number }>(admin, data, "site_visits", { column: "deal_id", op: "eq", value: deal.id })) {
+      expect((await admin.delete(data("site_visits", `/${String(visit.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
+    }
     if (deal.owner_id !== owner) expect((await admin.post(data("deals", `/${String(deal.id)}/actions/hand-over`), { data: { from: "open", values: { owner_id: owner } }, headers })).status()).toBe(200);
     expect((await admin.post(data("deals", `/${String(deal.id)}/actions/mark-lost`), { data: { from: "open", values: { lost_reason_id: reason.id } }, headers })).status()).toBe(200);
   }
@@ -699,7 +703,7 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   await retire(api, data, "Room spec: talk");
 });
 
-test("hand a deal over: a rep hands on her own with a note; whoever leads the team moves the follow-ups too; the room shows whose it was", async ({ as, api, data }) => {
+test("hand a deal over: a rep hands on her own with a note; the server carries her open follow-ups; the room shows whose it was", async ({ as, api, data }) => {
   // The tests before this one work Dana's screens hard, and the server counts her requests by the minute (300): on a stage-2
   // stand her minute ran out during this test (429s on the hand-over dialog). She starts it with her whole minute.
   test.setTimeout(240_000);
@@ -739,11 +743,15 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   await expect(fact(brief, "Expected close")).toHaveText("Aug 14, 2026");
   await expect(fact(brief, "Main contact")).toHaveText("Petra Lindqvist");
   await expect(fact(brief, "Currently")).toHaveText("Dana Whitlock");
-  // Two open follow-ups on it, the first late. A rep's stay in her queue, and the page says so before she presses anything.
+  // Two open follow-ups on it, the first late. What goes with the deal is said before she presses anything (plan 68 R1c):
+  // her two open follow-ups, counted from what she reads. Her visits (v2, v10) stay hers: Adminium 0.3.35 does not carry
+  // a row that holds a time slot.
   await expect(page.getByTestId("hand-steps-title")).toHaveText("2 open follow-ups on it");
   await expect(brief.locator(".crm-hand-steps li")).toHaveCount(2);
   await expect(brief.locator(".crm-hand-steps li").first()).toHaveAttribute("data-late", "1");
-  await expect(page.getByTestId("hand-steps-stay")).toContainText("Its 2 open follow-ups stay in your queue");
+  const carries = page.getByTestId("hand-carries");
+  await expect(carries.locator("p").first()).toHaveText("2 of your open follow-ups go to the new owner.");
+  await expect(carries.locator("p").nth(1)).toHaveText("Your visits on the deal stay yours, and a colleague’s own follow-ups on it stay with them.");
   await expect(page.getByRole("switch", { name: "Move the open follow-ups across" })).toHaveCount(0);
   await expect(brief.locator(".crm-hand-last li")).toHaveCount(3);
   // Who can take it: the others with a sales profile.
@@ -766,7 +774,9 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   const stepId = ((await made.json()) as { data: { id: number } }).data.id;
   await page.goto(`${STAFF}hand-over/${String(deal.id)}`);
   await expect(which.getByRole("radio", { name: /Room spec: handed/ })).toHaveAttribute("aria-checked", "true");
+  await expect(carries.locator("p").first()).toHaveText("1 open follow-up of yours goes to the new owner.");
   await who.getByRole("radio", { name: "Priya" }).click();
+  await expect(carries.locator("p").first()).toHaveText("1 open follow-up of yours goes to Priya.");
   await expect(page.getByTestId("hand-who-note")).toHaveText("Priya Raman picks it up from Dana Whitlock. Their board updates straight away.");
   await page.getByRole("textbox", { name: "Notes for them" }).fill("Ines decides. She wants the tall lockers and a price by Friday.");
   // She hands it over without introducing Priya to the customer: the tick is hers to take off, and nothing is written.
@@ -778,20 +788,19 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   await expect(done).toContainText("Room spec: handed is Priya Raman's now.");
   await expect(done).toContainText("Priya Raman owns the deal, its board card and its deal room.");
   await expect(done).toContainText("Your notes are on the deal, as a note.");
-  await expect(page.getByTestId("hand-stayed")).toContainText("1 open follow-up stays with Dana.");
+  await expect(page.getByTestId("hand-carried-visits")).toHaveCount(0);
+  await expect(page.getByTestId("hand-carried-steps")).toHaveText("1 open follow-up moved to Priya's queue.");
   await expect(done).toContainText("It is Priya's to open now, and no longer on your board.");
   await expect(page.getByTestId("hand-introduced")).toHaveCount(0);
   await expect(done.getByRole("link", { name: "Open the deal room" })).toHaveCount(0);
-  // The server holds exactly that: Priya's deal, with Dana's note on it; not Dana's to read any more; her follow-up still hers.
+  // The server holds exactly that: Priya's deal, with Dana's note on it; not Dana's to read any more; the follow-up moved
+  // with it, in the same write.
   const handed = (await rows<{ owner_id: string }>(priya, data, "deals", { column: "id", op: "eq", value: deal.id }))[0]!;
   expect(handed.owner_id).toBe(priyaId);
   expect((await rows<{ kind: string; text: string; author_id: string }>(priya, data, "activities", { column: "deal_id", op: "eq", value: deal.id })).map((one) => [one.kind, one.text, one.author_id])).toEqual([["note", "Ines decides. She wants the tall lockers and a price by Friday.", deal.me]]);
   expect((await dana.get(data("deals", `/${String(deal.id)}`))).status()).toBe(404);
-  expect((await rows<{ owner_id: string }>(dana, data, "follow_ups", { column: "id", op: "eq", value: stepId }))[0]!.owner_id).toBe(deal.me);
-  // A rep may not give a follow-up of hers to a colleague: the server's refusal, which is why the page offers her no tick.
-  const given = await dana.patch(data("follow_ups", `/${String(stepId)}`), { data: { values: { owner_id: priyaId } }, headers });
-  expect(given.status()).toBe(403);
-  expect(((await given.json()) as { error: { details: { reason: string } } }).error.details.reason).toBe("staff-column");
+  expect((await rows<{ owner_id: string }>(priya, data, "follow_ups", { column: "id", op: "eq", value: stepId }))[0]!.owner_id).toBe(priyaId);
+  expect(await rows(dana, data, "follow_ups", { column: "id", op: "eq", value: stepId })).toEqual([]);
   await page.getByRole("button", { name: "Hand over another" }).click();
   await expect(which.getByRole("radio")).toHaveCount(6);
   expect(problems).toEqual([]);
@@ -806,12 +815,14 @@ test("hand a deal over: a rep hands on her own with a note; whoever leads the te
   expect((await rows(ivy, data, "deals", { column: "state", op: "eq", value: "open" })).length).toBe(15);
   await team.getByRole("radio", { name: /Room spec: handed/ }).click();
   await expect(team.getByRole("radio", { name: /Room spec: handed/ })).toContainText("Cobalt Legal · Discovery · Priya");
-  // The follow-up is still Dana's: she moves it herself first, as its owner's lead, by handing the deal back through Dana.
+  // She hands it back to Dana first, by a direct call: Priya's follow-up goes back with it.
   const back = await ivy.post(data("deals", `/${String(deal.id)}/actions/hand-over`), { data: { from: "open", values: { owner_id: deal.me } }, headers: await csrf(ivy) });
   expect(back.status(), await back.text()).toBe(200);
   await expect(team.getByRole("radio", { name: /Room spec: handed/ })).toContainText("Cobalt Legal · Discovery · Dana");
   await expect(hers.getByTestId("hand-steps-title")).toHaveText("1 open follow-up on it");
-  await expect(hers.getByRole("switch", { name: "Move the open follow-ups across" })).toHaveAttribute("aria-checked", "true");
+  await expect(hers.getByRole("switch", { name: "Move the open follow-ups across" })).toHaveCount(0);
+  await expect(hers.getByTestId("hand-carries").locator("p").first()).toHaveText("1 open follow-up of Dana’s goes to the new owner.");
+  await expect(hers.getByTestId("hand-carries").locator("p").nth(1)).toHaveText("Dana’s visits on the deal stay Dana’s, and anybody else’s own follow-ups on it stay with them, yours included.");
   await hers.getByRole("radiogroup", { name: "Who picks it up?" }).getByRole("radio", { name: "Sam" }).click();
   await hers.getByRole("button", { name: "Hand it to Sam" }).click();
   const hersDone = hers.getByTestId("hand-done");
