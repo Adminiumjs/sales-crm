@@ -76,6 +76,8 @@ export type Condition =
   | { column: string; op: "in"; value: unknown[] }
   | { column: string; op: "between"; value: [unknown, unknown] }
   | { column: string; op: "is_null" | "not_null" }
+  /** A figure's filter only: a day on the business's calendar, `today`, `today-89`, `today+7` or `YYYY-MM-DD`, as the server reads it. */
+  | { column: string; op: "eq" | "gt" | "gte" | "lt" | "lte"; day: string }
   | { and: Condition[] }
   | { or: Condition[] };
 

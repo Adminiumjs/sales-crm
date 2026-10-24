@@ -39,6 +39,7 @@ import { hours } from "../strings/hours.ts";
 import { fleet } from "../strings/fleet.ts";
 import { offline } from "../strings/offline.ts";
 import { vandays } from "../strings/vandays.ts";
+import { scorecard } from "../strings/scorecard.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
 
 /**
@@ -82,6 +83,7 @@ const AREAS = [
   fleet satisfies Area<(typeof fleet)["en-US"]>,
   offline satisfies Area<(typeof offline)["en-US"]>,
   vandays satisfies Area<(typeof vandays)["en-US"]>,
+  scorecard satisfies Area<(typeof scorecard)["en-US"]>,
 ] as const;
 
 /**
@@ -124,4 +126,5 @@ export type MessageKey =
   | keyof (typeof hours)["en-US"]
   | keyof (typeof fleet)["en-US"]
   | keyof (typeof offline)["en-US"]
-  | keyof (typeof vandays)["en-US"];
+  | keyof (typeof vandays)["en-US"]
+  | keyof (typeof scorecard)["en-US"];
