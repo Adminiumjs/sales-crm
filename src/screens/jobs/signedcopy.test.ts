@@ -8,9 +8,13 @@ import { StaffError, type StaffSession } from "../../staffSession.ts";
 import { filenameOf, readSignedCopy } from "./SignedCopy.tsx";
 
 const reply = (format: string) => ({ contentUrl: "/api/v1/documents/doc_1/content", printUrl: "/api/v1/documents/doc_1/print", document: { format, status: "rendered", hasContent: true } });
-const sessionAnswering = (answer: unknown, asked: unknown[] = []): StaffSession =>
+const KINDS = { kinds: [{ addOnKey: "invoices", kind: "invoice" }, { addOnKey: "invoices", kind: "signed-copy" }] };
+/** A session whose Invoices draws `kinds`, and whose draw answers `answer`; what it was asked to draw goes in `asked`. */
+const sessionAnswering = (answer: unknown, asked: unknown[] = [], kinds: unknown = KINDS, addOns: Record<string, unknown> = { invoices: { version: "1.0.14" } }): StaffSession =>
   ({
+    config: { addOns },
     call: (method: string, path: string, body: unknown) => {
+      if (method === "GET" && path === "/documents/kinds") return Promise.resolve(kinds);
       asked.push({ method, path, body });
       return answer instanceof Error ? Promise.reject(answer) : Promise.resolve(answer);
     },
@@ -34,6 +38,13 @@ describe("the signed copy's file row", () => {
 
   it("opens the print page where the add-on drew no PDF (Arabic), and leaves out a size it was not told", async () => {
     expect(await readSignedCopy(sessionAnswering(reply("html")), 8, async () => null)).toEqual({ url: "/api/v1/documents/doc_1/print", format: "html", filename: null, bytes: null });
+  });
+
+  it("asks for no copy while Invoices draws no signed copy (1.0.13: it waits), or is not attached", async () => {
+    const asked: unknown[] = [];
+    expect(await readSignedCopy(sessionAnswering(reply("pdf"), asked, { kinds: [{ addOnKey: "invoices", kind: "invoice" }] }), 8, headers({}))).toBeNull();
+    expect(await readSignedCopy(sessionAnswering(reply("pdf"), asked, KINDS, {}), 8, headers({}))).toBeNull();
+    expect(asked).toEqual([]);
   });
 
   it("shows nothing when the door gives no copy: waiting for Invoices' update, no Invoices, or beyond the reader's reach", async () => {

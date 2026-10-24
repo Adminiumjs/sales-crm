@@ -7,7 +7,8 @@
  * (`POST /apps/crm/documents/render`), which the server judges by the
  * reader's reach on the sign-off and every table and column it prints, and
  * which hands back the copy already drawn while the sign-off is unchanged
- * (the one e-mail 17 carried). So the row is there only when the job is signed
+ * (the one e-mail 17 carried). It asks only while Invoices is attached and
+ * draws the kind (`drawsSignedCopy`). So the row is there only when the job is signed
  * off AND the copy is drawn: with no Invoices, or an Invoices that does not
  * draw the kind yet (the copy waits), or a reader who may not read it, the
  * door refuses and the row is left out, with no line in its place.
@@ -53,8 +54,31 @@ export function filenameOf(disposition: string | null): string | null {
   return plain === null || plain[1]!.trim() === "" ? null : plain[1]!.trim();
 }
 
+const drawing = new WeakMap<StaffSession, Promise<boolean>>();
+
+/**
+ * Whether Invoices & Receipts is attached to the app, on, and draws the kind: asked once a page (the kinds the
+ * add-ons draw, a plain read). An Invoices that does not draw it yet leaves the copy waiting, and the screen asks
+ * nothing more of it: no refused draw for every signed job.
+ */
+export function drawsSignedCopy(session: StaffSession): Promise<boolean> {
+  const known = drawing.get(session);
+  if (known !== undefined) return known;
+  if (session.config.addOns?.["invoices"] === undefined) return Promise.resolve(false);
+  const asked = session.call<{ kinds?: { addOnKey: string; kind: string }[] }>("GET", "/documents/kinds").then(
+    (reply) => (reply.kinds ?? []).some((one) => one.addOnKey === "invoices" && one.kind === "signed-copy"),
+    () => {
+      drawing.delete(session);
+      return false;
+    },
+  );
+  drawing.set(session, asked);
+  return asked;
+}
+
 /** The signed copy of a sign-off, drawn (or the one drawn before), or null when the reader is given none. */
 export async function readSignedCopy(session: StaffSession, signOffId: number, head: (url: string) => Promise<Response | null> = headOf): Promise<SignedCopy | null> {
+  if (!(await drawsSignedCopy(session))) return null;
   let reply: RenderReply;
   try {
     reply = await session.call<RenderReply>("POST", "/apps/crm/documents/render", { kind: "signed-copy", ref: "sign_offs", pk: { id: signOffId } });

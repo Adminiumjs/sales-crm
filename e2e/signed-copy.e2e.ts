@@ -19,7 +19,7 @@ const violations = async (page: Page): Promise<string[]> =>
   (await new AxeBuilder({ page }).include('[data-testid="jb-so-card"]').withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations.map((one) => `${one.impact ?? "?"} ${one.id}: ${one.nodes.map((node) => node.target.join(" ")).join(" | ")}`);
 const signOffOf = async (person: APIRequestContext, data: Data, job: number): Promise<number> => (await rows<{ id: number }>(person, data, "sign_offs", { column: "job_id", op: "eq", value: job }))[0]!.id;
 
-test("the signed copy's row: only when it is drawn, the server's file and size, a download of its PDF; none for a reader it is not for", async ({ as, data }) => {
+test("the signed copy's row: only when it is drawn, the server's file and size, a download of its PDF; none for a reader it is not for", async ({ as, data, stand }) => {
   const context = await as("ada");
   const page = await context.newPage();
   const problems = watch(page);
@@ -27,6 +27,8 @@ test("the signed copy's row: only when it is drawn, the server's file and size, 
   const id = await signOffOf(context.request, data, 8);
   const asked = await render(context.request, id);
   const drawn = asked.status() < 300;
+  // Which case this stand is: its Invoices draws the copy, or the copy waits (1.0.13, or no Invoices).
+  console.log(`[signed copy] ${drawn ? "drawn" : `waiting (${String(asked.status())})`}, add-ons ${JSON.stringify(stand.addOns)}`);
   await page.goto(`${STAFF}sign-off/8`);
   const card = page.getByTestId("jb-so-card");
   await expect(card).toHaveAttribute("data-signed", "1");
