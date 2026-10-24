@@ -251,8 +251,14 @@ test("a job signed off from its visit as one request: refused with its files thr
     const fixed = (await rows<{ state: string; put_right_note: string; put_right_photo: string | null }>(context.request, data, "snags", { column: "id", op: "eq", value: snagId }))[0]!;
     expect([fixed.state, fixed.put_right_note, fixed.put_right_photo?.startsWith("file_")]).toEqual(["put-right", "Levelled the feet", true]);
 
+    // The office raises one that does not stop it: the customer is shown it as still to put right (plan 68 S13).
+    const scuff = await ada.post(data("snags"), { data: { values: { visit_id: fitting, text: "Spec crew: a scuff on the end panel", stops_sign_off: false } }, headers: adaHeaders });
+    expect(scuff.status(), await scuff.text()).toBe(201);
+    const scuffDue = ((await scuff.json()) as { data: { due_on: string } }).data.due_on.slice(0, 10);
+
     // Back to the sign-off: the checks, the name and the photo kept from the refused one; he signs again, with no signal.
     await page.goto(`${STAFF}sign-off-the-job/${String(fitting)}`);
+    await expect(page.locator(`[data-snag="${String(((await scuff.json()) as { data: { id: number } }).data.id)}"]`)).toContainText("Spec crew: a scuff on the end panel");
     await expect(page.locator('button[data-check][aria-checked="true"]')).toHaveCount(5);
     await expect(page.getByLabel("Their name")).toHaveValue("Petra Holm");
     const pad = page.getByTestId("cw-sign-customer");
@@ -288,8 +294,14 @@ test("a job signed off from its visit as one request: refused with its files thr
     await page.unroute("**/api/v1/data/**");
     expect(sent.length).toBe(2);
     expect(sent[1]).toEqual({ key: sent[0]!.key, replayed: true });
-    const made = await rows<{ id: number; signer_name: string; signature: string; photos: unknown; check_5: boolean }>(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId });
+    const made = await rows<{ id: number; signer_name: string; signature: string; photos: unknown; check_5: boolean; snags_at_signing: string | null; check_words: string | null }>(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId });
     expect(made.map((one) => [one.signer_name, one.check_5, one.signature.startsWith("file_")])).toEqual([["Petra Holm", true, true]]);
+    // What his screen showed the customer went with it, from the phone's queue: the snag still open (not the one put
+    // right), and the five checks in the words he read them in.
+    expect(JSON.parse(made[0]!.snags_at_signing ?? "null")).toEqual([{ what: "Spec crew: a scuff on the end panel", by: scuffDue, note: "" }]);
+    expect(made[0]!.check_words?.split("\n")).toEqual(["Everything on the list is on site", "Nothing damaged, nothing marked", "Keys and spares handed over", "Floor left as we found it", "Shown them how it works"]);
+    // …and nobody of the crew changes them after.
+    expect((await context.request.patch(data("sign_offs", `/${String(made[0]!.id)}`), { data: { values: { snags_at_signing: "[]" } }, headers: await csrf(context.request) })).status()).toBeGreaterThanOrEqual(403);
     await expect(page.getByTestId("cw-signed-page")).toBeVisible();
     await expect(page.getByTestId("cw-signed-by")).toHaveText("Signed by Petra Holm, Tuesday, July 28, 2026");
     // Nobody of the crew changes it or takes it away: the server's refusal.
