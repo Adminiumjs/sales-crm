@@ -64,7 +64,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('"Add sample data" brings the ten lines and six suppliers, and Inventory writes what is on hand and on order', async () => {
       const added = await service().add(await app(), { locale: 'en-US', ...who() });
-      expect(added.counts).toMatchObject({ deals: 40, deal_stock_needs: 17, 'inventory:items': 10, 'inventory:suppliers': 6, 'inventory:receipt_lines': 7, 'inventory:purchase_orders': 4 });
+      expect(added.counts).toMatchObject({ deals: 40, deal_stock_needs: 17, 'inventory:items': 10, 'inventory:suppliers': 6, 'inventory:receipt_lines': 7, 'inventory:purchase_orders': 133, 'inventory:receipts': 130 });
       // On hand, line by line: the ledger's figures, kept by Inventory (a level's balance, added up to its item).
       expect(await bySku('on_hand')).toEqual({ 'MER-001': 120, 'MER-002': 60, 'MER-003': 4, 'MER-004': 0, 'MER-005': 90, 'MER-006': 35, 'MER-007': 0, 'MER-008': 400, 'MER-009': 0, 'MER-010': 24 });
       // What each cost, as the receipt said: Inventory's own average.
@@ -79,6 +79,24 @@ for (const [dialect, reachable] of LEGS) {
       expect((await w.h.rows(`select kind, count(*) as c from ${inv('movements')} where receipt_id is not null group by kind`)).map((row) => `${String(row['kind'])} ${String(n(row['c']))}`)).toEqual(['opening 7']);
       expect(await count(inv('movements'), 'receipt_id is null')).toBe(0);
     }, 600_000);
+
+    it('the ledger\'s deliveries (screen 60): 129 orders delivered once each, the days due copied from them, lateness worked out by the server', async () => {
+      // The orders stay drafts (their status is Inventory's ledger's to write, never a sample's); each says when it was due.
+      expect(await count(inv('purchase_orders'), "status = 'draft' and expected_on is not null")).toBe(129);
+      expect(await count(inv('receipts'), "kind = 'delivery' and status = 'posted' and late is not null")).toBe(129);
+      // Each delivery's day due is its order's, copied by the server; its lateness the add-on's own formula's.
+      const off = await w.h.rows(`select count(*) as c from ${inv('receipts')} r join ${inv('purchase_orders')} o on o.id = r.po_id where r.expected_on is null or r.expected_on <> o.expected_on`);
+      expect(n(off[0]!['c'])).toBe(0);
+      // By supplier, the late ones and their days: Halvard 1 (2 days), Kirkwall 2 (1, 3), Ostrom 5 (35 days), Trellis 2 (14), Fenlow 8 (168), Marchmont none.
+      const by = await w.h.rows(`select s.name, count(*) as c, sum(r.late) as late, sum(r.days_late) as days from ${inv('receipts')} r join ${inv('purchase_orders')} o on o.id = r.po_id join ${inv('suppliers')} s on s.id = o.supplier_id group by s.name order by s.name`);
+      expect(Object.fromEntries(by.map((row) => [String(row['name']), [n(row['c']), n(row['late']), n(row['days'])]]))).toEqual({
+        'Fenlow Acoustics': [15, 8, 168], 'Halvard Werke': [29, 1, 2], 'Kirkwall Steel': [20, 2, 4], 'Marchmont Joinery': [7, 0, 0], 'Ostrom Seating': [35, 5, 35], 'Trellis Textiles': [23, 2, 14],
+      });
+      // A past delivery moved no stock: the shelf is the opening receipt's alone, and the four orders on their way still are.
+      expect(await count(inv('receipt_lines'))).toBe(7);
+      expect(await count(inv('purchase_orders'), "status = 'sent'")).toBe(4);
+      expect((await w.h.rows(`select number from ${inv('purchase_orders')} where status = 'sent' order by number`)).map((row) => String(row['number']))).toEqual(['PO-1001', 'PO-1002', 'PO-1003', 'PO-1004']);
+    });
 
     it('the ledger\'s "short today": where open deals ask for more than Inventory holds', async () => {
       const rows = await w.h.rows(
@@ -96,7 +114,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('"Remove sample data" takes Inventory\'s part out with the rest, and adding it again brings the same stock', async () => {
       const before = await held();
-      expect(before).toMatchObject({ suppliers: 6, places: 1, items: 10, receipts: 1, receipt_lines: 7, purchase_orders: 4, po_lines: 4, movements: 7 });
+      expect(before).toMatchObject({ suppliers: 6, places: 1, items: 10, receipts: 130, receipt_lines: 7, purchase_orders: 133, po_lines: 4, movements: 7 });
       const removed = await service().remove(await app(), { keepChanged: true, ...who() });
       expect(removed.kept).toBe(0);
       expect(await held()).toEqual(Object.fromEntries(HELD.map((ref) => [ref, 0])));

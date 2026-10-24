@@ -6,8 +6,9 @@
  */
 import { describe, expect, it } from "vitest";
 
-import type { Figure, Grouped, ListQuery, Page, Row, StaffSession } from "../../staffSession.ts";
+import { StaffError, type Figure, type Grouped, type ListQuery, type Page, type Row, type StaffSession } from "../../staffSession.ts";
 import { leadOf, readsOpenDeals, readStock, readSuppliers, shortOf, stateOf, supplierOfLine, type Line } from "./data.ts";
+import { scoreOf } from "./score.ts";
 
 const LINES: Line[] = [
   { id: 1, name: "Bench desk runs", sku: "MER-001", note: "desks", on_hand: 120 },
@@ -41,7 +42,7 @@ describe("a stock line", () => {
 });
 
 /** A session over fixed answers, remembering each list and figure it was asked. */
-function fake(reads: { deals: boolean }) {
+function fake(reads: { deals: boolean; receipts?: boolean; aftercare?: boolean; first?: string; older?: number; fail?: number }) {
   const lists: { ref: string; q: ListQuery }[] = [];
   const figures: Figure[] = [];
   const grouped = (items: [string, Record<string, number | null>][]): Grouped => ({ shape: "categorical", items: items.map(([key, values]) => ({ key, label: key, value: Number(Object.values(values)[0] ?? 0), values })), total: 0 });
@@ -77,8 +78,12 @@ function fake(reads: { deals: boolean }) {
       { id: 11, deal_id: 5, item: 7, deal: "Showroom", amount: 38000 },
     ],
   };
+  /** The ledger's deliveries by supplier id, as a grouping by `late`: on time, late, and the late ones' average days late. */
+  const LATE: Record<string, [number, number, number | null]> = { "6": [6, 0, null], "5": [6, 8, 21], "3": [29, 5, 7], "1": [27, 1, 2] };
+  const CLAIMS: Record<string, number> = { "3": 2, "5": 1 };
   const session = {
-    can: (ref: string) => ref !== "deals" || reads.deals,
+    can: (ref: string) => (ref === "deals" ? reads.deals : ref === "inventory:receipts" ? reads.receipts !== false : true),
+    part: (id: string) => id !== "aftercare" || reads.aftercare !== false,
     list: async (ref: string, q: ListQuery = {}): Promise<Page> => {
       lists.push({ ref, q });
       const all = rows[ref] ?? [];
@@ -87,6 +92,17 @@ function fake(reads: { deals: boolean }) {
     figure: async (figure: Figure) => {
       figures.push(figure);
       const where = JSON.stringify(figure.filters ?? []);
+      if (figure.table === "inventory:receipts" && reads.fail !== undefined) throw new StaffError(reads.fail, "X", "refused");
+      if (figure.table === "inventory:receipts" && figure.shape === "categorical") {
+        const by = (figure.filters ?? []).find((one) => "column" in one && one.column === "po_id.supplier_id") as { value: number } | undefined;
+        const [on, late, d] = by === undefined ? [105, 18, 10] : (LATE[String(by.value)] ?? [0, 0, null]);
+        return grouped([...(on > 0 ? [["0", { n: on, d: 0 }] as [string, Record<string, number | null>]] : []), ...(late > 0 ? [["1", { n: late, d }] as [string, Record<string, number | null>]] : [])]);
+      }
+      if (figure.table === "inventory:receipts") return figure.aggregations?.[0]?.fn === "min" ? { value: reads.first ?? "2026-02-09" } : { value: reads.older ?? 6 };
+      if (figure.table === "warranty_claims") {
+        const named = (figure.filters ?? []).find((one) => "or" in one) as { or: { value: unknown }[] } | undefined;
+        return { value: named === undefined ? 5 : (CLAIMS[String(named.or[0]!.value)] ?? 0) };
+      }
       if (figure.shape === "single-metric") {
         if (figure.table === "inventory:items") return { value: where.includes('"gt"') ? 7 : where.includes('"lte"') ? 3 : 10 };
         if (figure.table === "deal_stock_needs") return { value: 3 };
@@ -150,6 +166,59 @@ describe("the Supplier scorecard's read", () => {
     expect(data.next).toEqual({ "3": { number: "PO-1001", expected: null }, "5": { number: "PO-1003", expected: "2026-08-20" } });
     expect(data.longest?.name).toBe("Marchmont Joinery");
     expect(data.suppliers.map((supplier) => supplier.name)).toEqual(["Fenlow Acoustics", "Halvard Werke", "Marchmont Joinery", "Ostrom Seating"]);
+  });
+
+  it("asks the server each supplier's deliveries of the last 90 days by its orders, and its claims of the year: the ledger's scores", async () => {
+    const { session, figures } = fake({ deals: true });
+    const data = await readSuppliers(session);
+    const lateness = data.lateness!;
+    expect(lateness.all).toEqual({ n: 123, late: 18 });
+    // Older deliveries than the window: the figures are of the last 90 days, not "since".
+    expect(lateness.from).toBeNull();
+    expect(lateness.claims).toBe(5);
+    expect(lateness.by).toEqual({
+      "6": { n: 6, late: 0, avgLate: null, claims: 0 },
+      "5": { n: 14, late: 8, avgLate: 21, claims: 1 },
+      "3": { n: 34, late: 5, avgLate: 7, claims: 2 },
+      "1": { n: 28, late: 1, avgLate: 2, claims: 0 },
+    });
+    expect(Object.fromEntries(Object.entries(lateness.by).map(([id, one]) => [id, scoreOf(one)]))).toEqual({
+      "6": { onTenths: 1000, weeksOver: 0, score: 100, band: "solid" },
+      "5": { onTenths: 429, weeksOver: 3, score: 16, band: "problem" },
+      "3": { onTenths: 853, weeksOver: 1, score: 66, band: "problem" },
+      "1": { onTenths: 964, weeksOver: 0, score: 96, band: "solid" },
+    });
+    // A delivery counts when posted, when it says whether it was late, inside the business's last 90 days; its supplier is its order's.
+    const SAYS = [{ column: "status", op: "eq", value: "posted" }, { column: "late", op: "not_null" }];
+    const perSupplier = figures.filter((figure) => figure.table === "inventory:receipts" && figure.shape === "categorical");
+    expect(perSupplier).toHaveLength(5);
+    expect(perSupplier[1]).toEqual({ table: "inventory:receipts", shape: "categorical", filters: [...SAYS, { column: "received_on", op: "gte", day: "today-89" }, { column: "po_id.supplier_id", op: "eq", value: 6 }], groupBy: ["late"], aggregations: [{ fn: "count", alias: "n" }, { fn: "avg", column: "days_late", alias: "d" }], limit: 5 });
+    expect(figures.find((figure) => figure.table === "inventory:receipts" && figure.shape === "single-metric" && figure.aggregations?.[0]?.fn === "count")?.filters).toEqual([...SAYS, { column: "received_on", op: "lt", day: "today-89" }]);
+    // A claim names its supplier by Inventory's row or by the name typed on it; the year is the business's.
+    const claims = figures.filter((figure) => figure.table === "warranty_claims");
+    expect(claims).toHaveLength(5);
+    expect(claims[2]!.filters).toEqual([{ column: "raised_on", op: "gte", day: "today-364" }, { or: [{ column: "supplier", op: "eq", value: 5 }, { column: "supplier_name", op: "eq", value: "Fenlow Acoustics" }] }]);
+  });
+
+  it("says since when, on an install that kept lateness only from its update", async () => {
+    const { session } = fake({ deals: true, older: 0, first: "2026-06-15" });
+    expect((await readSuppliers(session)).lateness?.from).toBe("2026-06-15");
+  });
+
+  it("asks no claim while After the job is off: the score counts none", async () => {
+    const { session, figures } = fake({ deals: true, aftercare: false });
+    const lateness = (await readSuppliers(session)).lateness!;
+    expect(figures.some((figure) => figure.table === "warranty_claims")).toBe(false);
+    expect(lateness.claims).toBeNull();
+    expect(scoreOf(lateness.by["3"]!)).toEqual({ onTenths: 853, weeksOver: 1, score: 78, band: "watch" });
+  });
+
+  it("scores nobody where the reader reads no receipt, or the install's Inventory keeps no lateness; any other refusal is the screen's", async () => {
+    const none = fake({ deals: true, receipts: false });
+    expect((await readSuppliers(none.session)).lateness).toBeNull();
+    expect(none.figures.some((figure) => figure.table === "inventory:receipts")).toBe(false);
+    expect((await readSuppliers(fake({ deals: true, fail: 400 }).session)).lateness).toBeNull();
+    await expect(readSuppliers(fake({ deals: true, fail: 429 }).session)).rejects.toThrow("refused");
   });
 });
 

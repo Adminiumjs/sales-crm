@@ -3,6 +3,10 @@
  * the Supplier scorecard (§60), with the stand's real Inventory (its sample
  * goes in by Inventory's own saves: an opening receipt and four orders sent).
  *
+ * The scorecard (plan 68 S12) reads Inventory's receipts: on time over the
+ * last 90 days, late deliveries, claims of the year (from stage 2, with After
+ * the job), score and band, each compared with the server's own figures.
+ *
  * Who reaches Supply: the CRM admin (Tessa), the operations manager (Ada),
  * Read-only (Grace) and the install's owner. Every figure on screen is compared
  * with what the server answers that person, asked directly. A rep (Dana) and
@@ -120,41 +124,81 @@ test("Stock and lead times as the CRM admin: Inventory's lines, each figure the 
   expect(problems).toEqual([]);
 });
 
-test("the Supplier scorecard as the CRM admin: Inventory's six suppliers, their orders, and what is not scored", async ({ as, stand }) => {
+/** What the server answers this person for a supplier's deliveries of the last 90 days (by its orders), and its claims of the year. */
+async function judged(person: APIRequestContext, stand: StandState, supplier: { id: number; name: string } | null, claims: boolean): Promise<{ n: number; late: number; weeks: number; claims: number | null }> {
+  const filters = [{ column: "status", op: "eq", value: "posted" }, { column: "late", op: "not_null" }, { column: "received_on", op: "gte", day: "today-89" }, ...(supplier === null ? [] : [{ column: "po_id.supplier_id", op: "eq", value: supplier.id }])];
+  const answer = await figure(person, stand, { source: { name: "inventory_receipts" }, shape: "categorical", filters, groupBy: ["late"], aggregations: [{ fn: "count", alias: "n" }, { fn: "avg", column: "days_late", alias: "d" }], limit: 5 });
+  expect(answer.status).toBe(200);
+  const items = answer.result.items ?? [];
+  const late = items.find((item) => Number(item.key) === 1);
+  const raised = supplier === null || !claims ? null : await count(person, stand, "crm_warranty_claims", [{ column: "raised_on", op: "gte", day: "today-364" }, { or: [{ column: "supplier", op: "eq", value: supplier.id }, { column: "supplier_name", op: "eq", value: supplier.name }] }]);
+  return { n: items.reduce((sum, item) => sum + Number(item.values?.["n"] ?? 0), 0), late: Number(late?.values?.["n"] ?? 0), weeks: late === undefined ? 0 : Math.floor(Number(late.values?.["d"]) / 7 + 0.5), claims: raised };
+}
+/** The ledger's arithmetic: on time to a tenth, half up; less 6 a claim and 7 a week over; held to 0…100, half up. */
+const ledgerScore = (n: number, late: number, claims: number, weeks: number): number => Math.floor((Math.max(0, Math.min(1000, Math.floor((2000 * (n - late) + n) / (2 * n)) - 60 * claims - 70 * weeks)) + 5) / 10);
+const percent = (n: number, late: number): string => new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(Math.floor((2000 * (n - late) + n) / (2 * n)) / 1000);
+
+test("the Supplier scorecard as the CRM admin: on time over 90 days, late deliveries, claims, score and band, each figure the server's", async ({ as, stand }) => {
   const context = await as("tessa");
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(`${STAFF}suppliers`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Supplier scorecard");
-  const open = { column: "status", op: "in", value: ["sent", "part_received"] };
-  const inUse = await count(context.request, stand, "inventory_suppliers", [{ column: "active", op: "eq", value: true }]);
-  const coming = await count(context.request, stand, "inventory_purchase_orders", [open]);
-  const received = await count(context.request, stand, "inventory_purchase_orders", [{ column: "status", op: "eq", value: "received" }]);
-  expect([inUse, coming, received]).toEqual([6, 4, 0]);
-  await expect(page.locator(".crm-screen-sub")).toHaveText(`${String(inUse)} suppliers in use, as the Inventory add-on keeps them: what each supplies, the lead time it promises, and its orders.`);
-  await expect(tile(page, "in-use").locator(".crm-sup-tile-value")).toHaveText(String(inUse));
-  await expect(tile(page, "coming").locator(".crm-sup-tile-value")).toHaveText(String(coming));
-  await expect(tile(page, "received").locator(".crm-sup-tile-value")).toHaveText(String(received));
-  await expect(tile(page, "lead").locator(".crm-sup-tile-value")).toHaveText("7 weeks");
-  await expect(page.locator('[data-figure="not-scored"]')).toContainText("Whether a supplier delivers on the day it promised is not worked out here");
-  await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
-  // Fenlow: booths and rooms, six weeks, two orders on their way with no landing day yet.
+  // After the job carries the warranty claims: from stage 2 they count against a supplier; at stage 1 there are none to count.
+  const claims = stand.parts.includes("aftercare");
+  await expect(page.locator(".crm-screen-sub")).toHaveText(
+    claims ? "6 suppliers, judged on the two things that reach the customer: did it arrive when they said, and what happened when it went wrong." : "6 suppliers, judged on whether it arrived when they said.",
+  );
+  // All of them: the ledger's 105 on time of 123, over the last 90 days (the sample's older deliveries left out).
+  const all = await judged(context.request, stand, null, claims);
+  expect([all.n, all.late]).toEqual([123, 18]);
+  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("85.4%");
+  await expect(tile(page, "on-time")).toContainText("across the last 90 days");
+  if (claims) {
+    expect(await count(context.request, stand, "crm_warranty_claims", [{ column: "raised_on", op: "gte", day: "today-364" }])).toBe(5);
+    await expect(tile(page, "claims").locator(".crm-sup-tile-value")).toHaveText("5");
+  } else await expect(tile(page, "claims")).toHaveCount(0);
+
+  // Each supplier: the server's figures, and the ledger's score and band from them.
+  const listed = (await rows<{ id: number; name: string }>(context.request, (_ref, rest = "") => inv(stand, "suppliers", rest), "suppliers")).map((one) => ({ id: one.id, name: one.name }));
+  const scores: Record<string, number> = {};
+  for (const one of listed) {
+    const got = await judged(context.request, stand, one, claims);
+    const card = supplier(page, one.name);
+    const score = ledgerScore(got.n, got.late, got.claims ?? 0, got.weeks);
+    scores[one.name] = score;
+    await expect(card.locator('[data-figure="score"]'), one.name).toHaveText(String(score));
+    await expect(card.locator('[data-figure="band"]'), one.name).toHaveText(score >= 88 ? "Solid" : score >= 75 ? "Watch them" : "A problem");
+    await expect(card.locator('[data-figure="on-time"]'), one.name).toHaveText(percent(got.n, got.late));
+    await expect(card.locator('[data-figure="deliveries"]'), one.name).toHaveText(String(got.n));
+    await expect(card.locator('[data-figure="late"]'), one.name).toHaveText(String(got.late));
+    if (claims) await expect(card.locator('[data-figure="claims"]'), one.name).toHaveText(String(got.claims));
+    else await expect(card.locator('[data-figure="claims"]'), one.name).toHaveCount(0);
+  }
+  // The ledger's six (screen 60), with the claims; without them, nothing counts against a supplier but its deliveries.
+  expect(scores).toEqual(claims
+    ? { "Halvard Werke": 96, "Kirkwall Steel": 84, "Ostrom Seating": 66, "Trellis Textiles": 78, "Fenlow Acoustics": 16, "Marchmont Joinery": 100 }
+    : { "Halvard Werke": 96, "Kirkwall Steel": 90, "Ostrom Seating": 78, "Trellis Textiles": 84, "Fenlow Acoustics": 22, "Marchmont Joinery": 100 });
+  // Highest first.
+  await expect(page.locator(".crm-sup-supplier h2")).toHaveText(Object.entries(scores).sort((a, b) => b[1] - a[1]).map(([name]) => name));
+  await expect(tile(page, "talk").locator(".crm-sup-tile-value")).toHaveText(claims ? "2" : "1");
+  await expect(tile(page, "talk")).toContainText(claims ? "Ostrom Seating" : "Fenlow Acoustics");
+  await expect(page.locator('[data-figure="worst"]')).toHaveText("Fenlow Acoustics is on time 42.9% of the time and runs 3 weeks past what it promises. Every one of those weeks lands on a rep.");
+
+  // Fenlow: six weeks promised, nine taken by the late ones; its lines and its order still on the way.
   const fenlow = supplier(page, "Fenlow Acoustics");
+  await expect(fenlow.locator('[data-figure="lead"]')).toHaveText("9 weeks");
+  await expect(fenlow.locator('[data-figure="slip"]')).toHaveText("Says 6 weeks; the late ones take 9 weeks.");
   await expect(fenlow.locator('[data-figure="supplies"]')).toHaveText("Supplies: Acoustic booths, single; Acoustic rooms, four-person");
-  await expect(fenlow.locator('[data-figure="lead"]')).toHaveText("6 weeks");
-  await expect(fenlow.locator('[data-figure="lines"]')).toHaveText("2");
-  await expect(fenlow.locator('[data-figure="coming"]')).toHaveText("2");
-  await expect(fenlow.locator('[data-figure="received"]')).toHaveText("0");
   await expect(fenlow.locator('[data-figure="next"]')).toHaveText("PO-1002 is on its way, with no landing day yet.");
-  // Trellis supplies no line of the sample and has nothing on order.
-  await expect(supplier(page, "Trellis Textiles").locator('[data-figure="supplies"]')).toHaveText("No stock line names it as a supplier yet.");
+  await expect(supplier(page, "Marchmont Joinery").locator('[data-figure="slip"]')).toHaveText("Says 7 weeks and means it.");
   await expect(supplier(page, "Trellis Textiles").locator('[data-figure="next"]')).toHaveText("Nothing on order.");
-  // The server's own count of each one's orders on their way.
-  const by = await figure(context.request, stand, { source: { name: "inventory_purchase_orders" }, shape: "categorical", filters: [open], groupBy: ["supplier_id"], aggregations: [{ fn: "count", alias: "n" }], limit: 50 });
-  // One aggregation is answered as each group's value.
-  expect(Object.fromEntries((by.result.items ?? []).map((item) => [item.key, item.values?.["n"] ?? item.value]))).toEqual({ "3": 2, "5": 2 });
-  await expect(supplier(page, "Ostrom Seating").locator('[data-figure="coming"]')).toHaveText("2");
   await picture(page, "p16-2-tessa-suppliers");
+  // The claims behind a supplier's score are one click away while After the job is on.
+  if (claims) {
+    await fenlow.getByRole("link", { name: "Claims" }).click();
+    await expect(page).toHaveURL(/\/warranty-claims$/);
+  } else await expect(fenlow.getByRole("link", { name: "Claims" })).toHaveCount(0);
   expect(problems).toEqual([]);
 });
 
@@ -176,6 +220,10 @@ test("Read-only reads both screens, 390 wide and dark, presses nothing, and the 
   await picture(page, "p16-3-grace-stock-390-dark");
   await page.goto(`${STAFF}suppliers`);
   await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
+  // Her scorecard is the CRM admin's: the same figures through the same grant.
+  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("85.4%");
+  await expect(supplier(page, "Fenlow Acoustics").locator('[data-figure="band"]')).toHaveText("A problem");
+  await expect(supplier(page, "Marchmont Joinery").locator('[data-figure="score"]')).toHaveText("100");
   expect(await narrowEnough(page)).toBe(true);
   await picture(page, "p16-4-grace-suppliers-390-dark");
   expect(problems).toEqual([]);
@@ -223,6 +271,8 @@ test("the operations manager lands on Stock, reads no open deal, and is told how
   await picture(page, "p16-5-ada-stock");
   await page.goto(`${STAFF}suppliers`);
   await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
+  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("85.4%");
+  await expect(supplier(page, "Fenlow Acoustics").locator('[data-figure="score"]')).toHaveText(stand.parts.includes("aftercare") ? "16" : "22");
   expect(problems).toEqual([]);
   // The server: no open deal for her (at stage 1 no deal at all; from stage 2 a won deal, the jobs' own), and Inventory read only.
   const deals = await ada.get(`/api/v1/data/${stand.connectionId}/${encodeURIComponent(stand.tables["crm_deals"]!)}?limit=200`);
@@ -259,6 +309,8 @@ test("a rep and the sales manager are refused Supply, by the page and by the ser
     // Inventory's tables answer neither of them: by a list, a row, a figure or the live stream.
     expect((await person.get(inv(stand, "items", "?limit=1"))).status(), who).toBe(403);
     expect((await person.get(inv(stand, "suppliers", "/1"))).status(), who).toBe(403);
+    expect((await person.get(inv(stand, "receipts", "?limit=1"))).status(), who).toBe(403);
+    expect((await figure(person, stand, { source: { name: "inventory_receipts" }, shape: "categorical", groupBy: ["late"], aggregations: [{ fn: "count", alias: "n" }] })).status, who).toBe(403);
     expect((await figure(person, stand, { source: { name: "inventory_stock_points" }, shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] })).status, who).toBe(403);
     const stream = await person.get(`/api/v1/events?channels=${encodeURIComponent(`widget-data:${stand.connectionId}:inventory_items`)}`, { timeout: 5000 });
     expect(stream.status(), who).toBe(403);
@@ -304,6 +356,10 @@ test("in Arabic, right to left and 390 wide, with the same figures", async ({ as
     await page.goto(`${STAFF}suppliers`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("تقييم الموردين");
     await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
+    // The band and the score in her language and digits; on time to a tenth, as the reader's own percent.
+    await expect(supplier(page, "Fenlow Acoustics").locator('[data-figure="band"]')).toHaveText("مشكلة");
+    await expect(supplier(page, "Marchmont Joinery").locator('[data-figure="score"]')).toHaveText(new Intl.NumberFormat("ar-EG").format(100));
+    await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText(new Intl.NumberFormat("ar-EG", { style: "percent", maximumFractionDigits: 1 }).format(0.854));
     expect(await narrowEnough(page)).toBe(true);
     await picture(page, "p16-7-tessa-suppliers-ar-390");
     expect(problems).toEqual([]);

@@ -16,13 +16,25 @@
  * its first-choice supplier) and compares two figures of one line. "Short" is
  * need minus have: one subtraction of two server figures, as the ledger prints.
  *
+ * THE SCORECARD (plan 68 S12) reads Inventory's receipts: each delivery
+ * posted against an order keeps the day it was due, the day it came, and
+ * whether (and by how many days) it was late. The server counts them, per
+ * supplier and for all, over the last 90 days of the business's calendar (a
+ * `day` filter the server reads), and the warranty claims of the year per
+ * supplier; `score.ts` works the score and band out of those figures. A
+ * delivery's supplier is its ORDER's (`po_id.supplier_id`): Inventory's
+ * Receive page leaves a receipt's own supplier empty when it has an order.
+ * A delivery that cannot say (opening stock, no order, not posted, posted
+ * before Inventory kept the days) is never counted: `late` is empty there.
+ *
  * WHAT INVENTORY DOES NOT KEEP, and so is not drawn: a lead time per line (a
- * supplier promises one for everything it supplies), whether an order came on
- * the day it was due, and a score for a supplier.
+ * supplier promises one for everything it supplies), a supplier's start year,
+ * and the design's typed verdicts.
  */
 import type { Condition, Grouped, Row, StaffSession } from "../../staffSession.ts";
-import { noValue } from "../../staffSession.ts";
+import { noValue, StaffError } from "../../staffSession.ts";
 import { rolesOf, type RoleKey } from "../../shell/routes.ts";
+import type { Judged } from "./score.ts";
 
 /** Inventory's tables, as the session names an add-on's. */
 export const INV = {
@@ -32,10 +44,11 @@ export const INV = {
   points: "inventory:stock_points",
   orders: "inventory:purchase_orders",
   orderLines: "inventory:po_lines",
+  receipts: "inventory:receipts",
 } as const;
 
 /** The tables whose changes a Supply screen reads again on. */
-export const SUPPLY_TABLES = ["deal_stock_needs", INV.items, INV.points, INV.orderLines, INV.orders, INV.suppliers, INV.itemSuppliers] as const;
+export const SUPPLY_TABLES = ["deal_stock_needs", INV.items, INV.points, INV.orderLines, INV.orders, INV.suppliers, INV.itemSuppliers, INV.receipts, "warranty_claims"] as const;
 
 /** An order still to come in all or in part. */
 export const OPEN_ORDER = ["sent", "part_received"] as const;
@@ -248,6 +261,79 @@ export interface SuppliersData {
   /** A supplier's open order due soonest: its landing day, or null when it has none. */
   next: Record<string, { number: string | null; expected: string | null }>;
   longest: Supplier | null;
+  /** How each supplier delivered, and all of them; null when this install's Inventory keeps no lateness (or the reader reads no receipt). */
+  lateness: Lateness | null;
+}
+
+export interface Lateness {
+  /** By supplier id: the deliveries of the window, the late ones, how late, and the claims of the year. */
+  by: Record<string, Judged>;
+  /** All the suppliers' deliveries of the window, and the late ones. */
+  all: { n: number; late: number };
+  /** The day of the first delivery that says whether it was late, when none is older than the window: the figures are "since" it. */
+  from: string | null;
+  /** The claims of the year, all of them; null when claims are not shown. */
+  claims: number | null;
+}
+
+/** The window: the last 90 days of the business's calendar, today included; and the year, for claims. */
+export const WINDOW_FROM = "today-89";
+export const YEAR_FROM = "today-364";
+/** A delivery that says whether it was late: posted, with both days. */
+const SAYS: Condition[] = [{ column: "status", op: "eq", value: "posted" }, { column: "late", op: "not_null" }];
+const IN_WINDOW: Condition = { column: "received_on", op: "gte", day: WINDOW_FROM };
+
+/** Whether this reader is shown claims: After the job is on and they read warranty claims. */
+export const showsClaims = (session: StaffSession): boolean => session.part("aftercare") && session.can("warranty_claims", "read");
+
+/** A `late` grouping's two counts and the late ones' average days late. */
+function judgedOf(answer: Grouped): { n: number; late: number; avgLate: number | null } {
+  let n = 0;
+  let late = 0;
+  let avgLate: number | null = null;
+  for (const item of answer.items) {
+    if (noValue(item.key)) continue;
+    const count = num(item.values?.["n"] ?? item.value);
+    n += count;
+    if (num(item.key) === 1) {
+      late = count;
+      const d = item.values?.["d"];
+      avgLate = d === null || d === undefined ? null : num(d);
+    }
+  }
+  return { n, late, avgLate };
+}
+
+/** The server's figures of lateness and claims, per supplier and for all. */
+export async function readLateness(session: StaffSession, suppliers: readonly Supplier[]): Promise<Lateness | null> {
+  if (!session.can(INV.receipts, "read")) return null;
+  const byLate = (filters: Condition[]) =>
+    session.figure<Grouped>({ table: INV.receipts, shape: "categorical", filters: [...SAYS, IN_WINDOW, ...filters], groupBy: ["late"], aggregations: [{ fn: "count", alias: "n" }, { fn: "avg", column: "days_late", alias: "d" }], limit: 5 });
+  const claims = showsClaims(session);
+  const RAISED: Condition = { column: "raised_on", op: "gte", day: YEAR_FROM };
+  try {
+    const [all, older, first, perSupplier, claimsAll, claimsPer] = await Promise.all([
+      byLate([]),
+      count(session, INV.receipts, [...SAYS, { column: "received_on", op: "lt", day: WINDOW_FROM }]),
+      session.figure<{ value: unknown }>({ table: INV.receipts, shape: "single-metric", filters: SAYS, aggregations: [{ fn: "min", column: "received_on", alias: "first" }] }),
+      Promise.all(suppliers.map((supplier) => byLate([{ column: "po_id.supplier_id", op: "eq", value: supplier.id }]))),
+      claims ? count(session, "warranty_claims", [RAISED]) : Promise.resolve(null),
+      // A claim names its supplier by Inventory's row, or by the name typed on it.
+      claims ? Promise.all(suppliers.map((supplier) => count(session, "warranty_claims", [RAISED, { or: [{ column: "supplier", op: "eq", value: supplier.id }, { column: "supplier_name", op: "eq", value: supplier.name }] }]))) : Promise.resolve(null),
+    ]);
+    const whole = judgedOf(all);
+    const by: Record<string, Judged> = {};
+    suppliers.forEach((supplier, i) => {
+      by[String(supplier.id)] = { ...judgedOf(perSupplier[i]!), claims: claimsPer === null ? null : claimsPer[i]! };
+    });
+    const firstDay = typeof first.value === "string" && /^\d{4}-\d{2}-\d{2}/.test(first.value) ? first.value.slice(0, 10) : null;
+    return { by, all: { n: whole.n, late: whole.late }, from: older === 0 && firstDay !== null ? firstDay : null, claims: claimsAll };
+  } catch (error) {
+    // An Inventory older than the one that keeps lateness: the server knows no such column (400). The page says lateness is
+    // not kept there. Anything else (a refusal, a spent minute, a lost reply) is the screen's to say, as for any read.
+    if (error instanceof StaffError && error.status === 400) return null;
+    throw error;
+  }
 }
 
 /** Everything the Supplier scorecard shows, as the person reads it. */
@@ -271,6 +357,7 @@ export async function readSuppliers(session: StaffSession): Promise<SuppliersDat
   const due = [...open.rows].sort((a, b) => (a.expected_on ?? "9999").localeCompare(b.expected_on ?? "9999") || a.id - b.id);
   for (const order of due) if (next[String(order.supplier_id)] === undefined) next[String(order.supplier_id)] = { number: order.number, expected: order.expected_on };
   const longest = [...suppliers.rows].filter((supplier) => supplier.lead_days !== null && Boolean(supplier.active)).sort((a, b) => num(b.lead_days) - num(a.lead_days))[0] ?? null;
+  const lateness = await readLateness(session, suppliers.rows);
   return {
     // In use first, then by name.
     suppliers: [...suppliers.rows].sort((a, b) => Number(Boolean(b.active)) - Number(Boolean(a.active)) || a.name.localeCompare(b.name)),
@@ -281,5 +368,6 @@ export async function readSuppliers(session: StaffSession): Promise<SuppliersDat
     received: byKey(receivedBy, "n"),
     next,
     longest,
+    lateness,
   };
 }
