@@ -26782,26 +26782,26 @@
       }
     },
     {
-      "key": "approval-given",
+      "key": "approval-decided",
       "name": {
-        "en-US": "A discount is approved: the person who asked is told",
-        "de-DE": "Ein Rabatt wird genehmigt: die anfragende Person wird benachrichtigt",
-        "fr-FR": "Une remise est approuvée : la personne qui l’a demandée est prévenue",
-        "da-DK": "En rabat godkendes: den, der bad om det, får besked",
-        "cs-CZ": "Sleva je schválena: žadatel dostane zprávu",
-        "ar-EG": "اعتُمد خصم: يُبلَّغ من طلبه",
-        "zh-CN": "折扣获批：通知申请人",
-        "zh-TW": "折扣獲准：通知申請人"
+        "en-US": "A discount is approved or refused: the person who asked is told",
+        "de-DE": "Ein Rabatt wird genehmigt oder abgelehnt: die anfragende Person wird benachrichtigt",
+        "fr-FR": "Une remise est approuvée ou refusée : la personne qui l’a demandée est prévenue",
+        "da-DK": "En rabat godkendes eller afvises: den, der bad om det, får besked",
+        "cs-CZ": "Sleva je schválena nebo zamítnuta: žadatel dostane zprávu",
+        "ar-EG": "اعتُمد خصم أو رُفض: يُبلَّغ من طلبه",
+        "zh-CN": "折扣获批或被驳回：通知申请人",
+        "zh-TW": "折扣獲准或遭駁回：通知申請人"
       },
       "description": {
-        "en-US": "When a quote’s approval is given, tells the person who asked for it.",
-        "de-DE": "Benachrichtigt die anfragende Person, sobald die Genehmigung eines Angebots erteilt ist.",
-        "fr-FR": "Quand l’approbation d’un devis est accordée, prévient la personne qui l’a demandée.",
-        "da-DK": "Når et tilbud godkendes, får den, der bad om det, besked.",
-        "cs-CZ": "Když je nabídka schválena, dá vědět tomu, kdo o schválení požádal.",
-        "ar-EG": "عند اعتماد عرض سعر، يُبلِّغ من طلب الاعتماد.",
-        "zh-CN": "报价获批时，通知申请审批的人。",
-        "zh-TW": "報價獲准時，通知申請核准的人。"
+        "en-US": "When a quote’s approval is given or refused, tells the person who asked for it which.",
+        "de-DE": "Benachrichtigt die anfragende Person, sobald die Genehmigung eines Angebots erteilt oder abgelehnt ist, und sagt, welches von beiden.",
+        "fr-FR": "Quand l’approbation d’un devis est accordée ou refusée, prévient la personne qui l’a demandée de la décision.",
+        "da-DK": "Når et tilbud godkendes eller afvises, får den, der bad om det, besked om hvilket.",
+        "cs-CZ": "Když je nabídka schválena nebo zamítnuta, dá vědět tomu, kdo o schválení požádal, jak bylo rozhodnuto.",
+        "ar-EG": "عند اعتماد عرض سعر أو رفضه، يُبلِّغ من طلب الاعتماد بالقرار.",
+        "zh-CN": "报价获批或审批被驳回时，通知申请审批的人结果如何。",
+        "zh-TW": "報價獲准或核准遭駁回時，通知申請核准的人結果如何。"
       },
       "enabled": false,
       "module": "quotes",
@@ -26815,89 +26815,15 @@
             "left": {
               "field": "approval"
             },
-            "op": "is",
-            "right": "approved"
-          }
-        ]
-      },
-      "graph": {
-        "version": 1,
-        "nodes": [
-          {
-            "id": "t",
-            "kind": "trigger",
-            "title": "A discount is approved: the person who asked is told"
+            "op": "is_not",
+            "right": "none"
           },
-          {
-            "id": "tell",
-            "kind": "action",
-            "title": "Tell them",
-            "action": {
-              "kind": "notification",
-              "to": {
-                "column": "asked_by_id"
-              },
-              "title": {
-                "en-US": "Quote {{record.number}} is approved",
-                "de-DE": "Angebot {{record.number}} ist genehmigt",
-                "fr-FR": "Le devis {{record.number}} est approuvé",
-                "da-DK": "Tilbud {{record.number}} er godkendt",
-                "cs-CZ": "Nabídka {{record.number}} je schválena",
-                "ar-EG": "اعتُمد عرض السعر {{record.number}}",
-                "zh-CN": "报价 {{record.number}} 已批准",
-                "zh-TW": "報價 {{record.number}} 已核准"
-              },
-              "body": {
-                "en-US": "{{record.decision_note}}",
-                "de-DE": "{{record.decision_note}}",
-                "fr-FR": "{{record.decision_note}}",
-                "da-DK": "{{record.decision_note}}",
-                "cs-CZ": "{{record.decision_note}}",
-                "ar-EG": "{{record.decision_note}}",
-                "zh-CN": "{{record.decision_note}}",
-                "zh-TW": "{{record.decision_note}}"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "approval-refused",
-      "name": {
-        "en-US": "A discount is refused: the person who asked is told",
-        "de-DE": "Ein Rabatt wird abgelehnt: die anfragende Person wird benachrichtigt",
-        "fr-FR": "Une remise est refusée : la personne qui l’a demandée est prévenue",
-        "da-DK": "En rabat afvises: den, der bad om det, får besked",
-        "cs-CZ": "Sleva je zamítnuta: žadatel dostane zprávu",
-        "ar-EG": "رُفض خصم: يُبلَّغ من طلبه",
-        "zh-CN": "折扣被驳回：通知申请人",
-        "zh-TW": "折扣遭駁回：通知申請人"
-      },
-      "description": {
-        "en-US": "When a quote’s approval is refused, tells the person who asked for it.",
-        "de-DE": "Benachrichtigt die anfragende Person, sobald die Genehmigung eines Angebots abgelehnt ist.",
-        "fr-FR": "Quand l’approbation d’un devis est refusée, prévient la personne qui l’a demandée.",
-        "da-DK": "Når godkendelsen af et tilbud afvises, får den, der bad om det, besked.",
-        "cs-CZ": "Když je schválení nabídky zamítnuto, dá vědět tomu, kdo o ně požádal.",
-        "ar-EG": "عند رفض اعتماد عرض سعر، يُبلِّغ من طلب الاعتماد.",
-        "zh-CN": "报价审批被驳回时，通知申请审批的人。",
-        "zh-TW": "報價核准遭駁回時，通知申請核准的人。"
-      },
-      "enabled": false,
-      "module": "quotes",
-      "trigger": {
-        "kind": "record",
-        "event": "updated",
-        "table": "quotes",
-        "changedColumn": "approval",
-        "when": [
           {
             "left": {
               "field": "approval"
             },
-            "op": "is",
-            "right": "refused"
+            "op": "is_not",
+            "right": "asked"
           }
         ]
       },
@@ -26907,38 +26833,113 @@
           {
             "id": "t",
             "kind": "trigger",
-            "title": "A discount is refused: the person who asked is told"
+            "title": {
+              "en-US": "A discount is approved or refused",
+              "de-DE": "Ein Rabatt wird genehmigt oder abgelehnt",
+              "fr-FR": "Une remise est approuvée ou refusée",
+              "da-DK": "En rabat godkendes eller afvises",
+              "cs-CZ": "Sleva je schválena nebo zamítnuta",
+              "ar-EG": "اعتُمد خصم أو رُفض",
+              "zh-CN": "折扣获批或被驳回",
+              "zh-TW": "折扣獲准或遭駁回"
+            }
           },
           {
-            "id": "tell",
-            "kind": "action",
-            "title": "Tell them",
-            "action": {
-              "kind": "notification",
-              "to": {
-                "column": "asked_by_id"
+            "id": "which",
+            "kind": "branch",
+            "title": {
+              "en-US": "Approved?",
+              "de-DE": "Genehmigt?",
+              "fr-FR": "Approuvée ?",
+              "da-DK": "Godkendt?",
+              "cs-CZ": "Schváleno?",
+              "ar-EG": "تمت الموافقة؟",
+              "zh-CN": "已批准？",
+              "zh-TW": "已核准？"
+            },
+            "condition": {
+              "left": {
+                "field": "approval"
               },
-              "title": {
-                "en-US": "Quote {{record.number}} was not approved",
-                "de-DE": "Angebot {{record.number}} wurde nicht genehmigt",
-                "fr-FR": "Le devis {{record.number}} n’a pas été approuvé",
-                "da-DK": "Tilbud {{record.number}} blev ikke godkendt",
-                "cs-CZ": "Nabídka {{record.number}} nebyla schválena",
-                "ar-EG": "لم يُعتمد عرض السعر {{record.number}}",
-                "zh-CN": "报价 {{record.number}} 未获批准",
-                "zh-TW": "報價 {{record.number}} 未獲核准"
+              "op": "is",
+              "right": "approved"
+            },
+            "branches": [
+              {
+                "id": "which-yes",
+                "label": "Yes",
+                "nodes": [
+                  {
+                    "id": "tell-approved",
+                    "kind": "action",
+                    "title": "Tell them",
+                    "action": {
+                      "kind": "notification",
+                      "to": {
+                        "column": "asked_by_id"
+                      },
+                      "title": {
+                        "en-US": "Quote {{record.number}} is approved",
+                        "de-DE": "Angebot {{record.number}} ist genehmigt",
+                        "fr-FR": "Le devis {{record.number}} est approuvé",
+                        "da-DK": "Tilbud {{record.number}} er godkendt",
+                        "cs-CZ": "Nabídka {{record.number}} je schválena",
+                        "ar-EG": "اعتُمد عرض السعر {{record.number}}",
+                        "zh-CN": "报价 {{record.number}} 已批准",
+                        "zh-TW": "報價 {{record.number}} 已核准"
+                      },
+                      "body": {
+                        "en-US": "{{record.decision_note}}",
+                        "de-DE": "{{record.decision_note}}",
+                        "fr-FR": "{{record.decision_note}}",
+                        "da-DK": "{{record.decision_note}}",
+                        "cs-CZ": "{{record.decision_note}}",
+                        "ar-EG": "{{record.decision_note}}",
+                        "zh-CN": "{{record.decision_note}}",
+                        "zh-TW": "{{record.decision_note}}"
+                      }
+                    }
+                  }
+                ]
               },
-              "body": {
-                "en-US": "{{record.decision_note}}",
-                "de-DE": "{{record.decision_note}}",
-                "fr-FR": "{{record.decision_note}}",
-                "da-DK": "{{record.decision_note}}",
-                "cs-CZ": "{{record.decision_note}}",
-                "ar-EG": "{{record.decision_note}}",
-                "zh-CN": "{{record.decision_note}}",
-                "zh-TW": "{{record.decision_note}}"
+              {
+                "id": "which-no",
+                "label": "No",
+                "nodes": [
+                  {
+                    "id": "tell-refused",
+                    "kind": "action",
+                    "title": "Tell them",
+                    "action": {
+                      "kind": "notification",
+                      "to": {
+                        "column": "asked_by_id"
+                      },
+                      "title": {
+                        "en-US": "Quote {{record.number}} was not approved",
+                        "de-DE": "Angebot {{record.number}} wurde nicht genehmigt",
+                        "fr-FR": "Le devis {{record.number}} n’a pas été approuvé",
+                        "da-DK": "Tilbud {{record.number}} blev ikke godkendt",
+                        "cs-CZ": "Nabídka {{record.number}} nebyla schválena",
+                        "ar-EG": "لم يُعتمد عرض السعر {{record.number}}",
+                        "zh-CN": "报价 {{record.number}} 未获批准",
+                        "zh-TW": "報價 {{record.number}} 未獲核准"
+                      },
+                      "body": {
+                        "en-US": "{{record.decision_note}}",
+                        "de-DE": "{{record.decision_note}}",
+                        "fr-FR": "{{record.decision_note}}",
+                        "da-DK": "{{record.decision_note}}",
+                        "cs-CZ": "{{record.decision_note}}",
+                        "ar-EG": "{{record.decision_note}}",
+                        "zh-CN": "{{record.decision_note}}",
+                        "zh-TW": "{{record.decision_note}}"
+                      }
+                    }
+                  }
+                ]
               }
-            }
+            ]
           }
         ]
       }

@@ -66,6 +66,6 @@ describe("whether a rule is switched on", () => {
 
   it("is asked by the keys the manifest ships: every rule that tells people has one", () => {
     const keys = (manifest as unknown as { automations: { key: string; enabled: boolean }[] }).automations.filter((rule) => !rule.enabled).map((rule) => rule.key);
-    expect(keys).toEqual(["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "approval-refused", "week-rep", "week-manager"]);
+    expect(keys).toEqual(["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-decided", "week-rep", "week-manager"]);
   });
 });

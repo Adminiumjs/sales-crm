@@ -71,7 +71,7 @@ const names = (text: string): string[] => [...text.matchAll(/\{\{([^}|]+)/g)].ma
 describe("the rules the app ships", () => {
   // What the app cannot work without is switched on as it is installed; what tells people is the owner's to switch on.
   const WORKS = ["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "quote-sent-amount", "approval-asked"];
-  const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "approval-refused", "week-rep", "week-manager"];
+  const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-decided", "week-rep", "week-manager"];
   // Jobs on site tells a crew at once that today's or tomorrow's sheet changed (e-mail 10). It arrives with its part, which an
   // update brings switched off; the rule is on, so the day the owner switches the part on the crew is told.
   const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved"];
@@ -275,18 +275,35 @@ describe("the rules the app ships", () => {
     expect(rule("quote-runs-out").trigger.forEach).toMatchObject({ table: "quotes", once: "per-spell" });
     expect(to("deal-handed-over")).toEqual({ column: "owner_id" });
     expect(rule("deal-handed-over").trigger).toEqual({ kind: "record", event: "updated", table: "deals", changedColumn: "owner_id" });
-    for (const [key, decided] of [["approval-given", "approved"], ["approval-refused", "refused"]] as const) {
-      expect(to(key), key).toEqual({ column: "asked_by_id" });
-      expect(rule(key).trigger.when, key).toEqual([{ left: { field: "approval" }, op: "is", right: decided }]);
-    }
+    // Given or refused, one rule (the 24-rule cap, plan 68 §10.10): decided only, the asker told which.
+    expect(rule("approval-decided").trigger).toEqual({
+      kind: "record",
+      event: "updated",
+      table: "quotes",
+      changedColumn: "approval",
+      when: [
+        { left: { field: "approval" }, op: "is_not", right: "none" },
+        { left: { field: "approval" }, op: "is_not", right: "asked" },
+      ],
+    });
+    const fork = rule("approval-decided").graph.nodes.find((node) => node.kind === "branch")!;
+    expect(fork.condition).toEqual({ left: { field: "approval" }, op: "is", right: "approved" });
+    const [approved, refused] = fork.branches!.map((branch) => branch.nodes.map((node) => node.action!));
+    for (const said of [approved, refused]) expect(said, "one notice a way").toHaveLength(1);
+    for (const said of [approved![0]!, refused![0]!]) expect(said).toMatchObject({ kind: "notification", to: { column: "asked_by_id" } });
+    expect((approved![0]!.title as Record<string, string>)["en-US"]).toBe("Quote {{record.number}} is approved");
+    expect((refused![0]!.title as Record<string, string>)["en-US"]).toBe("Quote {{record.number}} was not approved");
     for (const [table, column] of [["follow_ups", "owner_id"], ["quotes", "asked_by_id"]] as const) expect(staff(table, column), `${table}.${column}`).toBe(true);
   });
 
   it("says each notice in eight languages, with the same variables in each", () => {
     for (const key of TELLS.filter((one) => !one.startsWith("week-"))) {
-      const [tell] = steps(key);
-      expect(inAll(tell!.title), key).toBe(true);
-      for (const text of [tell!.title, tell!.body].filter((one) => one !== undefined) as Record<string, string>[]) for (const locale of LOCALES) expect(names(text[locale]!), `${key} ${locale}`).toEqual(names(text["en-US"]!));
+      const tells = walked(key).filter((node) => node.kind === "action").map((node) => node.action!);
+      expect(tells.length, key).toBeGreaterThan(0);
+      for (const tell of tells) {
+        expect(inAll(tell.title), key).toBe(true);
+        for (const text of [tell.title, tell.body].filter((one) => one !== undefined) as Record<string, string>[]) for (const locale of LOCALES) expect(names(text[locale]!), `${key} ${locale}`).toEqual(names(text["en-US"]!));
+      }
     }
   });
 
