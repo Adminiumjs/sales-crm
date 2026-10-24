@@ -150,20 +150,14 @@ export async function readNames(session: StaffSession, ids: readonly (string | n
 export const num = (value: unknown): number => (typeof value === "number" ? value : Number(value) || 0);
 
 /**
- * A new quote with its lines: the quote first, then each line under it.
- *
- * Not one save: a side cannot name a parent's child relation to the server
- * (the config gives tables, not relations), so the lines follow one by one,
- * each with a key of its own. If a line fails the quote is still there, a
- * draft with the lines that went in; the answer says how many did not.
+ * A new quote with its lines, in ONE write: the lines go as the quote's
+ * children, named by the app's short table name (Adminium 0.3.35, E4). The
+ * server holds each line to what the person may link, write and reach, and a
+ * line it refuses refuses the whole save: there is never a quote without the
+ * lines it was made with.
  */
-export async function createQuote(session: StaffSession, values: Record<string, unknown>, lines: readonly Record<string, unknown>[]): Promise<{ saved: Saved<Quote>; missing: number }> {
-  const saved = await session.create<Quote>("quotes", values, newClientKey());
-  if (saved.state !== "saved") return { saved, missing: lines.length };
-  let missing = 0;
-  for (const [at, line] of lines.entries()) {
-    const made = await session.create("quote_lines", { ...line, document_id: saved.row.id, position: at }, newClientKey());
-    if (made.state !== "saved") missing += 1;
-  }
-  return { saved, missing };
+export async function createQuote(session: StaffSession, values: Record<string, unknown>, lines: readonly Record<string, unknown>[]): Promise<{ saved: Saved<Quote> }> {
+  const children = { quote_lines: lines.map((line, at) => ({ values: { ...line, position: at } })) };
+  const saved = await session.create<Quote>("quotes", values, newClientKey(), lines.length === 0 ? {} : { children });
+  return { saved };
 }

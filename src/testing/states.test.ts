@@ -157,6 +157,11 @@ describe("a deal", () => {
     ]);
     // A deal is handed over while it is open; a closed one is locked, owner and all.
     expect(deal.actions!.find((one) => one.id === "hand-over")).toMatchObject({ set: {}, in: ["open"] });
+    // Plan 68 R1c: in the same write, the old owner's visits not yet made and her open follow-ups go to the new owner.
+    expect((deal.actions!.find((one) => one.id === "hand-over") as { carries?: unknown }).carries).toEqual([
+      { table: "site_visits", via: "deal_id", column: "rep_id", where: [{ column: "state", eq: "booked" }] },
+      { table: "follow_ups", via: "deal_id", column: "owner_id", where: [{ column: "done", eq: false }] },
+    ]);
   });
 });
 

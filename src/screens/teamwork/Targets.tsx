@@ -20,6 +20,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useT } from "../../i18n/index.tsx";
 import type { Formatters } from "../../lib/format.ts";
 import { scopeOf } from "../../selling/figures.ts";
+import { heldFromOwn } from "../../selling/whose.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
@@ -159,6 +160,9 @@ function Team({ data, who, f, monthsLeft, canSet, onSaved }: { data: TargetsData
   const cover = coverOf(team.toward, total);
   // A row a rep: the people with a rep's profile, then anybody else who has a target.
   const people = [...who.reps, ...data.targets.map((target) => target.rep_id).filter((id) => !who.reps.includes(id))].filter((id, at, list) => list.indexOf(id) === at);
+  // Her own target is never hers to set (plan 68 X2): the server answers it as a row out of reach.
+  const me = session.config.user?.id ?? "";
+  const ownShown = canSet && people.includes(me) && heldFromOwn(session);
   return (
     <>
       <section className="crm-tw-card crm-tg-card" data-testid="tg-team">
@@ -195,9 +199,14 @@ function Team({ data, who, f, monthsLeft, canSet, onSaved }: { data: TargetsData
         </div>
         <ul className="crm-tg-list">
           {people.map((id) => (
-            <Row key={id} rep={id} name={who.names[id] ?? ""} target={data.targets.find((one) => one.rep_id === id) ?? null} sums={sumsOf(data, id)} biggest={data.biggest[id] ?? null} who={who} f={f} year={data.year} canSet={canSet && (data.targets.some((one) => one.rep_id === id) || session.can("targets", "create"))} onSaved={onSaved} />
+            <Row key={id} rep={id} name={who.names[id] ?? ""} target={data.targets.find((one) => one.rep_id === id) ?? null} sums={sumsOf(data, id)} biggest={data.biggest[id] ?? null} who={who} f={f} year={data.year} canSet={canSet && !(ownShown && id === me) && (data.targets.some((one) => one.rep_id === id) || session.can("targets", "create"))} onSaved={onSaved} />
           ))}
         </ul>
+        {ownShown && (
+          <p className="crm-tw-quiet" data-testid="tg-own">
+            {t("dealrules.target.own")}
+          </p>
+        )}
         {people.length === 0 && <Empty icon="target" title={t("targets.none.team")} />}
       </section>
     </>

@@ -9,10 +9,12 @@
  * so they are there when it changes hands. The change of owner itself is in
  * the deal's history, and so in its room.
  *
- * THE DEAL'S OPEN FOLLOW-UPS can be moved by somebody who leads the team
- * only. The server does not let a rep give a follow-up of hers to a
- * colleague, so for her they stay in her queue and the page says so before
- * she presses anything.
+ * WHAT GOES WITH IT is the server's, in the hand-over's own write (Adminium
+ * 0.3.35, `handOver.carries`): the visits of the old owner's on the deal that
+ * are not yet made, and her open follow-ups on it. A visit already made keeps
+ * her name; a colleague's own visits and follow-ups (a helper's, a manager's)
+ * stay theirs. The page says, before anything is pressed, how many go,
+ * counting only the rows the reader reads.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -27,7 +29,7 @@ import type { ScreenProps } from "../../shell/screens.tsx";
 import { newClientKey, type Condition, type StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
-import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { useToasts } from "../../ui/toast.tsx";
 import { ruleStates } from "../../lib/rules.ts";
 import { readNames } from "../quotes/data.ts";
 import { num, readFixed, sittingOf, type Activity, type Fixed } from "./data.ts";
@@ -64,6 +66,8 @@ interface Brief {
   steps: Step[];
   /** How many follow-ups are open on the deal: the server's count. */
   open: number;
+  /** What the hand-over carries, of the rows the reader reads: null where she reads none of that table. */
+  carries: { visits: number | null; steps: number | null };
 }
 interface Done {
   id: number;
@@ -73,9 +77,9 @@ interface Done {
   /** Whether the reader still reaches the deal. */
   stillOpens: boolean;
   noted: boolean;
+  /** What went with it: the visits not yet made and the open follow-ups, as counted before. */
+  visits: number;
   moved: number;
-  stayed: number;
-  why: string | null;
   /** Who the introduction e-mail goes to, when it was asked for. */
   introduced: string | null;
 }
@@ -97,13 +101,18 @@ async function readPool(session: StaffSession, mine: boolean): Promise<Pool> {
   return { deals: deals.rows, fixed, names };
 }
 
-async function readBrief(session: StaffSession, dealId: number): Promise<Brief> {
+async function readBrief(session: StaffSession, dealId: number, owner: string | null): Promise<Brief> {
   const of = { column: "deal_id", op: "eq" as const, value: dealId };
-  const [last, steps] = await Promise.all([
+  const theirs = (column: string): Condition => ({ column, op: owner === null ? "is_null" : "eq", ...(owner === null ? {} : { value: owner }) }) as Condition;
+  const counted = async (ref: string, where: Condition): Promise<number | null> => (session.can(ref, "read") ? ((await session.list(ref, { select: ["id"], where, limit: 1, count: "exact" })).total ?? 0) : null);
+  const [last, steps, visits, carried] = await Promise.all([
     session.can("activities", "read") ? session.list<Activity>("activities", { select: ["id", "kind", "text", "author_id", "at"], where: of, order: ["at.desc", "id.desc"], limit: 3 }).then((page) => page.rows) : Promise.resolve([] as Activity[]),
     session.can("follow_ups", "read") ? session.list<Step>("follow_ups", { select: ["id", "owner_id", "due_at", "text"], where: { and: [of, { column: "done", op: "eq", value: false }] }, order: ["due_at"], limit: 50, count: "exact" }) : Promise.resolve({ rows: [] as Step[], total: 0 }),
+    // What the server carries: the owner's booked visits on the deal, and her open follow-ups on it.
+    counted("site_visits", { and: [of, { column: "state", op: "eq", value: "booked" }, theirs("rep_id")] }),
+    counted("follow_ups", { and: [of, { column: "done", op: "eq", value: false }, theirs("owner_id")] }),
   ]);
-  return { last, steps: steps.rows, open: steps.total ?? 0 };
+  return { last, steps: steps.rows, open: steps.total ?? 0, carries: { visits, steps: carried } };
 }
 
 export function Handover({ rest }: ScreenProps) {
@@ -124,10 +133,10 @@ export function Handover({ rest }: ScreenProps) {
   useEffect(() => setPicked(asked), [asked]);
   const deals = pool.load.state === "ready" ? pool.load.data.deals : null;
   const dealId = deals === null ? null : (deals.find((deal) => deal.id === picked)?.id ?? deals[0]?.id ?? null);
-  const brief = useLoad<Brief | null>(() => (dealId === null ? Promise.resolve(null) : readBrief(session, dealId)), [session, dealId]);
+  const ownerOf = deals === null ? null : (deals.find((deal) => deal.id === dealId)?.owner_id ?? null);
+  const brief = useLoad<Brief | null>(() => (dealId === null ? Promise.resolve(null) : readBrief(session, dealId, ownerOf)), [session, dealId, ownerOf]);
   const [to, setTo] = useState<string | null>(null);
   const [note, setNote] = useState("");
-  const [withSteps, setWithSteps] = useState(true);
   // "Introduce … to the customer by e-mail" (S1): on when the deal's contact has an address, and the reader's to undo.
   const [introduce, setIntroduce] = useState(true);
   // "Tell the new owner" is the `deal-handed-over` rule: what is said is its real state (plan-67 T10i).
@@ -179,17 +188,16 @@ export function Handover({ rest }: ScreenProps) {
                 {t("hand.done.noted")}
               </li>
             )}
-            {done.moved > 0 && (
-              <li>
-                <Icon name="calendar-clock" size={14} />
-                {t("hand.done.steps.moved", { name: firstName(done.to) }, done.moved)}
+            {done.visits > 0 && (
+              <li data-testid="hand-carried-visits">
+                <Icon name="map-pin" size={14} />
+                {t("dealrules.carried.visits", { name: firstName(done.to) }, done.visits)}
               </li>
             )}
-            {done.stayed > 0 && (
-              <li data-testid="hand-stayed">
-                <Icon name="calendar-days" size={14} />
-                {t("hand.done.steps.stayed", { name: firstName(done.from) }, done.stayed)}
-                {done.why !== null && ` ${done.why}`}
+            {done.moved > 0 && (
+              <li data-testid="hand-carried-steps">
+                <Icon name="calendar-clock" size={14} />
+                {t("hand.done.steps.moved", { name: firstName(done.to) }, done.moved)}
               </li>
             )}
             {done.introduced !== null && (
@@ -233,6 +241,21 @@ export function Handover({ rest }: ScreenProps) {
             const steps = brief.load.state === "ready" && brief.load.data !== null ? brief.load.data.steps : [];
             const last = brief.load.state === "ready" && brief.load.data !== null ? brief.load.data.last : [];
             const openSteps = brief.load.state === "ready" && brief.load.data !== null ? brief.load.data.open : 0;
+            const carries = brief.load.state === "ready" && brief.load.data !== null ? brief.load.data.carries : null;
+            const isMine = deal.owner_id !== null && deal.owner_id === me;
+            const carryLine = (): string | null => {
+              if (carries === null) return null;
+              const toName = to === null ? t("dealrules.carry.someone") : firstName(nameOf(to));
+              const fromName = firstName(from);
+              if (carries.visits === null || carries.steps === null) return t("dealrules.carry.unknown", { to: toName, name: fromName });
+              const visits = carries.visits;
+              const moving = carries.steps;
+              if (visits === 0 && moving === 0) return isMine ? t("dealrules.carry.none.mine") : t("dealrules.carry.none.theirs", { name: fromName });
+              if (moving === 0) return t("dealrules.carry.visitsOnly", { to: toName }, visits);
+              if (visits === 0) return isMine ? t("dealrules.carry.stepsOnly.mine", { to: toName }, moving) : t("dealrules.carry.stepsOnly.theirs", { to: toName, name: fromName }, moving);
+              const stepsWords = isMine ? t("dealrules.carry.steps.mine", undefined, moving) : t("dealrules.carry.steps.theirs", { name: fromName }, moving);
+              return t("dealrules.carry.both", { visits: t("dealrules.carry.visits", undefined, visits), steps: stepsWords, to: toName });
+            };
             const days = deal.entered_stage_at === null ? 0 : Math.max(0, f.dayDiff(new Date(deal.entered_stage_at), now));
             const sitting = sittingOf(days, data.fixed);
             const reachable = typeof deal.contact_email === "string" && deal.contact_email !== "";
@@ -261,21 +284,8 @@ export function Handover({ rest }: ScreenProps) {
                 pool.reload();
                 return;
               }
-              let moved = 0;
-              let stayed = 0;
-              let why: string | null = null;
-              const theirs = steps.filter((step) => step.owner_id === deal.owner_id);
-              if (team && withSteps) {
-                for (const step of theirs) {
-                  const saved = await session.update("follow_ups", step.id, { owner_id: to }, { seen: { owner_id: step.owner_id } });
-                  if (saved.state === "saved") moved += 1;
-                  else {
-                    stayed += 1;
-                    why = saved.state === "refused" ? reasonOf(saved.error, t) : t("ui.unknown");
-                  }
-                }
-              } else stayed = theirs.length;
-              setDone({ id: deal.id, deal: deal.name, to: nameOf(to), from, stillOpens: team, noted, moved, stayed, why, introduced: introducing ? deal.contact : null });
+              // The server moved them in the same write: what was counted before, of the rows the reader reads.
+              setDone({ id: deal.id, deal: deal.name, to: nameOf(to), from, stillOpens: team, noted, visits: carries?.visits ?? 0, moved: carries?.steps ?? 0, introduced: introducing ? deal.contact : null });
               setBusy(false);
               pool.reload();
             };
@@ -323,19 +333,12 @@ export function Handover({ rest }: ScreenProps) {
                     </h2>
                     <textarea id="crm-hand-note" className="crm-input crm-textarea mr-fld" value={note} maxLength={4000} disabled={busy} placeholder={t("hand.note.hint")} onChange={(event) => setNote(event.target.value)} />
                     <p className="crm-room-quiet">{t("hand.note.where")}</p>
-                    {steps.length > 0 &&
-                      (team ? (
-                        <button type="button" role="switch" aria-checked={withSteps} className="crm-switch mr-gi" disabled={busy} onClick={() => setWithSteps((was) => !was)}>
-                          <span className="crm-switch-track">
-                            <span className="crm-switch-knob" />
-                          </span>
-                          {t("hand.steps.move")}
-                        </button>
-                      ) : (
-                        <p className="crm-room-note" data-testid="hand-steps-stay">
-                          {t("hand.steps.stay", undefined, openSteps)}
-                        </p>
-                      ))}
+                    {carries !== null && (
+                      <div className="crm-room-note" data-testid="hand-carries">
+                        <p>{carryLine()}</p>
+                        <p className="crm-room-quiet">{isMine ? t("dealrules.carry.stay.mine") : t("dealrules.carry.stay.theirs", { name: firstName(from) })}</p>
+                      </div>
+                    )}
                     <div className="crm-hand-tell" data-testid="hand-tell">
                       <Icon name={told.load.state === "ready" && told.load.data === "on" ? "bell-ring" : "bell"} size={14} />
                       <span>

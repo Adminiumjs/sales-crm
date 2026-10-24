@@ -191,12 +191,12 @@ export function QuotePage({ id }: { id: string }) {
             save(async () => {
               const source = isNewest ? data.lines : (await session.list<Line>("quote_lines", { select: LINE_COLUMNS, where: { column: "document_id", op: "eq", value: last.id }, order: ["position", "id"], limit: 200 })).rows;
               // It replaces the newest version, which sending it will withdraw. A version the customer declined is not named: it stays declined, and the next one is a quote of its own.
-              const { saved, missing } = await createQuote(
+              const { saved } = await createQuote(
                 session,
                 { deal_id: last.deal_id, version: last.version + 1, ...(last.status === "declined" ? {} : { replaces_id: last.id }), family_no: familyNo(data.family), ...(last.notes === null ? {} : { notes: last.notes }), ...(last.sent_to_contact_id === null ? {} : { sent_to_contact_id: last.sent_to_contact_id }) },
                 source.map((line) => ({ description: line.description, qty: line.qty, rate: line.rate, price_id: line.price_id })),
               );
-              const made = await toasts.say(Promise.resolve(saved), (row) => (missing > 0 ? t("quote.toast.version.short", { n: row.version, number: row.number ?? "", count: missing }) : t("quote.toast.version", { n: row.version, number: row.number ?? "" })));
+              const made = await toasts.say(Promise.resolve(saved), (row) => t("quote.toast.version", { n: row.version, number: row.number ?? "" }));
               if (made !== null) nav.go("quotes", made.id);
             });
           const saveNotes = (text: string) => (text === (quote.notes ?? "") ? Promise.resolve() : save(() => toasts.say(session.update("quotes", quote.id, { notes: text === "" ? null : text }), () => t("quote.toast.notes"))));
