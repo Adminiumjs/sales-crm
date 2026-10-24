@@ -373,6 +373,11 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     await expect(toBook(page)).toHaveCount(4);
     expect(await rows(context.request, data, "job_visits", { column: "what", op: "eq", value: what })).toEqual([]);
     expect((await messagesOfJob(data, 2)).map((one) => one.kind)).toEqual(["delivery-booked", "delivery-cancelled"]);
+    // Its why is kept with the removed visit, read through its job (plan 68 S16).
+    await page.getByRole("button", { name: "Show called-off visits" }).click();
+    const gone = page.getByTestId("jb-removed").locator(".crm-removed-line", { hasText: "Spec: the bays are not needed" });
+    await expect(gone).toContainText(what);
+    await expect(gone).toContainText("J-02");
 
     // A visit that was made stays: the server refuses its removal, and there is no "cancelled" to set.
     const headers = await csrf(context.request);

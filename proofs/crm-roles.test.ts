@@ -349,7 +349,8 @@ for (const [dialect, reachable] of LEGS) {
         ['renewals referrals reps covers', 'all all all all - - - - all'],
         ['targets cover_notes', 'all team own - - - - - all'],
         ['one_to_ones one_to_one_sessions coaching_plans coaching_areas', '- own own - - - - - -'],
-        ['actions', 'own own own - - - - - -'],
+        // Plan 68 R4a: the manager also reads the meeting actions her reps set.
+        ['actions', 'own own+meeting own - - - - - -'],
         ['meetings meeting_slots meeting_decisions starters starter_steps', 'all all all - - - - - all'],
         ['threads messages', 'own own own own - - - - -'],
         ['thread_members', 'all own own own - - - - -'],
@@ -384,7 +385,7 @@ for (const [dialect, reachable] of LEGS) {
       }
 
       // WHOSE A ROW IS: the ways of each table, from the app's manifest; what a way means is worked out here, by hand.
-      interface Way { column?: string; via?: string; through?: { table: string; link: string; on?: string; user: string; from?: string; to?: string } }
+      interface Way { column?: string; person?: string; via?: string; through?: { table: string; link: string; on?: string; user: string; from?: string; to?: string } }
       const tables = (manifest()['requiredSchema'] as { tables: { ref: string; belongs?: Way[]; columns: { ref: string; references?: string }[] }[] }).tables;
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
@@ -408,6 +409,12 @@ for (const [dialect, reachable] of LEGS) {
         if (table.belongs === undefined) return true;
         expect(depth, `${ref}: a row is reached through at most two links`).toBeLessThan(3);
         return table.belongs.some((way) => {
+          // Through a private row, by one of its own people (plan 68 E27): the reader herself, never whoever she leads.
+          if (way.column !== undefined && way.person !== undefined) {
+            const parent = table.columns.find((column) => column.ref === way.column)!.references!;
+            const above = raw[parent]!.find((one) => String(one['id']) === String(row[way.column!]));
+            return above !== undefined && above[way.person] === me;
+          }
           if (way.column !== undefined) {
             const person = row[way.column];
             return person === me || (wide && typeof person === 'string' && (led[me]?.has(person) ?? false));
@@ -446,6 +453,7 @@ for (const [dialect, reachable] of LEGS) {
             .filter((row) => {
               if (reach === 'all') return true;
               if (reach === 'won') return row['state'] === 'won' || (plus === 'own' && reaches(table.ref, row, me, false));
+              if (plus === 'meeting') return reaches(table.ref, row, me, false) || (row['source'] === 'meeting' && (row['set_by_id'] === me || (led[me]?.has(String(row['set_by_id'])) ?? false)));
               return reaches(table.ref, row, me, reach === 'team') || (plus === 'free' && free(table.ref, row));
             })
             .map((row) => Number(row['id']))

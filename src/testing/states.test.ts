@@ -59,7 +59,7 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
   // A cancelled showroom booking is removed, never marked (F17, P19); one somebody came in for without a confirmation is still "been in".
   showroom_bookings: { column: "state", initial: "tentative", moves: ["tentative → confirmed", "tentative → done", "confirmed → done"] },
   jobs: { column: "state", initial: "open", moves: ["open → installed", "open → signed-off: blocking_snags = 0; 1 sign_offs", "installed → signed-off: blocking_snags = 0; 1 sign_offs"] },
-  // A visit to a job that is called off is removed (F17), the why written to it first so the removal's own entry keeps it: no "cancelled" state.
+  // A visit to a job that is called off is removed (F17), its why sent with the removal and kept on the removed list (plan 68 S16): no "cancelled" state.
   job_visits: { column: "state", initial: "waiting", moves: ["waiting → booked: day filled; crew_id filled", "booked → done", "booked → waiting"] },
   snags: { column: "state", initial: "open", moves: ["open → waiting-part", "open → put-right: put_right_note filled", "waiting-part → open", "waiting-part → put-right: put_right_note filled"] },
   complaints: { column: "state", initial: "open", moves: ["open → answered", "answered → settled"] },
@@ -71,10 +71,12 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
   // A week is sent with a day in it at least; the operations manager or the CRM admin answers it (P25).
   time_sheets: { column: "state", initial: "open", moves: ["open → sent: 1 time_sheet_lines", "sent → signed-off: only ops-manager, admin", "sent → sent-back: sent_back_note filled; only ops-manager, admin", "sent-back → sent: 1 time_sheet_lines"] },
   insurance_incidents: { column: "state", initial: "open", moves: ["open → settled"] },
+  // A message is removed by its button, which empties its words in the same write; the move waits for them to be empty (plan 68 R4d).
+  messages: { column: "state", initial: "live", moves: ["live → removed: text = "] },
 };
 
 describe("the tables that have states are these, and no other", () => {
-  it("fourteen of them, each on its own column", () => {
+  it("fifteen of them, each on its own column", () => {
     const found = tables.filter((one) => one.states !== undefined).map((one) => one.ref).sort();
     expect(found).toEqual(Object.keys(EXPECTED).sort());
     for (const [ref, expected] of Object.entries(EXPECTED)) expect([states(ref).column, states(ref).initial], ref).toEqual([expected.column, expected.initial]);
@@ -191,9 +193,9 @@ describe("every button", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("there are thirty-three", () => {
-    // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row.
-    expect(buttons).toHaveLength(33);
+  it("there are thirty-four", () => {
+    // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row. A message's "Remove" came with plan 68 R4d.
+    expect(buttons).toHaveLength(34);
   });
 });
 

@@ -308,20 +308,13 @@ export const moveBooking = (session: StaffSession, booking: Pick<Booking, "id" |
   session.update<Booking>("showroom_bookings", booking.id, values, { seen: { starts_at: booking.starts_at, minutes: booking.minutes, space_id: booking.space_id, state: booking.state } });
 
 /**
- * Cancel a booking: the why first, then each piece of display stock promised
- * to it lets go, then the row is removed. A reply lost on the way back is read
- * back (`remove` answers saved once the row is no longer there), so a second
- * press never finds a booking to cancel twice.
+ * Cancel a booking: each piece of display stock promised to it lets go, then
+ * the row is removed with the why (plan 68 S16), which the server keeps with
+ * the removed booking. A reply lost on the way back is read back (`remove`
+ * answers saved once the row is no longer there), so a second press never
+ * finds a booking to cancel twice; one already gone is cancelled.
  */
 export async function cancelBooking(session: StaffSession, booking: Pick<Booking, "id" | "state">, why: string): Promise<Saved> {
-  let noted = await session.update("showroom_bookings", booking.id, { cancel_reason: why }, { seen: { state: booking.state } });
-  // Confirmed (or pencilled back) by somebody since the screen read it: a cancel holds from any state still to come, so it is written against the state the row has now.
-  if (noted.state === "refused" && noted.error.status === 409) {
-    const now = await session.get<Booking>("showroom_bookings", booking.id);
-    if (now !== null && LIVE.includes(now.state) && now.state !== booking.state) noted = await session.update("showroom_bookings", booking.id, { cancel_reason: why }, { seen: { state: now.state } });
-  }
-  if (noted.state === "refused" && noted.error.status === 404 && (await session.get("showroom_bookings", booking.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
-  if (noted.state !== "saved") return noted;
   if (session.can("display_pieces", "read")) {
     const promised = await session.list<{ id: number }>("display_pieces", { select: ["id"], where: { column: "promised_booking_id", op: "eq", value: booking.id }, limit: 50 });
     for (const piece of promised.rows) {
@@ -329,7 +322,9 @@ export async function cancelBooking(session: StaffSession, booking: Pick<Booking
       if (freed.state !== "saved") return freed;
     }
   }
-  return session.remove("showroom_bookings", booking.id);
+  const done = await session.remove("showroom_bookings", booking.id, { reason: why });
+  if (done.state === "refused" && done.error.status === 404 && (await session.get("showroom_bookings", booking.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
+  return done;
 }
 
 export const confirmBooking = (session: StaffSession, booking: Pick<Booking, "id" | "state">): Promise<Saved<Booking>> => session.act<Booking>("showroom_bookings", booking.id, "confirm", booking.state);

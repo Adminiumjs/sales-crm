@@ -96,6 +96,9 @@ export function Room({ id }: { id: string }) {
   const reads = useCallback((tables: string[]): string[] => tables.filter((table) => session.can(table, "read") && (table !== "quotes" || session.part("quotes"))), [session]);
   useLive(reads(["deals", "deal_members", "quotes", "comments", "cover_notes"]), againRoom);
   useLive(reads(["deals", "activities", "deal_stage_changes", "deal_amount_changes"]), againTimeline);
+  // A member taken off is read from the deal's removed people: only when somebody is, not on every change of the room.
+  const againOff = useCoalesced(timeline.reload);
+  useLive(reads(["deal_members"]), againOff);
   /*
    * THE AMOUNT A QUOTE WAS SENT AT is a line the app's rule writes, once the
    * sending can no longer be undone: a minute after it. The server tells a
@@ -211,7 +214,7 @@ export function Room({ id }: { id: string }) {
           return body({
             data,
             side: side.load.state === "ready" ? side.load.data : null,
-            lines: timeline.load.state === "ready" && timeline.load.data !== null ? timelineOf(timeline.load.data) : null,
+            lines: timeline.load.state === "ready" && timeline.load.data !== null ? timelineOf(timeline.load.data, data.members) : null,
             timelineFailed: timeline.load.state === "failed" || timeline.load.state === "refused",
             back: back(data.deal.state === "open"),
           });
@@ -335,6 +338,12 @@ export function Room({ id }: { id: string }) {
     const lineText = (line: Line): { label: string; who: string; text: string; icon: string; tone: string } => {
       if (line.type === "activity") return { label: t(`room.kind.${line.kind}` as MessageKey), who: nameOf(line.who), text: line.text, icon: KIND_ICON[line.kind], tone: line.kind === "call" ? "info" : line.kind === "meeting" ? "warn" : "plain" };
       if (line.type === "stage") return { label: t("room.line.stage"), who: line.whoLabel ?? nameOf(line.who), text: line.from === null ? t("room.line.opened", { stage: stageName(line.to) }) : t("room.line.moved", { from: stageName(line.from), to: stageName(line.to) }), icon: "move-right", tone: "accent" };
+      if (line.type === "member") {
+        const name = nameOf(line.person);
+        const by = line.byLabel ?? (line.by === null ? "" : nameOf(line.by));
+        const text = line.off ? t("rm.line.off", { name, by }) : by === "" ? t("rm.line.added.bare", { name }) : t("rm.line.added", { name, by });
+        return { label: t("rm.line.label"), who: "", text, icon: line.off ? "circle-slash" : "user-round-plus", tone: "plain" };
+      }
       if (line.type === "quoted") return { label: t("room.line.change"), who: "", text: line.quote === null ? t("room.line.quoted.bare", { amount: f.money(line.amount) }) : t("room.line.quoted", { amount: f.money(line.amount), number: line.quote }), icon: "history", tone: "accent" };
       const change = line.change;
       const words = ((): string => {
@@ -590,7 +599,7 @@ export function Room({ id }: { id: string }) {
                                 <span className="crm-room-line-who">{shown.who}</span>
                               </>
                             )}
-                            <span className="crm-room-line-when crm-mono">{when(line.at)}</span>
+                            <span className="crm-room-line-when crm-mono">{line.type === "member" && line.dayOnly ? f.dayShort(new Date(line.at)) : when(line.at)}</span>
                           </div>
                           <p>{shown.text}</p>
                         </div>

@@ -228,7 +228,8 @@ export interface StaffSession {
   get<R extends Row = Row>(ref: string, id: Key, q?: Pick<ListQuery, "lookup" | "agg" | "measures">): Promise<R | null>;
   create<R extends Row = Row>(ref: string, values: Row, clientKey: string, more?: { children?: Record<string, unknown> }): Promise<Saved<R>>;
   update<R extends Row = Row>(ref: string, id: Key, values: Row, more?: { seen?: Row; children?: Record<string, unknown> }): Promise<Saved<R>>;
-  remove(ref: string, id: Key): Promise<Saved<Row>>;
+  /** Remove a row. `reason` is the why, for a table that keeps one (it rides in the body, never in the address). */
+  remove(ref: string, id: Key, more?: { reason?: string }): Promise<Saved<Row>>;
   /** Press a record's button. `from` is the state the screen saw; `stateColumn` is where the read-back looks. */
   act<R extends Row = Row>(ref: string, id: Key, actionId: string, from: string, more?: { values?: Row; stateColumn?: string }): Promise<Saved<R>>;
   history(ref: string, id: Key, q?: { limit?: number; cursor?: string }): Promise<{ entries: HistoryEntry[]; next: string | null }>;
@@ -431,10 +432,11 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
       );
     },
 
-    remove(ref: string, id: Key) {
+    remove(ref: string, id: Key, more: { reason?: string } = {}) {
+      const reason = more.reason?.trim();
       return saving<Row>(
         async () => {
-          await send("DELETE", data(ref, `/${encodeURIComponent(String(id))}?confirm=true`), undefined);
+          await send("DELETE", data(ref, `/${encodeURIComponent(String(id))}?confirm=true`), reason === undefined || reason === "" ? undefined : { reason });
           return { row: {}, replayed: false };
         },
         async () => ((await get(ref, id)) === null ? {} : "again"),

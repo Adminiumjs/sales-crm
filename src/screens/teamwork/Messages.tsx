@@ -34,6 +34,7 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { Dialog } from "../../ui/dialog.tsx";
+import { rolesOf } from "../../shell/routes.ts";
 import { Avatar, childLink, countOf, Empty, Head, NOBODY, PersonChips, readWho, useF, type Names } from "./common.tsx";
 
 interface Thread extends Record<string, unknown> {
@@ -53,7 +54,14 @@ interface Message extends Record<string, unknown> {
   author_id: string;
   text: string;
   at: string;
+  /** `removed` once its author (or the CRM admin) took it away: its words are gone, and who and when are kept (plan 68 R4d). */
+  state?: "live" | "removed";
+  removed_by_id?: string | null;
+  removed_at?: string | null;
 }
+
+const MESSAGE_COLUMNS = ["id", "thread_id", "author_id", "text", "at", "state", "removed_by_id", "removed_at"];
+const removedMessage = (message: Pick<Message, "state">): boolean => message.state === "removed";
 interface Listed {
   thread: Thread;
   members: Member[];
@@ -71,7 +79,7 @@ async function readThreads(session: StaffSession, me: string): Promise<Listed[]>
   const [members, recent] = await Promise.all([
     session.list<Member>("thread_members", { select: ["id", "thread_id", "user_id", "read_at"], where: within, order: ["id"], limit: 200 }).then((page) => page.rows),
     // Newest first: the first row of each conversation is its last message.
-    session.list<Message>("messages", { select: ["id", "thread_id", "author_id", "text", "at"], where: within, order: ["at.desc", "id.desc"], limit: 200 }).then((page) => page.rows),
+    session.list<Message>("messages", { select: MESSAGE_COLUMNS, where: within, order: ["at.desc", "id.desc"], limit: 200 }).then((page) => page.rows),
   ]);
   const listed = await Promise.all(
     threads.map(async (thread): Promise<Listed> => {
@@ -88,7 +96,7 @@ async function readThreads(session: StaffSession, me: string): Promise<Listed[]>
 }
 
 const readMessages = (session: StaffSession, thread: number): Promise<Message[]> =>
-  session.list<Message>("messages", { select: ["id", "thread_id", "author_id", "text", "at"], where: { column: "thread_id", op: "eq", value: thread }, order: ["at.desc", "id.desc"], limit: 200 }).then((page) => [...page.rows].reverse());
+  session.list<Message>("messages", { select: MESSAGE_COLUMNS, where: { column: "thread_id", op: "eq", value: thread }, order: ["at.desc", "id.desc"], limit: 200 }).then((page) => [...page.rows].reverse());
 
 function titleOf(listed: Listed, me: string, names: Names, group: string): string {
   if (listed.thread.kind === "group") return listed.thread.title ?? group;
@@ -192,7 +200,7 @@ export function Messages(_: ScreenProps) {
                               {row.last !== null && <span className="crm-mono">{whenOf(new Date(row.last.at), session.now(), f, t("visits.day.yesterday"))}</span>}
                             </span>
                             <span className="crm-ms-preview">
-                              {row.last === null ? t("msgs.empty") : `${row.last.author_id === me ? `${t("msgs.you")} ` : ""}${row.last.text}`}
+                              {row.last === null ? t("msgs.empty") : removedMessage(row.last) ? t("rm.msg.preview") : `${row.last.author_id === me ? `${t("msgs.you")} ` : ""}${row.last.text}`}
                             </span>
                           </span>
                           {row.unread > 0 && (
@@ -244,6 +252,23 @@ function Conversation({ row, title, names, everyone, f, me, round, opened, onOpe
   // A member brings a colleague into a group conversation; a two-person one takes nobody else (the server refuses it too).
   const canAdd = row.thread.kind === "group" && row.mine !== null && session.can("thread_members", "create");
   const [adding, setAdding] = useState(false);
+  // The author removes her own message; the CRM admin any in a conversation she is in (the server holds both).
+  const admin = rolesOf((session.config.access?.roles ?? []).map((role) => role.slug)).includes("admin");
+  const mayRemove = (message: Message): boolean => !removedMessage(message) && row.mine !== null && session.can("messages", "update") && (message.author_id === me || admin);
+  const [removing, setRemoving] = useState<Message | null>(null);
+  const [busyRemove, setBusyRemove] = useState(false);
+  const stamp = (at: Date): string => (f.dayDiff(at, session.now()) <= 0 ? f.time(at) : `${f.dayShort(at)} · ${f.time(at)}`);
+  const remove = async (message: Message): Promise<void> => {
+    setBusyRemove(true);
+    const saved = await session.act("messages", message.id, "remove", "live");
+    setBusyRemove(false);
+    if (saved.state === "refused") return toasts.show(t("ui.refused", { reason: reasonOf(saved.error, t) }), "danger", true);
+    if (saved.state === "unknown") return toasts.show(t("ui.unknown"), "danger", true);
+    setRemoving(null);
+    toasts.show(t("rm.msg.toast"), "plain");
+    reload();
+    onSent();
+  };
 
   const send = async (): Promise<void> => {
     const text = draft.trim();
@@ -300,6 +325,29 @@ function Conversation({ row, title, names, everyone, f, me, round, opened, onOpe
           }}
         />
       )}
+      {removing !== null && (
+        <Dialog
+          shape="box"
+          icon="trash-2"
+          title={t("rm.msg.confirm.title")}
+          onClose={() => setRemoving(null)}
+          busy={busyRemove}
+          name="remove-message"
+          foot={
+            <>
+              <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi" disabled={busyRemove} onClick={() => setRemoving(null)}>
+                {t("ui.cancel")}
+              </button>
+              <button type="button" className="crm-btn crm-btn-danger crm-btn-38 mr-btn" disabled={busyRemove} onClick={() => void remove(removing)}>
+                {busyRemove ? t("ui.saving") : t("rm.msg.confirm.go")}
+              </button>
+            </>
+          }
+        >
+          <p className="crm-ms-quote">{removing.text}</p>
+          <p>{t("rm.msg.confirm.body")}</p>
+        </Dialog>
+      )}
       <div className="crm-ms-scroll mr-scroll" role="log" aria-live="polite" tabIndex={0} aria-label={t("msgs.log", { name: title })}>
         <Loaded load={load} reload={reload} skeleton={<Skeleton rows={3} height={44} />}>
           {(messages) => (
@@ -317,8 +365,22 @@ function Conversation({ row, title, names, everyone, f, me, round, opened, onOpe
                         <span>{names[message.author_id] ?? ""}</span>
                       </div>
                     )}
-                    <div className="crm-ms-bubble">{message.text}</div>
-                    <div className="crm-ms-when crm-mono">{f.dayDiff(when, session.now()) <= 0 ? f.time(when) : `${f.dayShort(when)} · ${f.time(when)}`}</div>
+                    {removedMessage(message) ? (
+                      <div className="crm-ms-bubble crm-ms-removed" data-testid="msg-removed">
+                        <Icon name="circle-slash" size={13} />
+                        {t("rm.msg.removed", { name: names[message.removed_by_id ?? ""] ?? "", when: message.removed_at === null || message.removed_at === undefined ? "" : stamp(new Date(message.removed_at)) })}
+                      </div>
+                    ) : (
+                      <div className="crm-ms-bubble">{message.text}</div>
+                    )}
+                    <div className="crm-ms-when crm-mono">
+                      {stamp(when)}
+                      {mayRemove(message) && (
+                        <button type="button" className="crm-ms-remove mr-gi" aria-label={t("rm.msg.remove.aria", { when: stamp(when) })} data-act="remove-message" onClick={() => setRemoving(message)}>
+                          {t("rm.msg.remove")}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

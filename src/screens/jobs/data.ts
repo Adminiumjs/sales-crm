@@ -392,12 +392,11 @@ export interface NewVisit {
 export const addVisit = (session: StaffSession, made: NewVisit, key: string): Promise<Saved<Visit>> =>
   session.create<Visit>("job_visits", { job_id: made.jobId, kind: made.kind, what: made.what.trim(), hours: made.hours, crew_size: made.size, stock_ready_on: made.stock, note: made.note.trim() === "" ? null : made.note.trim() }, key);
 
-/** Call a visit off: the why, then the row is removed. A second press after a lost reply finds nothing to remove twice. */
+/** Call a visit off: one removal with the why, kept with the removed visit (plan 68 S16). A second press after a lost reply finds nothing to remove twice. */
 export async function cancelVisit(session: StaffSession, visit: Pick<Visit, "id" | "state">, why: string): Promise<Saved> {
-  const noted = await session.update("job_visits", visit.id, { cancel_reason: why }, { seen: { state: visit.state } });
-  if (noted.state === "refused" && noted.error.status === 404 && (await session.get("job_visits", visit.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
-  if (noted.state !== "saved") return noted;
-  return session.remove("job_visits", visit.id);
+  const done = await session.remove("job_visits", visit.id, { reason: why });
+  if (done.state === "refused" && done.error.status === 404 && (await session.get("job_visits", visit.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
+  return done;
 }
 
 export interface Moved {

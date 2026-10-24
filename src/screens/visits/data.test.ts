@@ -79,7 +79,7 @@ describe("a move's old day, who and when, from the record's history", () => {
   });
 });
 
-describe("a cancel: the why, then the row is removed", () => {
+describe("a cancel: one removal that carries the why", () => {
   const saved: Saved = { state: "saved", row: {}, replayed: false, readBack: false };
   const fake = (over: Partial<Record<"update" | "remove" | "get", (...args: unknown[]) => unknown>>, calls: string[]): StaffSession =>
     ({
@@ -88,26 +88,22 @@ describe("a cancel: the why, then the row is removed", () => {
       get: (...args: unknown[]) => over.get?.(...args) ?? Promise.resolve(null),
     }) as unknown as StaffSession;
 
-  it("writes the reason on a visit still booked, and only then removes it", async () => {
+  it("removes the visit with its reason, in one write", async () => {
     const calls: string[] = [];
     expect((await cancelVisit(fake({}, calls), { id: 12 }, "Petra is off sick")).state).toBe("saved");
-    expect(calls).toEqual(['update [12,{"cancel_reason":"Petra is off sick"},{"seen":{"state":"booked"}}]', "remove [12]"]);
+    expect(calls).toEqual(['remove [12,{"reason":"Petra is off sick"}]']);
   });
 
-  it("removes nothing when the reason was refused", async () => {
-    const calls: string[] = [];
-    const refused: Saved = { state: "refused", error: new StaffError(403, "FORBIDDEN", "no") };
-    const answer = await cancelVisit(fake({ update: () => Promise.resolve(refused), get: () => Promise.resolve({ id: 12 }) }, calls), { id: 12 }, "why");
+  it("says why it was refused, and the visit stays", async () => {
+    const refused: Saved = { state: "refused", error: new StaffError(409, "STATE_MOVE_REFUSED", "made") };
+    const answer = await cancelVisit(fake({ remove: () => Promise.resolve(refused), get: () => Promise.resolve({ id: 12 }) }, []), { id: 12 }, "why");
     expect(answer.state).toBe("refused");
-    expect(calls.filter((call) => call.startsWith("remove"))).toEqual([]);
   });
 
   it("says cancelled once when the visit is already gone", async () => {
-    const calls: string[] = [];
     const gone: Saved = { state: "refused", error: new StaffError(404, "NOT_FOUND", "gone") };
-    const answer = await cancelVisit(fake({ update: () => Promise.resolve(gone) }, calls), { id: 12 }, "why");
+    const answer = await cancelVisit(fake({ remove: () => Promise.resolve(gone) }, []), { id: 12 }, "why");
     expect(answer.state).toBe("saved");
-    expect(calls.filter((call) => call.startsWith("remove"))).toEqual([]);
   });
 
   it("does not say cancelled when nothing could be confirmed", async () => {

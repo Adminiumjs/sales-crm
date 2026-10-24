@@ -1,0 +1,97 @@
+/*
+ * What was removed, and why (plan 68 R4d, S3, S16): a removed message's line,
+ * its Remove button, and the closed "cancelled" section under Site visits,
+ * Showroom bookings and Deliveries.
+ */
+
+/* ── a removed message ──────────────────────────────────────────────────── */
+.crm-ms-bubble.crm-ms-removed,
+.crm-ms-msg[data-mine="1"] .crm-ms-bubble.crm-ms-removed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed var(--border-strong, var(--border));
+  background: transparent;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+.crm-ms-remove {
+  margin-inline-start: 8px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 10.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.crm-ms-remove:hover,
+.crm-ms-remove:focus-visible {
+  color: var(--danger, var(--fg));
+}
+.crm-ms-quote {
+  margin: 0 0 10px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+/* ── removed rows under a screen ────────────────────────────────────────── */
+.crm-removed {
+  margin-block-start: 18px;
+}
+.crm-removed-list {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-removed-line {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.crm-removed-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+}
+.crm-removed-body {
+  min-width: 0;
+}
+.crm-removed-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  font-size: 13px;
+}
+.crm-removed-detail,
+.crm-removed-by {
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+.crm-removed-by,
+.crm-removed-why,
+.crm-removed-none {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.crm-removed-none {
+  color: var(--fg-muted);
+}

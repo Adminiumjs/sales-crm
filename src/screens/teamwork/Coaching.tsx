@@ -28,7 +28,7 @@ import { newClientKey, type StaffSession } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { Dialog } from "../../ui/dialog.tsx";
-import { ACTION_COLUMNS, ActionRow, Avatar, countOf, Empty, Head, NOBODY, PersonChips, readWho, tickAction, useF, type Action, type Who } from "./common.tsx";
+import { ACTION_COLUMNS, ActionRow, Avatar, countOf, Empty, Head, mayTick, NOBODY, PersonChips, readWho, tickAction, useF, type Action, type Who } from "./common.tsx";
 import { AREA_COLUMNS, changeArea, liveOf, makeArea, MEASURES, type Area, type AreaValues, type Live, type Measure } from "./coaching.ts";
 
 interface Plan extends Record<string, unknown> {
@@ -200,7 +200,7 @@ function PlanView({ plan, who, f, now, round, onChanged }: { plan: Plan; who: Wh
                   )}
                   <ul className="crm-tw-actions">
                     {steps.map((step) => (
-                      <ActionRow key={step.id} action={step} here="coaching" names={who.names} f={f} onTick={canTick ? (one, on) => void tick(one, on) : null} busy={ticking === step.id} />
+                      <ActionRow key={step.id} action={step} here="coaching" names={who.names} f={f} onTick={canTick && mayTick(step, me) ? (one, on) => void tick(one, on) : null} busy={ticking === step.id} />
                     ))}
                   </ul>
                   {steps.length === 0 && <p className="crm-cv-none">{t("coaching.area.none")}</p>}

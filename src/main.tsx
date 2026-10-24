@@ -60,6 +60,7 @@ if (SURFACE_SIDE === "customer") {
     import("./styles/fleet.css"),
     import("./styles/offline.css"),
     import("./styles/vandays.css"),
+    import("./styles/removals.css"),
   ]).then(([{ default: App }]) => {
     root.render(
       <StrictMode>

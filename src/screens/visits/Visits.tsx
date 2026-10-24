@@ -26,6 +26,7 @@ import { firstName, initials } from "../../ui/people.ts";
 import { BookingDialog, type Booking } from "./BookingDialog.tsx";
 import { readNames, readVisits, toneOf, type Filter, type Tone, type Visit } from "./data.ts";
 import { VisitNotes } from "./VisitNotes.tsx";
+import { readRemovedUnder, RemovedPanel } from "../removed.tsx";
 
 const FILTERS: readonly Filter[] = ["all", "soon", "done", "unwritten"];
 const PILL: Record<Tone, "accent" | "info" | "pos" | "danger"> = { today: "accent", soon: "info", done: "pos", unwritten: "danger" };
@@ -253,6 +254,22 @@ function VisitList({ book, rest }: { book: number | null; rest: string[] }) {
                 </div>
               )}
 
+              {session.can("deals", "read") && (
+                <RemovedPanel<{ purpose?: string | null; starts_at?: string | null }>
+                  title={t("rm.visits.title")}
+                  testId="visits-removed"
+                  f={f}
+                  // A cancelled visit is read through its deal, by whoever reads the deal now (plan 68 S16).
+                  read={async () => {
+                    const deals = (await session.list<{ id: number; name: string }>("deals", { select: ["id", "name"], order: ["id.desc"], limit: 100 })).rows;
+                    return readRemovedUnder(session, deals.map((deal) => ({ ref: "deals", id: deal.id, label: deal.name })), "site_visits");
+                  }}
+                  what={(item) => {
+                    const at = item.row.starts_at === null || item.row.starts_at === undefined ? null : new Date(item.row.starts_at);
+                    return { title: item.row.purpose ?? "", detail: at === null ? item.parent.label : t("rm.list.for", { what: item.parent.label, when: `${f.dayShort(at)}, ${f.time(at)}` }) };
+                  }}
+                />
+              )}
               {booking !== null && <BookingDialog booking={booking} names={names} onClose={() => setBooking(null)} onDone={again} />}
             </>
           );

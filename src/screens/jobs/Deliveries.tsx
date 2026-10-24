@@ -48,6 +48,7 @@ import {
 } from "./data.ts";
 import { dayLong, dayWords, hoursOf, mondayOf, useCrewFacts, useJobsScreen, WeekBar } from "./parts.tsx";
 import { VisitDialog, type VisitBooking } from "./VisitDialog.tsx";
+import { readRemovedUnder, RemovedPanel } from "../removed.tsx";
 import { dropIfEmpty, vanDayForMove } from "./vandays.ts";
 
 const DRAG = "application/x-crm-job-visit";
@@ -186,6 +187,17 @@ export function Deliveries({ rest }: ScreenProps) {
                   </div>
                   <ToBook visits={visits.filter((visit) => visit.state === "waiting")} today={today} crews={crews} canBook={canBook} canCancel={canCancel} onBook={setBooking} />
                 </div>
+                <RemovedPanel<{ what?: string | null; day?: string | null }>
+                  title={t("rm.jobs.title")}
+                  testId="jb-removed"
+                  f={f}
+                  // A called-off visit is read through its job, by whoever reads the job now (plan 68 S16).
+                  read={() => readRemovedUnder(session, jobs.map((job) => ({ ref: "jobs", id: job.id, label: [job.code, job.site_name].filter((part) => part !== null && part !== "").join(" · ") })), "job_visits")}
+                  what={(item) => {
+                    const day = dayKeyOf(item.row.day ?? null);
+                    return { title: item.row.what ?? "", detail: day === null ? item.parent.label : t("rm.list.for", { what: item.parent.label, when: dayWords(f, day) }) };
+                  }}
+                />
                 {booking !== null && <VisitDialog booking={booking} session={session} f={f} facts={crews} plan={plan} jobs={jobs} today={today} onClose={() => setBooking(null)} onDone={again} />}
               </>
             )}

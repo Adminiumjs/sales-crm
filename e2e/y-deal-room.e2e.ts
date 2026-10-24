@@ -19,7 +19,7 @@ import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, dealNamed, inArabic, minuteOut, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
-import { room } from "./p12-helpers.ts";
+import { room as freshMinute } from "./p12-helpers.ts";
 
 interface Made {
   id: number;
@@ -181,7 +181,7 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   const context = await as("dana");
   const dana = context.request;
   // Dana's minute of requests is shared by every spec that runs as her just before this one (Today, Site visits, This week, the room): wait for a fresh one when it is short.
-  await room(dana, data, 200);
+  await freshMinute(dana, data, 200);
   const deal = await makeDeal(dana, data, "Room spec: work");
   const [discovery, qualified, proposal] = deal.stages as [Made["stages"][number], Made["stages"][number], Made["stages"][number]];
   const page = await context.newPage();
@@ -352,6 +352,8 @@ test("also on this deal: the owner adds a colleague, who then opens it and may a
   await expect(pool).toHaveCount(0);
   const listed = await rows<{ id: number; user_id: string; added_by_id: string; since: string }>(dana, data, "deal_members", { column: "deal_id", op: "eq", value: deal.id });
   expect(listed.map((one) => [one.user_id, one.added_by_id, one.since.slice(0, 10)])).toEqual([[priyaId, deal.me, "2026-07-28"]]);
+  // The timeline says it, on the day (plan 68 S3).
+  await expect(line(page, "Priya Raman added by Dana Whitlock.")).toContainText("Tue, Jul 28");
 
   // Priya opens it now, in her own room: marked as on it, with no "Add someone" and no way to take herself or anybody off.
   expect((await priya.get(data("deals", `/${String(deal.id)}`))).status()).toBe(200);
@@ -383,6 +385,15 @@ test("also on this deal: the owner adds a colleague, who then opens it and may a
   await expect(on).toContainText("Nobody yet.");
   expect((await rows(dana, data, "deal_members", { column: "deal_id", op: "eq", value: deal.id })).length).toBe(0);
   expect((await priya.get(data("deals", `/${String(deal.id)}`))).status()).toBe(404);
+  // The timeline keeps both: who added her, and who took her off and when, read from the deal's removed people (plan 68 S3).
+  await expect(line(page, "Priya Raman taken off by Dana Whitlock.")).toBeVisible();
+  await expect(line(page, "Priya Raman added by Dana Whitlock.")).toHaveCount(0);
+  const offUrl = data("deals", `/${String(deal.id)}/removed/${data("deal_members").split("/").pop()!}`);
+  const offList = await dana.get(offUrl);
+  expect(offList.status()).toBe(200);
+  expect(((await offList.json()) as { removed: { row: { user_id: string } }[] }).removed.map((one) => one.row.user_id)).toEqual([priyaId]);
+  // Off the deal, Priya reads none of it: as a deal that is not there.
+  expect((await priya.get(offUrl)).status()).toBe(404);
   await hers.reload();
   await expect(hers.getByTestId("no-deal")).toContainText("No deal to open");
   await retire(api, data, "Room spec: people");
@@ -552,6 +563,8 @@ test("Read-only reads the room with nothing to press, the marketer's address is 
 test("comments: threads and replies, mentions through Adminium's own box, the quiet line, settling; a colleague's reply arrives live", async ({ as, api, data }) => {
   const context = await as("dana");
   const dana = context.request;
+  // Two pages of Dana's hear every comment: the test starts her on a fresh minute (the server counts 300 a minute).
+  await freshMinute(dana, data, 200);
   const d1 = await dealNamed(dana, data, "Fourth-floor desk rows");
   const page = await context.newPage();
   const problems = watch(page);
