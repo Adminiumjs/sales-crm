@@ -30,7 +30,8 @@
  * them all (status `sample`, no password: `hugo`, whom the sample's Settings
  * names for aftercare calls; plan 68 K1, `e2e/k1-sample-person.e2e.ts`),
  * CRM_STAND_MAIL=1 to keep the mail it sends (`e2e/mail-catcher.mjs`: SMTP on
- * the stand's port + 100, the mails at port + 101; `mailbox()` reads them).
+ * CRM_STAND_MAIL_PORT, else the stand's port + 100, the mails one port above;
+ * `mailbox()` reads them).
  * Adminium never mails a `.example` or `.test` address, so in mail mode the
  * people sign in as `<key>@crm.stand` and the sample's addresses end `.stand`:
  * a spec that reads an address on screen runs on a stand without mail.
@@ -361,8 +362,8 @@ export async function standUp() {
 
   // The mail catcher, when asked for: its own process, up before anything can send.
   if (process.env.CRM_STAND_MAIL === "1") {
-    const smtpPort = port + 100;
-    const httpPort = port + 101;
+    const smtpPort = Number(process.env.CRM_STAND_MAIL_PORT ?? String(port + 100));
+    const httpPort = smtpPort + 1;
     const mailLog = openSync(join(STAND_DIR, "mail.log"), "w");
     const catcher = spawn(process.execPath, [join(here, "mail-catcher.mjs"), adminiumRepo, String(smtpPort), String(httpPort)], { cwd: work, detached: true, stdio: ["ignore", mailLog, mailLog] });
     closeSync(mailLog);
