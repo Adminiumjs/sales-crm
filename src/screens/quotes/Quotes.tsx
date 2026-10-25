@@ -5,6 +5,9 @@
  * somebody typed.
  *
  * `quotes/<id>` is one quote open on that version (`Quote.tsx`).
+ *
+ * A deal the reader only helps on (ruling 1d) is listed, and its owner starts
+ * its quote: no "Start a quote" is drawn for it.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -12,6 +15,7 @@ import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { formatters, noonOf } from "../../lib/format.ts";
 import { scopeOf } from "../../selling/figures.ts";
+import { helpsOn, lentBy } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
@@ -92,6 +96,9 @@ function QuoteList({ rest }: { rest: string[] }) {
   }, [viewId]);
   const [busy, setBusy] = useState<number | null>(null);
   const canStart = session.can("quotes", "create") && session.can("quote_lines", "create");
+  // Whose deals she covers today: those she quotes as her own. Until it is read, only her own deals are offered.
+  const lent = useLoad(() => lentBy(session, today), [session, today]);
+  const helps = (deal: Bare): boolean => helpsOn(session, deal.owner_id, lent.load.state === "ready" ? lent.load.data : new Set());
 
   /** A first version from what was typed on the deal: one line, the deal's name and its amount. It is a draft. */
   const start = async (deal: Bare): Promise<void> => {
@@ -187,11 +194,16 @@ function QuoteList({ rest }: { rest: string[] }) {
                           <span className="crm-quote-meta">{[deal.company, deal.stage, team && deal.owner_id !== null ? firstName(data.names[deal.owner_id] ?? "") : null].filter((part) => part !== null && part !== "").join(" · ")}</span>
                         </span>
                         <span className="crm-mono crm-quote-fig-value">{f.money(deal.amount)}</span>
-                        {canStart && (
+                        {canStart && !helps(deal) && (
                           <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" disabled={busy !== null} onClick={() => void start(deal)}>
                             <Icon name="plus" size={14} />
                             {t("quotes.start")}
                           </button>
+                        )}
+                        {canStart && helps(deal) && deal.owner_id !== null && (
+                          <span className="crm-quote-meta" data-testid="bare-helping">
+                            {t("help.bare", { owner: firstName(data.names[deal.owner_id] ?? t("closed.someone")) })}
+                          </span>
                         )}
                       </li>
                     ))}

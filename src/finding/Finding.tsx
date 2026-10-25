@@ -82,7 +82,7 @@ export function FindingProvider({ groups, home, current, facts, onTheme, onSignO
     if (crewOnly) return out;
     if (deals.canStart) out.push({ id: "new-deal", label: "keys.newDeal", icon: "plus", hint: "N", run: () => deals.start() });
     if (room !== null && keyFacts.canReadComments) out.push({ id: "comments", label: "keys.dealComments", icon: "message-square", hint: "C", run: () => nav.go("deal", room, "comments") });
-    if (room !== null && session.can("activities", "create")) out.push({ id: "call", label: "jump.call", icon: "phone", run: () => nav.go("deal", room, "call") });
+    if (room !== null && session.can("activities", "create") && roomCan.helps !== Number(room)) out.push({ id: "call", label: "jump.call", icon: "phone", run: () => nav.go("deal", room, "call") });
     // In a deal's room, what its own buttons do, for whoever they are drawn for (plan 68 S4).
     if (room !== null && keyFacts.canEditDeal && roomCan.amount) out.push({ id: "amount", label: "keys.dealAmount", icon: "pencil", hint: "E", run: () => window.dispatchEvent(new CustomEvent(DEAL_AMOUNT_EVENT)) });
     if (room !== null && keyFacts.canEditDeal && roomCan.close) out.push({ id: "close-deal", label: "jump.closeDeal", icon: "handshake", run: () => window.dispatchEvent(new CustomEvent(DEAL_CLOSE_EVENT)) });

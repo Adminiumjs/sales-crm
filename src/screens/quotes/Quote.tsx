@@ -15,12 +15,17 @@
  * sent: at list, or approved for what it is), ask for approval (with why),
  * start a new version (a copy of the newest, which that one then replaces).
  * Sending a version withdraws the one it replaces in the same save.
+ *
+ * A rep HELPING on the deal (ruling 1d, `selling/helping.ts`) reads every
+ * version and changes, sends and asks nothing: the deal's owner does, and
+ * the page says so.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
+import { useHelping } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
@@ -108,7 +113,10 @@ export function QuotePage({ id }: { id: string }) {
   const [reason, setReason] = useState("");
   useEffect(() => setReason(""), [key]);
 
-  const canWrite = session.can("quotes", "update") && session.can("quote_lines", "update");
+  // A helper on the deal reads its quotes and changes none (null: still being read, so nothing is offered yet).
+  const ownerId = load.state === "ready" && load.data !== null ? (load.data.family.find((one) => one.id === key) ?? load.data.family[0])?.owner_id : undefined;
+  const helping = useHelping(ownerId, today);
+  const canWrite = session.can("quotes", "update") && session.can("quote_lines", "update") && helping === false;
 
   const back = (
     <ScreenLink to="quotes" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi">
@@ -285,6 +293,12 @@ export function QuotePage({ id }: { id: string }) {
                   </button>
                 )}
               </div>
+
+              {helping === true && dealOpen && (
+                <div className="crm-banner" role="status" data-tone="info" data-testid="quote-helping">
+                  {t("help.quote", { owner: firstName(who(quote.owner_id)) })}
+                </div>
+              )}
 
               {banner !== null && (
                 <div className="crm-banner" role="status" data-tone={TONE[state]} data-testid="quote-banner">

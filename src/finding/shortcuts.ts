@@ -40,9 +40,10 @@ export const DEAL_AMOUNT_EVENT = "crm:deal-amount";
 export const DEAL_CLOSE_EVENT = "crm:deal-close";
 /**
  * What the open deal room lets the reader do from Jump (plan 68 S4): kept by the room as it draws, read by Jump when it
- * opens, so Jump offers "Edit the amount" and "Close this deal…" only where the room's own buttons would.
+ * opens, so Jump offers "Edit the amount" and "Close this deal…" only where the room's own buttons would. `helps`: the
+ * deal the reader only helps on (ruling 1d), where Jump offers no "Log a call" either.
  */
-export const roomCan: { amount: boolean; close: boolean } = { amount: false, close: false };
+export const roomCan: { amount: boolean; close: boolean; helps: number | null } = { amount: false, close: false, helps: null };
 /** How long `G` waits for its letter. */
 export const G_WAIT_MS = 1500;
 

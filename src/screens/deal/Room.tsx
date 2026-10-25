@@ -8,7 +8,10 @@
  *
  * WHAT CAN BE DONE is asked of the server every time; this page only leaves a
  * control out when pressing it could not work (the person's role has no such
- * right, or the deal is closed). A change of stage names the stage it was seen
+ * right, or the deal is closed). A rep HELPING on a colleague's deal reads it
+ * all and comments, and changes nothing (ruling 1d, `selling/helping.ts`):
+ * the page draws her no control that changes the deal, logs on it or makes a
+ * quote, and says plainly that the owner makes the changes. A change of stage names the stage it was seen
  * in, so a deal a colleague moved meanwhile is not moved again from here: the
  * server refuses, the page says so and reads the deal back.
  *
@@ -25,6 +28,7 @@ import { addDays, formatters, noonOf } from "../../lib/format.ts";
 import { AccountLink } from "../../selling/AccountLink.tsx";
 import { useDealActions } from "../../selling/actions.tsx";
 import { scopeOf } from "../../selling/figures.ts";
+import { useHelping } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
@@ -83,6 +87,8 @@ export function Room({ id }: { id: string }) {
   const room = useLoad(() => (Number.isInteger(key) ? Promise.all([readRoom(session, key, today), fixed]).then(([data, rest]) => (data === null ? null : { ...data, fixed: rest })) : Promise.resolve(null)), [session, key, today, fixed, actions.changed]);
   const timeline = useLoad(() => (Number.isInteger(key) ? readTimeline(session, key) : Promise.resolve(null)), [session, key, actions.changed]);
   const companyId = room.load.state === "ready" && room.load.data !== null ? room.load.data.deal.company_id : null;
+  // Whether the reader only helps on this deal; null while that is still being read (nothing that changes it is drawn).
+  const helping = useHelping(room.load.state === "ready" && room.load.data !== null && room.load.data.deal.id === key ? room.load.data.deal.owner_id : undefined, today);
   const side = useLoad<Side | null>(() => (companyId === null ? Promise.resolve(null) : readSide(session, companyId)), [session, companyId]);
 
   // A save's own "read again" and the live frame it sets off are one read.
@@ -176,6 +182,7 @@ export function Room({ id }: { id: string }) {
       window.removeEventListener(DEAL_CLOSE_EVENT, onClose);
       roomCan.amount = false;
       roomCan.close = false;
+      roomCan.helps = null;
     };
   }, []);
   useEffect(() => {
@@ -238,8 +245,10 @@ export function Room({ id }: { id: string }) {
     const onDeal = mine || members.some((member) => member.user_id === me);
     const readsAll = onDeal || rolesOf((config.access?.roles ?? []).map((role) => role.slug)).some((role) => READS_EVERY_HISTORY.includes(role));
     const readsLines = session.can("activities", "read") && readsAll;
-    const canWork = open && session.can("deals", "update");
-    const canLog = open && session.can("activities", "create");
+    // A helper reads and comments; the owner (or whoever covers for her, or leads her) works the deal.
+    const works = helping === false;
+    const canWork = open && session.can("deals", "update") && works;
+    const canLog = open && session.can("activities", "create") && works;
     // Somebody is added by the deal's owner or by who leads her; a helper and a covering rep add nobody (the server holds it).
     const canList = open && (mine || team);
     const canAdd = canList && session.can("deal_members", "create");
@@ -380,6 +389,8 @@ export function Room({ id }: { id: string }) {
     closeKey.current = canWork && !busy ? () => actions.close({ id: deal.id, name: deal.name, company: deal.company, amount: f.money(deal.amount) }) : null;
     roomCan.amount = canWork && !fromQuote;
     roomCan.close = canWork;
+    // Jump's "Log a call" is not offered on a deal she only helps on (nor while that is being read).
+    roomCan.helps = works ? null : deal.id;
     const pool = data.fixed.reps.filter((userId) => userId !== deal.owner_id && !members.some((member) => member.user_id === userId));
     const coverCard = data.cover !== null && coverPhase(data.cover, today) !== "over" ? data.cover : null;
     const coverMine = coverCard !== null && coverCard.owner_id === me && session.can("cover_notes", "create") && open;
@@ -480,6 +491,12 @@ export function Room({ id }: { id: string }) {
             </div>
           )}
 
+          {open && helping === true && (
+            <div className="crm-banner" role="status" data-tone="info" data-testid="room-helping">
+              {t("help.room", { owner: firstName(owner) })}
+            </div>
+          )}
+
           <ol className="crm-room-steps" aria-label={t("room.steps")}>
             {stages.map((one, index) => {
               const on = one.id === deal.stage_id;
@@ -547,7 +564,7 @@ export function Room({ id }: { id: string }) {
                   {t("board.look.close")}
                 </button>
               )}
-              {!open && session.can("deals", "update") && (
+              {!open && session.can("deals", "update") && works && (
                 <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-btn" disabled={busy} onClick={() => void reopen()}>
                   <Icon name="rotate-ccw" size={14} />
                   {t("room.closed.reopen")}

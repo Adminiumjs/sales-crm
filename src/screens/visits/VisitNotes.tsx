@@ -14,12 +14,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { addDays, formatters } from "../../lib/format.ts";
 import { scopeOf } from "../../selling/figures.ts";
+import { useHelping } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
-import { initials } from "../../ui/people.ts";
+import { firstName, initials } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { truthy } from "../teamwork/data.ts";
 import { isWritten, readNames, readWriteUp, type Agreed, type Note, type WriteUp } from "./data.ts";
@@ -86,9 +87,15 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
   const at = new Date(visit.starts_at);
   const happened = at.getTime() < now.getTime();
   const written = note !== null;
-  const canWrite = happened && (written ? session.can("visit_notes", "update") : session.can("visit_notes", "create"));
+  /*
+   * On a deal she only helps on (ruling 1d): her OWN visit, made before, is hers to write up; a colleague's is not,
+   * and she lines no new step up on the deal. Null while that is read: nothing is offered yet.
+   */
+  const helping = useHelping(visit.deal_owner_id ?? null, f.dayKey(now));
+  const hers = visit.rep_id === config.user?.id;
+  const canWrite = happened && helping !== null && (!helping || hers) && (written ? session.can("visit_notes", "update") : session.can("visit_notes", "create"));
   const canAgree = canWrite && session.can("visit_agreed", "create");
-  const canQueue = session.can("follow_ups", "create");
+  const canQueue = session.can("follow_ups", "create") && helping === false;
 
   const [draft, setDraft] = useState<Record<Field, string>>({ saw: note?.saw ?? "", said: note?.said ?? "", next: note?.next ?? "" });
   const touched = useRef(false);
@@ -221,6 +228,11 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
       ) : (
         <div className="crm-vn-grid">
           <div className="crm-vn-main">
+            {helping === true && !hers && (
+              <div className="crm-banner" role="status" data-tone="info" data-testid="notes-helping">
+                {t("help.visit", { name: firstName(names[visit.rep_id] ?? t("closed.someone")) })}
+              </div>
+            )}
             {canWrite && (
               <section className="crm-side-card mr-card" aria-labelledby="crm-vn-capture">
                 <div className="crm-vn-card-head">

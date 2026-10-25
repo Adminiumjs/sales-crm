@@ -6,6 +6,10 @@
  * are counted for their owners, never for her). The manager, the CRM admin
  * and Read-only see the team's, with a filter by person.
  *
+ * A deal she HELPS on is read and commented on, never worked (ruling 1d,
+ * `selling/helping.ts`): its card does not move and has no menu but "Open",
+ * and the board says so. A deal she covers is worked as her own.
+ *
  * The board itself is Adminium's own (the kit's `board`): cards are moved by
  * dragging or by keyboard, and a move is saved as a change of the deal's
  * stage that names the stage it was seen in. A move the server refuses puts
@@ -24,6 +28,7 @@ import type { KitMissing } from "../../kitParts.ts";
 import { kitCommon } from "../../kitParts.ts";
 import { useDealActions } from "../../selling/actions.tsx";
 import { closedFigures, scopeOf, yearOf, type Closed } from "../../selling/figures.ts";
+import { helpsOn } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { ScreenLink, useNav } from "../../shell/nav.tsx";
@@ -160,7 +165,7 @@ interface BoardProps {
   cards: { id: string; columnId: string; title: string; subtitle?: string; amount?: string; tag?: string; tagTone?: string; owner?: string; due?: string; meta?: string[]; actions?: { id: string; label: string }[] }[];
   onAction?: (cardId: string, actionId: string) => void;
   onMove?: (cardId: string, toColumnId: string, fromColumnId: string) => Promise<void | { refused: string }>;
-  canMove?: boolean;
+  canMove?: boolean | ((cardId: string) => boolean);
   onOpen?: (cardId: string) => void;
   busy?: boolean;
   emptyLabel?: string;
@@ -217,6 +222,8 @@ export function Pipeline(props: ScreenProps) {
   const theme = usePageTheme();
 
   const me = config.user?.id ?? null;
+  // A deal of a colleague she does not cover: she reads it and comments, and its owner moves it.
+  const helping = useCallback((deal: Deal): boolean => mine && helpsOn(session, deal.owner_id, new Set(data?.covering ?? [])), [mine, session, data]);
   const markOf = useCallback(
     (deal: Deal): string | null => {
       if (!mine || deal.owner_id === null || deal.owner_id === me) return null;
@@ -277,8 +284,10 @@ export function Pipeline(props: ScreenProps) {
           ...(owner === undefined ? {} : { owner }),
           ...(deal.expected_close === null ? {} : { due: f.dayShort(noonOf(deal.expected_close)) }),
           ...(mark === null ? {} : { meta: [mark] }),
-          // The card's own menu: what can be done to the deal from here.
-          ...(canWork
+          // The card's own menu: what can be done to the deal from here. On a deal she helps on: opening it.
+          ...(canWork && helping(deal)
+            ? { actions: [{ id: "open", label: t("room.open") }] }
+            : canWork
             ? {
                 actions: [
                   { id: "close", label: t("board.look.close") },
@@ -289,7 +298,13 @@ export function Pipeline(props: ScreenProps) {
             : {}),
         };
       }),
-      canMove: canWork,
+      // Every card she may work; never one she only helps on.
+      canMove: canWork
+        ? (cardId: string) => {
+            const deal = data.deals.find((one) => String(one.id) === cardId);
+            return deal !== undefined && !helping(deal);
+          }
+        : false,
       ...(canWork ? { onMove: move } : {}),
       onOpen: (cardId: string) => setLook(Number(cardId)),
       onAction: (cardId: string, actionId: string) => {
@@ -300,13 +315,14 @@ export function Pipeline(props: ScreenProps) {
         else if (actionId === "handover") nav.go("handover", deal.id);
       },
     };
-  }, [data, config, locale, theme, t, f, now, markOf, canWork, canHand, mine, me, nav, move, closeDeal]);
+  }, [data, config, locale, theme, t, f, now, markOf, helping, canWork, canHand, mine, me, nav, move, closeDeal]);
 
   const marked = data === null || !mine ? [] : data.deals.filter((deal) => deal.owner_id !== me);
   const coveringN = marked.filter((deal) => deal.owner_id !== null && data!.covering.includes(deal.owner_id)).length;
   const helpingN = marked.length - coveringN;
   const title = !mine && who !== null ? t("board.title.person", { name: firstName(data?.names[who] ?? "") }) : t(mine ? "board.title.mine" : "board.title.team");
   const looked = look === null ? null : (data?.deals.find((deal) => deal.id === look) ?? null);
+  const lookHelping = looked !== null && helping(looked);
   const figures = data?.header ?? null;
   const year = today.slice(0, 4);
 
@@ -378,6 +394,11 @@ export function Pipeline(props: ScreenProps) {
           </div>
         )}
         {canWork && <div className="crm-week-hint">{t("board.hint")}</div>}
+        {canWork && helpingN > 0 && (
+          <div className="crm-week-hint" data-testid="board-helping">
+            {t("help.board")}
+          </div>
+        )}
         <ViewBar screen="pipeline" view={view} current={{ ...(view.state === "ready" ? view.view.filters : {}), ...(!mine && who !== null ? { rep: who } : !mine ? { rep: undefined } : {}) }} names={data?.names ?? {}} />
       </div>
 
@@ -448,7 +469,7 @@ export function Pipeline(props: ScreenProps) {
                   {t("room.open")}
                 </ScreenLink>
               )}
-              {canWork && (
+              {canWork && !lookHelping && (
                 <button
                   type="button"
                   className="crm-btn crm-btn-primary crm-btn-44 mr-btn"
@@ -491,7 +512,12 @@ export function Pipeline(props: ScreenProps) {
               </div>
             )}
           </dl>
-          {canOpen("visits", facts) && session.can("site_visits", "create") && (
+          {lookHelping && looked.owner_id !== null && (
+            <p className="crm-room-quiet" data-testid="look-helping">
+              {t("help.room", { owner: firstName(data.names[looked.owner_id] ?? t("closed.someone")) })}
+            </p>
+          )}
+          {canOpen("visits", facts) && session.can("site_visits", "create") && !lookHelping && (
             <ScreenLink to="visits" rest={["book", looked.id]} className="crm-btn crm-btn-ghost crm-btn-40 crm-look-visit mr-gi" onGo={() => setLook(null)}>
               <Icon name="map-pin" />
               {t("visits.book")}
