@@ -41,6 +41,8 @@ describe("hours as a crew member types them", () => {
   it("reads a number of hours from 0 to 24, with a point or a comma, and nothing else", () => {
     expect(["7", "1.5", "1,5", "0", "", " 6 ", "24", "7.25"].map(readHours)).toEqual([7, 1.5, 1.5, 0, 0, 6, 24, 7.25]);
     expect(["25", "-1", "seven", "1.2.3", "1.255"].map(readHours)).toEqual([null, null, null, null, null]);
+    // An Arabic phone's keyboard: its own digits and decimal mark (Arabic-Indic and Eastern Arabic).
+    expect(["٧", "٦٫٥", "٠٫٥", "۸", "١٢,٧٥", "٢٥"].map(readHours)).toEqual([7, 6.5, 0.5, 8, 12.75, null]);
   });
 });
 
