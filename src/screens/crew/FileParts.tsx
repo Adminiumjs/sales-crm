@@ -17,13 +17,14 @@
  * and the queue sends it, first, when the save naming it goes. A part's own
  * "take it out" throws the phone's copy away.
  */
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
 import { kitCommon, mountPart } from "../../kitParts.ts";
 import type { StaffConfig } from "../../staffConnection.ts";
 import { useSession } from "../../session/session.tsx";
 import { KitPart } from "../../ui/kit.tsx";
+import { judgedFetch } from "./photoKinds.ts";
 import { useQueue } from "./queue.tsx";
 
 interface Target {
@@ -80,8 +81,29 @@ export function SignaturePad({ table, column, label, round, onChange, disabled =
   return <KitPart key={round} part="signature" props={props} className="crm-cw-kit" fallback={(_why, again) => <Missing again={again} />} />;
 }
 
+/**
+ * A photo of a kind the column does not take (a HEIC this browser cannot draw
+ * again as a JPEG) is judged as it is picked (`photoKinds.ts`): the field is
+ * answered as the server would answer it, so it is not added and nothing is
+ * kept on the phone, and the screen says what to do, in the person's words.
+ */
 export function PhotoField({ table, column, label, max, round, onChange, onBusy, disabled = false }: { table: string; column: string; label: string; max: number; round: number; onChange: (ids: string[]) => void; onBusy: (busy: boolean) => void; disabled?: boolean }) {
+  const t = useT();
   const target = useTarget(table, column);
-  const props = useMemo(() => ({ ...target, label, max, onChange, onBusy, disabled }), [target, label, max, onChange, onBusy, disabled]);
-  return <KitPart key={round} part="photos" props={props} className="crm-cw-kit" fallback={(_why, again) => <Missing again={again} />} />;
+  const [wrongKind, setWrongKind] = useState(false);
+  const refused = useCallback(() => setWrongKind(true), []);
+  const taken = useCallback(() => setWrongKind(false), []);
+  useEffect(() => setWrongKind(false), [round]);
+  const judged = useMemo(() => judgedFetch(`${table}.${column}`, target.fetch, refused, taken), [table, column, target.fetch, refused, taken]);
+  const props = useMemo(() => ({ ...target, fetch: judged, label, max, onChange, onBusy, disabled }), [target, judged, label, max, onChange, onBusy, disabled]);
+  return (
+    <>
+      <KitPart key={round} part="photos" props={props} className="crm-cw-kit" fallback={(_why, again) => <Missing again={again} />} />
+      {wrongKind && (
+        <p className="crm-field-note" data-tone="danger" role="alert" data-testid="cw-photo-wrong-kind">
+          {t("cw.photo.wrongKind")}
+        </p>
+      )}
+    </>
+  );
 }
