@@ -90,8 +90,9 @@ async function takeAway(data: Data, tessa: APIRequestContext): Promise<void> {
       const under = async (ref: string): Promise<void> => {
         for (const row of await rows<{ id: number }>(me, data, ref, { column: "job_id", op: "eq", value: job.id })) expect((await me.delete(data(ref, `/${String(row.id)}?confirm=true`), { headers })).status(), ref).toBeLessThan(300);
       };
-      // A refused sign-off's record names its snag (plan 68 S19): it goes first.
-      for (const ref of ["sign_offs", "refused_sign_offs", "snags", "delivery_notes"]) await under(ref);
+      // A refused sign-off's record names its snag (plan 68 S19): it goes first. The mails the job set off name its sign-off
+      // (e-mail 17, queued for a crew's sign-off since Adminium 0.3.35) and its visits: they go before them.
+      for (const ref of ["outbox", "sign_offs", "refused_sign_offs", "snags", "delivery_notes"]) await under(ref);
       // What the signed job set off or may hold from a later part: the aftercare call its sign-off books (rule 16, once the
       // sign-off moves the job to signed off), and a time sheet's line on its visit (stage 3). A table this stage lacks is passed over.
       for (const ref of ["follow_ups", "time_sheet_lines"]) {

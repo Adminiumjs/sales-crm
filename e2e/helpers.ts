@@ -1,11 +1,11 @@
 /** What the selling specs share: the app's address, a person's write token, a row by its name, and putting the sample back. */
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { request, type APIRequestContext, type Page } from "@playwright/test";
 
 import { expect } from "./fixtures.ts";
-import { readState, STAND_DIR } from "./stand.mjs";
+import { LEDGER_NOW, readState, STAND_DIR } from "./stand.mjs";
 
 export const STAFF = "/apps/crm/staff/";
 
@@ -160,4 +160,17 @@ export async function unfoldMenu(page: Page): Promise<void> {
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link").first().waitFor();
   const heads = page.getByRole("navigation", { name: "Menu" }).locator('button.crm-menu-head[aria-expanded="false"]');
   for (let left = await heads.count(); left > 0; left -= 1) await heads.first().click();
+}
+
+/**
+ * Puts the stand's clock back at the ledger's moment (09:35 on Tuesday 28 July), running on from there. The clock runs
+ * while the specs before a file do, and the whole of stage 3 takes long enough to carry it past a follow-up due at 10:00:
+ * a spec whose figures are the ledger's at 09:35 (Today, This week) starts its file here. A stand on the real clock is
+ * left as it is. (The stand itself sets the clock the same way while the sample goes in: `e2e/clock.mjs`.)
+ */
+export function ledgerClock(): void {
+  const state = readState() as { pid: number; work: string; startedAt: string | null } | null;
+  if (state === null || state.startedAt === null) return;
+  writeFileSync(join(state.work, "clock"), String(Date.parse(LEDGER_NOW)));
+  process.kill(state.pid, "SIGUSR2");
 }

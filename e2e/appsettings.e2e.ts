@@ -18,6 +18,7 @@ import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, unfoldMenu, watch, type Data } from "./helpers.ts";
+import { room } from "./p12-helpers.ts";
 import type { StandState } from "./stand.mjs";
 
 const SAMPLE = {
@@ -658,13 +659,17 @@ test("a setting saved past its partner is refused by the server, and the page na
 test("Settings shows every lost reason, fifty and then the rest", async ({ as, api, data }) => {
   const admin = await api("tessa");
   const headers = await csrf(admin);
+  // About 120 requests of the CRM admin's 300 a minute, after the other Settings specs: each part starts on a fresh minute,
+  // so a refused clean-up never leaves the reasons behind for the next spec (the close dialog counts them).
   const clean = async () => {
+    await room(admin, data, 60);
     for (const made of await rows<{ id: number }>(admin, data, "lost_reasons", { column: "label", op: "like", value: "Spec reason%" })) {
       expect((await admin.delete(data("lost_reasons", `/${String(made.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
     }
   };
   await clean();
   try {
+    await room(admin, data, 120);
     const kept = (await rows<{ id: number }>(admin, data, "lost_reasons")).length;
     const adding = 51 - kept;
     for (let n = 0; n < adding; n += 1) {

@@ -63,6 +63,15 @@ async function retire(api: (person: string) => Promise<APIRequestContext>, data:
 
 const userId = async (person: APIRequestContext): Promise<string> => ((await (await person.get(`${STAFF}surface-config.json`)).json()) as { user: { id: string } }).user.id;
 const line = (page: Page, text: string | RegExp) => page.locator(".crm-room-line").filter({ hasText: text });
+/**
+ * The room's own lines (things logged, changes of stage, quotes) are `n`; who was added to or taken off the deal (plan 68
+ * S3) is a line too, and an earlier spec of the run may have changed who is on it, so those are counted apart. The pill
+ * counts every line.
+ */
+async function ownLines(scope: Page, n: number): Promise<void> {
+  await expect(scope.locator('.crm-room-line:not([data-type="member"])')).toHaveCount(n);
+  await expect(scope.getByTestId("room-lines")).toHaveText(String(await scope.locator(".crm-room-line").count()));
+}
 const fact = (scope: Page | Locator, label: string) => scope.locator(".crm-room-facts > div").filter({ has: ("page" in scope ? scope.page() : scope).locator("dt", { hasText: new RegExp(`^${label}$`) }) }).locator("dd");
 const noSideways = async (page: Page): Promise<void> => expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
 
@@ -103,8 +112,7 @@ test("Dana opens a deal from her board: the room, with the ledger's figures and 
   await expect(fact(page, "Owner")).toHaveText("Dana Whitlock");
 
   // Seven lines: three things logged, four changes of stage. Nothing else has changed this deal since the sample went in.
-  await expect(page.getByTestId("room-lines")).toHaveText("7");
-  await expect(page.locator(".crm-room-line")).toHaveCount(7);
+  await ownLines(page, 7);
   await expect(page.locator(".crm-room-line").last()).toContainText("Opened at Discovery.");
   await expect(line(page, "Moved from Proposal to Negotiation.")).toContainText("Dana Whitlock");
   await expect(line(page, "Moved from Proposal to Negotiation.")).toContainText("Tue, Jul 14, 11:20");
@@ -270,7 +278,7 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   await expect(composer.getByRole("textbox", { name: "What happened" })).toHaveValue("");
   await expect(composer.getByRole("switch", { name: "Schedule it as the next step" })).toHaveAttribute("aria-checked", "false");
   // Four lines now: opened, the amount, the stage, the meeting.
-  await expect(page.getByTestId("room-lines")).toHaveText("4");
+  await ownLines(page, 4);
   await picture(page, "2-dana-room-worked");
 
   // A MOVE THE SERVER REFUSES. A second page of Dana's that hears nothing; Ivy moves the deal on; Dana's press there names a stage the deal has left.
@@ -505,7 +513,7 @@ test("Read-only reads the room with nothing to press, the marketer's address is 
   await page.getByRole("dialog", { name: "Fourth-floor desk rows" }).getByRole("link", { name: "Open the deal room" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Fourth-floor desk rows");
   await expect(page.getByTestId("room-amount")).toHaveText("£52,800");
-  await expect(page.getByTestId("room-lines")).toHaveText("7");
+  await ownLines(page, 7);
   await expect(page.getByRole("list", { name: "Stage" }).getByRole("button")).toHaveCount(0);
   await expect(page.locator('.crm-room-step[aria-current="step"]')).toContainText("Negotiation");
   await expect(page.getByRole("form", { name: "Log it" })).toHaveCount(0);
@@ -757,14 +765,13 @@ test("hand a deal over: a rep hands on her own with a note; the server carries h
   await expect(fact(brief, "Main contact")).toHaveText("Petra Lindqvist");
   await expect(fact(brief, "Currently")).toHaveText("Dana Whitlock");
   // Two open follow-ups on it, the first late. What goes with the deal is said before she presses anything (plan 68 R1c):
-  // her two open follow-ups, counted from what she reads. Her visits (v2, v10) stay hers: Adminium 0.3.35 does not carry
-  // a row that holds a time slot.
+  // her two booked visits (v2, v10) and her two open follow-ups, counted from what she reads.
   await expect(page.getByTestId("hand-steps-title")).toHaveText("2 open follow-ups on it");
   await expect(brief.locator(".crm-hand-steps li")).toHaveCount(2);
   await expect(brief.locator(".crm-hand-steps li").first()).toHaveAttribute("data-late", "1");
   const carries = page.getByTestId("hand-carries");
-  await expect(carries.locator("p").first()).toHaveText("2 of your open follow-ups go to the new owner.");
-  await expect(carries.locator("p").nth(1)).toHaveText("Your visits on the deal stay yours, and a colleague’s own follow-ups on it stay with them.");
+  await expect(carries.locator("p").first()).toHaveText("2 visits not yet made and 2 of your open follow-ups go to the new owner.");
+  await expect(carries.locator("p").nth(1)).toHaveText("Visits already made keep your name, and a colleague’s own visits and follow-ups on the deal stay with them.");
   await expect(page.getByRole("switch", { name: "Move the open follow-ups across" })).toHaveCount(0);
   await expect(brief.locator(".crm-hand-last li")).toHaveCount(3);
   // Who can take it: the others with a sales profile.
@@ -835,7 +842,7 @@ test("hand a deal over: a rep hands on her own with a note; the server carries h
   await expect(hers.getByTestId("hand-steps-title")).toHaveText("1 open follow-up on it");
   await expect(hers.getByRole("switch", { name: "Move the open follow-ups across" })).toHaveCount(0);
   await expect(hers.getByTestId("hand-carries").locator("p").first()).toHaveText("1 open follow-up of Dana’s goes to the new owner.");
-  await expect(hers.getByTestId("hand-carries").locator("p").nth(1)).toHaveText("Dana’s visits on the deal stay Dana’s, and anybody else’s own follow-ups on it stay with them, yours included.");
+  await expect(hers.getByTestId("hand-carries").locator("p").nth(1)).toHaveText("Visits already made keep Dana’s name, and anybody else’s own visits and follow-ups on the deal stay with them, yours included.");
   await hers.getByRole("radiogroup", { name: "Who picks it up?" }).getByRole("radio", { name: "Sam" }).click();
   await hers.getByRole("button", { name: "Hand it to Sam" }).click();
   const hersDone = hers.getByTestId("hand-done");
@@ -874,7 +881,7 @@ test("the room, the comments and the hand-over at 390 wide in the dark, and in A
   const page = await context.newPage();
   await page.goto(`${STAFF}deals/${String(d1.id)}`);
   await expect(page.getByTestId("room-amount")).toHaveText("£52,800");
-  await expect(page.locator(".crm-room-line")).toHaveCount(7);
+  await expect(page.locator('.crm-room-line:not([data-type="member"])')).toHaveCount(7);
   expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe("dark");
   await noSideways(page);
   await picture(page, "9-ivy-room-390-dark");
@@ -891,7 +898,7 @@ test("the room, the comments and the hand-over at 390 wide in the dark, and in A
     await arabic.goto(`${STAFF}deals/${String(d1.id)}`);
     await expect(arabic.getByRole("heading", { level: 2, name: "النشاط" })).toBeVisible();
     expect(await arabic.evaluate(() => document.documentElement.dir)).toBe("rtl");
-    await expect(arabic.locator(".crm-room-line")).toHaveCount(7);
+    await expect(arabic.locator('.crm-room-line:not([data-type="member"])')).toHaveCount(7);
     await noSideways(arabic);
     await picture(arabic, "10-ivy-room-arabic");
     await arabic.goto(`${STAFF}deals/${String(d1.id)}/comments`);
@@ -933,7 +940,7 @@ test("with Quotes switched off the room has no quote card, and a deal's typed am
     await expect(hers.getByTestId("room-quote")).toHaveCount(0);
     await expect(hers.getByTestId("room-amount-source")).toHaveCount(0);
     await expect(hers.getByRole("button", { name: /Change the amount/ })).toHaveCount(0);
-    await expect(hers.locator(".crm-room-line")).toHaveCount(7);
+    await expect(hers.locator('.crm-room-line:not([data-type="member"])')).toHaveCount(7);
   } finally {
     expect((await owner.put("/api/v1/apps/crm/parts/quotes", { data: { on: true }, headers: ownerHeaders })).status()).toBe(200);
   }
