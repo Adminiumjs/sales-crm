@@ -120,10 +120,12 @@ test("photos straight from the camera on the crew's phone: a 9 MB JPEG kept smal
     page.on("console", (message) => {
       if (message.type() === "error") consoleLines.push(`${message.text().slice(0, 120)} @ ${message.location().url}:${String(message.location().lineNumber)}`);
     });
-    const uploads: { status: number; type: string; bytes: number }[] = [];
+    const uploads: { status: number; type: string; bytes: number; name: string }[] = [];
     page.on("requestfinished", (req) => {
-      if (req.method() === "POST" && /\/api\/v1\/files(\?|$)/.test(req.url())) void req.response().then((res) => uploads.push({ status: res?.status() ?? 0, type: req.headers()["content-type"] ?? "", bytes: req.postDataBuffer()?.length ?? 0 }));
+      if (req.method() === "POST" && /\/api\/v1\/files(\?|$)/.test(req.url())) void req.response().then((res) => uploads.push({ status: res?.status() ?? 0, type: req.headers()["content-type"] ?? "", bytes: req.postDataBuffer()?.length ?? 0, name: new URL(req.url()).searchParams.get("filename") ?? "" }));
     });
+    /** What the phone itself sent, leaving out the straight calls to the file door below (named IMG_4020). */
+    const sent = (): typeof uploads => uploads.filter((one) => !one.name.startsWith("IMG_4020."));
     await page.goto(`${STAFF}sign-off-the-job/${String(visit)}`);
     const jpeg = await cameraJpeg(page);
     const heic = iphoneHeic();
@@ -153,8 +155,6 @@ test("photos straight from the camera on the crew's phone: a 9 MB JPEG kept smal
     // The 9 MB one gets no answer at all: the server refuses it before the body is through, and the browser sees the
     // connection close (reported to the engine: the field would say "not sent", not "too large").
     expect(doorJpeg).not.toBe("201");
-    // What the phone itself sends from here on.
-    uploads.length = 0;
 
     // ON THE SIGN-OFF: the 9 MB JPEG is drawn again small and kept on the phone; nothing said against it.
     const photos = page.getByTestId("cw-sign-photos");
@@ -188,8 +188,8 @@ test("photos straight from the camera on the crew's phone: a 9 MB JPEG kept smal
     await page.getByTestId("cw-sign-go").tap();
     await expect(page.getByTestId("cw-signed-page")).toBeVisible({ timeout: 30_000 });
     console.info(`[zw-photos] signed off: uploads ${JSON.stringify(uploads)}`);
-    expect(uploads.filter((one) => one.status !== 201)).toEqual([]);
-    expect(uploads.some((one) => one.type === "image/heic")).toBe(false);
+    expect(sent().filter((one) => one.status !== 201)).toEqual([]);
+    expect(sent().some((one) => one.type === "image/heic")).toBe(false);
     const [signed] = await rows<{ id: number; photos: string[] | string | null }>(ada, data, "sign_offs", { column: "job_id", op: "eq", value: made!.job });
     const held = (typeof signed!.photos === "string" ? JSON.parse(signed!.photos) : signed!.photos) as string[];
     expect(held.length).toBe(1);
@@ -215,7 +215,7 @@ test("photos straight from the camera on the crew's phone: a 9 MB JPEG kept smal
     const file = await ada.get(`/api/v1/files/${withPhoto!.photo!}/content`);
     expect([file.status(), file.headers()["content-type"]]).toEqual([200, "image/jpeg"]);
     expect((await file.body()).length).toBeLessThan(8 * 1024 * 1024);
-    expect(uploads.some((one) => one.type === "image/heic")).toBe(false);
+    expect(sent().some((one) => one.type === "image/heic")).toBe(false);
 
     // IN ARABIC, at 390: the same HEIC on the snag form, refused as it is picked, in his language, right to left.
     await inArabic(yusuf, async () => {
