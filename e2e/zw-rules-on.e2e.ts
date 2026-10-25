@@ -146,14 +146,15 @@ test("switched on, tested, and their mornings come: a quiet deal's owner told on
     const openDeals = await rows<{ id: number; name: string; owner_id: string }>(owner, data as Data, "deals", { column: "state", op: "eq", value: "open" });
     expect(moveStandClock(monday)).toBe(true);
     const weekMails = await until(
-      async () => (await mailbox()).filter((mail) => REPS.some((rep) => mail.to.includes(stand.people[rep]!.email))),
+      async () => (await mailbox()).filter((mail) => mail.subject.startsWith("Your week, ") && REPS.some((rep) => mail.to.includes(stand.people[rep]!.email))),
       (mails) => REPS.every((rep) => mails.some((mail) => mail.to.includes(stand.people[rep]!.email))),
       180_000,
       3000,
     );
     for (const rep of REPS) {
       const mine = weekMails.filter((mail) => mail.to.includes(stand.people[rep]!.email));
-      expect(mine, `${rep} has one week's e-mail`).toHaveLength(1);
+      const all = (await mailbox()).filter((mail) => mail.to.includes(stand.people[rep]!.email));
+      expect(mine.map((mail) => mail.subject), `${rep} has one week's e-mail (all theirs: ${all.map((mail) => `${mail.subject} @${new Date(mail.receivedAt).toISOString()}`).join(" | ")})`).toHaveLength(1);
       const text = `${mine[0]!.html}\n${mine[0]!.text}`;
       const own = openDeals.filter((deal) => deal.owner_id === stand.people[rep]!.id);
       const others = openDeals.filter((deal) => deal.owner_id !== stand.people[rep]!.id && !own.some((one) => one.name.includes(deal.name) || deal.name.includes(one.name)));

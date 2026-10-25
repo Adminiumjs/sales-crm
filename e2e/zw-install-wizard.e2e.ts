@@ -1,14 +1,16 @@
 /**
  * THE CRM INSTALLED FROM THE CONSOLE'S INSTALL WIZARD, on a stand of its own where the app and its two add-ons are
- * staged and nothing is installed (`CRM_STAND_INSTALL=0`). One install per stand run, so the tests run in order:
+ * staged and nothing is installed (`CRM_STAND_INSTALL=0`). One install per stand run: the first test only looks at the
+ * check step, the second installs (the file's order, one worker):
  *
  *  1. Plan 67 gate G2, "Parts at install and after", the install half: the check step shows a tick for each part that
  *     can be switched (Selling, Accounts and The team always on), Quotes and Supply under the add-on each is built on,
- *     greyed and waiting for it once that add-on is unticked; the maps question; the sample offered.
+ *     Quotes greyed and waiting once Invoices is unticked (Supply, whose tables are the app's own, stays ticked under a
+ *     group that says it waits for Inventory); the maps question; the sample offered.
  *  2. P18, "Install without Invoices & Receipts and Inventory from the install wizard": installed with both unticked
  *     (and the sample): no Quotes line or quote link anywhere, in the console or on the staff side; Supply's lines open
  *     the page that says it waits for Inventory; as the install's owner its link opens the app's page in Studio, whose
- *     Parts card says Quotes and Supply are not set up yet.
+ *     Parts card says Quotes is not set up yet and Supply is off until Inventory is connected.
  *
  * Run it on a stand of its own, stage 3 (the released stage):
  *   CRM_STAND_INSTALL=0 CRM_STAND_STAGE=3 npx playwright test e2e/zw-install-wizard.e2e.ts
@@ -22,8 +24,6 @@ import { rows, STAFF, unfoldMenu, watch, type Data } from "./helpers.ts";
 import { admitSamplePeople } from "./stand.mjs";
 import { until, words } from "./zw-helpers.ts";
 
-test.describe.configure({ mode: "serial" });
-
 test.beforeEach(({ stand }) => {
   test.skip(stand.installed !== false, "needs a stand started with CRM_STAND_INSTALL=0 (the app staged, not installed)");
 });
@@ -35,16 +35,8 @@ const ALWAYS = ["selling", "accounts", "team"];
 const LABEL: Record<string, string> = { quotes: "Quotes", inbox: "Inbox", showroom: "Showroom and samples", jobs: "Jobs on site", aftercare: "After the job", supply: "Supply", fleet: "Vehicles and crew", selling: "Selling", accounts: "Accounts", team: "The team" };
 const ON_AT_START = new Set(["quotes", "inbox", "supply"]);
 
-/** The page the wizard stays on from the first test to the second: one install per stand. */
-let wizard: Page;
-
-const tick = (page: Page, part: string) => page.getByTestId("install-parts").locator(`li[data-part="${part}"]`).getByRole("checkbox");
-
-test("the check step: a tick for each part, Quotes and Supply under their add-ons and waiting once unticked, the maps question", async ({ as, stand }) => {
-  test.setTimeout(180_000);
-  const context = await as("owner");
-  wizard = await context.newPage();
-  const problems = watch(wizard);
+/** Open the install wizard on the staged CRM, as the owner, and go to its check step on the stand's database. */
+async function openCheckStep(wizard: Page): Promise<void> {
   await wizard.goto("/studio/apps");
   await expect(wizard.getByRole("heading", { name: "Hosted apps" })).toBeVisible();
   const card = wizard.getByRole("article").filter({ hasText: "Sales CRM" });
@@ -55,6 +47,22 @@ test("the check step: a tick for each part, Quotes and Supply under their add-on
   await wizard.getByRole("radio", { name: /Meridian/ }).click();
   await wizard.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(wizard.getByText("Check the tables")).toBeVisible({ timeout: 60_000 });
+}
+
+/** Untick an add-on on the check step, and wait for the install to be planned again without it. */
+async function untick(wizard: Page, key: string): Promise<void> {
+  const addOn = wizard.getByTestId("install-add-ons").locator(`li[data-add-on="${key}"]`).getByRole("checkbox");
+  await addOn.click();
+  await expect(addOn).not.toBeChecked();
+}
+
+const tick = (page: Page, part: string) => page.getByTestId("install-parts").locator(`li[data-part="${part}"]`).getByRole("checkbox");
+
+test("the check step: a tick for each part, Quotes and Supply under their add-ons, Quotes left out without Invoices, the maps question", async ({ as, stand }) => {
+  test.setTimeout(180_000);
+  const wizard = await (await as("owner")).newPage();
+  const problems = watch(wizard);
+  await openCheckStep(wizard);
   await expect(wizard.locator('[data-part="check-hint"]')).toHaveText("Nothing changes until you press Install.");
 
   // The add-ons, both offered and ticked.
@@ -83,16 +91,22 @@ test("the check step: a tick for each part, Quotes and Supply under their add-on
   await expect(wizard.getByTestId("install-sample-data").getByRole("checkbox", { name: /Add sample data/ })).not.toBeChecked();
   await picture(wizard, "zw-wizard-check-all");
 
-  // Both add-ons unticked: Quotes and Supply wait, greyed, and say for what.
-  for (const key of ["invoices", "inventory"]) await addOns.locator(`li[data-add-on="${key}"]`).getByRole("checkbox").click();
-  for (const [part, key] of [["quotes", "invoices"], ["supply", "inventory"]] as const) {
-    await expect(tick(wizard, part)).toHaveAttribute("aria-checked", "false");
-    await expect(tick(wizard, part)).toBeDisabled();
-    await expect(parts.locator(`li[data-part="${part}"] [data-part="needs"]`)).toHaveText(say("studio:appParts.installWaiting", { addOns: names[key]! }));
-    await expect(parts.locator(`[data-part-addon="${key}"] [data-part="addon-state"]`)).toHaveText(say("studio:appParts.groupWaiting"));
-  }
+  // Both add-ons unticked, one at a time (each untick plans the install again). Quotes, whose tables are built on Invoices',
+  // is left out: greyed, and says what it waits for. Supply's tables are the app's own: it is still made, and its group says
+  // it waits for Inventory (it stays off until Inventory is connected).
+  for (const key of ["invoices", "inventory"]) await untick(wizard, key);
+  await expect(parts.locator('[data-part-addon="invoices"] [data-part="addon-state"]')).toHaveText(say("studio:appParts.groupWaiting"));
+  // Judged softly so that the rest is still judged: the group's line is worked out from its parts being left out, not from
+  // the tick, so Inventory unticked still reads "Ticked under Add-ons" over Supply (an engine fault, see the report).
+  await expect.soft(parts.locator('[data-part-addon="inventory"] [data-part="addon-state"]'), "Inventory's group says it is not ticked").toHaveText(say("studio:appParts.groupWaiting"));
+  await expect(tick(wizard, "quotes")).toHaveAttribute("aria-checked", "false");
+  await expect(tick(wizard, "quotes")).toBeDisabled();
+  await expect(parts.locator('li[data-part="quotes"] [data-part="needs"]')).toHaveText(say("studio:appParts.installWaiting", { addOns: names["invoices"]! }));
+  await expect(tick(wizard, "supply")).toHaveAttribute("aria-checked", "true");
+  await expect(tick(wizard, "supply")).toBeEnabled();
+  await expect(parts.locator('li[data-part="supply"] [data-part="needs"]')).toHaveCount(0);
   // The other parts are as they were.
-  for (const part of SWITCHED.filter((one) => one !== "quotes" && one !== "supply")) await expect(tick(wizard, part)).toHaveAttribute("aria-checked", ON_AT_START.has(part) ? "true" : "false");
+  for (const part of SWITCHED.filter((one) => one !== "quotes")) await expect(tick(wizard, part)).toHaveAttribute("aria-checked", ON_AT_START.has(part) ? "true" : "false");
   await picture(wizard, "zw-wizard-check-no-add-ons");
   expect(stand.installed).toBe(false);
   expect(problems).toEqual([]);
@@ -100,8 +114,11 @@ test("the check step: a tick for each part, Quotes and Supply under their add-on
 
 test("installed without Invoices and Inventory: no quote anywhere; Supply waits for Inventory, and the owner is led to the app's page", async ({ as, api, stand }) => {
   test.setTimeout(420_000);
-  expect(wizard, "the check step of the first test").toBeDefined();
-  // With the sample, so that the sample's people can look.
+  // The same check step, both add-ons unticked; with the sample, so that the sample's people can look.
+  const wizard = await (await as("owner")).newPage();
+  await openCheckStep(wizard);
+  for (const key of ["invoices", "inventory"]) await untick(wizard, key);
+  await expect(tick(wizard, "quotes")).toBeDisabled();
   await wizard.getByTestId("install-sample-data").getByRole("checkbox", { name: /Add sample data/ }).click();
   await wizard.getByRole("button", { name: "Install", exact: true }).click();
   await expect(wizard.getByRole("heading", { name: "Sales CRM is installed" })).toBeVisible({ timeout: 180_000 });
@@ -112,7 +129,8 @@ test("installed without Invoices and Inventory: no quote anywhere; Supply waits 
 
   // What the wizard sent: no add-on, the two parts left out, maps answered.
   const installed = ((await (await owner.get("/api/v1/apps/crm/parts")).json()) as { parts: { id: string; on: boolean; leftOut: boolean; waiting: { key: string }[] }[] }).parts;
-  for (const part of ["quotes", "supply"]) expect(installed.find((one) => one.id === part), part).toMatchObject({ on: false, leftOut: true });
+  expect(installed.find((one) => one.id === "quotes")).toMatchObject({ on: false, leftOut: true });
+  expect(installed.find((one) => one.id === "supply")).toMatchObject({ on: false, leftOut: false, waiting: [expect.objectContaining({ key: "inventory" })] });
   const schema = (await (await owner.get(`/api/v1/connections/${stand.connectionId}/schema`)).json()) as { model?: { tables: { name: string; id: string }[] }; data?: { model: { tables: { name: string; id: string }[] } } };
   const tables = Object.fromEntries((schema.model ?? schema.data!.model).tables.map((table) => [table.name, table.id]));
   expect(Object.keys(tables)).not.toContain("crm_quotes");
@@ -168,7 +186,12 @@ test("installed without Invoices and Inventory: no quote anywhere; Supply waits 
   const partsCard = own.getByTestId("app-parts");
   for (const part of ["quotes", "supply"]) {
     await expect(partsCard.locator(`li[data-part="${part}"]`)).toContainText(say("studio:appParts.needs"));
-    await expect(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`)).toContainText("Not set up yet.");
+    if (part === "quotes") await expect(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`)).toContainText("Not set up yet.");
+    else {
+      await expect(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`)).toContainText(/Off until inventory is connected, under Add-ons\./i);
+      // The add-on by its name, as the add-ons card names it (judged softly: the server gives its key when it is not attached).
+      await expect.soft(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`), "the add-on is named, not keyed").toContainText("Off until Inventory is connected");
+    }
   }
   await picture(own, "zw-wizard-app-page");
 });

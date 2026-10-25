@@ -86,7 +86,7 @@ async function newRule(page: Page, name: string, trigger: string, table: RegExp 
   }
   // Each step offered under its own name ("Send each person a summary" is the summary step's, as the step picker has it).
   const offered = await modal.getByTestId("new-rule-action").locator("option").evaluateAll((options) => options.map((option) => [(option as HTMLOptionElement).value, option.textContent?.trim() ?? ""]));
-  expect.soft(Object.fromEntries(offered)["digest"], "the New rule dialog names the summary step").toBe("Send each person a summary");
+  if (action === "digest") expect.soft(Object.fromEntries(offered)["digest"], "the New rule dialog names the summary step").toBe("Send each person a summary");
   await modal.getByTestId("new-rule-action").selectOption(action);
   const enable = modal.getByTestId("new-rule-enable");
   if ((await enable.getAttribute("aria-checked")) === "true") await enable.click();
