@@ -15,7 +15,11 @@
  *    the button; "Reopen it" puts a decision back to asked, keeps the asker, and the decision before stays in history;
  *  - X2 (E1): the sales manager never changes her own target nor her own starter row, and a meeting's decisions only
  *    when she runs it;
- *  - E4: a quote and its lines are one write; a line refused refuses the quote.
+ *  - E4: a quote and its lines are one write; a line refused refuses the quote;
+ *  - ruling 1d (Adminium 0.3.36, `notThrough`): a helper on a deal reads it and everything on it and comments, and
+ *    changes, sends, asks, logs, books and adds nothing of it by any door; her own follow-up and visit made before stay
+ *    hers; whoever covers for the owner, the owner, the manager and the CRM admin write as before; the account manager
+ *    makes his aftercare calls, and hangs no follow-up of his on a deal that is not his.
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -207,7 +211,7 @@ async function stack(dialect: Dialect): Promise<Stack> {
   id['noor'] = noor.id;
   id['omar'] = omar.id;
   // Only the people this proof signs in as: a sign-in is not free.
-  for (const key of ['dana', 'sam', 'priya', 'ivy', 'tessa', 'noor', 'omar', 'grace']) cookie[key] = await signIn(app, `${key}@crm.test`);
+  for (const key of ['dana', 'sam', 'priya', 'leo', 'hugo', 'ivy', 'tessa', 'noor', 'omar', 'grace']) cookie[key] = await signIn(app, `${key}@crm.test`);
 
   const model = parseDatabaseModel((await snapshotsRepo(meta).latest(connection.id))!.schema);
   const handle = await manager.data(connection.id);
@@ -252,6 +256,8 @@ const said = (res: Reply): string => {
   return `${String(res.statusCode)} ${code}`.trim();
 };
 const DAY = 86_400_000;
+/** A day so many days from now, as `YYYY-MM-DD` (a cover's first or last day). */
+const onDay = (days: number): string => new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
 /** A moment so many days from now at a given hour, to the minute (a visit is never booked in the past). */
 const inDays = (days: number, hour = 10): string => {
   const at = new Date(Date.now() + days * DAY);
@@ -260,7 +266,7 @@ const inDays = (days: number, hour = 10): string => {
 };
 
 for (const [dialect, reachable] of LEGS) {
-  describe.skipIf(!reachable)(`the CRM's deals, hand-over, approvals and quotes on Adminium 0.3.35, on ${dialect}`, () => {
+  describe.skipIf(!reachable)(`the CRM's deals, hand-over, approvals and quotes on Adminium 0.3.36, on ${dialect}`, () => {
     let s: Stack;
     let stage = 0;
     let company = 0;
@@ -410,11 +416,12 @@ for (const [dialect, reachable] of LEGS) {
     it('R1d: another team\'s manager whose rep helps on Dana\'s deal is refused it on every door; the helper reads and comments', async () => {
       const helped = await deal('dana', 'P4 Atrium refit', 'dana', { typed_amount: 61000 });
       expect(said(await post('dana', 'deal_members', { deal_id: helped, user_id: owner('noor') }))).toBe('ok');
-      // The helper: she reads the deal, comments on it, and books her own visit and follow-up there.
+      // The helper: she reads the deal and comments on it. Her own visit and follow-up there are made for her (since 0.3.36
+      // a helper books and adds nothing on the deal herself: ruling 1d, proved below).
       expect((await get('noor', 'deals', `/${String(helped)}`)).statusCode).toBe(200);
       const comment = made(await post('noor', 'comments', { deal_id: helped, text: 'Noor can survey the atrium on Friday' }));
-      const noorsVisit = await visit('noor', helped, 'noor', 6);
-      const noorsStep = await step('noor', helped, 'noor', 'P4 Noor sends the survey');
+      const noorsVisit = await visit('tessa', helped, 'noor', 6);
+      const noorsStep = await step('tessa', helped, 'noor', 'P4 Noor sends the survey');
       const note = made(await post('dana', 'activities', { deal_id: helped, kind: 'note', text: 'P4 the atrium is 14 m high' }));
       const priced = made(await post('ivy', 'price_list', { name: 'P4 Acoustic baffle', list_rate: 300 }));
       const quote = made(await post('dana', 'quotes', { deal_id: helped }, { children: { quote_lines: [{ values: { description: 'Baffles', qty: 100, rate: 250, price_id: priced } }] } }));
@@ -470,16 +477,173 @@ for (const [dialect, reachable] of LEGS) {
       // The helper comments, and her reply is there; she does not hand the deal over or change its amount.
       expect(said(await post('noor', 'comments', { deal_id: helped, parent_id: comment, text: 'Friday at ten' }))).toBe('ok');
 
-      // The bell: Noor asks for a discount on Dana's quote. Ivy, who leads the DEAL's owner, is told, and the CRM admin; Omar, Noor's lead, is not.
+      // The bell: Noor asks for a discount on Dana's quote. A helper asks nothing (ruling 1d); while she COVERS for Dana she
+      // does. Ivy, who leads the DEAL's owner, is told, and the CRM admin; Omar, Noor's lead, is not.
       type Told = { title: string };
       const toldOf = async (person: string): Promise<number> => ((await s.meta.db.selectFrom('adminium_notifications').select(['title']).where('userId', '=', owner(person)).where('title', 'like', '%needs your approval').execute()) as Told[]).length;
       const before = { ivy: await toldOf('ivy'), omar: await toldOf('omar'), tessa: await toldOf('tessa') };
+      expect(said(await press('noor', 'quotes', quote, 'ask-approval', 'draft', { ask_reason: 'The atrium is a showcase' }))).toBe('404 NOT_FOUND');
+      const lent = made(await post('tessa', 'covers', { owner_id: owner('dana'), cover_id: owner('noor'), starts_on: onDay(-3), ends_on: onDay(3) }));
       expect(said(await press('noor', 'quotes', quote, 'ask-approval', 'draft', { ask_reason: 'The atrium is a showcase' }))).toBe('ok');
+      expect(said(await s.app.inject({ method: 'DELETE', url: url('covers', `/${String(lent)}?confirm=true`), headers: { cookie: who('tessa') } }))).toBe('ok');
       await s.jobs();
       expect({ ivy: (await toldOf('ivy')) - before.ivy, omar: (await toldOf('omar')) - before.omar, tessa: (await toldOf('tessa')) - before.tessa }).toEqual({ ivy: 1, omar: 0, tessa: 1 });
       // …and Omar is not handed the request on Approvals either.
       expect(await keys('omar', 'quotes', { column: 'asked_at', op: 'not_null' })).not.toContain(quote);
       expect(await keys('ivy', 'quotes', { column: 'asked_at', op: 'not_null' })).toContain(quote);
+    });
+
+    it('ruling 1d: a helper reads the deal and comments, and changes, sends, logs, books and adds nothing of it; the cover, the owner, the manager and the CRM admin write', async () => {
+      const del = (person: string, ref: string, key: unknown) => s.app.inject({ method: 'DELETE', url: url(ref, `/${String(key)}?confirm=true`), headers: { cookie: who(person) } });
+      const contact = (await ids(`SELECT id FROM ${s.real('contacts')} WHERE company_id = ${String(company)} AND email IS NOT NULL`))[0]!;
+      expect(contact, 'the first company has a contact with an address').toBeGreaterThan(0);
+      const priced = made(await post('ivy', 'price_list', { name: 'P5 Acoustic panel', list_rate: 200 }));
+      const withLine = { children: { quote_lines: [{ values: { description: 'Panels', qty: 5, rate: 200, price_id: priced } }] } };
+      const lostReason = (await ids(`SELECT id FROM ${s.real('lost_reasons')}`))[0]!;
+      const otherStage = (await ids(`SELECT id FROM ${s.real('stages')}`))[1]!;
+
+      // Dana's deal, Leo listed on it. What Leo made there before he only helped: a follow-up and a visit of his own.
+      const helped = await deal('dana', 'P5 helped deal', 'dana', { contact_id: contact });
+      expect(said(await post('dana', 'deal_members', { deal_id: helped, user_id: owner('leo') }))).toBe('ok');
+      const leosStep = await step('tessa', helped, 'leo', 'P5 Leo sends the plan');
+      const leosVisit = await visit('tessa', helped, 'leo', 7);
+      // Dana's on it: a quote with a line, a note, a visit written up with a point agreed, a briefing note. (A stock need is
+      // proved in crm-crew, whose install writes Supply's needs.)
+      const quote = made(await post('dana', 'quotes', { deal_id: helped, sent_to_contact_id: contact }, withLine));
+      const line = (await ids(`SELECT id FROM ${s.real('quote_lines')} WHERE document_id = ${String(quote)}`))[0]!;
+      const note = made(await post('dana', 'activities', { deal_id: helped, kind: 'note', text: 'P5 Dana measured up' }));
+      const danasVisit = await visit('tessa', helped, 'dana', 8);
+      expect(said(await patch('dana', 'site_visits', danasVisit, { starts_at: inDays(-2, 21) }))).toBe('ok');
+      const writeUp = made(await post('dana', 'visit_notes', { visit_id: danasVisit, saw: 'P5 a low ceiling' }));
+      const point = made(await post('dana', 'visit_agreed', { visit_note_id: writeUp, text: 'P5 the panels in grey', position: 0 }));
+      const away = made(await post('tessa', 'covers', { owner_id: owner('dana'), cover_id: owner('sam'), starts_on: onDay(200), ends_on: onDay(201) }));
+      const brief = made(await post('dana', 'cover_notes', { cover_id: away, deal_id: helped, text: 'P5 the buyer decides on Friday' }));
+      const danasComment = made(await post('dana', 'comments', { deal_id: helped, text: 'P5 Leo, you know the buyer?' }));
+      const won = await deal('dana', 'P5 helped and won', 'dana');
+      expect(said(await post('dana', 'deal_members', { deal_id: won, user_id: owner('leo') }))).toBe('ok');
+      expect(said(await press('dana', 'deals', won, 'mark-won', 'open', { close_note: 'P5 won' }))).toBe('ok');
+
+      // He reads all of it, as before.
+      const reads: Record<string, number> = {};
+      for (const [ref, key] of [['deals', helped], ['deals', won], ['quotes', quote], ['quote_lines', line], ['activities', note], ['site_visits', danasVisit], ['visit_notes', writeUp], ['visit_agreed', point], ['cover_notes', brief], ['comments', danasComment], ['follow_ups', leosStep], ['site_visits', leosVisit]] as const) {
+        reads[`${ref} ${String(key)}`] = (await get('leo', ref, `/${String(key)}`)).statusCode;
+      }
+      expect(Object.entries(reads).filter(([, code]) => code !== 200)).toEqual([]);
+
+      const rowOf = async (ref: string, key: number) => JSON.stringify(await one(`SELECT * FROM ${s.real(ref)} WHERE id = ${String(key)}`));
+      const held = [['deals', helped], ['deals', won], ['quotes', quote], ['quote_lines', line], ['activities', note], ['visit_notes', writeUp], ['visit_agreed', point], ['cover_notes', brief]] as const;
+      const before = await Promise.all(held.map(([ref, key]) => rowOf(ref, key)));
+      const counted = async () => Promise.all(['quotes', 'activities', 'follow_ups', 'site_visits', 'visit_agreed'].map(async (ref) => (await ids(`SELECT id FROM ${s.real(ref)}`)).length));
+      const countedBefore = await counted();
+
+      // A change of the deal or of anything on it is refused as a row that is not there, by every door.
+      // A refusal other than "not there" says what it was, body and all, so a failure names its door's reason.
+      const door = (res: Reply): string => (said(res) === '404 NOT_FOUND' ? said(res) : `${said(res)} ${res.body}`);
+      const changes: Record<string, string> = {
+        stage: door(await patch('leo', 'deals', helped, { stage_id: otherStage })),
+        amount: door(await patch('leo', 'deals', helped, { typed_amount: 9999 })),
+        contact: door(await patch('leo', 'deals', helped, { contact_id: null })),
+        close: door(await patch('leo', 'deals', helped, { expected_close: onDay(30) })),
+        'mark-won': door(await press('leo', 'deals', helped, 'mark-won', 'open', { close_note: 'Leo closed it' })),
+        'mark-lost': door(await press('leo', 'deals', helped, 'mark-lost', 'open', { lost_reason_id: lostReason, close_note: 'Leo lost it' })),
+        reopen: door(await press('leo', 'deals', won, 'reopen', 'won')),
+        'hand-over': door(await press('leo', 'deals', helped, 'hand-over', 'open', { owner_id: owner('leo') })),
+        'quote notes': door(await patch('leo', 'quotes', quote, { notes: 'Leo was here' })),
+        'quote sent': door(await patch('leo', 'quotes', quote, { status: 'sent' })),
+        'ask-approval': door(await press('leo', 'quotes', quote, 'ask-approval', 'draft', { ask_reason: 'Leo asks' })),
+        'line edit': door(await patch('leo', 'quote_lines', line, { qty: 6 })),
+        'line delete': door(await del('leo', 'quote_lines', line)),
+        'note edit': door(await patch('leo', 'activities', note, { text: 'Leo was here' })),
+        'visit notes': door(await patch('leo', 'visit_notes', writeUp, { saw: 'Leo was here' })),
+        'agreed edit': door(await patch('leo', 'visit_agreed', point, { text: 'Leo was here' })),
+        'agreed delete': door(await del('leo', 'visit_agreed', point)),
+        'cover note': door(await patch('leo', 'cover_notes', brief, { text: 'Leo was here' })),
+      };
+      expect(changes, JSON.stringify(changes)).toEqual(Object.fromEntries(Object.keys(changes).map((key) => [key, '404 NOT_FOUND'])));
+      expect(bulked(await bulk('leo', 'deals', [helped], { typed_amount: 9999 }))).toEqual([{ id: String(helped), ok: false, error: 'NOT_FOUND' }]);
+      expect(bulked(await bulk('leo', 'quotes', [quote], { notes: 'Leo was here' }))).toEqual([{ id: String(quote), ok: false, error: 'NOT_FOUND' }]);
+      const upload = await s.app.inject({ method: 'POST', url: '/api/v1/imports/upload?filename=deals.csv', headers: { cookie: who('leo'), 'content-type': 'text/csv' }, payload: `id,typed_amount\n${String(helped)},9999\n` });
+      const brought = upload.statusCode >= 300 ? upload : await s.app.inject({ method: 'POST', url: '/api/v1/imports', headers: { cookie: who('leo') }, payload: { fileId: (upload.json() as { data: { fileId: string } }).data.fileId, connectionId: s.connectionId, table: s.t('deals'), mapping: { columns: [{ from: 'id', to: 'id' }, { from: 'typed_amount', to: 'typed_amount' }] }, options: { mode: 'upsert', matchColumn: 'id' } } });
+      expect(brought.statusCode, brought.body).toBe(403);
+
+      // Nothing new of his is hung on it: a quote, a line, a note or call, a follow-up or a visit naming him, an agreed point.
+      const adds: Record<string, unknown> = {};
+      for (const [label, res] of [
+        ['quote', await post('leo', 'quotes', { deal_id: helped })],
+        ['quote with a line', await post('leo', 'quotes', { deal_id: helped }, withLine)],
+        ['line', await post('leo', 'quote_lines', { document_id: quote, description: 'Leo adds', qty: 1, rate: 200, price_id: priced })],
+        ['call', await post('leo', 'activities', { deal_id: helped, kind: 'call', text: 'Leo rang the buyer' })],
+        ['follow-up', await post('leo', 'follow_ups', { deal_id: helped, owner_id: owner('leo'), due_at: inDays(5), text: 'Leo rings back', kind: 'step' })],
+        ['visit', await post('leo', 'site_visits', { deal_id: helped, rep_id: owner('leo'), starts_at: inDays(9, 21), minutes: 45, purpose: 'Leo goes' })],
+      ] as const) {
+        adds[label] = [said(res), reason(res)];
+      }
+      expect(adds, JSON.stringify(adds)).toEqual(Object.fromEntries(Object.keys(adds).map((key) => [key, ['403 COLUMN_FORBIDDEN', 'parent-not-theirs']])));
+      // ENGINE GAP, asserted as it is today (it turns red the day the engine closes it): an agreed point hangs off its visit
+      // by `visit_id`, a copy of its note's visit that no writer sends, and a new row's parent is judged only by a link the
+      // write sets (crud/row-writes.ts, assertParentReached). So a helper still adds a point under a colleague's write-up;
+      // the screens offer him none (a colleague's visit reads only). Dana takes it away again.
+      const point2 = await post('leo', 'visit_agreed', { visit_note_id: writeUp, text: 'Leo agrees', position: 1 });
+      expect(said(point2), point2.body).toBe('ok');
+      expect(said(await del('dana', 'visit_agreed', made(point2)))).toBe('ok');
+      expect(await Promise.all(held.map(([ref, key]) => rowOf(ref, key)))).toEqual(before);
+      expect(await counted()).toEqual(countedBefore);
+      // Nor is a follow-up of his own moved onto it from a deal of his.
+      const leosOwn = await deal('leo', 'P5 Leo\'s own', 'leo');
+      const elsewhere = await step('leo', leosOwn, 'leo', 'P5 Leo on his own deal');
+      const moved = await patch('leo', 'follow_ups', elsewhere, { deal_id: helped });
+      expect([said(moved), reason(moved)]).toEqual(['403 COLUMN_FORBIDDEN', 'parent-not-theirs']);
+      expect(Number((await one(`SELECT deal_id FROM ${s.real('follow_ups')} WHERE id = ${String(elsewhere)}`))['deal_id'])).toBe(leosOwn);
+
+      // He comments and replies, and settles the thread he started.
+      const thread = made(await post('leo', 'comments', { deal_id: helped, text: 'P5 Leo knows the buyer' }));
+      expect(said(await post('leo', 'comments', { deal_id: helped, parent_id: danasComment, text: 'P5 yes, since 2019' }))).toBe('ok');
+      expect(said(await patch('leo', 'comments', thread, { settled_at: new Date().toISOString() }))).toBe('ok');
+      // What he made there before is his: he moves and finishes his follow-up, and moves his visit; then calls both off.
+      expect(said(await patch('leo', 'follow_ups', leosStep, { due_at: inDays(6), text: 'P5 Leo sends the plan, Monday' }))).toBe('ok');
+      expect(said(await patch('leo', 'follow_ups', leosStep, { done: true }))).toBe('ok');
+      expect(said(await patch('leo', 'site_visits', leosVisit, { note: 'P5 bring the samples' }))).toBe('ok');
+      expect(said(await del('leo', 'follow_ups', leosStep))).toBe('ok');
+      expect(said(await del('leo', 'site_visits', leosVisit))).toBe('ok');
+
+      // Dana, the owner, writes as before; Ivy, who leads her, and the CRM admin too.
+      expect(said(await patch('dana', 'deals', helped, { typed_amount: 6200 }))).toBe('ok');
+      expect(said(await patch('dana', 'quotes', quote, { notes: 'P5 Dana\'s note' }))).toBe('ok');
+      expect(said(await patch('dana', 'quote_lines', line, { qty: 6 }))).toBe('ok');
+      expect(said(await post('dana', 'activities', { deal_id: helped, kind: 'call', text: 'P5 Dana rang' }))).toBe('ok');
+      expect(said(await post('dana', 'follow_ups', { deal_id: helped, owner_id: owner('dana'), due_at: inDays(4), text: 'P5 Dana rings back', kind: 'step' }))).toBe('ok');
+      expect(said(await patch('dana', 'cover_notes', brief, { text: 'P5 the buyer decides on Monday' }))).toBe('ok');
+      expect(said(await patch('ivy', 'deals', helped, { expected_close: onDay(40) }))).toBe('ok');
+      expect(said(await patch('tessa', 'deals', helped, { name: 'P5 helped deal (checked)' }))).toBe('ok');
+
+      // Priya covers for Leo (a cover, not a listing): his deal and its quote are hers to work while he is away.
+      const leosDeal = await deal('leo', 'P5 Leo away', 'leo', { contact_id: contact });
+      const leosQuote = made(await post('leo', 'quotes', { deal_id: leosDeal, sent_to_contact_id: contact }, withLine));
+      expect(said(await patch('priya', 'deals', leosDeal, { typed_amount: 7000 }))).toBe('404 NOT_FOUND');
+      const cover = made(await post('tessa', 'covers', { owner_id: owner('leo'), cover_id: owner('priya'), starts_on: onDay(-3), ends_on: onDay(3) }));
+      expect(said(await patch('priya', 'deals', leosDeal, { typed_amount: 7000 }))).toBe('ok');
+      expect(said(await post('priya', 'follow_ups', { deal_id: leosDeal, owner_id: owner('priya'), due_at: inDays(5), text: 'P5 Priya rings for Leo', kind: 'step' }))).toBe('ok');
+      expect(await visit('priya', leosDeal, 'priya', 10)).toBeGreaterThan(0);
+      expect(said(await post('priya', 'activities', { deal_id: leosDeal, kind: 'call', text: 'P5 Priya rang for Leo' }))).toBe('ok');
+      expect(said(await patch('priya', 'quotes', leosQuote, { notes: 'P5 Priya checked it' }))).toBe('ok');
+      const sent = await patch('priya', 'quotes', leosQuote, { status: 'sent' });
+      expect(said(sent), sent.body).toBe('ok');
+      expect(said(await press('priya', 'deals', leosDeal, 'mark-won', 'open', { close_note: 'P5 Priya closed it for Leo' }))).toBe('ok');
+      expect(said(await del('tessa', 'covers', cover))).toBe('ok');
+
+      // The account manager: an aftercare call (the rule's: on the job's won deal, which is not his) he makes as before;
+      // a follow-up of his on no deal is his; hung on a deal he does not own, won or one he is listed on, it is refused.
+      const job = await one(`SELECT j.id, j.deal_id FROM ${s.real('jobs')} j JOIN ${s.real('deals')} d ON d.id = j.deal_id WHERE d.state = 'won' AND d.owner_id <> '${owner('hugo')}' ORDER BY j.id`);
+      const call = made(await post('tessa', 'follow_ups', { job_id: job['id'], deal_id: job['deal_id'], owner_id: owner('hugo'), due_at: inDays(3), text: 'P5 aftercare call', kind: 'aftercare' }));
+      expect((await get('hugo', 'follow_ups', `/${String(call)}`)).statusCode).toBe(200);
+      expect(said(await patch('hugo', 'follow_ups', call, { done: true, outcome: 'none' }))).toBe('ok');
+      expect(said(await post('hugo', 'follow_ups', { owner_id: owner('hugo'), due_at: inDays(2), text: 'P5 Hugo rings the office', kind: 'step' }))).toBe('ok');
+      const onWon = await post('hugo', 'follow_ups', { deal_id: job['deal_id'], owner_id: owner('hugo'), due_at: inDays(2), text: 'P5 Hugo on a won deal', kind: 'step' });
+      expect([said(onWon), reason(onWon)]).toEqual(['403 COLUMN_FORBIDDEN', 'parent-not-theirs']);
+      expect(said(await post('dana', 'deal_members', { deal_id: helped, user_id: owner('hugo') }))).toBe('ok');
+      expect((await get('hugo', 'deals', `/${String(helped)}`)).statusCode).toBe(200);
+      const onListed = await post('hugo', 'follow_ups', { deal_id: helped, owner_id: owner('hugo'), due_at: inDays(2), text: 'P5 Hugo helps', kind: 'step' });
+      expect([said(onListed), reason(onListed)]).toEqual(['403 COLUMN_FORBIDDEN', 'parent-not-theirs']);
     });
 
     it('S2: a request is decided only from asked, never by who asked nor by the deal\'s owner; "Reopen it" keeps the asker', async () => {

@@ -529,7 +529,7 @@ for (const [dialect, reachable] of LEGS) {
           await s.meta.db.updateTable('adminium_users').set({ status: 'active', passwordHash: s.hash, email: `${person.key}@crm.test` }).where('id', '=', user.id).execute();
           id[person.key] = user.id;
         }
-        for (const key of ['dana', 'ada', 'tessa', ...(has21 ? ['f_yusuf'] : [])]) cookie[key] = await signIn(s.app, `${key}@crm.test`);
+        for (const key of ['dana', 'priya', 'ada', 'tessa', ...(has21 ? ['f_yusuf'] : [])]) cookie[key] = await signIn(s.app, `${key}@crm.test`);
       }, 900_000);
 
       it('takes rows typed since, each by the person who types it', async () => {
@@ -544,6 +544,10 @@ for (const [dialect, reachable] of LEGS) {
         // Dana's next steps: one on the deal, one on none.
         typed['stepOnDeal'] = made(await post('dana', 'follow_ups', { deal_id: typed['deal'], owner_id: id['dana'], due_at: inDays(4), text: 'Call back about the quote', kind: 'step' }));
         typed['stepAlone'] = made(await post('dana', 'follow_ups', { owner_id: id['dana'], due_at: inDays(6), text: 'Plan the week', kind: 'step' }));
+        // Priya helps on it ("Also on this deal"), with a follow-up of her own there: made by the install's owner, so the
+        // proof does not hang on what each release let a helper write.
+        typed['helper'] = made(await as('owner', 'POST', url('deal_members'), { values: { deal_id: typed['deal'], user_id: id['priya'] } }));
+        typed['helperStep'] = made(await as('owner', 'POST', url('follow_ups'), { values: { deal_id: typed['deal'], owner_id: id['priya'], due_at: inDays(5), text: 'Priya sends the brochure', kind: 'step' } }));
         // Another deal of hers, quoted while open, then won: its quote is a quote of a closed deal.
         typed['wonDeal'] = made(await post('dana', 'deals', { name: `Won before the update ${from}`, company_id: contact['company_id'], contact_id: contact['id'], stage_id: stage['id'], owner_id: id['dana'], typed_amount: 6000 }));
         typed['wonQuote'] = made(await post('dana', 'quotes', { deal_id: typed['wonDeal'], sent_to_contact_id: contact['id'] }));
@@ -778,6 +782,20 @@ for (const [dialect, reachable] of LEGS) {
         const read = await as('ada', 'GET', receipts);
         expect(read.statusCode, read.body).toBe(200);
         expect((await as('dana', 'GET', receipts)).statusCode).toBe(403);
+      });
+
+      it('a helper on a deal before the update reads it and comments after it, and changes and adds nothing of it (ruling 1d); her own follow-up stays hers', async () => {
+        expect((await as('priya', 'GET', url('deals', `/${String(typed['deal'])}`))).statusCode).toBe(200);
+        expect((await as('priya', 'GET', url('quotes', `/${String(typed['quote'])}`))).statusCode).toBe(200);
+        expect(said(await patch('priya', 'deals', typed['deal']!, { typed_amount: 9999 }))).toBe('404 NOT_FOUND');
+        expect(said(await patch('priya', 'quotes', typed['quote']!, { notes: 'Priya was here' }))).toBe('404 NOT_FOUND');
+        const added = await post('priya', 'follow_ups', { deal_id: typed['deal'], owner_id: id['priya'], due_at: inDays(3), text: 'Priya adds one', kind: 'step' });
+        expect(said(added), added.body).toBe('403 COLUMN_FORBIDDEN');
+        expect(added.body).toContain('parent-not-theirs');
+        expect(said(await post('priya', 'comments', { deal_id: typed['deal'], text: 'Priya read the quote' }))).toBe('ok');
+        expect(said(await patch('priya', 'follow_ups', typed['helperStep']!, { done: true }))).toBe('ok');
+        // The owner works it as before.
+        expect(said(await patch('dana', 'deals', typed['deal']!, { typed_amount: 4100 }))).toBe('ok');
       });
     });
   }

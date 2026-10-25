@@ -1208,31 +1208,39 @@ for (const [dialect, reachable] of LEGS) {
         expect((await post('cal', 'time_sheet_lines', { ...hours, job_id: other })).statusCode).toBe(403);
       });
 
-      it('E2, CLOSED: a helper works on a deal and does not take it, and a note is its writer\'s to change', async () => {
-        // Dana adds Priya as a helper on one of her deals. Priya reads it and works on it, and cannot make herself its owner.
+      it('E2, CLOSED: a helper reads a deal and comments, changes none of it nor takes it, and a note is its writer\'s to change', async () => {
+        // Dana adds Priya as a helper on one of her deals. Priya reads it, and since Adminium 0.3.36 (ruling 1d: a helper
+        // reads and comments, `notThrough`) changes nothing of it: not its scope, and not its owner (she cannot make
+        // herself its owner either).
         const deal = (await ids(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id DESC`))[0]!;
         expect((await get('priya', 'deals', `/${String(deal)}`)).statusCode).toBe(404);
         expect(said(await post('dana', 'deal_members', { deal_id: deal, user_id: s.id['priya'] }))).toBe('ok');
         expect((await get('priya', 'deals', `/${String(deal)}`)).statusCode).toBe(200);
-        expect(said(await patch('priya', 'deals', deal, { scope: 'Desks for the second floor too' }))).toBe('ok');
-        const taken = await patch('priya', 'deals', deal, { owner_id: s.id['priya'] });
-        expect(taken.statusCode, taken.body).toBe(403);
-        expect(taken.body).toContain('not-theirs-to-give');
-        expect(String((await one(`SELECT owner_id FROM ${s.real('deals')} WHERE id = ${String(deal)}`))['owner_id'])).toBe(s.id['dana']);
-        // Sam is made a helper on a deal of Dana's that holds a note: he reads the note, writes one of his own, and
-        // changes his own; Dana's is hers to change, and his is not hers.
+        const scope = (await one(`SELECT scope FROM ${s.real('deals')} WHERE id = ${String(deal)}`))['scope'];
+        expect(said(await patch('priya', 'deals', deal, { scope: 'Desks for the second floor too' }))).toBe('404 NOT_FOUND');
+        expect(said(await patch('priya', 'deals', deal, { owner_id: s.id['priya'] }))).toBe('404 NOT_FOUND');
+        expect(await one(`SELECT owner_id, scope FROM ${s.real('deals')} WHERE id = ${String(deal)}`)).toEqual({ owner_id: s.id['dana'], scope });
+        // Sam is made a helper on a deal of Dana's that holds a note: he reads the note, rewords none, and logs none of his
+        // own there; Dana's is hers to change.
         const noted = await one(`SELECT a.id, a.deal_id, a.text FROM ${s.real('activities')} a JOIN ${s.real('deals')} d ON d.id = a.deal_id WHERE d.owner_id = '${s.id['dana']!}' AND a.author_id = '${s.id['dana']!}' ORDER BY a.id`);
         expect(said(await post('dana', 'deal_members', { deal_id: noted['deal_id'], user_id: s.id['sam'] }))).toBe('ok');
         expect((await get('sam', 'activities', `/${String(noted['id'])}`)).statusCode).toBe(200);
         expect((await patch('sam', 'activities', noted['id'], { text: 'Rewritten by a helper' })).statusCode).toBeGreaterThanOrEqual(400);
         expect((await one(`SELECT text FROM ${s.real('activities')} WHERE id = ${String(noted['id'])}`))['text']).toBe(noted['text']);
-        const his = await post('sam', 'activities', { deal_id: noted['deal_id'], kind: 'note', text: 'Sam looked at the floor plan' });
+        const helping = await post('sam', 'activities', { deal_id: noted['deal_id'], kind: 'note', text: 'Sam looked at the floor plan' });
+        expect(said(helping), helping.body).toBe('403 COLUMN_FORBIDDEN');
+        expect(helping.body).toContain('parent-not-theirs');
+        expect(said(await patch('dana', 'activities', noted['id'], { text: String(noted['text']) }))).toBe('ok');
+        // On a deal of his own Sam writes a note and rewords it; Dana, a helper there, does not reword it, and their manager,
+        // who leads them both, rewords neither (plan 68 X6: a note is its author's to change).
+        const samsDeal = (await ids(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['sam']!}' AND state = 'open' ORDER BY id DESC`))[0]!;
+        expect(said(await post('sam', 'deal_members', { deal_id: samsDeal, user_id: s.id['dana'] }))).toBe('ok');
+        const his = await post('sam', 'activities', { deal_id: samsDeal, kind: 'note', text: 'Sam looked at the floor plan' });
         expect(said(his), his.body).toBe('ok');
         expect(said(await patch('sam', 'activities', made(his), { text: 'Sam looked at the floor plan, twice' }))).toBe('ok');
-        expect((await patch('dana', 'activities', made(his), { text: 'Rewritten by the owner' })).statusCode).toBeGreaterThanOrEqual(400);
-        expect(said(await patch('dana', 'activities', noted['id'], { text: String(noted['text']) }))).toBe('ok');
-        // Their manager leads them both, and rewords neither (plan 68 X6: a note is its author's to change).
+        expect((await patch('dana', 'activities', made(his), { text: 'Rewritten by a helper' })).statusCode).toBeGreaterThanOrEqual(400);
         expect(said(await patch('ivy', 'activities', made(his), { text: 'Sam looked at the floor plan (noted by Ivy)' }))).toMatch(/^403/);
+        expect((await one(`SELECT text FROM ${s.real('activities')} WHERE id = ${String(made(his))}`))['text']).toBe('Sam looked at the floor plan, twice');
       });
 
       it('E3, CLOSED: a new row is somebody\'s, unless its writer\'s reach includes the rows nobody owns', async () => {

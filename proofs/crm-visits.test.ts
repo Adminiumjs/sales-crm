@@ -137,8 +137,12 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.change('sam', 'site_visits', danas, { minutes: 30 })).statusCode).toBeGreaterThanOrEqual(403);
       expect((await remove('sam', 'site_visits', danas)).statusCode).toBeGreaterThanOrEqual(403);
       expect(Number((await row('dana', 'site_visits', danas))?.['minutes'])).toBe(60);
-      // He books his own visit on it, and Dana reads that one and does not move it.
-      const sams = made(await book('sam', 'sam', 'danas'));
+      // A helper books nothing on it himself (ruling 1d, Adminium 0.3.36: he reads and comments). A visit of his booked
+      // for him there is his: Dana reads that one and does not move it, and he calls it off.
+      const refused = await book('sam', 'sam', 'danas');
+      expect(refused.statusCode, refused.body).toBe(403);
+      expect(refused.body).toContain('parent-not-theirs');
+      const sams = made(await book('owner', 'sam', 'danas'));
       expect(Number((await row('dana', 'site_visits', sams))?.['id'])).toBe(sams);
       expect((await s.change('dana', 'site_visits', sams, { minutes: 30 })).statusCode).toBeGreaterThanOrEqual(403);
       expect(said(await remove('sam', 'site_visits', sams))).toBe('ok');
