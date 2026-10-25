@@ -210,14 +210,11 @@ for (const [dialect, reachable] of LEGS) {
     });
 
     /*
-     * ENGINE GAP (reported): a sign-off made by its visit, as every crew phone makes one, queues no e-mail 17. The
-     * outbox's producer fills each link the outbox declares from a column of the SAME NAME on the row
-     * (`outbox/producers.ts` `fillLinks`, the `from` helper), without asking where that column points: the sign-off's
-     * `visit_id` (a job visit) is written into the outbox's `visit_id` (a sales visit), the insert is refused by the
-     * foreign key, and the producer logs and drops it. The office's sign-off by its job carries no `visit_id`, so its
-     * mail goes. `it.fails` until the engine compares the link's target; then this passes and the mark comes off.
+     * A sign-off made by its visit, as every crew phone makes one, queues e-mail 17. (Before the engine's fix, plan-68-engine
+     * a44395400, the outbox's producer filled its `visit_id` link, a sales visit, from the sign-off's `visit_id`, a job
+     * visit, because the names matched: the insert was refused and the mail dropped without a word.)
      */
-    it.fails('mails e-mail 17 for the crew\'s own sign-off, made by its visit (engine gap: fillLinks)', async () => {
+    it('mails e-mail 17 for the crew\'s own sign-off, made by its visit', async () => {
       await s.emails();
       made(await signOff('yusuf', await jobFor('Canteen benches'), []));
       await jobs();

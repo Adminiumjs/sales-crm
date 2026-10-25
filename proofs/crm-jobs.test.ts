@@ -77,7 +77,13 @@ for (const [dialect, reachable] of LEGS) {
     const remove = (who: string, ref: string, id: number): Promise<Reply> => s.send(who, 'DELETE', url(ref, `/${String(id)}?confirm=true`));
     const act = (who: string, ref: string, id: number, action: string, from: string, values?: Record<string, unknown>): Promise<Reply> =>
       s.send(who, 'POST', url(ref, `/${String(id)}/actions/${action}`), { from, ...(values === undefined ? {} : { values }) });
-    const day = (days: number): string => new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
+    /** The business's calendar (its connection's zone, set once the server is up): "today" is its day, not UTC's. */
+    let zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    /** A day so many calendar days from the business's today (a day count, so a clock change never skips or repeats one). */
+    const day = (days: number): string => {
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      return new Date(Date.parse(`${today}T00:00:00Z`) + days * DAY).toISOString().slice(0, 10);
+    };
     const jobs = (): Promise<void> => s.jobs({ except: ['digest.send'] });
     /** A deal of Dana's, won: the app's rule makes its job. Answers the deal and its job. */
     const wonJob = async (name: string): Promise<{ deal: number; job: number }> => {
@@ -104,6 +110,7 @@ for (const [dialect, reachable] of LEGS) {
         smtp: true,
         install: { modules: { jobs: true } },
       });
+      zone = String((await s.meta.db.selectFrom('adminium_connections').select('timezone').where('id', '=', s.connectionId).executeTakeFirst())?.timezone ?? zone);
       stage = made(await s.make('owner', 'stages', { label: 'Proposal', odds: 0.5, position: 3 }));
       company = made(await s.make('owner', 'companies', { name: 'Fernway Clinics' }));
       contact = made(await s.make('owner', 'contacts', { company_id: company, name: 'Ana Belova', email: ANA, may_email: true }));
