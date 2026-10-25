@@ -64,12 +64,19 @@ function column(tableRef, def, after) {
   const where = must(t.columns.findIndex((one) => one.ref === after) + 1 || undefined, `${tableRef}.${after}`);
   t.columns.splice(where, 0, def);
 }
-/** A role's row limit on a table: the actions named are set, the others left as they are. */
+/**
+ * A role's row limit on a table: the actions named are set, the others left as they are. A reach that already says the
+ * same and leaves a listing out (`notThrough`, Adminium 0.3.36: a helper on the deal changes nothing of it) keeps it.
+ */
 function rows(key, ref, actions) {
   const r = role(key);
   const found = must(r.limits?.[ref], `${key}'s limit on ${ref}`);
   found.rows ??= {};
-  for (const [action, reach] of Object.entries(actions)) found.rows[action] = reach;
+  const bare = (reach) => (reach === null || typeof reach !== "object" || Array.isArray(reach) ? reach : Object.fromEntries(Object.entries(reach).filter(([k]) => k !== "notThrough")));
+  for (const [action, reach] of Object.entries(actions)) {
+    const was = found.rows[action];
+    if (JSON.stringify(bare(was)) !== JSON.stringify(reach)) found.rows[action] = reach;
+  }
 }
 
 /* ─── Preconditions ─── */

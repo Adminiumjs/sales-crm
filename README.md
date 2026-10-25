@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.35 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.36 or newer.
 
 ## What installs
 
@@ -45,10 +45,10 @@ cards and runs none of its rules; its records stay.
 
 ### Add-ons
 
-The app needs none. **Invoices & Receipts** (1.0.12 or newer) is ticked at install: a quote is one
+The app needs none. **Invoices & Receipts** (1.0.14 or newer) is ticked at install: a quote is one
 of its documents, so it numbers the quote, works out its tax and prints it. Installed without it,
 the Quotes part is left out (no quote tables, screens or links) and comes in when the add-on is
-connected. **Inventory** (1.0.12 or newer) keeps the stock: without it Supply's menu lines open a
+connected. **Inventory** (1.0.14 or newer) keeps the stock: without it Supply's menu lines open a
 page that says what Supply waits for and who connects it. **Offers** (a reward for a customer who
 refers another) is suggested and not ticked.
 
@@ -140,7 +140,7 @@ npm run build       # the staff side, to dist/
 The browser specs and the proofs need a **built** Adminium checkout (`ADMINIUM_REPO`) and the
 add-ons' checkout with Invoices & Receipts and Inventory built (`ADD_ONS_REPO`). When the checkout's
 own version is older than the app's floor (a lane ahead of a release), stand it in with
-`CRM_STAND_VERSION=0.3.29`.
+`CRM_STAND_VERSION=0.3.36`.
 
 ```bash
 ADD_ONS_REPO=~/path/to/add-ons npm run stand:up   # leave one running

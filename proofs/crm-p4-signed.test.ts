@@ -38,7 +38,7 @@ import { builtAddOn } from './add-ons/harness.js';
 import { png } from './picture-images.js';
 import { LEGS, said, wholeServer, type QueuedEmail, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.35' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.36' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;

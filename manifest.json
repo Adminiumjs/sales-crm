@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.35",
+    "minAdminiumVersion": "0.3.36",
     "engines": [
       "postgres",
       "mysql",
@@ -24221,7 +24221,8 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24258,11 +24259,13 @@
             },
             "update": {
               "reach": "own",
-              "by": "owner_id"
+              "by": "owner_id",
+              "notThrough": "deal_members"
             },
             "delete": {
               "reach": "own",
-              "by": "owner_id"
+              "by": "owner_id",
+              "notThrough": "deal_members"
             }
           },
           "creatable": [
@@ -24289,7 +24292,8 @@
             },
             "update": {
               "reach": "own",
-              "by": "author_id"
+              "by": "author_id",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24341,7 +24345,8 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24371,10 +24376,12 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             },
             "delete": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24491,11 +24498,13 @@
             },
             "update": {
               "reach": "own",
-              "by": "rep_id"
+              "by": "rep_id",
+              "notThrough": "deal_members"
             },
             "delete": {
               "reach": "own",
-              "by": "rep_id"
+              "by": "rep_id",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24505,7 +24514,8 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24520,10 +24530,12 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             },
             "delete": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24668,7 +24680,8 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           }
         },
@@ -24777,7 +24790,8 @@
               "reach": "own"
             },
             "update": {
-              "reach": "own"
+              "reach": "own",
+              "notThrough": "deal_members"
             }
           },
           "writable": [
@@ -25031,7 +25045,8 @@
             },
             "update": {
               "reach": "own",
-              "by": "owner_id"
+              "by": "owner_id",
+              "notThrough": "deal_members"
             }
           },
           "creatable": [
@@ -44096,7 +44111,7 @@
     "suggests": [
       {
         "key": "invoices",
-        "range": ">=1.0.12",
+        "range": ">=1.0.14",
         "checked": true,
         "reason": {
           "en-US": "Quotes are made, numbered and sent by this add-on.",
@@ -44111,7 +44126,7 @@
       },
       {
         "key": "inventory",
-        "range": ">=1.0.12",
+        "range": ">=1.0.14",
         "checked": true,
         "reason": {
           "en-US": "Stock for a deal, suppliers and what the showroom holds are kept by this add-on.",

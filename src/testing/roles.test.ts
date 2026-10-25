@@ -66,18 +66,18 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // The account manager reads every won deal, and an open one only while he is listed on it (R6, T37): its quote, its
   // notes and its history, and he comments on it.
   // The CRM admin also brings a list of past deals in (plan 68 R5): a closed one carries its closed date.
-  [["deals"], "RCUDXI", "RCUX:team-owned", "RCU:own", "R:won+own", "-", "-", "R:won", "-", "RX"],
+  [["deals"], "RCUDXI", "RCUX:team-owned", "RCU;r=own;u=own-not-helper", "R:won+own", "-", "-", "R:won", "-", "RX"],
   [["deal_stage_changes"], "R", "R:deal", "R:own", "R:own", "-", "-", "-", "-", "R"],
   [["deal_amount_changes"], "R", "R:deal", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; a note or a comment is reworded by whoever wrote it, of the deals they
   // are on (plan 68 X6: a manager no longer rewords her rep's). The manager and the CRM admin reword none: they change no
   // call note, and of a comment only `settled_at` (the manager her team's threads, the CRM admin any).
-  [["activities"], "RCD", "RC:deal", "RCU:own;u=own-written", "R:own", "-", "-", "-", "-", "R"],
+  [["activities"], "RCD", "RC:deal", "RCU:own;u=own-written-not-helper", "R:own", "-", "-", "-", "-", "R"],
   [["comments"], "RCUD", "RCU:deal", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
-  [["follow_ups"], "RCUD", "RCU:deal+free-standing", "RCUD:own-owned", "RCU:own-owned", "-", "-", "-", "-", "R"],
-  [["quotes"], "RCUDX", "RCU:deal", "RCU:own", "R:own", "-", "-", "-", "-", "RX"],
+  [["follow_ups"], "RCUD", "RCU:deal+free-standing", "RCUD;r=own-owned;u=own-owned-not-helper;d=own-owned-not-helper", "RCU;r=own-owned;u=own-owned-not-helper", "-", "-", "-", "-", "R"],
+  [["quotes"], "RCUDX", "RCU:deal", "RCU;r=own;u=own-not-helper", "R:own", "-", "-", "-", "-", "RX"],
   // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
-  [["quote_lines"], "RCUDX", "RCUD:deal-quote", "RCUD:own", "R:own", "-", "-", "-", "-", "RX"],
+  [["quote_lines"], "RCUDX", "RCUD:deal-quote", "RCUD;r=own;u=own-not-helper;d=own-not-helper", "R:own", "-", "-", "-", "-", "RX"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   // Private (plan 68 D9): each person's own, and nobody else's, the install's owner included. A view nobody owns is nobody's.
@@ -88,10 +88,10 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // The marketer counts a company's open deals from the mark, and reads nothing else of a deal.
   [["deal_marks"], "R", "R", "R", "R", "R", "-", "-", "-", "R"],
   // A visit is read by whoever reaches its deal; it is moved and cancelled by the rep it names (a manager, those of her people).
-  [["site_visits"], "RCUD", "RCUD;r=deal;u=team-named;d=team-named", "RCUD;r=own;u=own-named;d=own-named", "-", "-", "-", "-", "-", "R"],
+  [["site_visits"], "RCUD", "RCUD;r=deal;u=team-named;d=team-named", "RCUD;r=own;u=own-named-not-helper;d=own-named-not-helper", "-", "-", "-", "-", "-", "R"],
   // A rep takes an agreed point back; nobody but the CRM admin removes a visit's write-up (a helper could remove the owner's).
-  [["visit_notes"], "RCUD", "RCU:deal-visit", "RCU:own", "-", "-", "-", "-", "-", "R"],
-  [["visit_agreed"], "RCUD", "RCU:deal-visit", "RCUD:own", "-", "-", "-", "-", "-", "R"],
+  [["visit_notes"], "RCUD", "RCU:deal-visit", "RCU;r=own;u=own-not-helper", "-", "-", "-", "-", "-", "R"],
+  [["visit_agreed"], "RCUD", "RCU:deal-visit", "RCUD;r=own;u=own-not-helper;d=own-not-helper", "-", "-", "-", "-", "-", "R"],
   // Everybody reads every company. A rep (and the account manager) changes one she is the account owner of, has an open
   // deal at, or that nobody owns; the manager her team's and nobody's; the CRM admin any (plan 68 X3, Q5 = B).
   [["companies"], "RCUDXI", "RCUXI;u=team+free", "RCUI;u=own+free", "RCU;u=own+free", "R", "R", "-", "-", "RX"],
@@ -124,7 +124,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   // team's deals by covering for them. They read every cover, and write one for the people they lead.
   // A manager changes or removes a cover only of somebody she leads who is the one AWAY: leading whoever covers is not enough (the review, 2026-10-14).
   [["covers"], "RCUD", "RCUD;u=team-away;d=team-away", "R", "R", "-", "-", "-", "-", "R"],
-  [["cover_notes"], "RCUD", "RCUD:deal", "RCU:own", "-", "-", "-", "-", "-", "R"],
+  [["cover_notes"], "RCUD", "RCUD:deal", "RCU;r=own;u=own-not-helper", "-", "-", "-", "-", "-", "R"],
   [["enquiries"], "RCUDI", "RCU:team+free", "RCU:own+free", "-", "RCI", "RCU:own+free", "-", "-", "R"],
   [["shows"], "RCUD", "R", "R", "-", "RCUD", "R", "-", "-", "R"],
   [["showroom_spaces", "samples", "display_pieces"], "RCUD", "R", "R", "-", "-", "RCUD", "-", "-", "R"],
@@ -150,7 +150,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["warranty_claims"], "RCUD", "R:deal-job", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
   // …and for the same reason she changes and removes a deal's stock need, and a rep (who reads the deal) makes it.
   // The crew reads the needs of its own visits, what to load (S14): a need names the visit its stock goes on.
-  [["deal_stock_needs"], "RCUD", "R:deal", "RCU:own", "-", "-", "-", "RUD", "R:own", "R"],
+  [["deal_stock_needs"], "RCUD", "R:deal", "RCU;r=own;u=own-not-helper", "-", "-", "-", "RUD", "R:own", "R"],
   // A crew member is given his crew's vehicle (P25): he reads that one, and its faults, and makes a check, a fault and a
   // fill only for it (a link to a vehicle out of his reach is refused as one that is not there).
   [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
@@ -232,6 +232,7 @@ interface Reach {
   by?: string;
   via?: string;
   notBy?: string;
+  notThrough?: string;
 }
 type Rows = Partial<Record<RowAction, Reach>>;
 interface Cell {
@@ -281,6 +282,12 @@ const REACHES: Record<string, Reach> = {
   "team-not-starter": { reach: "team", notBy: "user_id" },
   // Only the decisions of a meeting the person runs.
   runs: { reach: "own", via: "meeting_id", by: "run_by_id" },
+  // Ruling 1d: a helper listed on a deal ("Also on this deal") reads it and comments; she changes nothing of it. The
+  // change leaves the listing out (`notThrough`, Adminium 0.3.36); the owner's way, a cover's and a row's own column count.
+  "own-not-helper": { reach: "own", notThrough: "deal_members" },
+  "own-written-not-helper": { reach: "own", by: "author_id", notThrough: "deal_members" },
+  "own-owned-not-helper": { reach: "own", by: "owner_id", notThrough: "deal_members" },
+  "own-named-not-helper": { reach: "own", by: "rep_id", notThrough: "deal_members" },
 };
 const ROW_ACTIONS: readonly RowAction[] = ["read", "update", "delete"];
 

@@ -35,7 +35,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { png } from './picture-images.js';
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.35' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.36' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
@@ -448,7 +448,7 @@ for (const [dialect, reachable] of LEGS) {
 
     beforeAll(async () => {
       s = await wholeServer(dialect, withoutInventory(), {
-        people: { dana: ['rep'], ada: ['ops-manager'], grace: ['read-only'], yusuf: ['crew'], cal: ['crew'], rina: ['crew'] },
+        people: { dana: ['rep'], leo: ['rep'], ada: ['ops-manager'], grace: ['read-only'], yusuf: ['crew'], cal: ['crew'], rina: ['crew'] },
         install: { modules: { jobs: true, fleet: true, supply: true } },
       });
       const stage = made(await s.make('owner', 'stages', { label: 'Proposal', odds: 0.5, position: 3 }));
@@ -531,6 +531,26 @@ for (const [dialect, reachable] of LEGS) {
       const deal = (await one('ada', 'deals', at.deal)).json() as { data: Record<string, unknown> };
       expect(Object.keys(deal.data).filter((key) => !key.endsWith('_id') && !key.startsWith('_') && !['id', 'name', 'state', 'closed_on', 'job_count'].includes(key))).toEqual([]);
       expect(await ids('grace', 'deal_stock_needs')).toEqual([at.need, at.other].sort((a, b) => a - b));
+    });
+    it('a rep helping on a deal reads its stock needs and changes none (ruling 1d); its owner and the office do', async () => {
+      const company = Number((await s.rows(`select company_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['company_id']);
+      const stage = Number((await s.rows(`select stage_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['stage_id']);
+      const open = made(await s.make('dana', 'deals', { name: 'Mezzanine shelving', company_id: company, owner_id: s.ids['dana'], stage_id: stage, typed_amount: 12_000 }));
+      const need = made(await s.make('dana', 'deal_stock_needs', { deal_id: open, qty: 2 }));
+      made(await s.make('dana', 'deal_members', { deal_id: open, user_id: s.ids['leo'] }));
+      expect((await one('leo', 'deal_stock_needs', need)).statusCode).toBe(200);
+      expect(said(await s.change('leo', 'deal_stock_needs', need, { qty: 9 }))).toBe('404 NOT_FOUND');
+      // ENGINE GAP, asserted as it is today (red the day it closes): a stock need belongs to its deal (`via`) and to the crew
+      // it is put on (`through` crew_members), and a table with a listing way skips the parent test of a new row
+      // (crud/row-writes.ts, assertParentReached's first return). So a helper still adds a need on the deal he helps on;
+      // the office takes it away.
+      const added = await s.make('leo', 'deal_stock_needs', { deal_id: open, qty: 1 });
+      expect(said(added), added.body).toBe('ok');
+      expect(said(await s.send('ada', 'DELETE', url('deal_stock_needs', `/${String(made(added))}?confirm=true`)))).toBe('ok');
+      expect(Number((await s.rows(`select qty from ${s.t('deal_stock_needs')} where id = ${String(need)}`))[0]!['qty'])).toBe(2);
+      expect(said(await s.change('dana', 'deal_stock_needs', need, { qty: 3 }))).toBe('ok');
+      expect(said(await s.change('ada', 'deal_stock_needs', need, { qty: 4 }))).toBe('ok');
+      expect(said(await s.send('ada', 'DELETE', url('deal_stock_needs', `/${String(need)}?confirm=true`)))).toBe('ok');
     });
   });
 }
