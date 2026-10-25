@@ -95,6 +95,8 @@ async function signInWithCode(context: BrowserContext, person: APIRequestContext
   await expect(page).toHaveURL(/\/otp$/);
 
   // The sixth digit sends it (the step submits itself once the code is whole).
+  // The code's check counts against the same five sign-ins a minute as the form: it waits its turn too.
+  await takeTurn();
   await page.getByLabel("One-time code").pressSequentially(await codeNow(person, secret));
   await expect(page).not.toHaveURL(/\/(otp|login)/, { timeout: 60_000 });
   expect((await page.request.get("/api/v1/me/prefs")).status(), "signed in").toBe(200);
