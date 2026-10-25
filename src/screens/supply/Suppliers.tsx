@@ -22,6 +22,7 @@ import { useMemo, useState } from "react";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { noonOf, type Formatters } from "../../lib/format.ts";
 import { ScreenLink } from "../../shell/nav.tsx";
+import { useOpens } from "../fleet/parts.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { Loaded, Skeleton, useLoad } from "../../ui/load.tsx";
 import { readSuppliers, showsClaims, type Lateness, type Supplier, type SuppliersData } from "./data.ts";
@@ -87,6 +88,8 @@ function SuppliersBody({ data, f, busy }: { data: SuppliersData; f: Formatters; 
   const worst = problems.at(-1);
   const allOn = lateness === null || lateness.all.n === 0 ? null : Math.floor((2000 * (lateness.all.n - lateness.all.late) + lateness.all.n) / (2 * lateness.all.n));
   const claims = lateness?.claims ?? null;
+  // The link to Claims only for whom that screen opens: the operations manager reads the counts and has no Claims screen.
+  const opensClaims = useOpens()("claims");
 
   return (
     <>
@@ -233,7 +236,7 @@ function SuppliersBody({ data, f, busy }: { data: SuppliersData; f: Formatters; 
                   <span className="crm-sup-next" data-figure="next">
                     {next === undefined ? t("supply.sup.next.none") : next.expected !== null ? t("supply.sup.next", { number: next.number ?? "", day: f.dayShort(noonOf(next.expected)) }) : t("supply.sup.next.unknown", { number: next.number ?? "" })}
                   </span>
-                  {judged?.claims !== null && judged?.claims !== undefined && (
+                  {opensClaims && judged?.claims !== null && judged?.claims !== undefined && (
                     <ScreenLink to="claims" className="crm-sup-claims mr-gi">
                       {t("scorecard.toClaims")}
                     </ScreenLink>
