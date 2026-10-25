@@ -12,6 +12,9 @@
  *     the page that says it waits for Inventory; as the install's owner its link opens the app's page in Studio, whose
  *     Parts card says Quotes is not set up yet and Supply is off until Inventory is connected.
  *
+ * Two engine faults are pinned by tests of their own, expected to fail until the engine is fixed: Inventory's group on the
+ * check step says "Ticked" while it is unticked, and Supply's line after the install names the add-on by its key.
+ *
  * Run it on a stand of its own, stage 3 (the released stage):
  *   CRM_STAND_INSTALL=0 CRM_STAND_STAGE=3 npx playwright test e2e/zw-install-wizard.e2e.ts
  * On any other stand every test here is skipped. The sample's people cannot sign in until the sample is in: the second
@@ -25,8 +28,11 @@ import { admitSamplePeople } from "./stand.mjs";
 import { until, words } from "./zw-helpers.ts";
 
 test.beforeEach(({ stand }) => {
-  test.skip(stand.installed !== false, "needs a stand started with CRM_STAND_INSTALL=0 (the app staged, not installed)");
+  test.skip(stand.installed !== false && stand.installedBy !== "wizard", "needs a stand started with CRM_STAND_INSTALL=0 (the app staged, not installed)");
 });
+
+/** The tests that look at the wizard need the app not yet installed: one install per stand run. */
+const beforeInstall = (stand: { installed?: boolean }) => test.skip(stand.installed !== false, "the app is installed already on this stand: one install per stand run");
 
 const say = words("en-US");
 /** The parts an owner may tick at install (`default` is not "always"), as the released stage holds them. */
@@ -59,6 +65,7 @@ async function untick(wizard: Page, key: string): Promise<void> {
 const tick = (page: Page, part: string) => page.getByTestId("install-parts").locator(`li[data-part="${part}"]`).getByRole("checkbox");
 
 test("the check step: a tick for each part, Quotes and Supply under their add-ons, Quotes left out without Invoices, the maps question", async ({ as, stand }) => {
+  beforeInstall(stand);
   test.setTimeout(180_000);
   const wizard = await (await as("owner")).newPage();
   const problems = watch(wizard);
@@ -96,9 +103,6 @@ test("the check step: a tick for each part, Quotes and Supply under their add-on
   // it waits for Inventory (it stays off until Inventory is connected).
   for (const key of ["invoices", "inventory"]) await untick(wizard, key);
   await expect(parts.locator('[data-part-addon="invoices"] [data-part="addon-state"]')).toHaveText(say("studio:appParts.groupWaiting"));
-  // Judged softly so that the rest is still judged: the group's line is worked out from its parts being left out, not from
-  // the tick, so Inventory unticked still reads "Ticked under Add-ons" over Supply (an engine fault, see the report).
-  await expect.soft(parts.locator('[data-part-addon="inventory"] [data-part="addon-state"]'), "Inventory's group says it is not ticked").toHaveText(say("studio:appParts.groupWaiting"));
   await expect(tick(wizard, "quotes")).toHaveAttribute("aria-checked", "false");
   await expect(tick(wizard, "quotes")).toBeDisabled();
   await expect(parts.locator('li[data-part="quotes"] [data-part="needs"]')).toHaveText(say("studio:appParts.installWaiting", { addOns: names["invoices"]! }));
@@ -112,7 +116,18 @@ test("the check step: a tick for each part, Quotes and Supply under their add-on
   expect(problems).toEqual([]);
 });
 
+// Engine fault: a group's line is worked out from its parts being left out, not from the add-on's tick, so Inventory unticked reads "Ticked under Add-ons" over Supply (apps/dashboard/src/studio/apps/AppPartsCard.tsx:357).
+test("the check step: Inventory unticked, its group says the parts below wait for it", async ({ as, stand }) => {
+  test.fail();
+  beforeInstall(stand);
+  const wizard = await (await as("owner")).newPage();
+  await openCheckStep(wizard);
+  await untick(wizard, "inventory");
+  await expect(wizard.getByTestId("install-parts").locator('[data-part-addon="inventory"] [data-part="addon-state"]')).toHaveText(say("studio:appParts.groupWaiting"), { timeout: 5000 });
+});
+
 test("installed without Invoices and Inventory: no quote anywhere; Supply waits for Inventory, and the owner is led to the app's page", async ({ as, api, stand }) => {
+  beforeInstall(stand);
   test.setTimeout(420_000);
   // The same check step, both add-ons unticked; with the sample, so that the sample's people can look.
   const wizard = await (await as("owner")).newPage();
@@ -188,10 +203,18 @@ test("installed without Invoices and Inventory: no quote anywhere; Supply waits 
     await expect(partsCard.locator(`li[data-part="${part}"]`)).toContainText(say("studio:appParts.needs"));
     if (part === "quotes") await expect(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`)).toContainText("Not set up yet.");
     else {
+      // Its add-on by name or by key: which, is the fault test's below.
       await expect(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`)).toContainText(/Off until inventory is connected, under Add-ons\./i);
-      // The add-on by its name, as the add-ons card names it (judged softly: the server gives its key when it is not attached).
-      await expect.soft(partsCard.locator(`li[data-part="${part}"] [data-part="waiting"]`), "the add-on is named, not keyed").toContainText("Off until Inventory is connected");
     }
   }
   await picture(own, "zw-wizard-app-page");
+});
+
+// Engine fault: an add-on's name is read only from installed add-ons, so one staged and not connected is named by its key (apps/server/src/routes/apps/index.ts:1682,1697).
+test("after the install, Supply's line on the Parts card names the Inventory add-on", async ({ as, stand }) => {
+  test.fail();
+  test.skip(stand.installedBy !== "wizard", "runs after the install of the test before it");
+  const own = await (await as("owner")).newPage();
+  await own.goto("/studio/apps/crm");
+  await expect(own.getByTestId("app-parts").locator('li[data-part="supply"] [data-part="waiting"]')).toContainText("Off until Inventory is connected", { timeout: 5000 });
 });

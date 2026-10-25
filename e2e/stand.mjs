@@ -304,6 +304,7 @@ export async function admitSamplePeople(tables) {
   await admitPeople(state, manifest, "", dsn);
   state.tables = tables;
   state.installed = true;
+  state.installedBy = "wizard";
   writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), { mode: 0o600 });
   return state;
 }

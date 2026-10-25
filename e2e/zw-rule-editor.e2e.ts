@@ -8,7 +8,11 @@
  *     row (Company → Account owner); the Urgent switch; a "Create record" step given a name, whose hint says how a later
  *     step reads it, and `{{steps.<name>.<column>}}` written in the step after it, kept by the server.
  *  2. A rule by the clock: every day at 08:00 for each deal, "once each time it starts to match" (once per record, and
- *     again when it matches anew); a "Send each person a summary" step with a section of the person's own deals.
+ *     again when it matches anew); a "Send each person a summary" step with a section of the person's own deals. A new
+ *     such rule cannot be saved today, so the fields are saved on a copy of the CRM's "A deal has gone quiet".
+ *
+ * Two engine faults are pinned by tests of their own, expected to fail until the engine is fixed: the New rule dialog
+ * names the summary step "Send email", and a new clock rule once per record cannot be saved from the editor.
  */
 import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
@@ -84,9 +88,6 @@ async function newRule(page: Page, name: string, trigger: string, table: RegExp 
     await modal.getByTestId("new-rule-table").getByRole("combobox").fill(table.source.slice(1, 5));
     await page.getByRole("option", { name: table }).first().click();
   }
-  // Each step offered under its own name ("Send each person a summary" is the summary step's, as the step picker has it).
-  const offered = await modal.getByTestId("new-rule-action").locator("option").evaluateAll((options) => options.map((option) => [(option as HTMLOptionElement).value, option.textContent?.trim() ?? ""]));
-  if (action === "digest") expect.soft(Object.fromEntries(offered)["digest"], "the New rule dialog names the summary step").toBe("Send each person a summary");
   await modal.getByTestId("new-rule-action").selectOption(action);
   const enable = modal.getByTestId("new-rule-enable");
   if ((await enable.getAttribute("aria-checked")) === "true") await enable.click();
@@ -183,13 +184,8 @@ test("the rule editor's new fields, on two paused rules of the spec's own over d
     await page.getByTestId("flow-node-n2").click();
     await addSection(inspector);
     await picture(page, "zw-rule-editor-clock");
-    // Saved from scratch: the server asks a scan "once per record" for a condition, and the editor has no place to write one.
-    const scratch = await trySave(page);
-    expect.soft(scratch.status, `a new clock rule, once each time a deal starts to match, saves from the editor: ${scratch.body}`).toBe(200);
-    if (scratch.status === 200) {
-      const clock = await ruleById(owner, clockId);
-      expect(clock.trigger).toMatchObject({ kind: "schedule", schedule: { kind: "daily", time: "08:00" }, forEach: { once: "per-spell" } });
-    }
+    // Not saved: a new rule by the clock, once per record, is refused by the server for want of a condition the editor has no
+    // place for (the fault test below). The draft is taken away, and the same fields are walked on a rule that has conditions.
     await owner.delete(`/api/v1/automations/${clockId}`, { headers: await csrf(owner) });
 
     // The same fields on a clock rule that has its conditions: a copy of the CRM's "A deal has gone quiet" (the shipped
@@ -239,8 +235,7 @@ test("the rule editor's new fields, on two paused rules of the spec's own over d
     await confirm.getByRole("textbox").fill(RECORD_RULE);
     await confirm.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(page.getByTestId(`rule-card-${recordId}`)).toHaveCount(0);
-    // The refused save above is the one request the console logs as failed.
-    expect(problems.filter((problem) => !/status of 422/.test(problem))).toEqual([]);
+    expect(problems).toEqual([]);
   } finally {
     const headers = await csrf(owner);
     if (copyId !== "") await owner.delete(`/api/v1/automations/${copyId}`, { headers });
@@ -251,4 +246,42 @@ test("the rule editor's new fields, on two paused rules of the spec's own over d
   }
   expect(await rulesNamed(owner, `Spec: a deal changed ${STAMP}`)).toEqual([]);
   expect(await rulesNamed(owner, `Spec: each morning ${STAMP}`)).toEqual([]);
+});
+
+// Engine fault: the New rule dialog has no label for the summary step, so it offers it as "Send email" (apps/dashboard/src/automations/rules/NewRuleModal.tsx:90-97).
+test("the New rule dialog offers the summary step by its name", async ({ as }) => {
+  test.fail();
+  const page = await (await as("owner")).newPage();
+  await page.goto("/automations");
+  await page.getByTestId("new-rule").click();
+  const offered = await page.getByTestId("new-rule-modal").getByTestId("new-rule-action").locator("option").evaluateAll((options) => options.map((option) => [(option as HTMLOptionElement).value, option.textContent?.trim() ?? ""]));
+  expect(Object.fromEntries(offered)["digest"]).toBe("Send each person a summary");
+});
+
+// Engine fault: a scan once per record needs a condition (apps/server/src/automations/validate.ts:641) and the trigger inspector has none to write (apps/dashboard/src/automations/flow/inspector/TriggerSettings.tsx:375).
+test("a new rule by the clock, once each time a deal starts to match, saves from the editor", async ({ as, api }) => {
+  test.fail();
+  test.setTimeout(120_000);
+  const owner = await api("owner");
+  const page = await (await as("owner")).newPage();
+  let clockId = "";
+  try {
+    await page.goto("/automations");
+    clockId = await newRule(page, `Spec: each morning ${STAMP} b`, "schedule", null, "digest");
+    const inspector = stepInspector(page);
+    await page.getByTestId("flow-node-n1").click();
+    await inspector.getByTestId("trig-schedule-kind").selectOption("daily");
+    await inspector.getByTestId("trig-time").fill("08:00");
+    await inspector.getByRole("combobox", { name: "For each record of" }).fill("Deal");
+    await page.getByRole("option", { name: TABLE.deals }).first().click();
+    await inspector.getByTestId("trig-per-spell").click();
+    await closeInspector(page);
+    await page.getByTestId("flow-node-n2").click();
+    await addSection(inspector);
+    const saved = await trySave(page);
+    expect(saved.status, saved.body).toBe(200);
+    expect((await ruleById(owner, clockId)).trigger).toMatchObject({ kind: "schedule", schedule: { kind: "daily", time: "08:00" }, forEach: { once: "per-spell" } });
+  } finally {
+    if (clockId !== "") await owner.delete(`/api/v1/automations/${clockId}`, { headers: await csrf(owner) });
+  }
 });

@@ -34,6 +34,8 @@ export interface StandState {
   samplePerson?: string | null;
   /** False on a stand started with `CRM_STAND_INSTALL=0` until a spec installs the app and calls `admitSamplePeople`. */
   installed?: boolean;
+  /** "wizard" once a spec installed the app through the console on such a stand and called `admitSamplePeople`. */
+  installedBy?: "wizard";
   /** With `CRM_STAND_MAIL=1`: the catcher's process and where its kept mails are read. */
   mail?: { pid: number; smtpPort: number; url: string };
   ready?: boolean;
