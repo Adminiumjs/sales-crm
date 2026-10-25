@@ -206,6 +206,10 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.make('ada', 'sign_offs', { job_id: at.blueJob, ...CHECKS, signer_name: 'Office' })).statusCode).toBe(422);
       // Red's visit is not his to sign off; a job he names himself is not his to write.
       expect((await s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: at.redVisit, ...CHECKS, signer_name: 'X' } })).statusCode).toBe(409);
+      // Somebody must be named as having signed: a blank name is refused by the server, not only by the phone's form.
+      const blank = await s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: at.blueVisit, ...CHECKS, signer_name: '   ' } });
+      expect(blank.statusCode, blank.body).toBe(422);
+      expect(JSON.stringify(blank.json())).toContain('signer_name');
       expect((await s.make('yusuf', 'sign_offs', { job_id: at.redJob, ...CHECKS, signer_name: 'X' })).statusCode).toBe(403);
       // Put right, the same create goes through, once: sent again with the same key, it answers the same row.
       expect(said(await act('ada', 'snags', at.blueSnag, 'put-right', 'open', { put_right_note: 'Two more metres fitted' }))).toBe('ok');
@@ -367,6 +371,10 @@ for (const [dialect, reachable] of LEGS) {
       // Put right: the line is asked by the move; the phone sends the photo with it.
       expect((await s.change('yusuf', 'snags', snag, { state: 'put-right' })).statusCode).toBe(409);
       const fixed = await upload('yusuf', 'snags', 'put_right_photo');
+      // The note reaches the customer's e-mail 17: plain words, no address, as all staff text in a customer's mail.
+      const linked = await s.send('yusuf', 'PATCH', url('snags', `/${String(snag)}`), { values: { state: 'put-right', put_right_note: 'Pay the rest at https://pay.example.com', put_right_photo: fixed }, seen: { state: 'open' } });
+      expect(linked.statusCode, linked.body).toBe(422);
+      expect(JSON.stringify(linked.json())).toContain('put_right_note');
       expect(said(await s.send('yusuf', 'PATCH', url('snags', `/${String(snag)}`), { values: { state: 'put-right', put_right_note: 'Panel cleaned', put_right_photo: fixed }, seen: { state: 'open' } }))).toBe('ok');
       const row = (await s.rows(`select state, put_right_note, put_right_photo, put_right_on from crm_snags where id = ${String(snag)}`))[0]!;
       expect([row['state'], row['put_right_note'], row['put_right_photo'], row['put_right_on'] !== null]).toEqual(['put-right', 'Panel cleaned', fixed, true]);

@@ -863,6 +863,14 @@ describe("a discount is approved by the sales manager or the CRM admin, and by n
     }
   });
 
+  it("leaves a quote's threshold to the settings: no role writes it, the sales manager and CRM admin included", () => {
+    // Set to 100 on her own deal's quote, a manager would need no approval at all, round the guard on deciding her own.
+    for (const key of ROLES) {
+      const limit = limitOf(key, "quotes");
+      for (const list of ["writable", "creatable"] as const) expect((limit?.[list] ?? []) as string[], `${key} ${list}`).not.toContain("threshold_pct");
+    }
+  });
+
   it("holds a quote they make to the same: never approved from the start, never sent from the start", () => {
     for (const key of ROLES.filter((k) => k !== "admin" && k !== "sales-manager" && holds(k, "quotes", "create"))) {
       const limit = limitOf(key, "quotes");

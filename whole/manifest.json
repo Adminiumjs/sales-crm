@@ -15106,6 +15106,11 @@
               "ar-EG": "اسم الموقِّع",
               "zh-CN": "签字人姓名",
               "zh-TW": "簽名人姓名"
+            },
+            "rules": {
+              "validation": {
+                "minLength": 1
+              }
             }
           },
           {
@@ -16197,6 +16202,12 @@
               "ar-EG": "ملاحظة المعالجة",
               "zh-CN": "整改说明",
               "zh-TW": "改善說明"
+            },
+            "rules": {
+              "plainText": {
+                "digits": 12,
+                "max": 400
+              }
             }
           },
           {
@@ -22714,7 +22725,6 @@
             "version",
             "family_no",
             "replaces_id",
-            "threshold_pct",
             "approval",
             "ask_reason",
             "decision_note",
@@ -22732,7 +22742,6 @@
             "version",
             "family_no",
             "replaces_id",
-            "threshold_pct",
             "approval",
             "ask_reason",
             "decision_note",
@@ -23315,7 +23324,6 @@
             "version",
             "family_no",
             "replaces_id",
-            "threshold_pct",
             "approval",
             "ask_reason",
             "decision_note",
@@ -23333,7 +23341,6 @@
             "version",
             "family_no",
             "replaces_id",
-            "threshold_pct",
             "approval",
             "ask_reason",
             "decision_note",

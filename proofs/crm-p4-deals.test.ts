@@ -519,6 +519,14 @@ for (const [dialect, reachable] of LEGS) {
       expect(reason(await patch('ivy', 'quotes', onHers, { approval: 'approved' }))).toBe('change-not-by');
       expect(reason(await patch('tessa', 'quotes', onHers, { approval: 'approved' }))).toBe('change-not-by');
       expect(said(await patch('owner', 'quotes', onHers, { approval: 'approved' }))).toBe('ok');
+      // Nor is the bar moved for one quote so that it needs no approval at all: a quote's threshold is the settings',
+      // taken when it is made, and nobody writes it afterwards (create, PATCH or bulk edit).
+      for (const person of ['ivy', 'tessa']) {
+        expect(said(await post(person, 'quotes', { deal_id: herDeal, threshold_pct: 100 }, lines)), person).toMatch(/^403/);
+        expect(said(await patch(person, 'quotes', onHers, { threshold_pct: 100 })), person).toMatch(/^403/);
+        expect(said(await bulk(person, 'quotes', [onHers], { threshold_pct: 100 })), person).toBe('403 COLUMN_FORBIDDEN');
+      }
+      expect(Number((await one(`SELECT threshold_pct FROM ${s.real('quotes')} WHERE id = ${String(onHers)}`))['threshold_pct'])).not.toBe(100);
 
       // Decided only from asked: a quote nobody asked about is not approved, by anybody.
       const unasked = await quoteOf(theirs);
