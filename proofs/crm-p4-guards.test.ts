@@ -34,7 +34,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.35' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.36' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const SEEDS = process.env.CRM_SEEDS ?? `${APP}/whole/seeds`;
