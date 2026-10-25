@@ -251,10 +251,10 @@ for (const [dialect, reachable] of LEGS) {
       const id = made(await sign(typed, 'CrewProofCopyToKey000000000000009'));
       expect((await one('yusuf', 'sign_offs', id)).json()).toMatchObject({ data: { copy_sent_to: typed, job_id: job } });
       await jobs();
-      const box = await s.rows(`select kind, ${dialect === 'mysql' ? '`to`' : '"to"'} as address, status, error from crm_outbox where sign_off_id = ${String(id)} order by id`);
-      // Both copies: the job's contact (a reserved `.example` address here, so it is skipped when it would go) and the typed one.
+      const box = await s.rows(`select kind, ${dialect === 'mysql' ? '`to`' : '"to"'} as address from crm_outbox where sign_off_id = ${String(id)} order by id`);
+      // Both copies are made: the job's contact's and the typed address's (this server sends no mail; crm-jobs proves the sending).
       expect(box.map((row) => row['kind'])).toEqual(['signed-copy', 'signed-copy-to']);
-      expect([box[1]!['address'], box[1]!['status']], String(box[1]!['error'])).toEqual([typed, expect.stringMatching(/^(sent|queued)$/)]);
+      expect(box[1]!['address']).toBe(typed);
     });
 
     it("lets him name only his own fresh upload: never a crew-mate's, never one a record holds; a held file cannot be thrown away", async () => {
