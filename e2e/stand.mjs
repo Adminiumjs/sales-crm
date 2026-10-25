@@ -31,7 +31,10 @@
  * names for aftercare calls; plan 68 K1, `e2e/k1-sample-person.e2e.ts`),
  * CRM_STAND_MAIL=1 to keep the mail it sends (`e2e/mail-catcher.mjs`: SMTP on
  * CRM_STAND_MAIL_PORT, else the stand's port + 100, the mails one port above;
- * `mailbox()` reads them).
+ * `mailbox()` reads them),
+ * CRM_STAND_INSTALL=0 to stage the add-ons and the app and install NOTHING (for
+ * the install wizard's specs: only the owner signs in until the spec installs
+ * the app with its sample and calls `admitSamplePeople()`).
  * Adminium never mails a `.example` or `.test` address, so in mail mode the
  * people sign in as `<key>@crm.stand` and the sample's addresses end `.stand`:
  * a spec that reads an address on screen runs on a stand without mail.
@@ -247,6 +250,64 @@ export async function linkCodeOf(quoteId) {
   }
 }
 
+/**
+ * The sample's people, made able to sign in: ordinary staff with a password, each under an address the specs know (with
+ * mail kept, a mailable one). `keptSample` names the one left as the product leaves them all, or "".
+ */
+async function admitPeople(state, manifest, keptSample, dsn) {
+  const engineRequire = createRequire(join(state.adminiumRepo, "apps", "server", "package.json"));
+  const { hashPassword } = await import(pathToFileURL(join(state.adminiumRepo, "apps", "server", "dist", "auth", "passwords.js")).href);
+  const hash = await hashPassword(STAFF_PASSWORD);
+  const meta = new (engineRequire("better-sqlite3"))(join(state.dataDir, "meta.db"));
+  meta.pragma("busy_timeout = 10000");
+  const columns = meta.prepare("PRAGMA table_info(adminium_users)").all().map((column) => column.name);
+  const col = (camel) => (columns.includes(camel) ? camel : camel.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`));
+  const people = {};
+  for (const person of manifest.sampleData.people) {
+    const row = meta.prepare("SELECT id, status FROM adminium_users WHERE name = ?").get(person.name);
+    if (!row) throw new Error(`the sample made no ${person.name}`);
+    if (person.key === keptSample) {
+      people[person.key] = { id: row.id, email: "", name: person.name, role: person.role, sample: true };
+      continue;
+    }
+    meta.prepare(`UPDATE adminium_users SET status = 'active', ${col("passwordHash")} = ?, email = ? WHERE id = ?`).run(hash, `${person.key}@crm.test`, row.id);
+    people[person.key] = { id: row.id, email: `${person.key}@crm.test`, name: person.name, role: person.role };
+  }
+  // With mail kept, the people's addresses are mailable too (`.test` is never mailed).
+  if (state.mail) {
+    for (const person of Object.values(people)) {
+      if (person.sample === true) continue;
+      person.email = person.email.replace(/@crm\.test$/, "@crm.stand");
+      meta.prepare("UPDATE adminium_users SET email = ? WHERE id = ?").run(person.email, person.id);
+    }
+  }
+  meta.close();
+  state.people = people;
+  if (state.mail) log(`mail mode: the people are @crm.stand; ${String(await moveAddresses(state.engine, dsn, engineRequire))} sample addresses moved from .example to .stand`);
+}
+
+/**
+ * ON A STAND STARTED WITH `CRM_STAND_INSTALL=0`, once a spec has installed the app and added its sample through the
+ * console: the sample's people are made able to sign in, as `standUp` does on any other stand (the same thing the product
+ * does not do), and the state learns the install's tables. `tables` is the connection's schema, name to id.
+ */
+export async function admitSamplePeople(tables) {
+  const state = readState();
+  if (state === null || state.installed !== false) throw new Error("only a stand started with CRM_STAND_INSTALL=0 is admitted to after the fact");
+  const { stageFiles } = await import("../scripts/stage-manifest.mjs");
+  const manifest = stageFiles(state.stage).manifest;
+  const dsn = state.engine === "sqlite" ? `sqlite:${join(state.work, "source.db")}` : (() => {
+    const url = new URL(state.drop.base);
+    url.pathname = `/${state.drop.name}`;
+    return url.toString();
+  })();
+  await admitPeople(state, manifest, "", dsn);
+  state.tables = tables;
+  state.installed = true;
+  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), { mode: 0o600 });
+  return state;
+}
+
 export async function standDown() {
   const state = readState();
   if (state === null) return;
@@ -454,6 +515,15 @@ export async function standUp() {
     walk(customer, "customer/", files);
     const bytes = tarball(files);
     await call("the app", "POST", `/api/v1/apps/upload?expectedSha512=${encodeURIComponent(integrityOf(bytes))}`, bytes, [200, 201], { "content-type": "application/octet-stream" });
+    // A stand for the install wizard (`CRM_STAND_INSTALL=0`): the add-ons and the app are staged, nothing is installed. There is
+    // no sample yet, so no sample people: only the owner signs in. A spec that installs (and adds the sample) through the wizard
+    // calls `admitSamplePeople()` after, and the sample's people sign in as on any stand.
+    if (process.env.CRM_STAND_INSTALL === "0") {
+      Object.assign(state, { installed: false, people: {}, tables: {}, sampleRows: 0, skippedRules: [], samplePerson: null, stage, parts: manifest.modules.map((part) => part.id), ready: true });
+      save();
+      log(`ready, NOT installed: the app ${manifest.key} ${manifest.version} and add-ons ${staged.map((one) => `${one.key} ${one.version}`).join(", ")} are staged`);
+      return state;
+    }
     const parts = Object.fromEntries(manifest.modules.filter((part) => part.default !== "always").map((part) => [part.id, true]));
     const installed = await call("the install", "POST", "/api/v1/apps/install", { key: manifest.key, version: manifest.version, connectionId: state.connectionId, addOns: staged, modules: parts, maps: true });
     state.skippedRules = installed.rules?.skipped ?? [];
@@ -475,46 +545,20 @@ export async function standUp() {
     }
 
     // The sample's people: ordinary staff with a password, each under an address the specs know.
-    const { hashPassword } = await import(pathToFileURL(join(adminiumRepo, "apps", "server", "dist", "auth", "passwords.js")).href);
-    const hash = await hashPassword(STAFF_PASSWORD);
-    const meta = new (engineRequire("better-sqlite3"))(join(dataDir, "meta.db"));
-    meta.pragma("busy_timeout = 10000");
-    const columns = meta.prepare("PRAGMA table_info(adminium_users)").all().map((column) => column.name);
-    const col = (camel) => (columns.includes(camel) ? camel : camel.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`));
-    const people = {};
     // One sample person may be left as the product leaves every one (K1): not active, no password, nobody signs in as them.
     const keptSample = process.env.CRM_STAND_SAMPLE_PERSON ?? "";
     if (keptSample !== "" && !manifest.sampleData.people.some((person) => person.key === keptSample)) throw new Error(`CRM_STAND_SAMPLE_PERSON names no sample person: ${keptSample}`);
     state.samplePerson = keptSample === "" ? null : keptSample;
-    for (const person of manifest.sampleData.people) {
-      const row = meta.prepare("SELECT id, status FROM adminium_users WHERE name = ?").get(person.name);
-      if (!row) throw new Error(`the sample made no ${person.name}`);
-      if (person.key === keptSample) {
-        people[person.key] = { id: row.id, email: "", name: person.name, role: person.role, sample: true };
-        continue;
-      }
-      meta.prepare(`UPDATE adminium_users SET status = 'active', ${col("passwordHash")} = ?, email = ? WHERE id = ?`).run(hash, `${person.key}@crm.test`, row.id);
-      people[person.key] = { id: row.id, email: `${person.key}@crm.test`, name: person.name, role: person.role };
-    }
-    // With mail kept, the people's addresses are mailable too (`.test` is never mailed).
-    if (state.mail) {
-      for (const person of Object.values(people)) {
-        if (person.sample === true) continue;
-        person.email = person.email.replace(/@crm\.test$/, "@crm.stand");
-        meta.prepare("UPDATE adminium_users SET email = ? WHERE id = ?").run(person.email, person.id);
-      }
-    }
-    meta.close();
-    state.people = people;
-    if (state.mail) log(`mail mode: the people are @crm.stand; ${String(await moveAddresses(engine, source.dsn, engineRequire))} sample addresses moved from .example to .stand`);
+    await admitPeople(state, manifest, keptSample, source.dsn);
 
     const schema = await call("the schema", "GET", `/api/v1/connections/${state.connectionId}/schema`);
     state.tables = Object.fromEntries((schema.model ?? data(schema).model).tables.map((table) => [table.name, table.id]));
     state.stage = stage;
     state.parts = manifest.modules.map((part) => part.id);
+    state.installed = true;
     state.ready = true;
     save();
-    log(`ready: ${String(Object.keys(people).length)} people, ${String(state.sampleRows)} sample rows, add-ons ${staged.map((one) => `${one.key} ${one.version}`).join(", ")}`);
+    log(`ready: ${String(Object.keys(state.people).length)} people, ${String(state.sampleRows)} sample rows, add-ons ${staged.map((one) => `${one.key} ${one.version}`).join(", ")}`);
     return state;
   } catch (error) {
     save();
