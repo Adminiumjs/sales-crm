@@ -98,6 +98,20 @@ async function readThreads(session: StaffSession, me: string): Promise<Listed[]>
 const readMessages = (session: StaffSession, thread: number): Promise<Message[]> =>
   session.list<Message>("messages", { select: MESSAGE_COLUMNS, where: { column: "thread_id", op: "eq", value: thread }, order: ["at.desc", "id.desc"], limit: 200 }).then((page) => [...page.rows].reverse());
 
+
+/**
+ * One retry key per save the person means: pressed again after an answer that never came, the same key (the server
+ * answers the row the first one made); changed first (another colleague picked), a new key, so the server never
+ * replays the old save under the new words.
+ */
+function useKeyFor(): (what: string) => string {
+  const key = useRef<{ key: string; for: string | null }>({ key: newClientKey(), for: null });
+  return (what) => {
+    if (key.current.for !== null && key.current.for !== what) key.current = { key: newClientKey(), for: what };
+    else key.current.for = what;
+    return key.current.key;
+  };
+}
 function titleOf(listed: Listed, me: string, names: Names, group: string): string {
   if (listed.thread.kind === "group") return listed.thread.title ?? group;
   const other = listed.members.find((member) => member.user_id !== me);
@@ -423,11 +437,11 @@ function AddColleague({ thread, title, people, names, onClose, onAdded }: { thre
   const [picked, setPicked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const key = useRef(newClientKey());
+  const keyFor = useKeyFor();
   const add = async (): Promise<void> => {
     if (picked === null) return;
     setBusy(true);
-    const saved = await session.create("thread_members", { thread_id: thread, user_id: picked }, key.current);
+    const saved = await session.create("thread_members", { thread_id: thread, user_id: picked }, keyFor(picked));
     setBusy(false);
     if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
     if (saved.state === "unknown") return setError(t("ui.unknown"));
@@ -484,7 +498,7 @@ function NewConversation({ me, everyone, names, threads, onClose, onOpen }: { me
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const key = useRef(newClientKey());
+  const keyFor = useKeyFor();
   const people = everyone.filter((person) => person.id !== me);
   const group = picked.length > 1;
   // Two people already talking: open what they have.
@@ -500,7 +514,8 @@ function NewConversation({ me, everyone, names, threads, onClose, onOpen }: { me
       setBusy(false);
       return setError(t("ui.unknown"));
     }
-    const saved = await session.create<Thread>("threads", { kind: group ? "group" : "direct", title: group && title.trim() !== "" ? title.trim() : null }, key.current, { children: { [link]: members } });
+    const values = { kind: group ? "group" : "direct", title: group && title.trim() !== "" ? title.trim() : null };
+    const saved = await session.create<Thread>("threads", values, keyFor(JSON.stringify([values, [...picked].sort()])), { children: { [link]: members } });
     setBusy(false);
     if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
     if (saved.state === "unknown") return setError(t("ui.unknown"));
