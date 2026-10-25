@@ -25,8 +25,8 @@ export function stand(): StandState {
   return state;
 }
 
-/** Wait until a sign-in may be made, and note it. */
-async function takeTurn(): Promise<void> {
+/** Wait until a sign-in may be made, and note it. Exported for a spec that signs in through a page of its own (another address of the stand). */
+export async function takeTurn(): Promise<void> {
   for (;;) {
     const now = Date.now();
     const recent = (existsSync(SIGN_INS) ? (JSON.parse(readFileSync(SIGN_INS, "utf8")) as number[]) : []).filter((at) => now - at < 61_000);
