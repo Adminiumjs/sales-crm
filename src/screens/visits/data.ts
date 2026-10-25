@@ -21,6 +21,8 @@ export interface Visit extends Record<string, unknown> {
   deal_id: number;
   contact_id: number | null;
   rep_id: string;
+  /** The deal's owner, copied by the server: a visit on a deal the reader only helps on is that owner's to write up. */
+  deal_owner_id?: string | null;
   starts_at: string;
   minutes: number;
   purpose: string;
@@ -36,7 +38,7 @@ export interface Visit extends Record<string, unknown> {
 }
 
 export const VISIT_LOOKUPS = ["deal:deal_id.name", "company:deal_id.company_id.name", "town:deal_id.company_id.town", "amount:deal_id.amount", "contact:contact_id.name", "contact_role:contact_id.job_title"];
-export const VISIT_COLUMNS = ["id", "deal_id", "contact_id", "rep_id", "starts_at", "minutes", "purpose", "state", "note", "written"];
+export const VISIT_COLUMNS = ["id", "deal_id", "contact_id", "rep_id", "deal_owner_id", "starts_at", "minutes", "purpose", "state", "note", "written"];
 
 /** The lengths a visit is booked for, in minutes, as the design offers them. */
 export const LENGTHS = [30, 45, 60, 75, 90, 120, 180] as const;

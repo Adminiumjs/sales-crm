@@ -13,6 +13,7 @@ import { useCallback, useMemo } from "react";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { formatters } from "../../lib/format.ts";
 import { DealLink } from "../../selling/DealLink.tsx";
+import { helpsOn, lentBy } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import type { StaffSession } from "../../staffSession.ts";
@@ -28,12 +29,16 @@ export interface LateYes {
   decidedAt: string | null;
 }
 
-/** The accepted quotes, not yet looked at, of the lost deals the reader reaches; empty for somebody who reads no quote. */
-export async function readLateYes(session: StaffSession): Promise<LateYes[]> {
+/**
+ * The accepted quotes, not yet looked at, of the lost deals the reader reaches; empty for somebody who reads no quote.
+ * Not a deal she only helps on (ruling 1d): whether to reopen it is its owner's call, and the owner is told.
+ */
+export async function readLateYes(session: StaffSession, today: string): Promise<LateYes[]> {
   if (!session.part("quotes") || !session.can("quotes", "read") || !session.can("deals", "read")) return [];
-  const lost = await session.list<{ id: number; name: string }>("deals", { select: ["id", "name"], where: { column: "state", op: "eq", value: "lost" }, order: ["id"], limit: 200 });
-  if (lost.rows.length === 0) return [];
-  const names = new Map(lost.rows.map((row) => [Number(row.id), row.name]));
+  const [found, lent] = await Promise.all([session.list<{ id: number; name: string; owner_id: string | null }>("deals", { select: ["id", "name", "owner_id"], where: { column: "state", op: "eq", value: "lost" }, order: ["id"], limit: 200 }), lentBy(session, today)]);
+  const lost = found.rows.filter((row) => !helpsOn(session, row.owner_id, lent));
+  if (lost.length === 0) return [];
+  const names = new Map(lost.map((row) => [Number(row.id), row.name]));
   const quotes = await session.list<{ id: number; number: string; deal_id: number; accepted_name: string | null; decided_at: string | null }>("quotes", {
     select: ["id", "number", "deal_id", "accepted_name", "decided_at"],
     where: { and: [{ column: "status", op: "eq", value: "accepted" }, { column: "yes_seen_at", op: "is_null" }, { column: "deal_id", op: "in", value: [...names.keys()] }] },
@@ -50,7 +55,8 @@ export function YesOnLost() {
   const toasts = useToasts();
   const config = session.config;
   const f = useMemo(() => formatters({ locale, currency: config.currency, timeZone: config.timezone ?? config.serverTimezone }), [locale, config]);
-  const { load, reload } = useLoad(() => readLateYes(session), [session]);
+  const today = f.dayKey(session.now());
+  const { load, reload } = useLoad(() => readLateYes(session, today), [session, today]);
   const again = useCoalesced(useCallback(() => reload(), [reload]));
   // Only somebody who reads both listens: a live stream of a table one may not read is refused.
   const reads = session.part("quotes") && session.can("quotes", "read") && session.can("deals", "read");

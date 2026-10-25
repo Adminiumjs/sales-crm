@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n, useT } from "../../i18n/index.tsx";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
 import { scopeOf } from "../../selling/figures.ts";
+import { helpsOn, lentBy } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { newClientKey, type StaffSession } from "../../staffSession.ts";
@@ -52,14 +53,17 @@ interface Person {
   name: string;
 }
 
-async function readChoices(session: StaffSession, picksRep: boolean): Promise<{ deals: DealChoice[]; reps: Person[] }> {
-  const [deals, reps, people] = await Promise.all([
+/** The open deals a visit may be booked for: not one the reader only helps on (ruling 1d), whose owner books its visits. */
+async function readChoices(session: StaffSession, picksRep: boolean, today: string): Promise<{ deals: DealChoice[]; reps: Person[]; helping: number }> {
+  const [deals, reps, people, lent] = await Promise.all([
     session.list<DealChoice>("deals", { select: ["id", "name", "company_id", "contact_id", "owner_id"], where: { column: "state", op: "eq", value: "open" }, lookup: ["company:company_id.name"], order: ["name"], limit: 200 }),
     picksRep && session.can("reps", "read") ? session.list<{ user_id: string }>("reps", { select: ["user_id"], limit: 200 }).then((page) => page.rows.map((row) => row.user_id)) : Promise.resolve([] as string[]),
     picksRep ? session.people(undefined, 200).catch(() => []) : Promise.resolve([]),
+    lentBy(session, today),
   ]);
   const names = new Map(people.map((person) => [person.id, person.name]));
-  return { deals: deals.rows, reps: reps.filter((id) => names.has(id)).map((id) => ({ id, name: names.get(id)! })) };
+  const worked = deals.rows.filter((one) => !helpsOn(session, one.owner_id, lent));
+  return { deals: worked, reps: reps.filter((id) => names.has(id)).map((id) => ({ id, name: names.get(id)! })), helping: deals.rows.length - worked.length };
 }
 
 export function BookingDialog({ booking, names, onClose, onDone }: { booking: Booking; names: Record<string, string>; onClose: () => void; onDone: () => void }) {
@@ -94,11 +98,17 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
   // One key for this booking, for as long as the dialog is open.
   const key = useRef(newClientKey());
 
-  const { load: choices } = useLoad(() => (isNew ? readChoices(session, picksRep) : Promise.resolve({ deals: [] as DealChoice[], reps: [] as Person[] })), [session, isNew, picksRep]);
+  const today = f.dayKey(now);
+  const { load: choices } = useLoad(() => (isNew ? readChoices(session, picksRep, today) : Promise.resolve({ deals: [] as DealChoice[], reps: [] as Person[], helping: 0 })), [session, isNew, picksRep, today]);
   const deals = choices.state === "ready" ? choices.data.deals : [];
   const reps = choices.state === "ready" ? choices.data.reps : [];
   const deal = deals.find((one) => one.id === dealId) ?? null;
   const companyId = deal?.company_id ?? null;
+
+  // A deal asked for by the address that is not offered (one she only helps on): nothing is picked for her.
+  useEffect(() => {
+    if (isNew && choices.state === "ready" && dealId !== null && !deals.some((one) => one.id === dealId)) setDealId(null);
+  }, [isNew, choices.state, deals, dealId]);
 
   // The first rep is offered to somebody who is not one herself.
   useEffect(() => {
@@ -281,6 +291,11 @@ export function BookingDialog({ booking, names, onClose, onDone }: { booking: Bo
                     </option>
                   ))}
                 </select>
+                {choices.state === "ready" && choices.data.helping > 0 && (
+                  <p className="crm-room-quiet" data-testid="bk-helping">
+                    {t("help.booking", undefined, choices.data.helping)}
+                  </p>
+                )}
                 <div className="crm-field-pair">
                   <div>
                     <label className="crm-label" htmlFor="crm-bk-contact">

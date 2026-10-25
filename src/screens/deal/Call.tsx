@@ -23,6 +23,7 @@ import { useI18n, useT } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { appName } from "../../i18n/ambient.ts";
 import { addDays, formatters, noonOf } from "../../lib/format.ts";
+import { useHelping } from "../../selling/helping.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { askingOf } from "../appsettings/data.ts";
@@ -31,6 +32,7 @@ import { newClientKey } from "../../staffSession.ts";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName, initials } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
+import { readNames } from "../quotes/data.ts";
 import { callText, chipsOf, logCall, MARK_ICON, MARKS, MAX_NOTES, pickOut, readCall, withLine, wordCount, type CallData, type Mark } from "./call.ts";
 import { num } from "./data.ts";
 import { NoDeal } from "./Room.tsx";
@@ -59,6 +61,10 @@ export function Call({ id }: { id: string }) {
     }, [session, call.reload]),
   );
   useLive(["deals", "activities", "follow_ups"].filter((table) => session.can(table, "read")), again);
+  // A rep helping on a colleague's deal logs nothing on it: its owner does (ruling 1d). Null while that is read.
+  const ownerId = call.load.state === "ready" && call.load.data !== null && call.load.data.deal.id === key ? call.load.data.deal.owner_id : undefined;
+  const helping = useHelping(ownerId, today);
+  const owner = useLoad(() => (helping === true && typeof ownerId === "string" ? readNames(session, [ownerId]).then((names) => names[ownerId] ?? "") : Promise.resolve("")), [session, helping, ownerId]);
 
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -94,7 +100,7 @@ export function Call({ id }: { id: string }) {
   function body(data: CallData) {
     const { deal } = data;
     const open = deal.state === "open";
-    const canLog = open && session.can("activities", "create") && me !== null;
+    const canLog = open && session.can("activities", "create") && me !== null && helping === false;
     const canStep = session.can("follow_ups", "create");
     const main = data.people.find((one) => one.id === deal.contact_id) ?? null;
     const mainName = main?.name ?? deal.contact;
@@ -272,7 +278,9 @@ export function Call({ id }: { id: string }) {
             ) : (
               <div className="crm-call-notes crm-call-readonly" data-testid="call-readonly">
                 <Icon name="lock" size={16} />
-                <p>{t(open ? "call.readOnly" : "room.closed.readOnly")}</p>
+                <p data-testid={open && helping === true ? "call-helping" : undefined}>
+                  {open && helping === true ? t("help.call", { owner: firstName(owner.load.state === "ready" && owner.load.data !== "" ? owner.load.data : t("closed.someone")) }) : t(open ? "call.readOnly" : "room.closed.readOnly")}
+                </p>
               </div>
             )}
 

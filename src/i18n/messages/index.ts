@@ -44,6 +44,7 @@ import { scorecard } from "../strings/scorecard.ts";
 import { dealrules } from "../strings/dealrules.ts";
 import { guards } from "../strings/guards.ts";
 import { signedcopy } from "../strings/signedcopy.ts";
+import { helping } from "../strings/helping.ts";
 import { SURFACE_SIDE } from "../../surface.ts";
 
 /**
@@ -92,6 +93,7 @@ const AREAS = [
   dealrules satisfies Area<(typeof dealrules)["en-US"]>,
   guards satisfies Area<(typeof guards)["en-US"]>,
   signedcopy satisfies Area<(typeof signedcopy)["en-US"]>,
+  helping satisfies Area<(typeof helping)["en-US"]>,
 ] as const;
 
 /**
@@ -139,4 +141,5 @@ export type MessageKey =
   | keyof (typeof scorecard)["en-US"]
   | keyof (typeof dealrules)["en-US"]
   | keyof (typeof guards)["en-US"]
-  | keyof (typeof signedcopy)["en-US"];
+  | keyof (typeof signedcopy)["en-US"]
+  | keyof (typeof helping)["en-US"];
