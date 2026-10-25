@@ -11,9 +11,11 @@
  * right, or the deal is closed). A rep HELPING on a colleague's deal reads it
  * all and comments, and changes nothing (ruling 1d, `selling/helping.ts`):
  * the page draws her no control that changes the deal, logs on it or makes a
- * quote, and says plainly that the owner makes the changes. A change of stage names the stage it was seen
- * in, so a deal a colleague moved meanwhile is not moved again from here: the
- * server refuses, the page says so and reads the deal back.
+ * quote, and says plainly that the owner makes the changes.
+ *
+ * A change of stage names the stage it was seen in, so a deal a colleague
+ * moved meanwhile is not moved again from here: the server refuses, the page
+ * says so and reads the deal back.
  *
  * WHO ADDS UP: nobody here. The amount, the weighted value and the odds are
  * the deal's own columns, kept by the server; the open threads are its count.
