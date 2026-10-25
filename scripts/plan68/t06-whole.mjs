@@ -140,8 +140,10 @@ for (const key of ["sales-manager", "admin"]) {
     if (Object.keys(limit).length === 0) delete r.limits.activities;
   }
 }
+// A helper on the deal changes none of them (`notThrough`, Adminium 0.3.36): still "the ones I wrote", and fewer.
+const withoutListing = (reach) => (reach === undefined || Array.isArray(reach) ? reach : Object.fromEntries(Object.entries(reach).filter(([k]) => k !== "notThrough")));
 for (const key of ["rep", "account-manager"]) {
-  if (holds(key, "activities", "update") && !same(role(key).limits?.activities?.rows?.update, { reach: "own", by: "author_id" })) fail(`${key} changes call notes it did not write`);
+  if (holds(key, "activities", "update") && !same(withoutListing(role(key).limits?.activities?.rows?.update), { reach: "own", by: "author_id" })) fail(`${key} changes call notes it did not write`);
 }
 
 if (!same(table("comments").belongs, [{ via: "deal_id" }])) fail("comments are no longer read through their deal");
