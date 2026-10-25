@@ -41,7 +41,7 @@ describe("the app's rows for Inventory", () => {
 
   it("hold six suppliers, the depot, ten stock lines, and seventeen needs of the app's own", () => {
     expect(Object.fromEntries(file.tables.map((table) => [table.ref, table.rows.length]))).toEqual({
-      suppliers: 6, places: 1, items: 10, item_suppliers: 9, purchase_orders: 133, receipts: 130, receipt_lines: 7, po_lines: 4, deal_stock_needs: 17,
+      suppliers: 6, places: 1, items: 10, item_suppliers: 9, purchase_orders: 49, receipts: 46, receipt_lines: 7, po_lines: 4, deal_stock_needs: 17,
     });
     expect(file.tables.filter((table) => table.own === true).map((table) => table.ref)).toEqual(["deal_stock_needs"]);
     // The app's own table links into Inventory by a column the manifest marks so.
@@ -61,10 +61,10 @@ describe("the app's rows for Inventory", () => {
     for (const never of ["stock_points", "levels", "movements", "batches", "on_order_moves", "postings", "reservations"]) expect(file.tables.some((table) => table.ref === never), never).toBe(false);
   });
 
-  it("hold the ledger's 123 deliveries of the last 90 days (screen 60), and one older a supplier: each the one delivery of an order, moving no stock", () => {
+  it("hold the ledger's 39 deliveries of the last 90 days (screen 60), and one older a supplier: each the one delivery of an order, moving no stock", () => {
     const orders = rows("purchase_orders").filter((row) => typeof row["@label"] === "string" && /^inv:po:[a-z-]+:\d\d$/.test(row["@label"]));
     const deliveries = rows("receipts").filter((row) => row["kind"] === "delivery");
-    expect([orders.length, deliveries.length]).toEqual([129, 129]);
+    expect([orders.length, deliveries.length]).toEqual([45, 45]);
     // No line: a past delivery says when it came, not what it brought, so the shelf's figures stay the opening receipt's.
     const withLines = new Set(rows("receipt_lines").map((line) => ref(line["receipt_id"])));
     expect(deliveries.filter((row) => withLines.has(String(row["@label"])))).toEqual([]);
@@ -87,7 +87,7 @@ describe("the app's rows for Inventory", () => {
     }
     const weeks = (late: number[]) => (late.length === 0 ? 0 : Math.round(late.reduce((a, b) => a + b, 0) / late.length / 7));
     expect(Object.fromEntries(Object.entries(per).map(([slug, one]) => [slug, [one.n, one.late.length, weeks(one.late)]]))).toEqual({
-      "halvard-werke": [28, 1, 0], "kirkwall-steel": [19, 2, 0], "ostrom-seating": [34, 5, 1], "trellis-textiles": [22, 2, 1], "fenlow-acoustics": [14, 8, 3], "marchmont-joinery": [6, 0, 0],
+      "halvard-werke": [9, 1, 0], "kirkwall-steel": [6, 1, 0], "ostrom-seating": [5, 1, 1], "trellis-textiles": [9, 1, 1], "fenlow-acoustics": [7, 4, 3], "marchmont-joinery": [3, 0, 0],
     });
     // Each older one outside the 90 days, on time.
     expect(deliveries.filter((row) => day(row["received_on"]) < -89).map((row) => String(row["@label"]).split(":")[3])).toEqual(["00", "00", "00", "00", "00", "00"]);

@@ -274,12 +274,12 @@ function addOnTarball(addOn: NonNullable<typeof inventory>): Uint8Array {
 
 /** The ledger's screen 60: deliveries of the last 90 days, late ones, claims, weeks over, score, band. */
 const LEDGER: Record<string, [number, number, number, number, number, string]> = {
-  'Marchmont Joinery': [6, 0, 0, 0, 100, 'Solid'],
-  'Halvard Werke': [28, 1, 0, 0, 96, 'Solid'],
-  'Kirkwall Steel': [19, 2, 1, 0, 84, 'Watch them'],
-  'Trellis Textiles': [22, 2, 1, 1, 78, 'Watch them'],
-  'Ostrom Seating': [34, 5, 2, 1, 66, 'A problem'],
-  'Fenlow Acoustics': [14, 8, 1, 3, 16, 'A problem'],
+  'Marchmont Joinery': [3, 0, 0, 0, 100, 'Solid'],
+  'Halvard Werke': [9, 1, 0, 0, 89, 'Solid'],
+  'Kirkwall Steel': [6, 1, 1, 0, 77, 'Watch them'],
+  'Trellis Textiles': [9, 1, 1, 1, 76, 'Watch them'],
+  'Ostrom Seating': [5, 1, 2, 1, 61, 'A problem'],
+  'Fenlow Acoustics': [7, 4, 1, 3, 16, 'A problem'],
 };
 /** The ledger's arithmetic (`sample.py`): on time to a tenth, half up; less 6 a claim and 7 a week over; held to 0…100, half up. */
 function ledgerScore(n: number, late: number, claims: number, weeks: number): [number, string] {
@@ -401,9 +401,9 @@ for (const [dialect, reachable] of LEGS) {
       await close?.();
     });
 
-    it('the sample\'s deliveries carry their lateness, worked out by the server from their orders: 129, of which 123 in the last 90 days', async () => {
+    it('the sample\'s deliveries carry their lateness, worked out by the server from their orders: 45, of which 39 in the last 90 days', async () => {
       const all = await rows("select count(*) as c, sum(case when late is not null then 1 else 0 end) as said, sum(case when expected_on is null then 1 else 0 end) as blank from inventory_receipts where kind = 'delivery' and status = 'posted'");
-      expect([n(all[0]!['c']), n(all[0]!['said']), n(all[0]!['blank'])]).toEqual([129, 129, 0]);
+      expect([n(all[0]!['c']), n(all[0]!['said']), n(all[0]!['blank'])]).toEqual([45, 45, 0]);
       // The opening receipt was never ordered: it says nothing.
       expect(n((await rows("select count(*) as c from inventory_receipts where kind = 'opening' and late is null"))[0]!['c'])).toBe(1);
     });
@@ -411,7 +411,7 @@ for (const [dialect, reachable] of LEGS) {
     for (const who of ['tessa', 'ada', 'grace']) {
       it(`${who} is answered each supplier's deliveries, late ones and claims, and so the ledger's scores and bands`, async () => {
         const whole = await lateness(who, null);
-        expect([whole.n, whole.late]).toEqual([123, 18]);
+        expect([whole.n, whole.late]).toEqual([39, 8]);
         const got: Record<string, [number, number, number, number, number, string]> = {};
         for (const supplier of suppliers) {
           const one = await lateness(who, supplier.id);

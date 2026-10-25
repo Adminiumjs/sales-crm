@@ -149,10 +149,10 @@ test("the Supplier scorecard as the CRM admin: on time over 90 days, late delive
   await expect(page.locator(".crm-screen-sub")).toHaveText(
     claims ? "6 suppliers, judged on the two things that reach the customer: did it arrive when they said, and what happened when it went wrong." : "6 suppliers, judged on whether it arrived when they said.",
   );
-  // All of them: the ledger's 105 on time of 123, over the last 90 days (the sample's older deliveries left out).
+  // All of them: the ledger's 31 on time of 39, over the last 90 days (the sample's older deliveries left out).
   const all = await judged(context.request, stand, null, claims);
-  expect([all.n, all.late]).toEqual([123, 18]);
-  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("85.4%");
+  expect([all.n, all.late]).toEqual([39, 8]);
+  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("79.5%");
   await expect(tile(page, "on-time")).toContainText("across the last 90 days");
   if (claims) {
     expect(await count(context.request, stand, "crm_warranty_claims", [{ column: "raised_on", op: "gte", day: "today-364" }])).toBe(5);
@@ -177,12 +177,13 @@ test("the Supplier scorecard as the CRM admin: on time over 90 days, late delive
   }
   // The ledger's six (screen 60), with the claims; without them, nothing counts against a supplier but its deliveries.
   expect(scores).toEqual(claims
-    ? { "Halvard Werke": 96, "Kirkwall Steel": 84, "Ostrom Seating": 66, "Trellis Textiles": 78, "Fenlow Acoustics": 16, "Marchmont Joinery": 100 }
-    : { "Halvard Werke": 96, "Kirkwall Steel": 90, "Ostrom Seating": 78, "Trellis Textiles": 84, "Fenlow Acoustics": 22, "Marchmont Joinery": 100 });
+    ? { "Halvard Werke": 89, "Kirkwall Steel": 77, "Ostrom Seating": 61, "Trellis Textiles": 76, "Fenlow Acoustics": 16, "Marchmont Joinery": 100 }
+    : { "Halvard Werke": 89, "Kirkwall Steel": 83, "Ostrom Seating": 73, "Trellis Textiles": 82, "Fenlow Acoustics": 22, "Marchmont Joinery": 100 });
   // Highest first.
   await expect(page.locator(".crm-sup-supplier h2")).toHaveText(Object.entries(scores).sort((a, b) => b[1] - a[1]).map(([name]) => name));
-  await expect(tile(page, "talk").locator(".crm-sup-tile-value")).toHaveText(claims ? "2" : "1");
-  await expect(tile(page, "talk")).toContainText(claims ? "Ostrom Seating" : "Fenlow Acoustics");
+  // Ostrom and Fenlow are a problem with the claims or without (Ostrom's one late in five and a week over is 73).
+  await expect(tile(page, "talk").locator(".crm-sup-tile-value")).toHaveText("2");
+  await expect(tile(page, "talk")).toContainText("Ostrom Seating");
   await expect(page.locator('[data-figure="worst"]')).toHaveText("Fenlow Acoustics is on time 42.9% of the time and runs 3 weeks past what it promises. Every one of those weeks lands on a rep.");
 
   // Fenlow: six weeks promised, nine taken by the late ones; its lines and its order still on the way.
@@ -221,7 +222,7 @@ test("Read-only reads both screens, 390 wide and dark, presses nothing, and the 
   await page.goto(`${STAFF}suppliers`);
   await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
   // Her scorecard is the CRM admin's: the same figures through the same grant.
-  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("85.4%");
+  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("79.5%");
   await expect(supplier(page, "Fenlow Acoustics").locator('[data-figure="band"]')).toHaveText("A problem");
   await expect(supplier(page, "Marchmont Joinery").locator('[data-figure="score"]')).toHaveText("100");
   expect(await narrowEnough(page)).toBe(true);
@@ -271,7 +272,7 @@ test("the operations manager lands on Stock, reads no open deal, and is told how
   await picture(page, "p16-5-ada-stock");
   await page.goto(`${STAFF}suppliers`);
   await expect(page.locator(".crm-sup-supplier")).toHaveCount(6);
-  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("85.4%");
+  await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText("79.5%");
   await expect(supplier(page, "Fenlow Acoustics").locator('[data-figure="score"]')).toHaveText(stand.parts.includes("aftercare") ? "16" : "22");
   expect(problems).toEqual([]);
   // The server: no open deal for her (at stage 1 no deal at all; from stage 2 a won deal, the jobs' own), and Inventory read only.
@@ -359,7 +360,7 @@ test("in Arabic, right to left and 390 wide, with the same figures", async ({ as
     // The band and the score in her language and digits; on time to a tenth, as the reader's own percent.
     await expect(supplier(page, "Fenlow Acoustics").locator('[data-figure="band"]')).toHaveText("مشكلة");
     await expect(supplier(page, "Marchmont Joinery").locator('[data-figure="score"]')).toHaveText(new Intl.NumberFormat("ar-EG").format(100));
-    await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText(new Intl.NumberFormat("ar-EG", { style: "percent", maximumFractionDigits: 1 }).format(0.854));
+    await expect(tile(page, "on-time").locator(".crm-sup-tile-value")).toHaveText(new Intl.NumberFormat("ar-EG", { style: "percent", maximumFractionDigits: 1 }).format(0.795));
     expect(await narrowEnough(page)).toBe(true);
     await picture(page, "p16-7-tessa-suppliers-ar-390");
     expect(problems).toEqual([]);

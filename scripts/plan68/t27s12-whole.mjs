@@ -78,13 +78,15 @@ for (const key of SUPPLY_ROLES) {
  * The average of a supplier's late days, in whole weeks, is its "weeks over": Halvard and Kirkwall 0, Ostrom and
  * Trellis 1, Fenlow 3. Days count back from the day the sample is added (the ledger's Tue 28 Jul 2026).
  */
+// Owner, 2026-10-24: "trim the sample": as few deliveries as keep each supplier's band and weeks over as the design has
+// them (the design typed 28/1, 19/2, 34/5, 22/2, 14/8, 6/0), not 123.
 const DELIVERIES = [
-  ["Halvard Werke", "halvard-werke", 28, [2]],
-  ["Kirkwall Steel", "kirkwall-steel", 19, [1, 3]],
-  ["Ostrom Seating", "ostrom-seating", 34, [4, 6, 7, 8, 10]],
-  ["Trellis Textiles", "trellis-textiles", 22, [5, 9]],
-  ["Fenlow Acoustics", "fenlow-acoustics", 14, [12, 16, 19, 21, 22, 24, 25, 29]],
-  ["Marchmont Joinery", "marchmont-joinery", 6, []],
+  ["Halvard Werke", "halvard-werke", 9, [2]],
+  ["Kirkwall Steel", "kirkwall-steel", 6, [3]],
+  ["Ostrom Seating", "ostrom-seating", 5, [7]],
+  ["Trellis Textiles", "trellis-textiles", 9, [9]],
+  ["Fenlow Acoustics", "fenlow-acoustics", 7, [16, 19, 22, 25]],
+  ["Marchmont Joinery", "marchmont-joinery", 3, []],
 ];
 const FIRST = -84;
 const LAST = -2;
@@ -138,7 +140,7 @@ for (const [name, slug, count, lateDays] of DELIVERIES) {
   all += count;
   lateAll += lateDays.length;
 }
-if (all !== 123 || lateAll !== 18) fail(`the ledger's deliveries are 123 with 18 late, not ${String(all)} with ${String(lateAll)}`);
+if (all !== 39 || lateAll !== 8) fail(`the ledger's deliveries are 39 with 8 late, not ${String(all)} with ${String(lateAll)}`);
 
 /** Put the rows of one kind in (replacing the ones of these labels), after the rows already there. */
 const putRows = (ref, rows, ours) => {
