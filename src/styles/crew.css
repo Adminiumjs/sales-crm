@@ -567,6 +567,13 @@ li[data-on="1"] > .crm-cw-box {
   align-self: flex-start;
   margin-block: 8px;
 }
+/* The extra address for the signed copy: an address reads left to right, set at the line's start in Arabic too. */
+.crm-cw-copyto {
+  margin-block-start: 16px;
+}
+[dir="rtl"] .crm-cw-copyto input {
+  text-align: right;
+}
 .crm-cw-refused {
   display: flex;
   align-items: flex-start;

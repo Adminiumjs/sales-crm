@@ -40,7 +40,7 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { useToasts } from "../../ui/toast.tsx";
 import { useJobsScreen } from "../jobs/parts.tsx";
 import { AddSnag } from "./AddSnag.tsx";
-import { CHECKS, checksOf, dayKeyOf, fileIds, fileSrc, isLive, readSignOffs, readSnags, signOffLine, stoppers, truthy, type CrewSnag, type CrewVisit, type SignOff } from "./data.ts";
+import { CHECKS, checksOf, COPY_TO_MAX, copyToOk, dayKeyOf, fileIds, fileSrc, isLive, readSignOffs, readSnags, signOffLine, stoppers, truthy, type CrewSnag, type CrewVisit, type SignOff } from "./data.ts";
 import { PhotoField, SignaturePad } from "./FileParts.tsx";
 import { RefusedBox, SignalLine, useReadAgainOnSignal, useSave, WaitChip } from "./Offline.tsx";
 import { useHeldSrc, useQueue, useQueueLines } from "./queue.tsx";
@@ -238,6 +238,11 @@ function KeptSignOff({ visit, line, snags, onDone }: { visit: CrewVisit; line: Q
       <p className="crm-q-signed-box" data-testid="cw-kept-by">
         {t("offline.so.signedBy", { name: String(values["signer_name"] ?? ""), day: f.dayLong(made), time: f.time(made) })} <WaitChip line={line} />
       </p>
+      {typeof values["copy_sent_to"] === "string" && values["copy_sent_to"] !== "" && (
+        <p className="crm-cw-quiet" data-testid="cw-kept-copyto">
+          {t("cw.sign.copyTo.kept", { address: values["copy_sent_to"] })}
+        </p>
+      )}
       <CheckedList on={checksOf(values)} />
       <LiveSnags live={snags.filter(isLive)} />
       <h2 className="crm-cw-h2">{t("cw.sign.photos")}</h2>
@@ -273,6 +278,9 @@ function OpenSignOff({ visit, snags, refused, onDone, f }: { visit: CrewVisit; s
   const was = refused === undefined ? null : lineValues(refused);
   const [checks, setChecks] = useState<boolean[]>(() => (was === null ? CHECKS.map(() => false) : checksOf(was)));
   const [signer, setSigner] = useState(() => (was === null ? "" : String(was["signer_name"] ?? "")));
+  // The extra address for the signed copy, kept with a refused try as the name is.
+  const [copyTo, setCopyTo] = useState(() => (was === null || typeof was["copy_sent_to"] !== "string" ? "" : was["copy_sent_to"]));
+  const [copyLeft, setCopyLeft] = useState(false);
   const [held, setHeld] = useState<string[]>(() => heldPhotos(refused));
   const [signature, setSignature] = useState<string | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -303,6 +311,8 @@ function OpenSignOff({ visit, snags, refused, onDone, f }: { visit: CrewVisit; s
   if (ticked < CHECKS.length) needed.push(t("cw.sign.need.checks", { n: f.number(CHECKS.length - ticked) }, CHECKS.length - ticked));
   if (signer.trim() === "") needed.push(t("cw.sign.need.name"));
   if (signature === null) needed.push(t("cw.sign.need.signature"));
+  const copyOk = copyToOk(copyTo);
+  if (!copyOk) needed.push(t("cw.sign.need.copyTo"));
   const hint = stop !== undefined ? t("cw.sign.stopped", { snag: stop }) : photosBusy ? t("cw.sign.photosBusy") : needed.length > 0 ? t("cw.sign.needed", { list: needed.join(t("cw.sign.listJoin")) }) : t("cw.sign.ready");
   const ready = stop === undefined && !photosBusy && needed.length === 0;
 
@@ -313,7 +323,7 @@ function OpenSignOff({ visit, snags, refused, onDone, f }: { visit: CrewVisit; s
     if (!ready || signature === null || busy) return;
     setBusy(true);
     // The customer signs for what this screen shows them: the job's open snags and the checks in these words.
-    const line = signOffLine({ visitId: visit.id, jobId: visit.job_id, site: visit.site_name, checks, signer, signature, photos: [...held, ...photos], open: live, checkWords: CHECK_WORDS.map((words) => t(words)) }, key);
+    const line = signOffLine({ visitId: visit.id, jobId: visit.job_id, site: visit.site_name, checks, signer, signature, photos: [...held, ...photos], open: live, checkWords: CHECK_WORDS.map((words) => t(words)), copyTo }, key);
     const done = await save(line, { keepRefused: true });
     // The refused try this one takes over: its photos are this one's now.
     if (refused !== undefined) await queue.remove(refused.id);
@@ -417,6 +427,36 @@ function OpenSignOff({ visit, snags, refused, onDone, f }: { visit: CrewVisit; s
           </button>
         )}
         <SignaturePad table="sign_offs" column="signature" label={t("cw.sign.signature")} round={round} onChange={onSignature} disabled={busy} />
+        <div className="crm-cw-copyto" data-testid="cw-sign-copyto">
+          <label className="crm-label" htmlFor="crm-cw-copyto">
+            {t("cw.sign.copyTo")}
+          </label>
+          <input
+            id="crm-cw-copyto"
+            className="crm-input mr-fld"
+            type="email"
+            inputMode="email"
+            dir="ltr"
+            value={copyTo}
+            maxLength={COPY_TO_MAX}
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            disabled={busy}
+            aria-invalid={copyLeft && !copyOk ? true : undefined}
+            aria-describedby={copyLeft && !copyOk ? "crm-cw-copyto-hint crm-cw-copyto-bad" : "crm-cw-copyto-hint"}
+            onChange={(event) => setCopyTo(event.target.value)}
+            onBlur={() => setCopyLeft(true)}
+          />
+          <p id="crm-cw-copyto-hint" className="crm-field-note">
+            {t("cw.sign.copyTo.hint")}
+          </p>
+          {copyLeft && !copyOk && (
+            <p id="crm-cw-copyto-bad" className="crm-field-note" data-tone="danger" role="alert" data-testid="cw-sign-copyto-bad">
+              {t("cw.sign.copyTo.bad")}
+            </p>
+          )}
+        </div>
       </section>
 
       <div className="crm-cw-signfoot">

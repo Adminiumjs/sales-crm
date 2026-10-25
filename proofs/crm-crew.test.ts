@@ -16,6 +16,8 @@
  *    open (the sign-off's link to its job names only a job no such snag
  *    holds); one create with a retry key is one sign-off, sent twice; he may
  *    not change or remove a sign-off;
+ *  - he may type an extra address for the signed copy: one that is not an
+ *    e-mail address is refused; the job's contact is mailed either way;
  *  - he names only his own fresh upload: a crew-mate's file, or a file a
  *    record already holds, is refused; a file a record holds cannot be thrown
  *    away (`FILE_HELD`); his own that no record holds can;
@@ -232,6 +234,27 @@ for (const [dialect, reachable] of LEGS) {
       // Cal reads the sign-off his crew made; Rina does not.
       expect((await one('cal', 'sign_offs', first)).statusCode).toBe(200);
       expect((await one('rina', 'sign_offs', first)).statusCode).toBe(404);
+    });
+
+    it('lets him send the signed copy also to an address he types: one that is not an address refused, a good one kept, the job\'s contact mailed either way', async () => {
+      const { job } = await wonJob('Lab bench screens');
+      const visitId = await visit(job, 'Lab bench screens', 'blue');
+      const sign = (copy: string, key: string): Promise<Reply> =>
+        s.send('yusuf', 'POST', url('sign_offs'), { values: { visit_id: visitId, ...CHECKS, signer_name: 'Petra Holm', copy_sent_to: copy }, clientKey: key });
+      for (const [i, bad] of ['petra.holm', 'petra@tandem', 'petra holm@tandem-robotics.com'].entries()) {
+        const refused = await sign(bad, `CrewProofCopyToKey00000000000000${String(i)}`);
+        expect(refused.statusCode, refused.body).toBe(422);
+        expect((refused.json() as { error: { details: { fields: Record<string, { code: string }> } } }).error.details.fields['copy_sent_to']?.code, bad).toBe('format');
+      }
+      expect(await s.rows(`select id from crm_sign_offs where job_id = ${String(job)}`)).toHaveLength(0);
+      const typed = 'site.office@tandem-robotics.com';
+      const id = made(await sign(typed, 'CrewProofCopyToKey000000000000009'));
+      expect((await one('yusuf', 'sign_offs', id)).json()).toMatchObject({ data: { copy_sent_to: typed, job_id: job } });
+      await jobs();
+      const box = await s.rows(`select kind, ${dialect === 'mysql' ? '`to`' : '"to"'} as address, status, error from crm_outbox where sign_off_id = ${String(id)} order by id`);
+      // Both copies: the job's contact (a reserved `.example` address here, so it is skipped when it would go) and the typed one.
+      expect(box.map((row) => row['kind'])).toEqual(['signed-copy', 'signed-copy-to']);
+      expect([box[1]!['address'], box[1]!['status']], String(box[1]!['error'])).toEqual([typed, expect.stringMatching(/^(sent|queued)$/)]);
     });
 
     it("lets him name only his own fresh upload: never a crew-mate's, never one a record holds; a held file cannot be thrown away", async () => {
