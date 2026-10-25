@@ -174,28 +174,37 @@ for (const key of ["sales-manager", "rep", "account-manager"]) {
 // "A discount is put to approval": whoever leads the DEAL's owner, never a helper's lead; nobody leads them, the CRM admin.
 {
   const tell = must(asked.graph.nodes.find((node) => node.action?.kind === "notification"), "approval-asked's notice");
-  tell.action.to = { column: "deal_id.owner_id", lead: true, else: { roles: ["admin"] } };
+  // Owner, 2026-10-24 (ruling of R1d as written): the deal owner's lead AND the CRM admin. Two steps; a lead with no
+  // `else` (Adminium 0.3.35, `automations.leadAlone`) tells nobody when nobody leads the owner, so the admin hears once.
+  tell.action.to = { column: "deal_id.owner_id", lead: true };
   tell.title = "Tell the deal owner’s team lead";
-  asked.graph.nodes.find((node) => node.kind === "trigger").title = "A discount is put to approval: the deal owner’s team lead is told";
+  const told = asked.graph.nodes.filter((node) => node.action?.kind === "notification");
+  if (!told.some((node) => node.id === "tell-admin")) {
+    asked.graph.nodes.splice(asked.graph.nodes.indexOf(tell) + 1, 0, { id: "tell-admin", kind: "action", title: "Tell the CRM admin", action: { ...structuredClone(tell.action), to: { roles: ["admin"] } } });
+  } else {
+    const admin = told.find((node) => node.id === "tell-admin");
+    admin.action = { ...structuredClone(tell.action), to: { roles: ["admin"] } };
+  }
+  asked.graph.nodes.find((node) => node.kind === "trigger").title = "A discount is put to approval: the deal owner’s team lead and the CRM admin are told";
   asked.name = L(
-    "A discount is put to approval: the deal owner’s team lead is told",
-    "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung der Person, der der Deal gehört, wird benachrichtigt",
-    "Une remise est soumise à approbation : le responsable d’équipe du titulaire de l’affaire est prévenu",
-    "En rabat sendes til godkendelse: lederen af teamet for sagens ejer får besked",
-    "Sleva jde ke schválení: vedoucí týmu vlastníka obchodu dostane zprávu",
-    "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق صاحب الصفقة",
-    "折扣提交审批：通知商机负责人的团队负责人",
-    "折扣送交核准：通知商機負責人的團隊負責人",
+    "A discount is put to approval: the deal owner’s team lead and the CRM admin are told",
+    "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung des Deal-Inhabers und der CRM-Admin werden benachrichtigt",
+    "Remise soumise à approbation : le responsable d’équipe du titulaire de l’affaire et l’administrateur CRM sont prévenus",
+    "En rabat sendes til godkendelse: lederen af teamet for sagens ejer og CRM-administratoren får besked",
+    "Sleva jde ke schválení: vedoucí týmu vlastníka obchodu a správce CRM dostanou zprávu",
+    "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق صاحب الصفقة ومسؤول CRM",
+    "折扣提交审批：通知商机负责人的团队负责人和 CRM 管理员",
+    "折扣送交核准：通知商機負責人的團隊負責人和 CRM 管理員",
   );
   asked.description = L(
-    "When somebody asks for approval of a quote, or a decision is reopened, tells whoever leads a team the deal’s owner is in and can open the quote; when nobody does, the CRM admin. Never the lead of a colleague who only helps on the deal.",
-    "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt oder eine Entscheidung wieder geöffnet wird, die Leitung eines Teams, in dem die Person ist, der der Deal gehört, sofern sie das Angebot öffnen kann; gibt es niemanden, den CRM-Admin. Nie die Leitung einer Kollegin oder eines Kollegen, die oder der nur am Deal mithilft.",
-    "Dès qu’une approbation de devis est demandée ou qu’une décision est rouverte, prévient la personne qui dirige une équipe dont fait partie le titulaire de l’affaire et qui peut ouvrir le devis ; à défaut, l’administrateur CRM. Jamais le responsable d’un collègue qui ne fait qu’aider sur l’affaire.",
-    "Når nogen beder om godkendelse af et tilbud, eller en afgørelse genåbnes, får lederen af et team, sagens ejer er med i, besked, hvis lederen kan åbne tilbuddet; er der ingen, får CRM-administratoren besked. Aldrig lederen for en kollega, der kun hjælper på sagen.",
-    "Když někdo požádá o schválení nabídky nebo se rozhodnutí znovu otevře, dá vědět vedoucímu týmu, jehož je vlastník obchodu členem, pokud nabídku otevře; když takový není, správci CRM. Nikdy vedoucímu kolegy, který na obchodu jen pomáhá.",
-    "عند طلب اعتماد عرض سعر أو إعادة فتح قرار، يُبلِّغ من يقود فريقًا ينتمي إليه صاحب الصفقة ويستطيع فتح العرض؛ وإن لم يوجد، يُبلِّغ مسؤول CRM. ولا يُبلِّغ أبدًا قائد زميل يساعد في الصفقة فقط.",
-    "有人为报价申请审批或重新打开某个审批决定时，通知商机负责人所在团队中能打开该报价的负责人；没有这样的人时，通知 CRM 管理员。从不通知只是协助该商机的同事的负责人。",
-    "有人為報價申請核准或重新開啟某個核准決定時，通知商機負責人所在團隊中能開啟該報價的負責人；沒有這樣的人時，通知 CRM 管理員。從不通知只是協助該案件的同事的負責人。",
+    "When somebody asks for approval of a quote, or a decision is reopened, tells whoever leads a team the deal’s owner is in and can open the quote, and the CRM admin. Never the lead of a colleague who only helps on the deal.",
+    "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt oder eine Entscheidung wieder geöffnet wird, die Leitung eines Teams, in dem die Person ist, der der Deal gehört, sofern sie das Angebot öffnen kann, und den CRM-Admin. Nie die Leitung einer Kollegin oder eines Kollegen, die oder der nur am Deal mithilft.",
+    "Dès qu’une approbation de devis est demandée ou qu’une décision est rouverte, prévient la personne qui dirige une équipe dont fait partie le titulaire de l’affaire et qui peut ouvrir le devis, ainsi que l’administrateur CRM. Jamais le responsable d’un collègue qui ne fait qu’aider sur l’affaire.",
+    "Når nogen beder om godkendelse af et tilbud, eller en afgørelse genåbnes, får lederen af et team, sagens ejer er med i, besked, hvis lederen kan åbne tilbuddet, og det gør CRM-administratoren også. Aldrig lederen for en kollega, der kun hjælper på sagen.",
+    "Když někdo požádá o schválení nabídky nebo se rozhodnutí znovu otevře, dá vědět vedoucímu týmu, jehož je vlastník obchodu členem, pokud nabídku otevře, a správci CRM. Nikdy vedoucímu kolegy, který na obchodu jen pomáhá.",
+    "عند طلب اعتماد عرض سعر أو إعادة فتح قرار، يُبلِّغ من يقود فريقًا ينتمي إليه صاحب الصفقة ويستطيع فتح العرض، ويُبلِّغ مسؤول CRM. ولا يُبلِّغ أبدًا قائد زميل يساعد في الصفقة فقط.",
+    "有人为报价申请审批或重新打开某个审批决定时，通知商机负责人所在团队中能打开该报价的负责人，并通知 CRM 管理员。从不通知只是协助该商机的同事的负责人。",
+    "有人為報價申請核准或重新開啟某個核准決定時，通知商機負責人所在團隊中能開啟該報價的負責人，並通知 CRM 管理員。從不通知只是協助該案件的同事的負責人。",
   );
 }
 

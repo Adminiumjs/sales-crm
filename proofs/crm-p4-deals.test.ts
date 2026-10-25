@@ -303,7 +303,8 @@ for (const [dialect, reachable] of LEGS) {
     const deal = async (person: string, name: string, ownerKey: string, more: Record<string, unknown> = {}): Promise<number> =>
       made(await post(person, 'deals', { name, company_id: company, stage_id: stage, owner_id: owner(ownerKey), typed_amount: 5000, ...more }));
     const visit = async (person: string, dealId: number, rep: string, days: number): Promise<number> =>
-      made(await post(person, 'site_visits', { deal_id: dealId, rep_id: owner(rep), starts_at: inDays(days, 9 + (days % 7)), minutes: 45, purpose: `P4 visit ${rep} ${String(days)}` }));
+      // In the evening (UTC), where none of the sample's visits sits, whichever day of the week the proof runs on.
+      made(await post(person, 'site_visits', { deal_id: dealId, rep_id: owner(rep), starts_at: inDays(days, 19 + (days % 4)), minutes: 45, purpose: `P4 visit ${rep} ${String(days)}` }));
     const step = async (person: string, dealId: number, ownerKey: string, text: string, done = false): Promise<number> =>
       made(await post(person, 'follow_ups', { deal_id: dealId, owner_id: owner(ownerKey), due_at: inDays(5), text, kind: 'step', ...(done ? { done: true } : {}) }));
 
@@ -469,13 +470,13 @@ for (const [dialect, reachable] of LEGS) {
       // The helper comments, and her reply is there; she does not hand the deal over or change its amount.
       expect(said(await post('noor', 'comments', { deal_id: helped, parent_id: comment, text: 'Friday at ten' }))).toBe('ok');
 
-      // The bell: Noor asks for a discount on Dana's quote. Ivy, who leads the DEAL's owner, is told; Omar, Noor's lead, is not.
+      // The bell: Noor asks for a discount on Dana's quote. Ivy, who leads the DEAL's owner, is told, and the CRM admin; Omar, Noor's lead, is not.
       type Told = { title: string };
       const toldOf = async (person: string): Promise<number> => ((await s.meta.db.selectFrom('adminium_notifications').select(['title']).where('userId', '=', owner(person)).where('title', 'like', '%needs your approval').execute()) as Told[]).length;
       const before = { ivy: await toldOf('ivy'), omar: await toldOf('omar'), tessa: await toldOf('tessa') };
       expect(said(await press('noor', 'quotes', quote, 'ask-approval', 'draft', { ask_reason: 'The atrium is a showcase' }))).toBe('ok');
       await s.jobs();
-      expect({ ivy: (await toldOf('ivy')) - before.ivy, omar: (await toldOf('omar')) - before.omar, tessa: (await toldOf('tessa')) - before.tessa }).toEqual({ ivy: 1, omar: 0, tessa: 0 });
+      expect({ ivy: (await toldOf('ivy')) - before.ivy, omar: (await toldOf('omar')) - before.omar, tessa: (await toldOf('tessa')) - before.tessa }).toEqual({ ivy: 1, omar: 0, tessa: 1 });
       // …and Omar is not handed the request on Approvals either.
       expect(await keys('omar', 'quotes', { column: 'asked_at', op: 'not_null' })).not.toContain(quote);
       expect(await keys('ivy', 'quotes', { column: 'asked_at', op: 'not_null' })).toContain(quote);

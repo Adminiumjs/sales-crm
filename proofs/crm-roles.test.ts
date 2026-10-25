@@ -1047,8 +1047,8 @@ for (const [dialect, reachable] of LEGS) {
       expect((await one(`SELECT to_email, sent_to_email FROM ${s.real('quotes')} WHERE id = ${String(quote)}`))).toMatchObject({ to_email: 'moved@elsewhere.example', sent_to_email: contact['email'] });
       expect(said(await patch('ivy', 'contacts', contact['id'], { email: contact['email'] }))).toBe('ok');
 
-      // A discount put to approval: the asker's team lead is told; never the asker, never another team's manager; the CRM
-      // admin when nobody leads the asker (the ruling of §0, decision 136; the engine's `lead` and `else` on a notice).
+      // A discount put to approval: the deal owner's team lead is told, and the CRM admin (owner, 2026-10-24: R1d as written);
+      // never the asker, never another team's manager; the admin once, also when nobody leads the owner.
       const second = made(await post('dana', 'quotes', { deal_id: deal, version: 2, replaces_id: quote }));
       expect(said(await post('dana', 'quote_lines', { document_id: second, qty: 2, rate: 200, price_id: priced }))).toBe('ok');
       type Told = { title: string; body: string | null };
@@ -1064,10 +1064,10 @@ for (const [dialect, reachable] of LEGS) {
       const before = Object.fromEntries(await Promise.all(['dana', 'ivy', 'tessa', 'omar', 'noor', 'grace'].map(async (person) => [person, (await toldOf(person)).length] as const)));
       const grown = async (): Promise<Record<string, number>> => Object.fromEntries(await Promise.all(Object.entries(before).map(async ([person, was]) => [person, (await toldOf(person)).length - was] as const)));
 
-      // Dana asks: Ivy leads her, and is told who asked; Dana is not; Omar, who leads another team, is not, nor the CRM admin.
+      // Dana asks: Ivy leads her, and is told who asked, and so is the CRM admin; Dana is not; Omar, who leads another team, is not.
       expect(said(await press('dana', 'quotes', second, 'ask-approval', 'draft', { ask_reason: 'They buy every year' }))).toBe('ok');
       await s.jobs();
-      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 0, omar: 0, noor: 0, grace: 0 });
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 1, omar: 0, noor: 0, grace: 0 });
       const [ivys] = (await toldOf('ivy')).slice(-1);
       expect(ivys!.body).toContain('Dana Whitlock');
       expect(ivys!.body).toContain('They buy every year');
@@ -1078,7 +1078,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await post('noor', 'quote_lines', { document_id: noors, qty: 2, rate: 150, price_id: priced }))).toBe('ok');
       expect(said(await press('noor', 'quotes', noors, 'ask-approval', 'draft', { ask_reason: 'A first order' }))).toBe('ok');
       await s.jobs();
-      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 0, omar: 1, noor: 0, grace: 0 });
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 2, omar: 1, noor: 0, grace: 0 });
 
       // Ivy asks about her own deal: she leads her team and nobody leads her, so the CRM admin is told; Ivy never is.
       const hers = made(await post('ivy', 'deals', { name: 'Ivy: her own discount', company_id: contact['company_id'], stage_id: stages[0], owner_id: s.id['ivy'], typed_amount: 900 }));
@@ -1086,7 +1086,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await post('ivy', 'quote_lines', { document_id: own, qty: 2, rate: 150, price_id: priced }))).toBe('ok');
       expect(said(await press('ivy', 'quotes', own, 'ask-approval', 'draft', { ask_reason: 'A long-standing customer' }))).toBe('ok');
       await s.jobs();
-      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 1, omar: 1, noor: 0, grace: 0 });
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 3, omar: 1, noor: 0, grace: 0 });
       expect((await toldOf('tessa')).slice(-1)[0]!.body).toContain('Ivy Sandoval');
 
       // Omar leaves West: Noor is led by nobody, and her next request goes to the CRM admin, not to Ivy, not to Omar.
@@ -1097,7 +1097,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await post('noor', 'quote_lines', { document_id: again, qty: 2, rate: 140, price_id: priced }))).toBe('ok');
       expect(said(await press('noor', 'quotes', again, 'ask-approval', 'draft', { ask_reason: 'Still a first order' }))).toBe('ok');
       await s.jobs();
-      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 2, omar: 1, noor: 0, grace: 0 });
+      expect(await grown()).toEqual({ dana: 0, ivy: 1, tessa: 4, omar: 1, noor: 0, grace: 0 });
 
       // The deal is won: its job is made, once, named after the deal; won again after a reopen, no second job.
       expect(said(await press('dana', 'deals', deal, 'mark-won', 'open', { close_note: 'Signed' }))).toBe('ok');

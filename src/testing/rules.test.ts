@@ -202,12 +202,15 @@ describe("the rules the app ships", () => {
     expect(steps("deal-won-job")).toEqual([{ kind: "record.create", table: "jobs", values: { deal_id: "{{record.id}}", site_name: "{{record.name}}" } }]);
   });
 
-  it("an approval asked is told to the deal owner's team lead, else the CRM admin, never a helper's lead, in eight languages", () => {
+  it("an approval asked is told to the deal owner's team lead and the CRM admin, never a helper's lead, in eight languages", () => {
     expect(rule("approval-asked").trigger).toEqual({ kind: "record", event: "updated", table: "quotes", changedColumn: "approval", when: [{ left: { field: "approval" }, op: "is", right: "asked" }] });
-    const [tell] = steps("approval-asked");
-    // Ruling 1d: whoever leads a team the DEAL's owner is in and opens the quote (never the lead of a rep who only helps);
-    // with nobody, the CRM admin.
-    expect(tell).toMatchObject({ kind: "notification", to: { column: "deal_id.owner_id", lead: true, else: { roles: ["admin"] } } });
+    const [tell, admin] = steps("approval-asked");
+    // Ruling 1d (owner, 2026-10-24: as written): whoever leads a team the DEAL's owner is in and opens the quote (never the
+    // lead of a rep who only helps), and the CRM admin; a lead alone, so nobody more when nobody leads the owner.
+    expect(tell).toMatchObject({ kind: "notification", to: { column: "deal_id.owner_id", lead: true } });
+    expect((tell as unknown as { to: Record<string, unknown> }).to).not.toHaveProperty("else");
+    expect(admin).toMatchObject({ kind: "notification", to: { roles: ["admin"] }, title: tell!.title, body: tell!.body });
+    expect(steps("approval-asked")).toHaveLength(2);
     expect(staff("quotes", "asked_by_id")).toBe(true);
     expect(m.roles.map((role) => role.key)).toContain("admin");
     expect(inAll(tell!.title) && inAll(tell!.body)).toBe(true);

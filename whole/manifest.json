@@ -27594,24 +27594,24 @@
     {
       "key": "approval-asked",
       "name": {
-        "en-US": "A discount is put to approval: the deal owner’s team lead is told",
-        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung der Person, der der Deal gehört, wird benachrichtigt",
-        "fr-FR": "Une remise est soumise à approbation : le responsable d’équipe du titulaire de l’affaire est prévenu",
-        "da-DK": "En rabat sendes til godkendelse: lederen af teamet for sagens ejer får besked",
-        "cs-CZ": "Sleva jde ke schválení: vedoucí týmu vlastníka obchodu dostane zprávu",
-        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق صاحب الصفقة",
-        "zh-CN": "折扣提交审批：通知商机负责人的团队负责人",
-        "zh-TW": "折扣送交核准：通知商機負責人的團隊負責人"
+        "en-US": "A discount is put to approval: the deal owner’s team lead and the CRM admin are told",
+        "de-DE": "Ein Rabatt wird zur Genehmigung vorgelegt: die Teamleitung des Deal-Inhabers und der CRM-Admin werden benachrichtigt",
+        "fr-FR": "Remise soumise à approbation : le responsable d’équipe du titulaire de l’affaire et l’administrateur CRM sont prévenus",
+        "da-DK": "En rabat sendes til godkendelse: lederen af teamet for sagens ejer og CRM-administratoren får besked",
+        "cs-CZ": "Sleva jde ke schválení: vedoucí týmu vlastníka obchodu a správce CRM dostanou zprávu",
+        "ar-EG": "يُعرض خصم للاعتماد: يُبلَّغ قائد فريق صاحب الصفقة ومسؤول CRM",
+        "zh-CN": "折扣提交审批：通知商机负责人的团队负责人和 CRM 管理员",
+        "zh-TW": "折扣送交核准：通知商機負責人的團隊負責人和 CRM 管理員"
       },
       "description": {
-        "en-US": "When somebody asks for approval of a quote, or a decision is reopened, tells whoever leads a team the deal’s owner is in and can open the quote; when nobody does, the CRM admin. Never the lead of a colleague who only helps on the deal.",
-        "de-DE": "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt oder eine Entscheidung wieder geöffnet wird, die Leitung eines Teams, in dem die Person ist, der der Deal gehört, sofern sie das Angebot öffnen kann; gibt es niemanden, den CRM-Admin. Nie die Leitung einer Kollegin oder eines Kollegen, die oder der nur am Deal mithilft.",
-        "fr-FR": "Dès qu’une approbation de devis est demandée ou qu’une décision est rouverte, prévient la personne qui dirige une équipe dont fait partie le titulaire de l’affaire et qui peut ouvrir le devis ; à défaut, l’administrateur CRM. Jamais le responsable d’un collègue qui ne fait qu’aider sur l’affaire.",
-        "da-DK": "Når nogen beder om godkendelse af et tilbud, eller en afgørelse genåbnes, får lederen af et team, sagens ejer er med i, besked, hvis lederen kan åbne tilbuddet; er der ingen, får CRM-administratoren besked. Aldrig lederen for en kollega, der kun hjælper på sagen.",
-        "cs-CZ": "Když někdo požádá o schválení nabídky nebo se rozhodnutí znovu otevře, dá vědět vedoucímu týmu, jehož je vlastník obchodu členem, pokud nabídku otevře; když takový není, správci CRM. Nikdy vedoucímu kolegy, který na obchodu jen pomáhá.",
-        "ar-EG": "عند طلب اعتماد عرض سعر أو إعادة فتح قرار، يُبلِّغ من يقود فريقًا ينتمي إليه صاحب الصفقة ويستطيع فتح العرض؛ وإن لم يوجد، يُبلِّغ مسؤول CRM. ولا يُبلِّغ أبدًا قائد زميل يساعد في الصفقة فقط.",
-        "zh-CN": "有人为报价申请审批或重新打开某个审批决定时，通知商机负责人所在团队中能打开该报价的负责人；没有这样的人时，通知 CRM 管理员。从不通知只是协助该商机的同事的负责人。",
-        "zh-TW": "有人為報價申請核准或重新開啟某個核准決定時，通知商機負責人所在團隊中能開啟該報價的負責人；沒有這樣的人時，通知 CRM 管理員。從不通知只是協助該案件的同事的負責人。"
+        "en-US": "When somebody asks for approval of a quote, or a decision is reopened, tells whoever leads a team the deal’s owner is in and can open the quote, and the CRM admin. Never the lead of a colleague who only helps on the deal.",
+        "de-DE": "Benachrichtigt, sobald jemand die Genehmigung eines Angebots anfragt oder eine Entscheidung wieder geöffnet wird, die Leitung eines Teams, in dem die Person ist, der der Deal gehört, sofern sie das Angebot öffnen kann, und den CRM-Admin. Nie die Leitung einer Kollegin oder eines Kollegen, die oder der nur am Deal mithilft.",
+        "fr-FR": "Dès qu’une approbation de devis est demandée ou qu’une décision est rouverte, prévient la personne qui dirige une équipe dont fait partie le titulaire de l’affaire et qui peut ouvrir le devis, ainsi que l’administrateur CRM. Jamais le responsable d’un collègue qui ne fait qu’aider sur l’affaire.",
+        "da-DK": "Når nogen beder om godkendelse af et tilbud, eller en afgørelse genåbnes, får lederen af et team, sagens ejer er med i, besked, hvis lederen kan åbne tilbuddet, og det gør CRM-administratoren også. Aldrig lederen for en kollega, der kun hjælper på sagen.",
+        "cs-CZ": "Když někdo požádá o schválení nabídky nebo se rozhodnutí znovu otevře, dá vědět vedoucímu týmu, jehož je vlastník obchodu členem, pokud nabídku otevře, a správci CRM. Nikdy vedoucímu kolegy, který na obchodu jen pomáhá.",
+        "ar-EG": "عند طلب اعتماد عرض سعر أو إعادة فتح قرار، يُبلِّغ من يقود فريقًا ينتمي إليه صاحب الصفقة ويستطيع فتح العرض، ويُبلِّغ مسؤول CRM. ولا يُبلِّغ أبدًا قائد زميل يساعد في الصفقة فقط.",
+        "zh-CN": "有人为报价申请审批或重新打开某个审批决定时，通知商机负责人所在团队中能打开该报价的负责人，并通知 CRM 管理员。从不通知只是协助该商机的同事的负责人。",
+        "zh-TW": "有人為報價申請核准或重新開啟某個核准決定時，通知商機負責人所在團隊中能開啟該報價的負責人，並通知 CRM 管理員。從不通知只是協助該案件的同事的負責人。"
       },
       "enabled": true,
       "module": "quotes",
@@ -27636,7 +27636,7 @@
           {
             "id": "t",
             "kind": "trigger",
-            "title": "A discount is put to approval: the deal owner’s team lead is told"
+            "title": "A discount is put to approval: the deal owner’s team lead and the CRM admin are told"
           },
           {
             "id": "tell",
@@ -27646,12 +27646,40 @@
               "kind": "notification",
               "to": {
                 "column": "deal_id.owner_id",
-                "lead": true,
-                "else": {
-                  "roles": [
-                    "admin"
-                  ]
-                }
+                "lead": true
+              },
+              "title": {
+                "en-US": "Quote {{record.number}} needs your approval",
+                "de-DE": "Angebot {{record.number}} braucht Ihre Genehmigung",
+                "fr-FR": "Le devis {{record.number}} attend votre approbation",
+                "da-DK": "Tilbud {{record.number}} skal godkendes af dig",
+                "cs-CZ": "Nabídka {{record.number}} čeká na vaše schválení",
+                "ar-EG": "عرض السعر {{record.number}} بحاجة إلى اعتمادك",
+                "zh-CN": "报价 {{record.number}} 需要您审批",
+                "zh-TW": "報價 {{record.number}} 需要您核准"
+              },
+              "body": {
+                "en-US": "Asked by {{asked_by_id.name}}: {{record.under_list_pct}} % under list. Why: {{record.ask_reason}}",
+                "de-DE": "Angefragt von {{asked_by_id.name}}: {{record.under_list_pct}} % unter Liste. Begründung: {{record.ask_reason}}",
+                "fr-FR": "Demandé par {{asked_by_id.name}} : {{record.under_list_pct}} % sous le catalogue. Motif : {{record.ask_reason}}",
+                "da-DK": "Spurgt af {{asked_by_id.name}}: {{record.under_list_pct}} % under liste. Begrundelse: {{record.ask_reason}}",
+                "cs-CZ": "Žádá {{asked_by_id.name}}: {{record.under_list_pct}} % pod ceníkem. Důvod: {{record.ask_reason}}",
+                "ar-EG": "طلبه {{asked_by_id.name}}: {{record.under_list_pct}} ٪ تحت القائمة. السبب: {{record.ask_reason}}",
+                "zh-CN": "申请人：{{asked_by_id.name}}。低于目录价 {{record.under_list_pct}} %。原因：{{record.ask_reason}}",
+                "zh-TW": "申請人：{{asked_by_id.name}}。低於牌價 {{record.under_list_pct}} %。原因：{{record.ask_reason}}"
+              }
+            }
+          },
+          {
+            "id": "tell-admin",
+            "kind": "action",
+            "title": "Tell the CRM admin",
+            "action": {
+              "kind": "notification",
+              "to": {
+                "roles": [
+                  "admin"
+                ]
               },
               "title": {
                 "en-US": "Quote {{record.number}} needs your approval",
