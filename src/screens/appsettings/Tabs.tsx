@@ -17,6 +17,7 @@ import { Icon } from "../../shell/icons.tsx";
 import type { PartId } from "../../shell/routes.ts";
 import type { StaffSession } from "../../staffSession.ts";
 import { KitPart } from "../../ui/kit.tsx";
+import { usePageTheme, type PageTheme } from "../../ui/pageTheme.ts";
 import { kitCommon, type KitMissing } from "../../kitParts.ts";
 import { Loaded, LoadFailed, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { DAYS, hoursBetween, isTime, placeOf, readSettings, weekFrom, workDaysOf, type Day, type SettingsRow } from "./data.ts";
@@ -152,6 +153,8 @@ export function WorkingTime({ session, f, rights }: { session: StaffSession; f: 
 
 interface MapProps {
   maps: unknown;
+  /** The page's theme, said each time it changes: the map asks its server for that style. */
+  theme: PageTheme;
   pins: { id: string; label: string; lat: number; lng: number; by?: "town" }[];
   locale: string;
   dir: "ltr" | "rtl";
@@ -211,9 +214,11 @@ export function Places({ session, rights }: { session: StaffSession; rights: Rig
     },
     [row, session, soon, t],
   );
+  const theme = usePageTheme();
   const props = useMemo<MapProps>(
     () => ({
       maps: session.config.maps ?? { enabled: false, server: null, routing: false },
+      theme,
       pins: place === null ? [] : [{ id: "depot", label, lat: place.lat, lng: place.lng, ...(place.by === "town" ? { by: "town" as const } : {}) }],
       locale: common.locale,
       dir: common.dir,
@@ -226,7 +231,7 @@ export function Places({ session, rights }: { session: StaffSession; rights: Rig
       onPlacingStop: () => setPlacing(false),
       ...(can ? { onMovePin: moved, onPlacePin: moved } : {}),
     }),
-    [session, place?.lat, place?.lng, place?.by, label, common.locale, common.dir, t, placing, can, moved],
+    [session, theme, place?.lat, place?.lng, place?.by, label, common.locale, common.dir, t, placing, can, moved],
   );
   const missing = (why: KitMissing, retry: () => void) => (why === "failed" ? <LoadFailed reload={retry} /> : <p className="crm-ast-none">{t("aset.depot.nomap")}</p>);
 

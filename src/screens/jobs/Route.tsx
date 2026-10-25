@@ -28,6 +28,7 @@ import { ScreenLink, useNav } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import type { StaffSession } from "../../staffSession.ts";
 import { KitPart } from "../../ui/kit.tsx";
+import { usePageTheme, type PageTheme } from "../../ui/pageTheme.ts";
 import { Loaded, LoadFailed, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf } from "../../ui/toast.tsx";
 import { dayKeyOf, ofDay, placeOf, readBooked, readDayHours, readJobs, startOf, weekColumns, type CrewFacts, type Job, type JobSettings, type Visit } from "./data.ts";
@@ -66,6 +67,8 @@ interface MapPin {
 }
 interface MapProps {
   maps: { enabled: boolean; server: string | null; routing?: boolean };
+  /** The page's theme, said each time it changes: the map asks its server for that style. */
+  theme: PageTheme;
   pins: MapPin[];
   locale: string;
   dir: "ltr" | "rtl";
@@ -243,6 +246,7 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
     [session, crews.settings, t, onSaved],
   );
 
+  const theme = usePageTheme();
   const mapProps = useMemo<MapProps | null>(() => {
     if (depot === null && placed.every((one) => one.stop === null)) return null;
     const common = kitCommon(config, locale);
@@ -252,6 +256,7 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
     ];
     return {
       maps: config.maps ?? { enabled: false, server: null, routing: false },
+      theme,
       pins,
       locale: config.locale ?? common.locale,
       dir: config.dir ?? dir,
@@ -268,7 +273,7 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
       settingsHref: runsInstall ? "/settings/maps" : undefined,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the pins are named by `wayKey`
-  }, [wayKey, config, locale, dir, t, crew?.name, day, unit, canMoveStop, canMoveDepot, onMovePin, runsInstall, crewIndex]);
+  }, [wayKey, config, theme, locale, dir, t, crew?.name, day, unit, canMoveStop, canMoveDepot, onMovePin, runsInstall, crewIndex]);
 
   useEffect(() => setReversed(false), [day, crewId]);
 

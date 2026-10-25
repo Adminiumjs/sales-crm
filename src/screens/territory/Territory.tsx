@@ -33,6 +33,7 @@ import type { KitMissing } from "../../kitParts.ts";
 import { newClientKey } from "../../staffSession.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { KitPart } from "../../ui/kit.tsx";
+import { usePageTheme, type PageTheme } from "../../ui/pageTheme.ts";
 import { LoadFailed, Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { addressOf } from "../accounts/data.ts";
@@ -55,6 +56,8 @@ interface MapPin {
 }
 interface MapProps {
   maps: { enabled: boolean; server: string | null; routing?: boolean };
+  /** The page's theme, said each time it changes: the map asks its server for that style. */
+  theme: PageTheme;
   pins: MapPin[];
   areas: { id: string; name: string; geometry: AreaGeometry; colour: number }[];
   locale: string;
@@ -183,6 +186,7 @@ export function Territory(_props: ScreenProps) {
     setEditing(false);
   }, [status]);
 
+  const theme = usePageTheme();
   const mapProps = useMemo<MapProps | null>(() => {
     if (data === null) return null;
     const byId = new Map(data.territories.map((one) => [one.id, one]));
@@ -197,6 +201,7 @@ export function Territory(_props: ScreenProps) {
     const picked = pick?.kind === "territory" ? byId.get(pick.id) : undefined;
     return {
       maps: config.maps ?? { enabled: false, server: null, routing: false },
+      theme,
       pins,
       areas: data.territories.flatMap((one) => (one.area === null ? [] : [{ id: String(one.id), name: one.name, geometry: one.area, colour: one.colour }])),
       locale: config.locale ?? locale,
@@ -218,7 +223,7 @@ export function Territory(_props: ScreenProps) {
       onAreaChange: canEdit && target !== null ? onAreaChange : undefined,
       settingsHref: runsInstall ? "/settings/maps" : undefined,
     };
-  }, [data, config, locale, dir, t, pick, placing, editing, target, canPlace, canEdit, runsInstall, onSelect, onSelectArea, onMovePin, onPlacePin, onPlacingStop, onAreaChange]);
+  }, [data, config, theme, locale, dir, t, pick, placing, editing, target, canPlace, canEdit, runsInstall, onSelect, onSelectArea, onMovePin, onPlacePin, onPlacingStop, onAreaChange]);
 
   const noKit = (why: KitMissing, retry: () => void) =>
     why === "failed" ? (
