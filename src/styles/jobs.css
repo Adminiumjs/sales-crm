@@ -673,6 +673,38 @@ button.crm-jb-tick {
     inline-size: 100%;
     background: #fff;
   }
+  /* Only the layout takes room on paper. The screen around it, though hidden, kept its height and made pages of its
+     own, and the dialog's scrim, fixed to the screen, is drawn again on every page: the sheet printed twice. So all
+     else is taken out, and what holds the layout lets it run from the top of the first page (a longer sheet goes on
+     to a second page rather than being cut). */
+  body:has(.crm-jb-print) *:not(:has(.crm-jb-print)):not(.crm-jb-print):not(.crm-jb-print *) {
+    display: none !important;
+  }
+  body:has(.crm-jb-print) *:has(.crm-jb-print) {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    min-block-size: 0 !important;
+    max-block-size: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  html:has(.crm-jb-print),
+  body:has(.crm-jb-print) {
+    min-block-size: 0 !important;
+    block-size: auto !important;
+  }
+  body:has(.crm-jb-print) .crm-jb-print {
+    position: static;
+  }
 }
 
 /* ── the route ───────────────────────────────────────────────────────────── */

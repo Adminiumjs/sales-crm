@@ -216,9 +216,12 @@ export const addLine = (session: StaffSession, sheet: number, draft: LineDraft, 
 export const changeLine = (session: StaffSession, line: Pick<SheetLine, "id">, draft: LineDraft): Promise<Saved<SheetLine>> =>
   session.update<SheetLine>("time_sheet_lines", line.id, { day: draft.day, what: draft.what.trim(), hours: draft.hours, travel_hours: draft.travel, visit_id: draft.visitId });
 
-/** Hours as typed (a comma or a point), between 0 and 24, in quarters at most two places: null when it is not. */
+/** Hours as typed (a comma or a point), between 0 and 24, in quarters at most two places: null when it is not. An Arabic phone types its own digits and decimal mark (`٦٫٥`): read as the same number. */
 export function readHours(text: string): number | null {
-  const clean = text.trim().replace(",", ".");
+  const clean = text
+    .trim()
+    .replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (digit) => String(digit.charCodeAt(0) & 0xf))
+    .replace(/[,\u066B]/, ".");
   if (clean === "") return 0;
   if (!/^\d{1,2}(\.\d{1,2})?$/.test(clean)) return null;
   const hours = Number(clean);
