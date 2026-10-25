@@ -310,6 +310,21 @@ export interface SignOffDraft {
   open: readonly Pick<CrewSnag, "text" | "due_on" | "put_right_note">[];
   /** The five checks' words, as the screen said them, in the columns' order. */
   checkWords: readonly string[];
+  /** An address the signed copy ALSO goes to (the job's contact gets one anyway); empty for none. */
+  copyTo?: string;
+}
+
+/** The longest address `sign_offs.copy_sent_to` holds. */
+export const COPY_TO_MAX = 200;
+
+/**
+ * Whether a typed address for the signed copy may go: empty (none), or an
+ * e-mail address as the server checks one (`rules.validation.format: "email"`
+ * on `sign_offs.copy_sent_to`), within the column's length.
+ */
+export function copyToOk(typed: string): boolean {
+  const text = typed.trim();
+  return text === "" || (text.length <= COPY_TO_MAX && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text));
 }
 
 /** The longest list of open snags a sign-off holds (`sign_offs.snags_at_signing`'s own bound). */
@@ -344,6 +359,9 @@ export function signOffLine(draft: SignOffDraft, key: string): NewLine {
   // What the customer was shown, written with the sign-off: the signed copy prints these (plan 68 S13).
   values["snags_at_signing"] = snagsAtSigning(draft.open);
   values["check_words"] = draft.checkWords.map((words) => words.replace(/\s+/g, " ").trim()).join("\n").slice(0, 1000);
+  // The extra address goes with the sign-off itself, so a sign-off kept on the phone with no signal keeps it too.
+  const copyTo = (draft.copyTo ?? "").trim();
+  if (copyTo !== "") values["copy_sent_to"] = copyTo;
   return {
     kind: "sign-off",
     dropOnRefusal: ["signature"],

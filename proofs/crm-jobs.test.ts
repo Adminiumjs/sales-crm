@@ -376,7 +376,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Number((await row('ada', 'sign_offs', made(await s.make('ada', 'sign_offs', { job_id: job, signer_name: 'Ana Belova', corrects_id: first }))))?.['version'])).toBe(2);
     });
 
-    it('mails the customer their signed copy (e-mail 17): to the job\'s contact, or to the address typed on the sign-off, with what is still to put right', async () => {
+    it('mails the customer their signed copy (e-mail 17): to the job\'s contact always, and also to the address typed on the sign-off, with what is still to put right', async () => {
       await s.emails();
       const { job } = await wonJob('Clinic reception desk');
       made(await s.make('ada', 'snags', { job_id: job, text: 'Edge trim lifting on the small table', stops_sign_off: false }));
@@ -385,10 +385,11 @@ for (const [dialect, reachable] of LEGS) {
       const second = made(await s.make('ada', 'sign_offs', { job_id: job, check_1: true, signer_name: 'Ana Belova', corrects_id: first, copy_sent_to: 'reception@fernway-clinics.com' }));
       await jobs();
       const box = await s.rows(`select kind, ${dialect === 'mysql' ? '`to`' : '"to"'} as address, sign_off_id, status, error from crm_outbox where sign_off_id in (${String(first)}, ${String(second)}) order by id`);
-      expect(box.map((one) => [one['kind'], one['address'], Number(one['sign_off_id'])])).toEqual([['signed-copy', ANA, first], ['signed-copy-to', 'reception@fernway-clinics.com', second]]);
+      // The typed address is an extra copy: the job's contact gets the corrected one too.
+      expect(box.map((one) => [one['kind'], one['address'], Number(one['sign_off_id'])])).toEqual([['signed-copy', ANA, first], ['signed-copy', ANA, second], ['signed-copy-to', 'reception@fernway-clinics.com', second]]);
       for (const one of box) expect(['sent', 'queued'], `${String(one['kind'])}: ${String(one['error'])}`).toContain(one['status']);
       const mails = (await s.emails()).filter((mail) => mail.templateKey === 'crm-signed-copy' && mail.subject.endsWith('Clinic reception desk'));
-      expect(mails.map((mail) => mail.to)).toEqual([ANA, 'reception@fernway-clinics.com']);
+      expect(mails.map((mail) => mail.to)).toEqual([ANA, ANA, 'reception@fernway-clinics.com']);
       for (const mail of mails) {
         expect(mail.subject).toBe('Your signed copy: Clinic reception desk');
         // The day it was signed, and what is still to put right (plan 68 S13: no facts table, no job code).

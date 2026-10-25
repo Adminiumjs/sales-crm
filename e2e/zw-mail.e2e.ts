@@ -26,8 +26,9 @@ import { inflateSync } from "node:zlib";
 
 import type { APIRequestContext, Browser, Page } from "@playwright/test";
 
+import { crew } from "../src/i18n/strings/crew.ts";
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
 import { mailbox, readState, STAND_DIR } from "./stand.mjs";
 import { asOwner, bookedVisit, setStandClock, standNow, takeAwayJobs, until, wonJobs } from "./zw-helpers.ts";
 
@@ -331,6 +332,7 @@ test("the quote's e-mail: its button opens the quote with no sign-in, Accept wit
 const SIGNED = "zw-mail signed:";
 const BLUE = 1;
 const TODAY = "2026-07-28";
+const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
 
 /** Yusuf signs off a visit's job by the server's own door, as his phone's queue sends it (the sign-off on the phone: `crew-signoff.e2e.ts`). */
 async function crewSignOff(yusuf: APIRequestContext, data: Data, visit: number, extra: Record<string, unknown> = {}): Promise<number> {
@@ -339,7 +341,7 @@ async function crewSignOff(yusuf: APIRequestContext, data: Data, visit: number, 
   return ((await res.json()) as { data: { id: number } }).data.id;
 }
 
-test("e-mail 17 after a crew sign-off: who signed, when, the job, the open snags, the signed copy attached; in Arabic the HTML copy; and to a typed address that is not the job's contact", async ({ api, data, stand }) => {
+test("e-mail 17 after a crew sign-off: who signed, when, the job, the open snags, the signed copy attached; in Arabic the HTML copy; and also to an address typed on the phone's form", async ({ as, api, data, stand }) => {
   test.setTimeout(600_000);
   test.skip(!stand.parts.includes("jobs"), "Jobs on site arrives with stage 2");
   const tessa = await api("tessa");
@@ -361,7 +363,7 @@ test("e-mail 17 after a crew sign-off: who signed, when, the job, the open snags
     wonAt = Date.now();
     const adaHeaders = await csrf(ada);
     for (const one of jobs) expect((await rowsOf<{ contact_id: number | null }>(tessa, data, "jobs", { column: "id", op: "eq", value: one.job }))[0]!.contact_id).toBe(contact.id);
-    const visits = [];
+    const visits: number[] = [];
     for (const [i, one] of jobs.entries()) visits.push(await bookedVisit(ada, data, one.job, BLUE, TODAY, ["12:00", "14:30", "17:00"][i]!, `${SIGNED} fitting ${String(i + 1)}`));
     const titles = await Promise.all(jobs.map(async (one) => (await rowsOf<{ title: string }>(tessa, data, "jobs", { column: "id", op: "eq", value: one.job }))[0]!.title));
 
@@ -388,18 +390,61 @@ test("e-mail 17 after a crew sign-off: who signed, when, the job, the open snags
     const text = pdfText(bytes);
     console.info(`[zw-mail] the PDF names the signer in its plain text: ${String(text.includes("Petra Holm"))}`);
 
-    // 2. A typed address that is not the job's contact: the copy goes there (and not to the contact).
+    // 2. An address typed on the phone's form (in Arabic first, only looked at; then signed in English): the copy goes
+    // there AND to the job's contact.
     const typed = "site.office@harbour-fitouts.stand";
-    await crewSignOff(yusuf, data, visits[1]!, { copy_sent_to: typed });
+    const ar = (key: keyof (typeof crew)["ar-EG"]): string => crew["ar-EG"][key];
+    await inArabic(yusuf, async () => {
+      const look = await (await as("f_yusuf", PHONE)).newPage();
+      const said = watch(look);
+      await look.goto(`${STAFF}sign-off-the-job/${String(visits[2]!)}`);
+      await expect(look.locator("html")).toHaveAttribute("dir", "rtl");
+      const field = look.getByLabel(ar("cw.sign.copyTo"));
+      await expect(field).toBeVisible();
+      await expect(look.getByTestId("cw-sign-copyto")).toContainText(ar("cw.sign.copyTo.hint"));
+      await field.fill("site.office");
+      await field.blur();
+      await expect(look.getByTestId("cw-sign-copyto-bad")).toHaveText(ar("cw.sign.copyTo.bad"));
+      // The words right to left, the address itself left to right, set at the line's start (the right); nothing wider than the phone.
+      expect(await look.getByTestId("cw-sign-copyto-bad").evaluate((el) => getComputedStyle(el).direction)).toBe("rtl");
+      expect(await field.evaluate((el) => [getComputedStyle(el).direction, getComputedStyle(el).textAlign])).toEqual(["ltr", "right"]);
+      expect(await look.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      await field.scrollIntoViewIfNeeded();
+      await picture(look, "zw-mail-copyto-ar");
+      expect(said.filter((line) => !/^Connecting to 'blob:.*Content Security Policy/.test(line))).toEqual([]);
+      await look.context().close();
+    });
+    const page = await (await as("f_yusuf", PHONE)).newPage();
+    const problems = watch(page);
+    await page.goto(`${STAFF}sign-off-the-job/${String(visits[1]!)}`);
+    await expect(page.locator("button[data-check]")).toHaveCount(5);
+    for (const check of await page.locator("button[data-check]").all()) if ((await check.getAttribute("aria-checked")) !== "true") await check.tap();
+    await page.getByLabel("Their name").fill("Petra Holm");
+    const pad = page.getByTestId("cw-sign-customer");
+    await pad.getByRole("button", { name: "Type the name instead" }).tap();
+    await pad.getByLabel("Name, as the signature").fill("Petra Holm");
+    await pad.getByRole("button", { name: "Keep this signature" }).tap();
+    await expect(pad).toContainText("The job’s contact gets the copy anyway.");
+    await page.getByLabel("Also send the signed copy to").fill(typed);
+    await expect(page.getByTestId("cw-sign-hint")).toHaveText("Ready to sign off.");
+    await page.getByTestId("cw-sign-go").tap();
+    await expect(page.getByTestId("cw-signed-page")).toBeVisible({ timeout: 30_000 });
+    expect(problems.filter((line) => !/^Connecting to 'blob:.*Content Security Policy/.test(line))).toEqual([]);
+    await page.context().close();
+    const [onForm] = await rowsOf<{ copy_sent_to: string | null }>(tessa, data, "sign_offs", { column: "job_id", op: "eq", value: jobs[1]!.job });
+    expect(onForm!.copy_sent_to).toBe(typed);
     const [elsewhere] = await mailsTo(typed, new RegExp(`^Your signed copy: ${titles[1]!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
     expect(words(elsewhere!)).toContain(`thank you for signing off ${titles[1]!}`);
     expect(elsewhere!.attachments.some((one) => one.contentType === "application/pdf")).toBe(true);
+    const [theirs] = await mailsTo(contact.email!, new RegExp(`^Your signed copy: ${titles[1]!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
+    expect(words(theirs!)).toContain(`Hello ${first}, thank you for signing off ${titles[1]!}`);
+    // One each: the typed address is a second copy, never a second mail to the same person.
     await new Promise((done) => setTimeout(done, 3000));
-    expect(((await mailbox()) as Mail[]).filter((one) => one.to.includes(contact.email!) && one.subject.includes(titles[1]!))).toEqual([]);
+    expect(((await mailbox()) as Mail[]).filter((one) => one.subject.includes(titles[1]!)).map((one) => one.to.join(",").toLowerCase()).sort()).toEqual([contact.email!.toLowerCase(), typed].sort());
 
     // 3. A customer written to in Arabic (the workspace's language, as no contact holds one): the mail in Arabic, the HTML copy.
-    const ar = await owner.put("/api/v1/settings/defaults", { data: { ...workspace, locale: "ar_EG" }, headers: ownerHeaders });
-    expect(ar.status(), await ar.text()).toBe(200);
+    const arabicWorkspace = await owner.put("/api/v1/settings/defaults", { data: { ...workspace, locale: "ar_EG" }, headers: ownerHeaders });
+    expect(arabicWorkspace.status(), await arabicWorkspace.text()).toBe(200);
     await crewSignOff(yusuf, data, visits[2]!);
     const all = await until(async () => ((await mailbox()) as Mail[]).filter((one) => one.to.includes(contact.email!) && one.subject.includes(titles[2]!)), (found) => found.length > 0, 90_000);
     const arabic = all[0];

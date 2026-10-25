@@ -17,6 +17,11 @@
  *    signal: kept on the phone, nothing saved; once back, the reply to the
  *    create is lost, the same create goes again with the same key, and ONE
  *    sign-off is made;
+ *  - an extra address for the signed copy, typed on the form: one that is
+ *    not an e-mail address holds the sign-off back, said when he leaves the
+ *    field; a good one is kept with the refused try, with the sign-off kept
+ *    on the phone, and goes with the one sign-off made: one copy to it, one
+ *    to the job's contact;
  *  - a return visit to that job shows the sign-off read-only, its signature
  *    and photo drawn from the files.
  *
@@ -37,6 +42,8 @@ const BLUE = 1;
 const J07_VISIT = 7;
 const NAME = "Spec crew: canteen benches";
 const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
+/** The extra address for the signed copy: a reserved name, so the stand's sender never tries it. */
+const COPY_TO = "site.office@canteen.example";
 
 /** A small PNG, a few colours wide: what a phone's camera hands the photo field. */
 function photoPng(): Buffer {
@@ -216,6 +223,18 @@ test("a job signed off from its visit as one request: refused with its files thr
       await expect(page.getByTestId("cw-sign-hint")).toHaveText("Ready to sign off.");
     };
     await fill();
+    // An extra address for the signed copy: one that is not an address holds the sign-off back, said once he leaves the field.
+    const copyTo = page.getByLabel("Also send the signed copy to");
+    await copyTo.fill("site office at the canteen");
+    await expect(page.getByTestId("cw-sign-hint")).toHaveText("Still needed: a correct e-mail address for the copy.");
+    await expect(page.getByTestId("cw-sign-go")).toBeDisabled();
+    await expect(page.getByTestId("cw-sign-copyto-bad")).toHaveCount(0);
+    await copyTo.blur();
+    await expect(page.getByTestId("cw-sign-copyto-bad")).toHaveText("That is not an e-mail address. Check it, or leave it empty.");
+    await expect(copyTo).toHaveAttribute("aria-invalid", "true");
+    await copyTo.fill(COPY_TO);
+    await expect(page.getByTestId("cw-sign-copyto-bad")).toHaveCount(0);
+    await expect(page.getByTestId("cw-sign-hint")).toHaveText("Ready to sign off.");
     // Kept on the phone until the sign-off goes: nothing has been sent yet.
     expect(files).toEqual([]);
 
@@ -235,6 +254,7 @@ test("a job signed off from its visit as one request: refused with its files thr
     await expect(page.getByTestId("cw-sign-customer").getByRole("button", { name: "Keep this signature" })).toBeVisible();
     await expect(page.locator('button[data-check][aria-checked="true"]')).toHaveCount(5);
     await expect(page.getByLabel("Their name")).toHaveValue("Petra Holm");
+    await expect(page.getByLabel("Also send the signed copy to")).toHaveValue(COPY_TO);
     await expect(page.getByTestId("cw-held-photos").locator("img")).toHaveCount(1);
     await expect(page.getByTestId("cw-sign-hint")).toHaveText("“Spec crew: a bench rocks on the slope” stops the sign-off. Put it right first.");
     await picture(page, "p22-7-yusuf-refused");
@@ -262,6 +282,7 @@ test("a job signed off from its visit as one request: refused with its files thr
     await expect(page.locator(`[data-snag="${String(((await scuff.json()) as { data: { id: number } }).data.id)}"]`)).toContainText("Spec crew: a scuff on the end panel");
     await expect(page.locator('button[data-check][aria-checked="true"]')).toHaveCount(5);
     await expect(page.getByLabel("Their name")).toHaveValue("Petra Holm");
+    await expect(page.getByLabel("Also send the signed copy to")).toHaveValue(COPY_TO);
     const pad = page.getByTestId("cw-sign-customer");
     await pad.getByRole("button", { name: "Type the name instead" }).click();
     await pad.getByLabel("Name, as the signature").fill("Petra Holm");
@@ -272,6 +293,7 @@ test("a job signed off from its visit as one request: refused with its files thr
     await expect(page.locator(".crm-toast").last()).toHaveText("Kept on this phone. It goes when you have signal.");
     await expect(page.getByTestId("cw-sign-kept")).toBeVisible();
     await expect(page.getByTestId("cw-kept-line")).toHaveText("Waiting to send: the office gets it when this phone has signal.");
+    await expect(page.getByTestId("cw-kept-copyto")).toHaveText(`The signed copy also goes to ${COPY_TO}.`);
     expect(await rows(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId })).toEqual([]);
 
     // Back online, and the reply to the create is lost on its way: the same create, with the same key, answers the first one's row.
@@ -295,8 +317,10 @@ test("a job signed off from its visit as one request: refused with its files thr
     await page.unroute("**/api/v1/data/**");
     expect(sent.length).toBe(2);
     expect(sent[1]).toEqual({ key: sent[0]!.key, replayed: true });
-    const made = await rows<{ id: number; signer_name: string; signature: string; photos: unknown; check_5: boolean; snags_at_signing: string | null; check_words: string | null }>(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId });
-    expect(made.map((one) => [one.signer_name, one.check_5, one.signature.startsWith("file_")])).toEqual([["Petra Holm", true, true]]);
+    const made = await rows<{ id: number; signer_name: string; signature: string; photos: unknown; check_5: boolean; snags_at_signing: string | null; check_words: string | null; copy_sent_to: string | null }>(context.request, data, "sign_offs", { column: "job_id", op: "eq", value: jobId });
+    expect(made.map((one) => [one.signer_name, one.check_5, one.signature.startsWith("file_"), one.copy_sent_to])).toEqual([["Petra Holm", true, true, COPY_TO]]);
+    // Sent once, though the create went twice: one copy to the typed address, one to the job's contact.
+    await expect.poll(async () => (await rows<{ kind: string }>(await asOwner(), data, "outbox", { column: "sign_off_id", op: "eq", value: made[0]!.id })).map((one) => one.kind).sort(), { timeout: 30_000 }).toEqual(["signed-copy", "signed-copy-to"]);
     // What his screen showed the customer went with it, from the phone's queue: the snag still open (not the one put
     // right), and the five checks in the words he read them in.
     expect(JSON.parse(made[0]!.snags_at_signing ?? "null")).toEqual([{ what: "Spec crew: a scuff on the end panel", by: scuffDue, note: "" }]);

@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import { StaffError } from "../../staffSession.ts";
-import { addressLines, checksOf, crewsOf, fileIds, lastShift, mapsHref, offersSignOff, putRightLine, signOffLine, SNAGS_AT_SIGNING_MAX, snagLine, snagsAtSigning, snagOrder, stoppers, telHref, tickLine, ticksOpen, timeSpan, weekDays, type CrewSnag } from "./data.ts";
+import { addressLines, checksOf, COPY_TO_MAX, copyToOk, crewsOf, fileIds, lastShift, mapsHref, offersSignOff, putRightLine, signOffLine, SNAGS_AT_SIGNING_MAX, snagLine, snagsAtSigning, snagOrder, stoppers, telHref, tickLine, ticksOpen, timeSpan, weekDays, type CrewSnag } from "./data.ts";
 import { recordKey, signWhy } from "./queue.tsx";
 
 const snag = (over: Partial<CrewSnag>): CrewSnag => ({ id: 1, job_id: 7, visit_id: 7, text: "Cable trays", stops_sign_off: false, state: "open", raised_on: "2026-07-21", raised_by_id: null, raised_by_contact_id: null, due_on: "2026-07-27", put_right_on: null, put_right_note: null, code: null, title: null, site: null, photo: null, put_right_photo: null, ...over });
@@ -154,6 +154,20 @@ describe("a save of the phone's: a line of the offline queue (plan 68 S19)", () 
     expect(line.dropOnRefusal).toEqual(["signature"]);
     expect(line.meta).toMatchObject({ visit: 7, job: 3, signer: "Yusuf Demir", checks: 5, photos: 1 });
     expect(line.op.type === "create" && checksOf(line.op.values)).toEqual([true, true, true, true, true]);
+  });
+
+  it("sends the signed copy also to an address typed on the form, with the sign-off itself, and checks it as the server does", () => {
+    const words = ["a", "b", "c", "d", "e"];
+    const draft = { visitId: 7, jobId: 3, site: "T", checks: [true, true, true, true, true], signer: "Y", signature: HELD_SIG, photos: [], open: [], checkWords: words };
+    const typed = signOffLine({ ...draft, copyTo: "  site.office@tandem.example " }, "KEY3");
+    expect(typed.op.type === "create" && typed.op.values["copy_sent_to"]).toBe("site.office@tandem.example");
+    // None typed: the column is left out, as before (the job's contact gets the copy either way).
+    for (const copyTo of [undefined, "", "   "]) {
+      const none = signOffLine({ ...draft, ...(copyTo === undefined ? {} : { copyTo }) }, "KEY4");
+      expect(none.op.type === "create" && "copy_sent_to" in none.op.values).toBe(false);
+    }
+    for (const ok of ["", "  ", "a@b.co", " site.office@harbour-fitouts.stand ", "ana+copy@fernway-clinics.com"]) expect(copyToOk(ok), ok).toBe(true);
+    for (const bad of ["ana", "ana@", "ana@fernway", "@fernway.com", "ana belova@fernway.com", "ana@fern way.com", `${"a".repeat(COPY_TO_MAX)}@x.co`]) expect(copyToOk(bad), bad).toBe(false);
   });
 
   it("keeps the open snags within the column's bound by dropping the last ones, never the list's shape", () => {

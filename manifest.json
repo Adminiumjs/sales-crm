@@ -15233,6 +15233,11 @@
               "ar-EG": "أُرسلت نسخة إلى",
               "zh-CN": "副本发送至",
               "zh-TW": "副本寄送至"
+            },
+            "rules": {
+              "validation": {
+                "format": "email"
+              }
             }
           },
           {
@@ -30771,11 +30776,7 @@
         "module": "jobs",
         "link": "sign_off_id",
         "onCreate": {
-          "table": "sign_offs",
-          "where": {
-            "column": "copy_sent_to",
-            "isNull": true
-          }
+          "table": "sign_offs"
         }
       },
       {
