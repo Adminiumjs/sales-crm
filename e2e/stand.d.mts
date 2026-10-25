@@ -31,6 +31,8 @@ export interface StandState {
   /** The one sample person left as the product leaves them (`CRM_STAND_SAMPLE_PERSON`), or null. */
   samplePerson?: string | null;
   ready?: boolean;
+  /** The mail catcher, on a stand started with CRM_STAND_MAIL=1. */
+  mail?: { pid: number; smtpPort: number; url: string };
 }
 export const STAND_DIR: string;
 export const STATE_FILE: string;
@@ -42,3 +44,7 @@ export function standUp(): Promise<StandState>;
 export function standDown(): Promise<void>;
 /** The code of a quote's own link, read from the stand's database: the customer's inbox, stood in for. */
 export function linkCodeOf(quoteId: number): Promise<string>;
+/** The mails the stand has sent, oldest first (a stand started with CRM_STAND_MAIL=1). */
+export function mailbox(): Promise<unknown[]>;
+/** Forget every mail kept so far. */
+export function clearMailbox(): Promise<void>;
