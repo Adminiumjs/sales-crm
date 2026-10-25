@@ -53,30 +53,40 @@ function useNarrow(): boolean {
   return narrow;
 }
 
-/** Light or dark: the person's choice on this browser, else what the device prefers. */
+/** Light or dark: the person's choice on this browser, else what the device prefers, followed while the page is open. */
 function useTheme(): { dark: boolean; toggle: () => void } {
-  const [dark, setDark] = useState(() => {
+  const [chosen, setChosen] = useState<boolean | null>(() => {
     try {
       const kept = localStorage.getItem(THEME_KEY);
       if (kept === "dark" || kept === "light") return kept === "dark";
     } catch {
       // No storage: the device's preference stands.
     }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return null;
   });
+  const [device, setDevice] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+  // Nobody chose on this browser: the page follows the device when it changes its mind (the evening's dark mode).
+  useEffect(() => {
+    if (chosen !== null) return undefined;
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const follow = (): void => setDevice(query.matches);
+    follow();
+    query.addEventListener("change", follow);
+    return () => query.removeEventListener("change", follow);
+  }, [chosen]);
+  const dark = chosen ?? device;
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
   }, [dark]);
   const toggle = useCallback(() => {
-    setDark((was) => {
-      try {
-        localStorage.setItem(THEME_KEY, was ? "light" : "dark");
-      } catch {
-        // Not remembered, still switched.
-      }
-      return !was;
-    });
-  }, []);
+    const next = !dark;
+    try {
+      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
+    } catch {
+      // Not remembered, still switched.
+    }
+    setChosen(next);
+  }, [dark]);
   return { dark, toggle };
 }
 

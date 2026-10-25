@@ -35,6 +35,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { dealConditions } from "../own/data.ts";
 import { useSavedView, ViewBar } from "../own/savedView.tsx";
 import { KitPart } from "../../ui/kit.tsx";
+import { usePageTheme } from "../../ui/pageTheme.ts";
 import { LoadFailed, Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
@@ -213,12 +214,7 @@ export function Pipeline(props: ScreenProps) {
   // What the latest read holds, for a move's answer that arrives after it.
   const held = useRef(data);
   held.current = data;
-  const [theme, setTheme] = useState<"light" | "dark">(() => (document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light"));
-  useEffect(() => {
-    const watch = new MutationObserver(() => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light"));
-    watch.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => watch.disconnect();
-  }, []);
+  const theme = usePageTheme();
 
   const me = config.user?.id ?? null;
   const markOf = useCallback(
