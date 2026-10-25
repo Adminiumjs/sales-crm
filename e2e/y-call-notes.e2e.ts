@@ -93,7 +93,7 @@ test("Dana opens d1's call notes from its room: the ledger's figures, where it w
   expect(problems).toEqual([]);
 });
 
-test("a call logged by keyboard, its reply dropped: one call, one next step; the manager's open room follows; manager and helper log too", async ({ as, api, data }) => {
+test("a call logged by keyboard, its reply dropped: one call, one next step; the manager's open room follows; the manager logs too, a helper does not", async ({ as, api, data }) => {
   const context = await as("dana");
   const dana = context.request;
   const name = "Spec: call notes";
@@ -187,17 +187,27 @@ test("a call logged by keyboard, its reply dropped: one call, one next step; the
       [ivyId, "price the trial set"],
     ]);
 
-    // A HELPER: Dana adds Priya; Priya logs a call with no mark: the call alone.
+    // A HELPER (ruling 1d): Dana adds Priya. Priya reads where the deal was left and logs nothing on it: Dana does. She is
+    // told so where the notes box would be.
     expect((await dana.post(data("deal_members"), { data: { values: { deal_id: dealId, user_id: priyaId } }, headers: await csrf(dana) })).status()).toBe(201);
     const priyaContext = await as("priya");
     const hers = await priyaContext.newPage();
+    const herProblems = watch(hers);
     await hers.goto(`${STAFF}deals/${String(dealId)}/call`);
     await expect(hers.getByRole("heading", { level: 1 })).toHaveText(name);
-    await hers.getByRole("textbox", { name: "Notes from the call" }).fill("Covered the delivery question for Dana.");
-    await hers.getByRole("button", { name: "Log the call" }).click();
-    await expect(hers.locator(".crm-toast")).toHaveText("Call logged.");
-    expect((await calls(dana, data, dealId)).map((one) => one.author_id)).toEqual([danaId, ivyId, priyaId]);
-    expect((await steps(dana, data, dealId)).length).toBe(1);
+    await expect(hers.getByTestId("call-helping")).toHaveText("You’re helping on this deal: Dana logs its calls. Say what you know in its comments.");
+    await expect(hers.getByRole("textbox", { name: "Notes from the call" })).toHaveCount(0);
+    await expect(hers.getByRole("button", { name: "Log the call" })).toHaveCount(0);
+    await expect(hers.getByTestId("call-live")).toHaveCount(0);
+    await expect(hers.getByTestId("call-last").locator("li").first()).toContainText("price the trial set");
+    // Her room has no "Call notes" link and no composer either.
+    await hers.goto(`${STAFF}deals/${String(dealId)}`);
+    await expect(hers.getByTestId("room-helping")).toBeVisible();
+    await expect(hers.getByRole("link", { name: "Call notes" })).toHaveCount(0);
+    await expect(hers.getByRole("form", { name: "Log it" })).toHaveCount(0);
+    expect(herProblems).toEqual([]);
+    expect((await calls(dana, data, dealId)).map((one) => one.author_id)).toEqual([danaId, ivyId]);
+    expect((await steps(dana, data, dealId)).length).toBe(2);
   } finally {
     await removeDeals(await api("tessa"), data, "Spec: call");
   }

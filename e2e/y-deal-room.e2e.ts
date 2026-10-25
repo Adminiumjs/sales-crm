@@ -332,7 +332,7 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   await retire(api, data, "Room spec: work");
 });
 
-test("also on this deal: the owner adds a colleague, who then opens it and may add nobody; she takes them off again", async ({ as, api, data, stand }) => {
+test("also on this deal: the owner adds a colleague, who then reads it, comments and changes nothing; she takes them off again", async ({ as, api, data, stand }) => {
   const context = await as("dana");
   const dana = context.request;
   const headers = await csrf(dana);
@@ -374,8 +374,22 @@ test("also on this deal: the owner adds a colleague, who then opens it and may a
   await expect(hers.getByRole("heading", { level: 1 })).toHaveText("Room spec: people");
   await expect(hers.getByTestId("room-on").locator(`[data-member="${priyaId}"]`)).toContainText("helping");
   await expect(hers.getByTestId("room-on").getByRole("button")).toHaveCount(0);
-  // She works the deal: the composer is hers too.
-  await expect(hers.getByRole("form", { name: "Log it" })).toBeVisible();
+  // She helps (ruling 1d): she reads it all and comments, and Dana makes the changes. Said where she would look for the
+  // controls, and none of them is drawn: no stage to press, no amount to change, no Close, no composer, no call notes.
+  await expect(hers.getByTestId("room-helping")).toHaveText("You’re helping on this deal: Dana makes the changes. You can read all of it and comment.");
+  await expect(hers.locator(".crm-room-steps button")).toHaveCount(0);
+  await expect(hers.locator(".crm-room-steps .crm-room-step")).not.toHaveCount(0);
+  await expect(hers.getByRole("button", { name: /^Change the amount/ })).toHaveCount(0);
+  await expect(hers.getByRole("button", { name: "Close: won or lost…" })).toHaveCount(0);
+  await expect(hers.getByRole("form", { name: "Log it" })).toHaveCount(0);
+  await expect(hers.getByRole("link", { name: "Call notes" })).toHaveCount(0);
+  await expect(hers.getByRole("link", { name: "Hand it over" })).toHaveCount(0);
+  await expect(hers.getByTestId("room-on")).toContainText("Dana makes the changes");
+  // The comments are hers: she says something on the deal.
+  await hers.getByRole("link", { name: "Comments" }).click();
+  await expect(hers).toHaveURL(new RegExp(`/deals/${String(deal.id)}/comments$`));
+  await hers.goBack();
+  await expect(hers.getByTestId("room-helping")).toBeVisible();
   // The server holds it: somebody on a deal adds nobody, and cannot take a row off the list.
   const priyaHeaders = await csrf(priya);
   const refused = await priya.post(data("deal_members"), { data: { values: { deal_id: deal.id, user_id: samId } }, headers: priyaHeaders });
