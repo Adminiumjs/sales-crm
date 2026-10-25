@@ -18,8 +18,11 @@
  *   `e2e/.results/walk/axe.json` and listed.
  *
  * It writes nothing of the sample. Leo is made a sales manager for one test and given back; the people walked in
- * Arabic get English back. Named `x-` to run after the screens' own specs and before the `y-`/`z-` files; it ends by
- * letting the minute's requests run out, so the files after it start with a person's whole minute.
+ * Arabic get English back. Named `a-` to run FIRST, on the stand as it was made: Today and This week put the stand's
+ * clock back to the ledger's 09:35 (`ledgerClock`), and the server's per-minute windows opened before that stay open
+ * until the clock catches up (its rate store reads the clock the stand moves), so a walk after them ran out of each
+ * person's requests for the forty minutes the clock was put back. It ends by letting the minute's requests run out,
+ * so the files after it start with a person's whole minute.
  *
  * On an install without Invoices and Inventory (`CRM_STAND_ADD_ONS=none`, run with `--grep walks`), the same walk
  * proves the smaller app: no Quotes line anywhere, Supply's lines open the page that says what Supply waits for.
@@ -31,7 +34,7 @@ import AxeBuilder from "@axe-core/playwright";
 import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { clockOn, csrf, minuteOut, STAFF, unfoldMenu } from "./helpers.ts";
+import { csrf, minuteOut, STAFF, unfoldMenu } from "./helpers.ts";
 import { STAND_DIR, type StandState } from "./stand.mjs";
 import { ROUTES, type RouteKey } from "../src/shell/routes.ts";
 
@@ -223,10 +226,6 @@ async function walk(context: BrowserContext, person: string, role: string, stand
     await page.close();
   }
 }
-
-// The walk reads no ledger figure: the clock goes on to the furthest it has been, so the per-minute windows that Today
-// and This week left open when they put it back to 09:35 are over (`clockOn`).
-test.beforeAll(() => clockOn());
 
 for (const { role, person, part } of WALKERS) {
   test(`walks the ${role}'s menu (${person}): every line opens a screen, every link it draws opens what it names`, async ({ as, stand }) => {

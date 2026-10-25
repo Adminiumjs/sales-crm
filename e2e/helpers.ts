@@ -1,5 +1,5 @@
 /** What the selling specs share: the app's address, a person's write token, a row by its name, and putting the sample back. */
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { request, type APIRequestContext, type Page } from "@playwright/test";
@@ -171,37 +171,6 @@ export async function unfoldMenu(page: Page): Promise<void> {
 export function ledgerClock(): void {
   const state = readState() as { pid: number; work: string; startedAt: string | null } | null;
   if (state === null || state.startedAt === null) return;
-  // The furthest the clock has been, to put it on again there later (`clockOn`).
-  const kept = join(state.work, "clock.before");
-  const before = existsSync(kept) ? (JSON.parse(readFileSync(kept, "utf8")) as { was: number; at: number }) : null;
-  const now = standNow(state.work);
-  const furthest = before === null ? now : Math.max(now, before.was + (Date.now() - before.at));
-  writeFileSync(kept, JSON.stringify({ was: furthest, at: Date.now() }));
   writeFileSync(join(state.work, "clock"), String(Date.parse(LEDGER_NOW)));
-  process.kill(state.pid, "SIGUSR2");
-}
-
-/** The stand's moment now, from the last one it was set to: the clock file says when, and it ran on from its writing. */
-function standNow(work: string): number {
-  const file = join(work, "clock");
-  const [at, mode] = readFileSync(file, "utf8").trim().split(/\s+/);
-  return mode === "still" ? Number(at) : Number(at) + (Date.now() - statSync(file).mtimeMs);
-}
-
-/**
- * Puts the stand's clock on again to the furthest it has been, as if `ledgerClock` had never put it back. The server's
- * per-minute windows opened before the clock went back stay open until it catches up (each person's 300 requests a
- * minute then last as long as it was put back): a heavy file that reads no ledger figure (the menu walk) starts here.
- */
-export function clockOn(): void {
-  const state = readState() as { pid: number; work: string; startedAt: string | null } | null;
-  if (state === null || state.startedAt === null) return;
-  const kept = join(state.work, "clock.before");
-  if (!existsSync(kept)) return;
-  const { was, at } = JSON.parse(readFileSync(kept, "utf8")) as { was: number; at: number };
-  rmSync(kept, { force: true });
-  const due = was + (Date.now() - at);
-  if (!Number.isFinite(due) || due <= standNow(state.work)) return;
-  writeFileSync(join(state.work, "clock"), String(due));
   process.kill(state.pid, "SIGUSR2");
 }
