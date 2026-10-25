@@ -123,6 +123,9 @@ describe("what a field holds", () => {
   it("reads a number between its bounds and nothing else", () => {
     expect(readNumber("21", [7, 45], true)).toBe(21);
     expect(readNumber(" 7 ", [7, 45], true)).toBe(7);
+    // An Arabic phone or keyboard types its own digits and decimal sign.
+    expect(readNumber("٢١", [7, 45], true)).toBe(21);
+    expect(readNumber("٢٫٥", [0, 50], false)).toBe(2.5);
     expect(readNumber("6", [7, 45], true)).toBeNull();
     expect(readNumber("46", [7, 45], true)).toBeNull();
     expect(readNumber("7.5", [0, 50], true)).toBeNull();

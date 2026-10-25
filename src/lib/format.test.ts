@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatters, monthOf, setWeekStart, weekOf } from "./format.ts";
+import { formatters, monthOf, setWeekStart, weekOf, westernDigits } from "./format.ts";
 
 const LONDON = { locale: "en-GB", currency: "GBP", timeZone: "Europe/London" };
 const at = (iso: string) => new Date(iso);
@@ -111,5 +111,11 @@ describe("a day and a time where the business is, as a moment", () => {
   it("writes a day with its year, and a share as a percentage", () => {
     const f = formatters(LONDON);
     expect([f.date(at("2026-05-12T11:00:00Z")), f.percent(3 / 8)]).toEqual(["12 May 2026", "38%"]);
+  });
+});
+
+describe("a number typed in another script's digits", () => {
+  it("reads Arabic-Indic and Persian digits, a comma and the Arabic decimal sign as a Western number", () => {
+    expect(["٦٫٥", "۷,۵", "12,5", "8"].map((text) => Number(westernDigits(text)))).toEqual([6.5, 7.5, 12.5, 8]);
   });
 });

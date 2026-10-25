@@ -17,7 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
-import { addDays, type Formatters } from "../../lib/format.ts";
+import { addDays, westernDigits, type Formatters } from "../../lib/format.ts";
 import { Icon } from "../../shell/icons.tsx";
 import { newClientKey, type Saved, type StaffSession } from "../../staffSession.ts";
 import { Dialog } from "../../ui/dialog.tsx";
@@ -86,8 +86,8 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
   const before = moved.state === "ready" ? moved.data : null;
 
   const job = jobs.find((one) => one.id === jobId) ?? null;
-  const hoursN = Number(hours.replace(",", "."));
-  const sizeN = Number(size);
+  const hoursN = Number(westernDigits(hours));
+  const sizeN = Number(westernDigits(size));
   const validDay = /^\d{4}-\d{2}-\d{2}$/.test(day);
   const stockDay = isAdd ? (/^\d{4}-\d{2}-\d{2}$/.test(stock) ? stock : null) : dayKeyOf(visit?.stock_ready_on);
   // An added visit may be left without a day: it waits in "To book".

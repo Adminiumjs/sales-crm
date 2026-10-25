@@ -203,3 +203,10 @@ export function addDays(dayKey: string, days: number): string {
 export function noonOf(dayKey: string): Date {
   return new Date(`${dayKey}T12:00:00Z`);
 }
+
+/**
+ * A number as a person typed it, in whatever digits their phone or keyboard gives (Arabic-Indic ٠–٩, Persian ۰–۹) and with
+ * a comma or the Arabic decimal sign: the same text in Western digits with a point, for `Number()` to read.
+ */
+export const westernDigits = (text: string): string =>
+  text.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (digit) => String(digit.charCodeAt(0) & 0xf)).replace(/[,\u066B]/, ".");

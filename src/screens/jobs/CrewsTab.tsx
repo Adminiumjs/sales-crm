@@ -15,6 +15,7 @@
 import { useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
+import { westernDigits } from "../../lib/format.ts";
 import { Icon } from "../../shell/icons.tsx";
 import { newClientKey, type Person, type StaffSession } from "../../staffSession.ts";
 import { Loaded, LoadFailed, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
@@ -95,7 +96,7 @@ function CrewCard({ crew, index, facts, people, onDone }: { crew: Crew; index: n
     void run(session.update("crews", crew.id, { name: name.trim() }, { seen: { name: crew.name } }), t("jb.set.renamed", { crew: name.trim() }));
   };
   const saveHours = (): void => {
-    const next = hours.trim() === "" ? null : Number(hours.replace(",", "."));
+    const next = hours.trim() === "" ? null : Number(westernDigits(hours));
     const was = crew.day_hours === null || crew.day_hours === "" ? null : num(crew.day_hours);
     if (next === was || (next !== null && (!Number.isFinite(next) || next < 1 || next > 16))) return setHours(was === null ? "" : String(was));
     void run(session.update("crews", crew.id, { day_hours: next }), t("jb.set.hours.saved", { crew: crew.name }));

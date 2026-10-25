@@ -11,7 +11,7 @@
  * is arithmetic on the settings themselves (the hours between two times of
  * day, a week's hours) and the walk along a calendar that counts working days.
  */
-import { addDays, type Formatters } from "../../lib/format.ts";
+import { addDays, westernDigits, type Formatters } from "../../lib/format.ts";
 import type { Condition, Grouped, StaffSession } from "../../staffSession.ts";
 import { byKey } from "../team/data.ts";
 
@@ -161,7 +161,7 @@ export function placeOf(value: unknown): Place | null {
 
 /** What a number field holds when its text is read: the number, or why not. */
 export function readNumber(text: string, bounds: readonly [number, number], whole: boolean): number | null {
-  const clean = text.trim().replace(",", ".");
+  const clean = westernDigits(text.trim());
   if (clean === "" || !/^\d+(\.\d+)?$/.test(clean)) return null;
   const value = Number(clean);
   if (!Number.isFinite(value) || value < bounds[0] || value > bounds[1] || (whole && !Number.isInteger(value))) return null;
