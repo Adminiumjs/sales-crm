@@ -207,7 +207,8 @@ test("a call logged by keyboard, its reply dropped: one call, one next step; the
     await expect(hers.getByRole("form", { name: "Log it" })).toHaveCount(0);
     expect(herProblems).toEqual([]);
     expect((await calls(dana, data, dealId)).map((one) => one.author_id)).toEqual([danaId, ivyId]);
-    expect((await steps(dana, data, dealId)).length).toBe(2);
+    // Dana's step and Ivy's, as the manager reads them: none of Priya's.
+    expect((await steps(ivy, data, dealId)).map((one) => one.owner_id)).toEqual([danaId, ivyId]);
   } finally {
     await removeDeals(await api("tessa"), data, "Spec: call");
   }

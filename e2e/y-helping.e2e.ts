@@ -123,7 +123,11 @@ test("a rep helping on a colleague's deal reads it all and comments; nothing tha
     const hers = page.locator(`[data-thread="${String(thread)}"]`);
     await expect(hers).toContainText("Spec: their facilities lead knows us.");
     await hers.getByRole("button", { name: "Settle it" }).click();
-    await expect(hers.getByTestId("cmt-settled")).toBeVisible();
+    await expect(page.locator(".crm-toast")).toHaveText("Settled.");
+    // Put away until "Show settled", and settled by her.
+    await expect(hers).toHaveCount(0);
+    await page.getByRole("button", { name: /Show settled/ }).click();
+    await expect(hers.getByTestId("cmt-settled")).toHaveText("Settled by Priya Raman");
 
     // HER BOARD: the card is marked, does not move, and opens to read.
     await page.goto(`${STAFF}pipeline`);
