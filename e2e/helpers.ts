@@ -171,8 +171,12 @@ export async function unfoldMenu(page: Page): Promise<void> {
 export function ledgerClock(): void {
   const state = readState() as { pid: number; work: string; startedAt: string | null } | null;
   if (state === null || state.startedAt === null) return;
-  // Where the clock stood, to put it on again after the file (`clockOn`).
-  writeFileSync(join(state.work, "clock.before"), JSON.stringify({ was: standNow(state.work), at: Date.now() }));
+  // The furthest the clock has been, to put it on again there later (`clockOn`).
+  const kept = join(state.work, "clock.before");
+  const before = existsSync(kept) ? (JSON.parse(readFileSync(kept, "utf8")) as { was: number; at: number }) : null;
+  const now = standNow(state.work);
+  const furthest = before === null ? now : Math.max(now, before.was + (Date.now() - before.at));
+  writeFileSync(kept, JSON.stringify({ was: furthest, at: Date.now() }));
   writeFileSync(join(state.work, "clock"), String(Date.parse(LEDGER_NOW)));
   process.kill(state.pid, "SIGUSR2");
 }
@@ -185,9 +189,9 @@ function standNow(work: string): number {
 }
 
 /**
- * Puts the stand's clock on again to where it would be had `ledgerClock` not put it back, at the end of that file.
- * Left behind, the server's per-minute windows opened before the clock went back stay open until it catches up again
- * (each person's 300 requests a minute then last as long), and the specs after the file meet "too many requests".
+ * Puts the stand's clock on again to the furthest it has been, as if `ledgerClock` had never put it back. The server's
+ * per-minute windows opened before the clock went back stay open until it catches up (each person's 300 requests a
+ * minute then last as long as it was put back): a heavy file that reads no ledger figure (the menu walk) starts here.
  */
 export function clockOn(): void {
   const state = readState() as { pid: number; work: string; startedAt: string | null } | null;

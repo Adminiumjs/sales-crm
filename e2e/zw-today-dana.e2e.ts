@@ -10,12 +10,11 @@
 import type { APIRequestContext } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, clockOn, ledgerClock, rows, STAFF, watch } from "./helpers.ts";
+import { csrf, ledgerClock, rows, STAFF, watch } from "./helpers.ts";
 import { room } from "./p12-helpers.ts";
 
 // The ledger's figures are those of 09:35: the stand's clock is put back there for this file (`ledgerClock`).
 test.beforeAll(() => ledgerClock());
-test.afterAll(() => clockOn());
 
 interface Step {
   id: number;

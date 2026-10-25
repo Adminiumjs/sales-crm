@@ -31,7 +31,7 @@ import AxeBuilder from "@axe-core/playwright";
 import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, minuteOut, STAFF, unfoldMenu } from "./helpers.ts";
+import { clockOn, csrf, minuteOut, STAFF, unfoldMenu } from "./helpers.ts";
 import { STAND_DIR, type StandState } from "./stand.mjs";
 import { ROUTES, type RouteKey } from "../src/shell/routes.ts";
 
@@ -223,6 +223,10 @@ async function walk(context: BrowserContext, person: string, role: string, stand
     await page.close();
   }
 }
+
+// The walk reads no ledger figure: the clock goes on to the furthest it has been, so the per-minute windows that Today
+// and This week left open when they put it back to 09:35 are over (`clockOn`).
+test.beforeAll(() => clockOn());
 
 for (const { role, person, part } of WALKERS) {
   test(`walks the ${role}'s menu (${person}): every line opens a screen, every link it draws opens what it names`, async ({ as, stand }) => {

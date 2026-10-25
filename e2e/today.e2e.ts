@@ -8,13 +8,12 @@
  * a marketer asks the same figures directly and is refused.
  */
 import { expect, picture, test } from "./fixtures.ts";
-import { clockOn, ledgerClock } from "./helpers.ts";
+import { ledgerClock } from "./helpers.ts";
 
 const STAFF = "/apps/crm/staff/";
 
 // The ledger's figures are those of 09:35: the stand's clock is put back there for this file (`ledgerClock`).
 test.beforeAll(() => ledgerClock());
-test.afterAll(() => clockOn());
 
 test("Dana lands on Today from the app's address, with the ledger's figures", async ({ as }) => {
   const page = await (await as("dana")).newPage();
