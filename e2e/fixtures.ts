@@ -25,7 +25,7 @@ export function stand(): StandState {
   return state;
 }
 
-/** Wait until a sign-in may be made, and note it. Exported for a spec that signs in through a page of its own (another address of the stand). */
+/** Wait until a sign-in may be made, and note it. Exported for a spec that signs in through the page itself (the form, a second factor). */
 export async function takeTurn(): Promise<void> {
   for (;;) {
     const now = Date.now();
