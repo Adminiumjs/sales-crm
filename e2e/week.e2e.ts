@@ -9,12 +9,13 @@ import { csrf, rows, unfoldMenu } from "./helpers.ts";
 import type { Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { ledgerClock } from "./helpers.ts";
+import { clockOn, ledgerClock } from "./helpers.ts";
 
 const STAFF = "/apps/crm/staff/";
 
 // The ledger's figures are those of 09:35: the stand's clock is put back there for this file (`ledgerClock`).
 test.beforeAll(() => ledgerClock());
+test.afterAll(() => clockOn());
 const lane = (page: Page, key: string) => page.locator(`[data-lane="${key}"]`);
 const facts = async (page: Page): Promise<[string, string, string][]> =>
   page.locator(".crm-lane").evaluateAll((lanes) => lanes.map((el) => [el.getAttribute("data-lane") ?? "", el.querySelector(".crm-lane-count")?.textContent?.trim() ?? "", el.querySelector(".crm-lane-sum")?.textContent?.trim() ?? ""]));

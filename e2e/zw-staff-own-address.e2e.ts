@@ -56,8 +56,8 @@ test("with the staff side on its own address, Ivy's \"Answer in Sales CRM\" open
     await tab.getByRole("button", { name: "Sign in", exact: true }).click();
     // The app's Approvals screen, at the root of its own address: not its first page.
     await expect(tab).toHaveURL(`http://${host}/approvals`);
-    await expect(tab.locator(".crm-approval").first()).toBeVisible();
-    await expect(tab.locator(".crm-approval").first()).toContainText("Q-1001");
+    // Q-1001's request among those waiting (earlier specs may leave their own on top of it).
+    await expect(tab.locator(".crm-approval", { hasText: "Q-1001" })).toBeVisible();
     await expect(tab.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Approvals" })).toHaveAttribute("aria-current", "page");
     await picture(tab, "zw-ivy-approvals-own-address");
   } finally {
