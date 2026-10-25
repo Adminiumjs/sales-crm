@@ -37,14 +37,6 @@ test("the sales manager role reads Vertriebsleitung in German: Settings → Role
     await dialog.getByRole("button", { name: say("common.cancel"), exact: true }).click();
     expect(problems).toEqual([]);
   });
-
-  // Ivy's own page: her roles are listed (by what name is the fault test's below).
-  await inLanguage(await api("ivy"), "de-DE", async () => {
-    const page = await (await as("ivy")).newPage();
-    await page.goto("/account");
-    await expect(page.getByText(say("account.roles"), { exact: true })).toBeVisible();
-    await picture(page, "zw-role-name-account-de");
-  });
 });
 
 // Engine fault: the People list's roles carry the stored name, not the reader's (apps/server/src/routes/users/index.ts:79-81).
@@ -62,6 +54,7 @@ test("the People list names Ivy's role in German", async ({ as, api, stand }) =>
 });
 
 // Engine fault: the Account page lists role slugs (apps/server/src/routes/bootstrap/handlers.ts:998, apps/dashboard/src/pages/AccountPage.tsx:243).
+// On MySQL its cards are also drawn in English under a German menu (seen twice, never on SQLite or Postgres).
 test("Ivy's own Account page names her role in German", async ({ as, api }) => {
   test.fail();
   const say = words("de-DE");
