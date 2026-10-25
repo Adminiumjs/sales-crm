@@ -26,6 +26,10 @@ function fakeServer() {
     refuse: new Set<string>(),
     /** Answer the next creates with this, whatever the table (a session gone, a full minute): then as usual. */
     notNow: [] as StaffError[],
+    /** As the real server: a create naming a file a row already holds is refused before its key is looked at. */
+    fileFirst: false,
+    /** Throw this from the next lists (a full minute on the read after a refusal). */
+    listNotNow: [] as StaffError[],
   };
   const table = (name: string): Table => {
     let found = tables.get(name);
@@ -45,10 +49,14 @@ function fakeServer() {
       if (notNow !== undefined) return { state: "refused", error: notNow };
       if (state.refuse.has(ref)) return { state: "refused", error: new StaffError(422, "VALIDATION", "refused", { fields: { job_id: { code: "not-allowed" } } }) };
       const rows = table(ref);
-      const made = [...rows.values()].find((row) => row["retry_key"] === key);
+      if (state.fileFirst && Object.values(values).some((value) => (Array.isArray(value) ? value : [value]).some((id) => typeof id === "string" && files.get(id)?.held === true))) {
+        return { state: "refused", error: new StaffError(422, "VALIDATION", "file held", { fields: { photo: { code: "file-held" } } }) };
+      }
+      // The server keeps a keyed hash of the retry key, never the key itself.
+      const made = [...rows.values()].find((row) => row["retry_key"] === `hash:${key}`);
       if (made !== undefined) return { state: "saved", row: made as R, replayed: true, readBack: false };
       for (const value of Object.values(values)) for (const id of Array.isArray(value) ? value : [value]) if (typeof id === "string" && files.has(id)) files.get(id)!.held = true;
-      const row: Row = { ...values, id: next++, retry_key: key };
+      const row: Row = { ...values, id: next++, retry_key: `hash:${key}` };
       rows.set(row["id"] as number, row);
       if (state.loseNextReply) {
         state.loseNextReply = false;
@@ -77,6 +85,8 @@ function fakeServer() {
     },
     async list<R extends Row>(ref: string, q: { where?: unknown } = {}) {
       reach(`list ${ref}`);
+      const notNow = state.listNotNow.shift();
+      if (notNow !== undefined) throw notNow;
       const where = q.where as { column: string; value: unknown } | undefined;
       const rows = [...table(ref).values()].filter((row) => where === undefined || row[where.column] === where.value);
       return { rows: rows as R[], total: rows.length, next: null };
@@ -384,5 +394,73 @@ describe("the offline queue", () => {
     expect(server.table("job_visits").get(7)?.["tick_done"]).toBe(true);
     expect(queue.offline()).toBe(false);
     stop();
+  });
+  it("reads a made create back by the file its row holds, when a lost answer is followed by a refusal (the key is hashed)", async () => {
+    const { server, queue } = setUp();
+    server.state.fileFirst = true;
+    const file = await queue.hold(new Blob(["sig"], { type: "image/png" }), { table: "crm_sign_offs", column: "signature", name: "signature.png" });
+    server.state.loseNextReply = true;
+    const first = await queue.add({ kind: "signoff", op: { type: "create", table: "sign_offs", values: { visit_id: 7, signature: file }, key: "SignKey000000000000000000000001" } });
+    expect(first.state).not.toBe("sent");
+    await queue.send();
+    const line = queue.lines().find((one) => one.kind === "signoff")!;
+    expect(line.state).toBe("sent");
+    expect(line.row?.["visit_id"]).toBe(7);
+    expect(server.table("sign_offs").size).toBe(1);
+  });
+
+  it("keeps the record of a refusal owed while the read for it meets a full minute", async () => {
+    const server = fakeServer();
+    const store = memoryStore();
+    let asked = 0;
+    const queue = openQueue({
+      session: server.session,
+      store,
+      online: () => true,
+      makeKey,
+      today: () => "2026-08-05",
+      afterRefused: async (_line, session) => {
+        asked += 1;
+        await session.list("snags");
+        return { meta: { stopped: "a snag" } };
+      },
+    });
+    server.state.refuse.add("sign_offs");
+    server.state.listNotNow.push(new StaffError(429, "RATE_LIMITED", "too many"));
+    await queue.add({ kind: "signoff", op: { type: "create", table: "sign_offs", values: { visit_id: 7 }, key: "SignKey000000000000000000000002" } });
+    let line = queue.lines().find((one) => one.kind === "signoff")!;
+    expect([line.state, line.follow]).toEqual(["refused", "pending"]);
+    await queue.send();
+    line = queue.lines().find((one) => one.kind === "signoff")!;
+    expect([line.state, line.follow, line.meta["stopped"], asked]).toEqual(["refused", "done", "a snag", 2]);
+  });
+
+  it("keeps a sent line from an earlier day while a line still to send names its row", async () => {
+    const server = fakeServer();
+    const store = memoryStore();
+    const base = { meta: {}, tries: 1, uploaded: {}, dropOnRefusal: [], kept: true, quiet: false, refusal: null, follow: "none" as const };
+    await store.put({ ...base, id: "sheet", seq: 1, madeAt: "2026-08-04T09:00:00.000Z", kind: "sheet", op: { type: "create", table: "time_sheets", values: { week: "2026-08-03" }, key: "SheetKey00000000000000000000001" }, state: "sent", sentAt: "2026-08-04T09:00:00.000Z", row: { id: 41 } });
+    await store.put({ ...base, id: "day", seq: 2, madeAt: "2026-08-04T09:00:00.000Z", kind: "day", op: { type: "create", table: "time_lines", values: { sheet_id: { $line: "sheet" }, hours: 8 }, key: "DayKey0000000000000000000000001" }, state: "waiting", sentAt: null, row: null });
+    const queue = openQueue({ session: server.session, store, online: () => true, makeKey, today: () => "2026-08-05" });
+    await queue.ready;
+    await queue.send();
+    expect(queue.lines().find((one) => one.id === "day")?.state).toBe("sent");
+    expect(server.table("time_lines").get(1)?.["sheet_id"]).toBe(41);
+  });
+
+  it("drops what it held, and sends nothing more, once its store is thrown away from another tab", async () => {
+    const server = fakeServer();
+    const inner = memoryStore();
+    const gone: (() => void)[] = [];
+    const store = { ...inner, onGone: (listener: () => void) => void gone.push(listener) };
+    const queue = openQueue({ session: server.session, store, online: () => server.state.signal, makeKey, today: () => "2026-08-05" });
+    server.table("job_visits").set(7, { id: 7, tick_done: false });
+    server.state.signal = false;
+    await queue.add(tick(7));
+    for (const listener of gone) listener();
+    expect(queue.lines()).toEqual([]);
+    server.state.signal = true;
+    await queue.send();
+    expect(server.table("job_visits").get(7)?.["tick_done"]).toBe(false);
   });
 });

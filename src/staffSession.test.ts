@@ -189,13 +189,26 @@ describe("the write token and the rate limit", () => {
   it("reads a fresh token once when the server says the old one is stale", async () => {
     const { calls, fetchImpl } = server([
       refusal(403, "CSRF_FAILED"),
-      json(200, { connectionId: "con_1", csrfToken: "tok-2", tables: {} }),
+      json(200, { connectionId: "con_1", csrfToken: "tok-2", tables: {}, user: CONFIG.user }),
       (call) => (call.headers["x-adminium-csrf"] === "tok-2" ? json(201, { data: { id: 1 } }) : refusal(403, "CSRF_FAILED")),
     ]);
     const session = await connectStaffSession({ config: CONFIG, fetchImpl, base: "/apps/crm/staff/" });
     const saved = await session.create("deals", { name: "A" }, newClientKey());
     expect(saved.state).toBe("saved");
     expect(calls.map((call) => call.url)).toEqual(["/api/v1/data/con_1/public.crm_deals", "/apps/crm/staff/surface-config.json", "/api/v1/data/con_1/public.crm_deals"]);
+  });
+
+  it("sends nothing as somebody else: a fresh token of another person's sign-in is a 401 that waits", async () => {
+    // Somebody else signed in in another tab of this browser: the cookie is theirs, the old token is refused.
+    const { calls, fetchImpl } = server([
+      refusal(403, "CSRF_FAILED"),
+      json(200, { connectionId: "con_1", csrfToken: "tok-ben", tables: {}, user: { id: "usr_ben", name: "Ben", email: "ben@example.test" } }),
+    ]);
+    const session = await connectStaffSession({ config: CONFIG, fetchImpl, base: "/apps/crm/staff/" });
+    const saved = await session.create("deals", { name: "A" }, newClientKey());
+    expect(saved).toMatchObject({ state: "refused", error: { status: 401, code: "SESSION_CHANGED" } });
+    // The write was never sent again under the other person's token.
+    expect(calls.map((call) => call.url)).toEqual(["/api/v1/data/con_1/public.crm_deals", "/apps/crm/staff/surface-config.json"]);
   });
 
   it("waits as long as the server says when there were too many calls, once", async () => {

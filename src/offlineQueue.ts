@@ -143,6 +143,15 @@ export function heldIn(values: Row | undefined): string[] {
 
 const valuesOf = (op: QueueOp): Row | undefined => (op.type === "act" ? op.values : op.values);
 
+/** The earlier lines a line names (its row's id, or a value of that row). */
+function refsOf(line: QueueLine): string[] {
+  const out: string[] = [];
+  const op = line.op;
+  if (op.type !== "create" && isRef(op.id)) out.push(op.id.$line);
+  for (const value of Object.values(valuesOf(op) ?? {})) if (isRef(value)) out.push(value.$line);
+  return out;
+}
+
 /** The files a line still needs on the phone: none once sent. */
 const filesOf = (line: QueueLine): string[] => (line.state === "sent" ? [] : heldIn(valuesOf(line.op)));
 
@@ -160,6 +169,8 @@ export interface QueueStore {
   clear(): Promise<void>;
   /** Where it is really kept: on the phone, or only while the page is open (no IndexedDB). */
   readonly kind: "phone" | "memory";
+  /** Told when the store is thrown away from elsewhere (a sign-out in another tab): its lines must not be sent. */
+  onGone?(listener: () => void): void;
 }
 
 /** Kept only while the page is open: for tests, and a browser with no IndexedDB. */
@@ -192,6 +203,15 @@ const ask = <T>(request: IDBRequest<T>): Promise<T> =>
 /** Kept on the phone, in its own IndexedDB database. */
 export function indexedStore(name: string, factory: IDBFactory = indexedDB): QueueStore {
   let opened: Promise<IDBDatabase> | null = null;
+  const goneListeners = new Set<() => void>();
+  // Another tab deleting the database (its sign-out) asks this one to let go: it closes, and the queue drops what it held.
+  const letGo = (base: IDBDatabase): void => {
+    base.onversionchange = () => {
+      base.close();
+      opened = null;
+      for (const listener of goneListeners) listener();
+    };
+  };
   const db = (): Promise<IDBDatabase> =>
     (opened ??= new Promise<IDBDatabase>((resolve, reject) => {
       const request = factory.open(name, 1);
@@ -199,7 +219,10 @@ export function indexedStore(name: string, factory: IDBFactory = indexedDB): Que
         request.result.createObjectStore("lines", { keyPath: "id" });
         request.result.createObjectStore("files");
       };
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        letGo(request.result);
+        resolve(request.result);
+      };
       request.onerror = () => reject(request.error);
     }));
   const run = async <T>(store: "lines" | "files", mode: IDBTransactionMode, work: (objects: IDBObjectStore) => IDBRequest<T>): Promise<T> => {
@@ -215,6 +238,7 @@ export function indexedStore(name: string, factory: IDBFactory = indexedDB): Que
   };
   return {
     kind: "phone",
+    onGone: (listener) => void goneListeners.add(listener),
     lines: () => run<QueueLine[]>("lines", "readonly", (objects) => objects.getAll() as IDBRequest<QueueLine[]>),
     put: async (line) => void (await run("lines", "readwrite", (objects) => objects.put(line))),
     remove: async (id) => void (await run("lines", "readwrite", (objects) => objects.delete(id))),
@@ -265,8 +289,6 @@ export interface QueueOptions {
   online?: () => boolean;
   /** Called once a line is refused, while the signal is there: may read the server and write lines of its own. */
   afterRefused?: (line: QueueLine, session: QueueSession) => Promise<FollowUp | null>;
-  /** The column a table keeps its retry keys in (read back after a refused create whose files a row holds). */
-  retryKeyColumn?: string;
   /** The phone's day, `YYYY-MM-DD`: lines sent on an earlier day go. */
   today?: () => string;
   makeKey?: () => string;
@@ -353,7 +375,6 @@ export function openQueue(options: QueueOptions): Queue {
   const online = options.online ?? (() => typeof navigator === "undefined" || navigator.onLine !== false);
   const today = options.today ?? localDay;
   const makeKey = options.makeKey ?? randomKey;
-  const keyColumn = options.retryKeyColumn ?? "retry_key";
   let lines: QueueLine[] = [];
   let lost = false;
   let running: Promise<void> | null = null;
@@ -379,10 +400,20 @@ export function openQueue(options: QueueOptions): Queue {
   };
   const nowIso = (): string => session.now().toISOString();
 
+  // Thrown away from another tab (a sign-out there): nothing it held goes, from here or later.
+  let ended = false;
+  store.onGone?.(() => {
+    ended = true;
+    stopping = true;
+    lines = [];
+    notify();
+  });
   const ready = (async () => {
     lines = await store.lines().catch(() => []);
-    // Lines sent on an earlier day go; files no line names (a form left half-filled) go too.
-    for (const line of lines.filter((one) => one.state === "sent" && one.sentAt !== null && dayOfIso(one.sentAt) < today())) {
+    // Lines sent on an earlier day go, unless a line still to send names their row; files no line names (a form left
+    // half-filled) go too.
+    const pointed = new Set(lines.filter((one) => one.state !== "sent").flatMap(refsOf));
+    for (const line of lines.filter((one) => one.state === "sent" && one.sentAt !== null && dayOfIso(one.sentAt) < today() && !pointed.has(one.id))) {
       lines = lines.filter((one) => one.id !== line.id);
       await store.remove(line.id).catch(() => undefined);
     }
@@ -483,10 +514,14 @@ export function openQueue(options: QueueOptions): Queue {
     }
     if (saved.state === "saved") return { state: "sent", row: saved.row };
     if (saved.state === "unknown" || notYet(saved.error)) return { state: "offline" };
-    // Refused. A create whose file a row holds WAS made (its answer was lost before): read it back by its key.
+    // Refused. A create whose file a row holds WAS made (its answer was lost before). The server keeps only a keyed
+    // hash of the retry key, so the row is read back by a file it holds: this phone uploaded that file for this line.
     if (Object.keys(line.uploaded).length > 0 && (await discard(line)) && op.type === "create") {
-      const found = await session.list(op.table, { where: { column: keyColumn, op: "eq", value: op.key }, limit: 1 }).catch(() => null);
-      if (found !== null && found.rows[0] !== undefined) return { state: "sent", row: found.rows[0] };
+      for (const [column, value] of Object.entries(values)) {
+        if (typeof value !== "string" || !isHeld((valuesOf(op) ?? {})[column])) continue;
+        const found = await session.list(op.table, { where: { column, op: "eq", value }, limit: 1 }).catch(() => null);
+        if (found !== null && found.rows[0] !== undefined) return { state: "sent", row: found.rows[0] };
+      }
     }
     return { state: "refused", refusal: refusalOf(saved.error) };
   }
@@ -503,6 +538,8 @@ export function openQueue(options: QueueOptions): Queue {
           notify();
           return false;
         }
+        // A gone session, a full minute, a timeout: the record is still owed, so it waits like the save did.
+        if (error instanceof StaffError && notYet(error)) return false;
         made = null;
       }
       const after = (made?.lines ?? []).map((one, i) => fresh(one, line.seq + (i + 1) / 1000, true));
@@ -566,7 +603,7 @@ export function openQueue(options: QueueOptions): Queue {
       const round: Round = { sent: 0, refused: 0 };
       try {
         for (;;) {
-          if (stopping) break;
+          if (stopping || ended) break;
           if (!online()) {
             lost = true;
             notify();
@@ -683,7 +720,7 @@ export function openQueue(options: QueueOptions): Queue {
         lines = [];
         notify();
       } finally {
-        stopping = false;
+        stopping = ended;
       }
     },
 

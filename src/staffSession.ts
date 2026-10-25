@@ -301,6 +301,9 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     // The token is the session's: one made before a sign-in again is refused once, and the fresh one is read.
     if (res.status === 403 && error.code === "CSRF_FAILED" && again) {
       const fresh = await read();
+      // The browser's sign-in is somebody else's now (a sign-in in another tab): nothing goes as them. A 401 waits,
+      // so a save kept on the phone stays kept for the person who made it.
+      if (fresh !== null && (fresh.user?.id ?? null) !== (config!.user?.id ?? null)) throw new StaffError(401, "SESSION_CHANGED", "Somebody else is signed in on this browser now. Sign in again as yourself.", {});
       if (fresh !== null) config = { ...config!, csrfToken: fresh.csrfToken };
       return send(method, path, body, headers, false);
     }
