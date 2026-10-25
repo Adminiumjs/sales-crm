@@ -68,6 +68,16 @@ test("the signed copy's row: only when it is drawn, the server's file and size, 
     // At 390 wide the row wraps and the page does not scroll sideways.
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(row).toBeVisible();
+    const fits = (await row.boundingBox())!;
+    expect(fits.x + fits.width).toBeLessThanOrEqual(390);
+    // The page too: and if anything is wider than the screen, which (seen once in a whole stage-3 run, never alone).
+    const wide = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("body *"))
+        .filter((el) => el.getBoundingClientRect().right > window.innerWidth + 0.5 && getComputedStyle(el).position !== "fixed")
+        .slice(0, 5)
+        .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).split(" ")[0] ?? ""} ${(el.textContent ?? "").trim().slice(0, 40)}`),
+    );
+    expect(wide, "wider than the screen").toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await picture(page, "s13-2-ada-signed-copy-390");
     await page.setViewportSize({ width: 1440, height: 900 });
