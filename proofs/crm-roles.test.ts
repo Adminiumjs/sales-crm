@@ -1384,8 +1384,13 @@ for (const [dialect, reachable] of LEGS) {
       expect(at).not.toBeNull();
       expect(String(at)).not.toContain('2001');
       // S10: the five "what to capture" ticks are kept with a visit's write-up, no by default.
-      // Booked ahead (a visit never starts in the past when it is made: plan 68 X7).
-      const visit = made(await post('tessa', 'site_visits', { deal_id: deal, rep_id: s.id['dana'], starts_at: new Date(Date.now() + 3 * 86_400_000).toISOString(), minutes: 30, purpose: 'T03 spec visit' }));
+      // Booked ahead (a visit never starts in the past when it is made: plan 68 X7), at 20:00: the sample books Dana
+      // through the working day (Thursday 13:30 to 14:45 among them), and a visit over one of hers is refused as taken.
+      const ahead = new Date(Date.now() + 3 * 86_400_000);
+      ahead.setUTCHours(20, 0, 0, 0);
+      const booked = await post('tessa', 'site_visits', { deal_id: deal, rep_id: s.id['dana'], starts_at: ahead.toISOString(), minutes: 30, purpose: 'T03 spec visit' });
+      expect(booked.statusCode, booked.body).toBe(201);
+      const visit = made(booked);
       const note = await post('dana', 'visit_notes', { visit_id: visit, saw: 'T03 spec', cap_access: true, cap_power: true });
       expect(note.statusCode, note.body).toBe(201);
       const caps = await one(`SELECT cap_access, cap_floor, cap_power, cap_existing, cap_timing FROM ${s.real('visit_notes')} WHERE id = ${String(made(note))}`);
