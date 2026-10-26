@@ -410,6 +410,14 @@ const inDays = (days: number, hour = 10): string => {
   return at.toISOString();
 };
 const dayIn = (days: number): string => new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
+/** The first day at least `days` ahead that the sample's crews work (Monday to Friday): a crew is not booked on its day off. */
+const workdayIn = (days: number): string => {
+  for (let ahead = days; ; ahead += 1) {
+    const day = dayIn(ahead);
+    const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
+    if (weekday !== 0 && weekday !== 6) return day;
+  }
+};
 
 /** Every row of every table, by its key: what "nothing was lost or changed" is held to. */
 async function everyRow(s: Stack): Promise<Map<string, Map<string, Row>>> {
@@ -562,7 +570,7 @@ for (const [dialect, reachable] of LEGS) {
           const ruled = (await s.rows(`select id from crm_jobs where deal_id = ${String(typed['wonDeal'])}`))[0];
           typed['job'] = ruled === undefined ? made(await post('ada', 'jobs', { deal_id: typed['wonDeal'], site_name: 'Typed site', town: 'Leeds' })) : Number(ruled['id']);
           const blue = await one("select c.id from crm_crews c where c.name like 'Blue%'");
-          typed['jobVisit'] = made(await post('ada', 'job_visits', { job_id: typed['job'], kind: 'install', what: 'Fit the desks', day: dayIn(5), crew_id: blue['id'], hours: 4, crew_size: 2 }));
+          typed['jobVisit'] = made(await post('ada', 'job_visits', { job_id: typed['job'], kind: 'install', what: 'Fit the desks', day: workdayIn(5), crew_id: blue['id'], hours: 4, crew_size: 2 }));
           expect(said(await patch('ada', 'job_visits', typed['jobVisit'], { state: 'booked' }))).toBe('ok');
           typed['signOff'] = made(await post('f_yusuf', 'sign_offs', { visit_id: typed['jobVisit'], check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: 'Pat Client' }));
           expect(Number((await one(`select job_id from crm_sign_offs where id = ${String(typed['signOff'])}`))['job_id'])).toBe(typed['job']);

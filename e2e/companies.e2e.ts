@@ -18,6 +18,7 @@ import type { APIRequestContext, Page } from "@playwright/test";
 
 import { authOf, expect, picture, stand, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
+import { room } from "./p12-helpers.ts";
 
 const card = (page: Page, name: string) => page.locator(".crm-acc-card").filter({ has: page.locator(".crm-acc-card-name", { hasText: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\&]/g, "\\$&")}$`) }) });
 const fact = (page: Page, key: string) => page.locator(`.crm-acc-facts [data-fact="${key}"]`);
@@ -25,6 +26,8 @@ const money = (value: number): string => `£${value.toLocaleString("en-GB", { mi
 const companyId = async (person: APIRequestContext, data: Data, name: string): Promise<number> => (await rows<{ id: number }>(person, data, "companies", { column: "name", op: "eq", value: name }))[0]!.id;
 
 async function removeMade(admin: APIRequestContext, data: Data): Promise<void> {
+  // The CRM admin's minute may be spent by the spec before (300 requests a minute): the clean-up starts on a fresh one.
+  await room(admin, data, 40);
   const headers = await csrf(admin);
   for (const person of await rows<{ id: number }>(admin, data, "contacts", { column: "name", op: "like", value: "P07 %" })) expect((await admin.delete(data("contacts", `/${String(person.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
   for (const company of await rows<{ id: number }>(admin, data, "companies", { column: "name", op: "like", value: "P07 %" })) expect((await admin.delete(data("companies", `/${String(company.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
