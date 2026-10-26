@@ -540,13 +540,11 @@ for (const [dialect, reachable] of LEGS) {
       made(await s.make('dana', 'deal_members', { deal_id: open, user_id: s.ids['leo'] }));
       expect((await one('leo', 'deal_stock_needs', need)).statusCode).toBe(200);
       expect(said(await s.change('leo', 'deal_stock_needs', need, { qty: 9 }))).toBe('404 NOT_FOUND');
-      // ENGINE GAP, asserted as it is today (red the day it closes): a stock need belongs to its deal (`via`) and to the crew
-      // it is put on (`through` crew_members), and a table with a listing way skips the parent test of a new row
-      // (crud/row-writes.ts, assertParentReached's first return). So a helper still adds a need on the deal he helps on;
-      // the office takes it away.
+      // Nor a new stock need on the deal he helps on: the table also belongs to its crew (`through` crew_members), and the
+      // engine judges a helper's new row by its deal all the same (Adminium 0.3.36).
       const added = await s.make('leo', 'deal_stock_needs', { deal_id: open, qty: 1 });
-      expect(said(added), added.body).toBe('ok');
-      expect(said(await s.send('ada', 'DELETE', url('deal_stock_needs', `/${String(made(added))}?confirm=true`)))).toBe('ok');
+      expect(added.statusCode, added.body).toBe(403);
+      expect(added.body).toContain('parent-not-theirs');
       expect(Number((await s.rows(`select qty from ${s.t('deal_stock_needs')} where id = ${String(need)}`))[0]!['qty'])).toBe(2);
       expect(said(await s.change('dana', 'deal_stock_needs', need, { qty: 3 }))).toBe('ok');
       expect(said(await s.change('ada', 'deal_stock_needs', need, { qty: 4 }))).toBe('ok');

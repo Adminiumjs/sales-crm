@@ -579,13 +579,10 @@ for (const [dialect, reachable] of LEGS) {
         adds[label] = [said(res), reason(res)];
       }
       expect(adds, JSON.stringify(adds)).toEqual(Object.fromEntries(Object.keys(adds).map((key) => [key, ['403 COLUMN_FORBIDDEN', 'parent-not-theirs']])));
-      // ENGINE GAP, asserted as it is today (it turns red the day the engine closes it): an agreed point hangs off its visit
-      // by `visit_id`, a copy of its note's visit that no writer sends, and a new row's parent is judged only by a link the
-      // write sets (crud/row-writes.ts, assertParentReached). So a helper still adds a point under a colleague's write-up;
-      // the screens offer him none (a colleague's visit reads only). Dana takes it away again.
+      // Nor an agreed point under a colleague's write-up: it hangs off its visit by `visit_id`, a copy no writer sends, and
+      // the engine judges the new row by the link that copy reads through (Adminium 0.3.36).
       const point2 = await post('leo', 'visit_agreed', { visit_note_id: writeUp, text: 'Leo agrees', position: 1 });
-      expect(said(point2), point2.body).toBe('ok');
-      expect(said(await del('dana', 'visit_agreed', made(point2)))).toBe('ok');
+      expect([said(point2), reason(point2)], point2.body).toEqual(['403 COLUMN_FORBIDDEN', 'parent-not-theirs']);
       expect(await Promise.all(held.map(([ref, key]) => rowOf(ref, key)))).toEqual(before);
       expect(await counted()).toEqual(countedBefore);
       // Nor is a follow-up of his own moved onto it from a deal of his.
