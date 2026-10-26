@@ -19,5 +19,6 @@ export async function load(url, context, nextLoad) {
     process.stderr.write("[stand clock] the rate store's clock line was not found: it keeps the stand's clock\n");
     return result;
   }
+  process.stderr.write("[stand clock] the rate store keeps the real clock\n");
   return { ...result, source: source.replace(LINE, LINE.replace("Date.now()", "(globalThis.__standRealNow ?? Date.now)()")) };
 }

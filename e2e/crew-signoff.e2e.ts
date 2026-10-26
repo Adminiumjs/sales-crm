@@ -36,6 +36,7 @@ import { request, type APIRequestContext, type Request } from "@playwright/test"
 
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, removeDeals, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { room } from "./p12-helpers.ts";
 import { readState, STAND_DIR } from "./stand.mjs";
 
 const BLUE = 1;
@@ -150,7 +151,9 @@ test("J-07: the snag that stops it is named on his phone, and the server refuses
   // The suggestion is the site's "ask for".
   await expect(page.getByRole("button", { name: "Use Yusuf Demir" })).toBeVisible();
   await picture(page, "p22-6-yusuf-j07-stopped");
-  // The server's refusal, by a direct call: the link to a job a stopping snag holds is not allowed.
+  // The server's refusal, by a direct call: the link to a job a stopping snag holds is not allowed. His minute's requests
+  // may be spent by the screens before (300 a minute; a fast machine gets there): the call starts on a fresh minute.
+  await room(context.request, data, 10);
   const refused = await context.request.post(data("sign_offs"), { data: { values: { visit_id: J07_VISIT, check_1: true, check_2: true, check_3: true, check_4: true, check_5: true, signer_name: "Yusuf Demir" }, clientKey: "SpecCrewJ07Refused00000000000001" }, headers: await csrf(context.request) });
   expect(refused.status(), await refused.text()).toBe(422);
   expect(((await refused.json()) as { error: { details: { fields: Record<string, { code: string }> } } }).error.details.fields["job_id"]?.code).toBe("not-allowed");
