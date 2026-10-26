@@ -140,18 +140,22 @@ export function Messages(_: ScreenProps) {
   const [starting, setStarting] = useState(false);
   const canStart = session.can("threads", "create") && session.can("thread_members", "create");
 
-  /** Move the reader's own mark on these conversations to the server's clock, one row at a time. */
+  /**
+   * Move the reader's own mark on these conversations to the server's clock, one row at a time. Only the press of
+   * "Mark all as read" (`say`) holds that button: the open conversation marking itself read when a message comes in
+   * must not, or a press made in that moment lands on a disabled button and is lost.
+   */
   const markRead = async (rows: Listed[], say: boolean): Promise<void> => {
     const todo = rows.filter((row) => row.mine !== null && row.unread > 0 && session.can("thread_members", "update"));
     if (todo.length === 0) return;
-    setMarking(true);
+    if (say) setMarking(true);
     const at = session.now().toISOString();
     let refused = false;
     for (const row of todo) {
       const saved = await session.update("thread_members", row.mine!.id, { read_at: at });
       if (saved.state !== "saved") refused = true;
     }
-    setMarking(false);
+    if (say) setMarking(false);
     if (say) toasts.show(refused ? t("ui.unknown") : t("msgs.toast.allRead"), refused ? "danger" : "plain");
     again();
   };
