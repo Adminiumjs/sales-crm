@@ -26,12 +26,14 @@ on:
 env:
   ADMINIUM_REF: v0.3.36
   ADD_ONS_REF: v1.0.14
+  # The add-ons an install of the released CRM had, for the update proof.
+  ADD_ONS_BEFORE_REF: v1.0.13
 
 jobs:
   contract:
     name: proofs on three engines, the staff side in a browser
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
 
     services:
       postgres:
@@ -54,6 +56,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The update proof reads the released CRM from its tags.
+          fetch-depth: 0
 
       - name: Set up Node 22
         uses: actions/setup-node@v4
@@ -78,6 +83,13 @@ jobs:
           ref: ${{ env.ADD_ONS_REF }}
           path: .add-ons
 
+      - name: Check out the add-ons as the released CRM had them
+        uses: actions/checkout@v4
+        with:
+          repository: Adminiumjs/add-ons
+          ref: ${{ env.ADD_ONS_BEFORE_REF }}
+          path: .add-ons-before
+
       - name: Build Adminium (the server and the dashboard)
         run: |
           cd .adminium-product
@@ -90,6 +102,9 @@ jobs:
           cd .add-ons
           npm ci
           npm run build -w packages/invoices -w packages/inventory
+          cd ../.add-ons-before
+          npm ci
+          npm run build -w packages/invoices -w packages/inventory
 
       # vitest and tsc here collect under `src` only, but the products' own
       # trees are not this repo's to walk: out of the workspace they go.
@@ -97,11 +112,13 @@ jobs:
         run: |
           mv "$GITHUB_WORKSPACE/.adminium-product" "$RUNNER_TEMP/adminium-product"
           mv "$GITHUB_WORKSPACE/.add-ons" "$RUNNER_TEMP/add-ons"
+          mv "$GITHUB_WORKSPACE/.add-ons-before" "$RUNNER_TEMP/add-ons-before"
 
       - name: The proofs, on three engines
         env:
           ADMINIUM_REPO: ${{ runner.temp }}/adminium-product
           ADD_ONS_REPO: ${{ runner.temp }}/add-ons
+          CRM_ADD_ONS_BEFORE: ${{ runner.temp }}/add-ons-before
           TEST_POSTGRES_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
           TEST_MYSQL_URL: mysql://root@127.0.0.1:3306
         run: npm run proofs
