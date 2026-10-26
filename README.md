@@ -15,12 +15,12 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | --- | --- |
 | Key | `crm` (tables are named `crm_…`) |
 | Parts | 10: Selling, Accounts and The team always; Inbox on; Quotes on with Invoices & Receipts; Supply on with Inventory; Showroom and samples, Jobs on site, After the job and Vehicles and crew off until switched on |
-| Tables | 75 |
+| Tables | 78 |
 | Screens | The app's own screens (below), a customer's quote page, and a "Sales CRM" section in Adminium's own console |
 | Roles | 9 |
-| Shipped rules | 21: ten the app works by (a deal's history, a won deal's job, the crew's day sheet, the aftercare call) and one that tells a deal's owner when a customer accepts a quote on a lost deal, switched on, and ten that tell people, switched off |
+| Shipped rules | 24: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), and nine that tell people, switched off |
 | E-mails | 18, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 688 rows in 69 tables, 16 people, three teams (sales and two crews) |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews) |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -85,16 +85,19 @@ Every "may not" is the server's: a screen without a button is never the only thi
 
 ### The rules
 
-Ten are switched on at install: a deal's mark and first history line; a line for each stage
+Fifteen are switched on at install: a deal's mark and first history line; a line for each stage
 move (two rules, so that a deal moved several times before the rules run keeps every move); the
-amount a quote was sent at; "approval asked" to the asker's team lead (else the CRM admin); a won
-deal's job (Jobs on site); three that tell a crew at once that today's or tomorrow's day sheet
-changed; and an aftercare call booked 28 days after a job is signed off, for the person Settings
-names, else the rep who sold it (After the job). A rule of a part that is off does not run.
+amount a quote was sent at; "approval asked" to the deal owner's team lead and the CRM admin; the
+deal owner told when a customer accepts a quote on a lost deal; a won deal's job (Jobs on site);
+six that tell a crew at once that today's or tomorrow's day sheet changed (a new start, another
+crew, another day, and the crew a visit left); the operations manager told when a sign-off sent
+from a phone without signal is refused; and an aftercare call booked 28 days after a job is signed
+off, for the person Settings names, else the rep who sold it (After the job). A rule of a part that
+is off does not run.
 
-Ten tell people and are switched off: a deal gone quiet, stuck in its stage, or closing soon and
+Nine tell people and are switched off: a deal gone quiet, stuck in its stage, or closing soon and
 not agreed (the days are the app's settings); a follow-up due; a quote running out; a deal handed
-over; a discount approved or refused; and two weekly e-mails, a rep's and account manager's own
+over; a discount approved or refused (one rule); and two weekly e-mails, a rep's and account manager's own
 week and a manager's team's. Each person sets their quiet hours and their weekly e-mail's day and
 time, or switches it off.
 
@@ -119,7 +122,7 @@ reader's language; a card of a part that is off is not drawn.
 "Add sample data" brings Meridian's pipeline: 40 deals (14 open, 8 won, 18 lost), nine quotes, ten
 site visits, seventeen enquiries, the team's targets, one-to-ones, coaching and a cover; the
 showroom's bookings and samples; eight jobs with their visits, sign-offs and snags; aftercare calls,
-complaints and claims; two vans, their fuel and checks, the crews' time sheets and certificates;
+complaints and claims; two vans and a hired one, their fuel and checks, the crews' time sheets and certificates;
 688 rows in 69 tables, and sixteen people in the nine roles, with the team "Sales" and two crews. The sample's people cannot sign in; they are there
 so every deal, target and follow-up has a name on it. Dates are written as days from the day the
 sample is added, so its late follow-ups are late on any day. Where Inventory is installed, the
@@ -169,10 +172,40 @@ The tests check the manifest against Adminium's own validator, a copy of which i
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
 
+## Updating to 0.2.2
+
+0.2.2 needs Adminium 0.3.36 and the add-ons at 1.0.14 (Invoices & Receipts for the signed copy,
+Inventory for lateness). Update the add-ons first. The update asks the install's owner once to let
+the app's roles read more of Inventory's tables (receipts for the CRM admin, the operations
+manager and Read-only; stock items for the field crew), whichever is updated first. Every row is
+kept as it was; what changes:
+
+- **A deal's helpers read and comment only.** They no longer change the deal, its quotes and
+  lines, log on it, book its visits or add follow-ups on it; the follow-ups and visits they made
+  before stay theirs. A rep covering for a colleague still writes. The server holds this, not
+  only the screens.
+- **A quote's approval threshold is the settings' value**, and no role writes it on a quote.
+- **Refused on arrival:** a sign-off with a blank signer, a crew note with a web address in it,
+  and a photo the server will not take (a HEIC, for one), which is refused when it is picked.
+- **The signed copy** also goes to an address the crew types, if they type one; the job's contact
+  always gets it. An Arabic customer's copy is the HTML print copy. A sign-off whose e-mail is
+  still queued cannot be removed while it waits; only the install's owner removes a sign-off.
+- **The two approval notices are one rule** ("approval given", which also says refused). An owner
+  who had switched on only the "refused" one switches the new one on again.
+- **New rules, switched on:** the deal owner is told when a customer accepts a quote on a lost
+  deal; a crew is told when a visit leaves its today or tomorrow; the operations manager is told
+  when a sign-off sent from a phone without signal is refused.
+- **Stricter saves:** a row valid under 0.2.1 is refused on its next save of a guarded column,
+  which the refusal names: Settings pairs that are equal, a cover longer than 365 days, a deal
+  name that is not plain text.
+- **The supplier scorecard** counts deliveries posted after the Inventory update; for older ones
+  it says "since" the day it starts counting.
+
 ## The app by stage
 
-The app was released in stages: 0.2.0 was stage 1 (the first six parts); 0.2.1 is stage 3, every
-part, and updates a 0.2.0 install with its data in place (the four new parts arrive switched off). `whole/` is the app with every stage, and the only place to edit a table, a
+The app was released in stages: 0.2.0 was stage 1 (the first six parts); 0.2.1 was stage 3, every
+part, and updated a 0.2.0 install with its data in place (the four new parts arrive switched off).
+0.2.2 finishes the app (below) and updates a 0.2.0 or 0.2.1 install the same way. `whole/` is the app with every stage, and the only place to edit a table, a
 role, a page or the sample; `stage.json` says which parts each stage brings. After a change there:
 
 ```bash
