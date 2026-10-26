@@ -16,8 +16,11 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, type Data, inArabic, ledgerClock, rows, STAFF, watch } from "./helpers.ts";
 import { go, me, menu, noSidewaysScroll, room, stat } from "./p12-helpers.ts";
+
+// The ledger's figures are those of 09:35 (a follow-up falls due at 10:00): the stand's clock is put back there for this file.
+test.beforeAll(() => ledgerClock());
 
 interface ActionRow {
   id: number;

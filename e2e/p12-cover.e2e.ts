@@ -11,8 +11,11 @@
 import type { APIRequestContext } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, dealNamed, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, type Data, dealNamed, inArabic, ledgerClock, rows, STAFF, watch } from "./helpers.ts";
 import { go, me, noSidewaysScroll, removeSpecCovers, room, stat, type CoverRow } from "./p12-helpers.ts";
+
+// The ledger's figures are those of 09:35 (a follow-up falls due at 10:00): the stand's clock is put back there for this file.
+test.beforeAll(() => ledgerClock());
 
 const ownedBy = (owner: string): unknown => ({ and: [{ column: "owner_id", op: "eq", value: owner }, { column: "state", op: "eq", value: "open" }] });
 const coversOf = (person: APIRequestContext, data: Data, owner: string): Promise<CoverRow[]> => rows<CoverRow>(person, data, "covers", { column: "owner_id", op: "eq", value: owner });

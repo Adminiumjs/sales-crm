@@ -13,8 +13,11 @@
 import type { APIRequestContext } from "@playwright/test";
 
 import { expect, test } from "./fixtures.ts";
-import { csrf, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, type Data, ledgerClock, rows, STAFF, watch } from "./helpers.ts";
 import { me, room } from "./p12-helpers.ts";
+
+// The ledger's figures are those of 09:35 (a follow-up falls due at 10:00): the stand's clock is put back there for this file.
+test.beforeAll(() => ledgerClock());
 
 const isYes = (value: unknown): boolean => value === true || value === 1 || value === "1";
 const spec = { column: "text", op: "like", value: "Spec: %" };
