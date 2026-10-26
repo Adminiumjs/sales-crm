@@ -70,6 +70,25 @@ export async function authOf(browser: Browser, person: string): Promise<string> 
   return file;
 }
 
+/**
+ * A person's requests are counted by the minute (300 a minute, the product's limit). A spec that takes a person whose
+ * minute an earlier spec nearly spent meets "too many requests" in the middle of its own work: on a fast machine (CI)
+ * that came at a different place on each run. So every person a test takes starts with enough of the minute left: one
+ * cheap read says how much is left and when the minute ends, and with less than 40 % left the test waits it out.
+ */
+async function paced(request: APIRequestContext): Promise<void> {
+  for (let tries = 0; tries < 3; tries += 1) {
+    const res = await request.get("/api/v1/me/prefs").catch(() => null);
+    if (res === null) return;
+    const headers = res.headers();
+    const limit = Number(headers["x-ratelimit-limit"] ?? "0");
+    const left = Number(headers["x-ratelimit-remaining"] ?? String(limit));
+    const reset = Number(headers["x-ratelimit-reset"] ?? "0");
+    if (res.status() !== 429 && (!(limit > 0) || left >= limit * 0.4)) return;
+    await new Promise((done) => setTimeout(done, (Number.isFinite(reset) && reset > 0 ? Math.min(reset, 61) : 61) * 1000 + 500));
+  }
+}
+
 export interface Who {
   /** A browser context signed in as this person. Closed with the test. */
   as: (person: string, options?: BrowserContextOptions) => Promise<BrowserContext>;
@@ -89,6 +108,7 @@ export const test = base.extend<Who>({
     await use(async (person, options = {}) => {
       const context = await browser.newContext({ baseURL: stand().url, storageState: await authOf(browser, person), ...options });
       opened.push(context);
+      await paced(context.request);
       return context;
     });
     for (const context of opened) await context.close();
@@ -98,6 +118,7 @@ export const test = base.extend<Who>({
     await use(async (person) => {
       const context = await browser.newContext({ baseURL: stand().url, storageState: await authOf(browser, person) });
       opened.push(context);
+      await paced(context.request);
       return context.request;
     });
     for (const context of opened) await context.close();
