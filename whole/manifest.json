@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "crm",
   "name": "Sales CRM",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": {
     "id": "adminium",
     "name": "Adminium"
@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.36",
+    "minAdminiumVersion": "0.3.38",
     "engines": [
       "postgres",
       "mysql",
@@ -3567,7 +3567,8 @@
                 "from": "name",
                 "mode": "always",
                 "follow": true
-              }
+              },
+              "personal": true
             },
             "label": {
               "en-US": "Goes to (name)",
@@ -3626,7 +3627,8 @@
                     "sent"
                   ]
                 }
-              }
+              },
+              "personal": true
             },
             "label": {
               "en-US": "Sent to (name)",
@@ -3700,7 +3702,8 @@
             "rules": {
               "plainText": {
                 "max": 120
-              }
+              },
+              "personal": true
             }
           },
           {
@@ -6964,6 +6967,58 @@
             }
           },
           {
+            "ref": "opt_out_offered_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Offered a way to say no",
+              "de-DE": "Auf Widerspruch hingewiesen",
+              "fr-FR": "Possibilité de refuser proposée",
+              "da-DK": "Tilbudt at sige nej",
+              "cs-CZ": "Nabídnuta možnost odmítnout",
+              "ar-EG": "عُرض عليه الرفض",
+              "zh-CN": "已告知可拒绝",
+              "zh-TW": "已告知可拒絕"
+            },
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "columns": [
+                    "email"
+                  ]
+                },
+                "strict": true
+              }
+            }
+          },
+          {
+            "ref": "won_deals",
+            "type": "int",
+            "default": 0,
+            "label": {
+              "en-US": "Won deals",
+              "de-DE": "Gewonnene Deals",
+              "fr-FR": "Affaires gagnées",
+              "da-DK": "Vundne deals",
+              "cs-CZ": "Vyhrané obchody",
+              "ar-EG": "الصفقات الرابحة",
+              "zh-CN": "赢得的商机",
+              "zh-TW": "成交的案件"
+            },
+            "rules": {
+              "rollup": {
+                "from": "deals",
+                "via": "contact_id",
+                "count": true,
+                "where": {
+                  "column": "state",
+                  "eq": "won"
+                }
+              }
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -7579,6 +7634,9 @@
               "ar-EG": "الاسم المُحال",
               "zh-CN": "被介绍方名称",
               "zh-TW": "被介紹方名稱"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -10979,6 +11037,9 @@
               "ar-EG": "اسم جهة الاتصال",
               "zh-CN": "联系人姓名",
               "zh-TW": "聯絡人姓名"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -11355,6 +11416,32 @@
             }
           },
           {
+            "ref": "opt_out_offered_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Offered a way to say no",
+              "de-DE": "Auf Widerspruch hingewiesen",
+              "fr-FR": "Possibilité de refuser proposée",
+              "da-DK": "Tilbudt at sige nej",
+              "cs-CZ": "Nabídnuta možnost odmítnout",
+              "ar-EG": "عُرض عليه الرفض",
+              "zh-CN": "已告知可拒绝",
+              "zh-TW": "已告知可拒絕"
+            },
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "columns": [
+                    "email"
+                  ]
+                },
+                "strict": true
+              }
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -11713,6 +11800,9 @@
               "ar-EG": "اسم الزائر",
               "zh-CN": "访客姓名",
               "zh-TW": "訪客姓名"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -14943,6 +15033,9 @@
             "visit_id"
           ]
         ],
+        "keep": {
+          "law": "contract"
+        },
         "columns": [
           {
             "ref": "id",
@@ -15110,7 +15203,8 @@
             "rules": {
               "validation": {
                 "minLength": 1
-              }
+              },
+              "personal": true
             }
           },
           {
@@ -15237,7 +15331,8 @@
             "rules": {
               "validation": {
                 "format": "email"
-              }
+              },
+              "personal": true
             }
           },
           {
@@ -15393,6 +15488,9 @@
             "job_id"
           ]
         ],
+        "keep": {
+          "law": "contract"
+        },
         "columns": [
           {
             "ref": "id",
@@ -15495,6 +15593,9 @@
               "ar-EG": "اسم الموقِّع",
               "zh-CN": "签字人姓名",
               "zh-TW": "簽名人姓名"
+            },
+            "rules": {
+              "personal": true
             }
           },
           {
@@ -16339,6 +16440,9 @@
             "signed_by_contact_id"
           ]
         ],
+        "keep": {
+          "law": "contract"
+        },
         "columns": [
           {
             "ref": "id",
@@ -20628,11 +20732,11 @@
               "quote-sent",
               "quote-accepted",
               "handover-intro",
-              "approval-asked",
               "visit-confirmed",
               "visit-moved",
               "visit-cancelled",
               "referral-thanks",
+              "referral-code",
               "showroom-confirmed",
               "showroom-moved",
               "showroom-cancelled",
@@ -20656,26 +20760,6 @@
                     "zh-CN": "报价单已发送",
                     "zh-TW": "報價單已送出"
                   },
-                  "handover-intro": {
-                    "en-US": "Handover introduction",
-                    "de-DE": "Vorstellung bei Übergabe",
-                    "fr-FR": "Présentation lors du passage de relais",
-                    "da-DK": "Introduktion ved overdragelse",
-                    "cs-CZ": "Představení při předání",
-                    "ar-EG": "تعريف عند التسليم",
-                    "zh-CN": "交接介绍",
-                    "zh-TW": "交接介紹"
-                  },
-                  "approval-asked": {
-                    "en-US": "Approval asked",
-                    "de-DE": "Genehmigung angefragt",
-                    "fr-FR": "Approbation demandée",
-                    "da-DK": "Godkendelse anmodet",
-                    "cs-CZ": "Žádost o schválení",
-                    "ar-EG": "طلب موافقة",
-                    "zh-CN": "申请审批",
-                    "zh-TW": "申請審批"
-                  },
                   "quote-accepted": {
                     "en-US": "Quote accepted",
                     "de-DE": "Angebot angenommen",
@@ -20685,6 +20769,16 @@
                     "ar-EG": "قُبل عرض السعر",
                     "zh-CN": "报价已接受",
                     "zh-TW": "報價已接受"
+                  },
+                  "handover-intro": {
+                    "en-US": "Handover introduction",
+                    "de-DE": "Vorstellung bei Übergabe",
+                    "fr-FR": "Présentation lors du passage de relais",
+                    "da-DK": "Introduktion ved overdragelse",
+                    "cs-CZ": "Představení při předání",
+                    "ar-EG": "تعريف عند التسليم",
+                    "zh-CN": "交接介绍",
+                    "zh-TW": "交接介紹"
                   },
                   "visit-confirmed": {
                     "en-US": "Visit confirmed",
@@ -20725,6 +20819,16 @@
                     "ar-EG": "شكر على التعريف",
                     "zh-CN": "感谢引荐",
                     "zh-TW": "感謝引薦"
+                  },
+                  "referral-code": {
+                    "en-US": "Code for the next order",
+                    "de-DE": "Code für die nächste Bestellung",
+                    "fr-FR": "Code pour la prochaine commande",
+                    "da-DK": "Kode til næste ordre",
+                    "cs-CZ": "Kód na příští objednávku",
+                    "ar-EG": "رمز للطلب القادم",
+                    "zh-CN": "下次订购代码",
+                    "zh-TW": "下次訂購代碼"
                   },
                   "showroom-confirmed": {
                     "en-US": "Showroom booking confirmed",
@@ -22641,7 +22745,11 @@
         "table:@left_visits:read",
         "table:@left_visits:delete",
         "page:@crm-left-visits:view",
-        "table:@deals:import"
+        "table:@deals:import",
+        "table:@sign_offs:read_pii",
+        "table:@refused_sign_offs:read_pii",
+        "table:@showroom_bookings:read_pii",
+        "table:@referrals:read_pii"
       ],
       "limits": {
         "saved_views": {
@@ -23574,6 +23682,28 @@
             "email",
             "phone",
             "may_email"
+          ],
+          "creatable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
+          ],
+          "readable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email",
+            "may_email_by_id",
+            "may_email_at",
+            "unsubscribed_at",
+            "opt_out_offered_at"
           ]
         },
         "reps": {
@@ -24183,7 +24313,8 @@
         "page:@crm-complaints:view",
         "page:@crm-warranty-claims:view",
         "page:@crm-deal-stock-needs:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "table:@showroom_bookings:read_pii"
       ],
       "limits": {
         "deals": {
@@ -24547,6 +24678,28 @@
             "job_title",
             "phone",
             "may_email"
+          ],
+          "creatable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
+          ],
+          "readable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email",
+            "may_email_by_id",
+            "may_email_at",
+            "unsubscribed_at",
+            "opt_out_offered_at"
           ]
         },
         "reps": {
@@ -25005,7 +25158,8 @@
         "page:@crm-quote-lines:view",
         "page:@crm-comments:view",
         "page:@crm-deal-stage-changes:view",
-        "page:@crm-deal-amount-changes:view"
+        "page:@crm-deal-amount-changes:view",
+        "table:@referrals:read_pii"
       ],
       "limits": {
         "deals": {
@@ -25108,6 +25262,28 @@
             "job_title",
             "phone",
             "may_email"
+          ],
+          "creatable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
+          ],
+          "readable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email",
+            "may_email_by_id",
+            "may_email_at",
+            "unsubscribed_at",
+            "opt_out_offered_at"
           ]
         },
         "reps": {
@@ -25394,7 +25570,8 @@
         "page:@crm-enquiries:view",
         "page:@crm-shows:view",
         "page:@crm-settings:view",
-        "page:@crm-deal-marks:view"
+        "page:@crm-deal-marks:view",
+        "table:@contacts:read_pii"
       ],
       "limits": {
         "enquiries": {
@@ -25483,7 +25660,8 @@
         "page:@crm-sample-loans:view",
         "page:@crm-sample-chases:view",
         "page:@crm-display-pieces:view",
-        "page:@crm-settings:view"
+        "page:@crm-settings:view",
+        "table:@showroom_bookings:read_pii"
       ],
       "limits": {
         "enquiries": {
@@ -25612,6 +25790,17 @@
             "out_on",
             "due_back",
             "returned_on"
+          ]
+        },
+        "contacts": {
+          "creatable": [
+            "company_id",
+            "name",
+            "reference",
+            "job_title",
+            "email",
+            "phone",
+            "may_email"
           ]
         }
       }
@@ -25750,7 +25939,9 @@
         "table:@van_days:delete",
         "page:@crm-van-days:view",
         "table:@left_visits:read",
-        "page:@crm-left-visits:view"
+        "page:@crm-left-visits:view",
+        "table:@sign_offs:read_pii",
+        "table:@refused_sign_offs:read_pii"
       ],
       "limits": {
         "jobs": {
@@ -26243,7 +26434,9 @@
         "table:@left_visits:read",
         "page:@crm-left-visits:view",
         "table:@deal_stock_needs:read",
-        "page:@crm-deal-stock-needs:view"
+        "page:@crm-deal-stock-needs:view",
+        "table:@sign_offs:read_pii",
+        "table:@refused_sign_offs:read_pii"
       ],
       "limits": {
         "job_visits": {
@@ -30473,6 +30666,107 @@
       }
     }
   ],
+  "people": [
+    {
+      "table": "contacts",
+      "kind": "people",
+      "email": "email",
+      "name": "name",
+      "company": "company_id",
+      "firstName": "firstWordOfName",
+      "consent": {
+        "column": "may_email",
+        "purpose": "newsletter"
+      },
+      "copies": [
+        {
+          "table": "quotes",
+          "column": "to_email",
+          "holds": "email",
+          "via": "sent_to_contact_id"
+        },
+        {
+          "table": "quotes",
+          "column": "to_name",
+          "holds": "name",
+          "via": "sent_to_contact_id"
+        },
+        {
+          "table": "quotes",
+          "column": "sent_to_email",
+          "holds": "email",
+          "via": "sent_to_contact_id"
+        },
+        {
+          "table": "quotes",
+          "column": "sent_to_name",
+          "holds": "name",
+          "via": "sent_to_contact_id"
+        },
+        {
+          "table": "quotes",
+          "column": "accepted_name",
+          "holds": "name",
+          "via": "sent_to_contact_id"
+        },
+        {
+          "table": "sign_offs",
+          "column": "signer_name",
+          "holds": "name"
+        },
+        {
+          "table": "sign_offs",
+          "column": "copy_sent_to",
+          "holds": "email"
+        },
+        {
+          "table": "refused_sign_offs",
+          "column": "signer_name",
+          "holds": "name"
+        },
+        {
+          "table": "delivery_notes",
+          "column": "signed_name",
+          "holds": "name",
+          "via": "signed_by_contact_id"
+        },
+        {
+          "table": "showroom_bookings",
+          "column": "visitor_name",
+          "holds": "name",
+          "via": "contact_id"
+        }
+      ],
+      "customer": "won_deals",
+      "optOutMark": {
+        "column": "opt_out_offered_at",
+        "carryFrom": {
+          "table": "enquiries",
+          "column": "opt_out_offered_at"
+        }
+      },
+      "carry": [
+        {
+          "stopList": {
+            "column": "unsubscribed_at"
+          }
+        }
+      ]
+    },
+    {
+      "table": "companies",
+      "kind": "companies",
+      "name": "name"
+    },
+    {
+      "table": "enquiries",
+      "kind": "people",
+      "email": "email",
+      "name": "person",
+      "firstName": "firstWordOfName",
+      "optOutMark": "opt_out_offered_at"
+    }
+  ],
   "outbox": {
     "table": "outbox",
     "columns": {
@@ -30509,11 +30803,11 @@
       "quote-sent": "crm-quote-sent",
       "quote-accepted": "crm-quote-accepted",
       "handover-intro": "crm-handover-intro",
-      "approval-asked": "crm-approval-asked",
       "visit-confirmed": "crm-visit-confirmed",
       "visit-moved": "crm-visit-moved",
       "visit-cancelled": "crm-visit-cancelled",
       "referral-thanks": "crm-referral-thanks",
+      "referral-code": "crm-referral-code",
       "showroom-confirmed": "crm-showroom-confirmed",
       "showroom-moved": "crm-showroom-moved",
       "showroom-cancelled": "crm-showroom-cancelled",
@@ -30523,6 +30817,25 @@
       "signed-copy": "crm-signed-copy",
       "signed-copy-to": "crm-signed-copy",
       "certificate-asked": "crm-certificate-asked"
+    },
+    "classes": {
+      "quote-sent": "service",
+      "quote-accepted": "service",
+      "handover-intro": "service",
+      "visit-confirmed": "service",
+      "visit-moved": "service",
+      "visit-cancelled": "service",
+      "referral-thanks": "service",
+      "referral-code": "marketing",
+      "showroom-confirmed": "service",
+      "showroom-moved": "service",
+      "showroom-cancelled": "service",
+      "delivery-booked": "service",
+      "delivery-moved": "service",
+      "delivery-cancelled": "service",
+      "signed-copy": "service",
+      "signed-copy-to": "service",
+      "certificate-asked": "service"
     },
     "producers": [
       {
@@ -30641,6 +30954,25 @@
           "changed": true,
           "where": {
             "column": "thanked_at",
+            "isNull": false
+          }
+        },
+        "replyTo": {
+          "staff": "thanked_by_id"
+        }
+      },
+      {
+        "kind": "referral-code",
+        "module": "accounts",
+        "link": "referral_id",
+        "onChange": {
+          "table": "referrals",
+          "columns": [
+            "thanked_at"
+          ],
+          "changed": true,
+          "where": {
+            "column": "reward",
             "isNull": false
           }
         },
@@ -31952,201 +32284,6 @@
             }
           ],
           "footer": "您收到這封郵件，是因為 {{deal.owner_id.name}} 現在負責與您的合作。"
-        }
-      }
-    },
-    {
-      "key": "crm-approval-asked",
-      "name": "Approval asked",
-      "vars": [
-        "quote.number",
-        "quote.under_list_pct",
-        "quote.ask_reason"
-      ],
-      "locales": {
-        "en-US": {
-          "subject": "Quote {{quote.number}} needs approval",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "Approval asked"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Quote {{quote.number}} is {{quote.under_list_pct}} % under list and cannot be sent until it is approved."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Why: {{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "de-DE": {
-          "subject": "Angebot {{quote.number}} braucht eine Genehmigung",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "Genehmigung angefragt"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Angebot {{quote.number}} liegt {{quote.under_list_pct}} % unter Liste und kann erst nach Genehmigung versendet werden."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Begründung: {{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "fr-FR": {
-          "subject": "Le devis {{quote.number}} attend une approbation",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "Approbation demandée"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Le devis {{quote.number}} est {{quote.under_list_pct}} % sous le catalogue et ne peut être envoyé qu’une fois approuvé."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Motif : {{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "da-DK": {
-          "subject": "Tilbud {{quote.number}} skal godkendes",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "Godkendelse ønskes"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Tilbud {{quote.number}} er {{quote.under_list_pct}} % under liste og kan først sendes, når det er godkendt."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Begrundelse: {{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "cs-CZ": {
-          "subject": "Nabídka {{quote.number}} čeká na schválení",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "Žádost o schválení"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Nabídka {{quote.number}} je {{quote.under_list_pct}} % pod ceníkem a nelze ji odeslat, dokud není schválena."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Důvod: {{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "ar-EG": {
-          "subject": "عرض السعر {{quote.number}} بحاجة إلى اعتماد",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "طلب اعتماد"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "عرض السعر {{quote.number}} أقل من القائمة بنسبة {{quote.under_list_pct}} ٪ ولا يمكن إرساله قبل اعتماده."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "السبب: {{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "zh-CN": {
-          "subject": "报价 {{quote.number}} 待审批",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "审批申请"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "报价 {{quote.number}} 低于目录价 {{quote.under_list_pct}} %，批准前不能发送。"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "原因：{{quote.ask_reason}}"
-              }
-            }
-          ]
-        },
-        "zh-TW": {
-          "subject": "報價 {{quote.number}} 待核准",
-          "blocks": [
-            {
-              "block": "email.heading",
-              "data": {
-                "text": "核准申請"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "報價 {{quote.number}} 低於牌價 {{quote.under_list_pct}} %，核准前不得寄出。"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "原因：{{quote.ask_reason}}"
-              }
-            }
-          ]
         }
       }
     },
@@ -35951,8 +36088,7 @@
       "name": "Thank you for the introduction",
       "vars": [
         "recipient.first_name",
-        "referral.introduced_on",
-        "referral.reward"
+        "referral.introduced_on"
       ],
       "locales": {
         "en-US": {
@@ -35968,25 +36104,6 @@
               "block": "email.text",
               "data": {
                 "text": "Hello {{recipient.first_name}}, thank you for the introduction you made on {{referral.introduced_on}}. We are glad you thought of us."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Here is a code for your next order with us. Give it when you ask for a price."
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "Your code",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
               }
             }
           ],
@@ -36006,25 +36123,6 @@
               "data": {
                 "text": "Guten Tag {{recipient.first_name}}, vielen Dank für Ihre Empfehlung vom {{referral.introduced_on}}. Wir freuen uns, dass Sie an uns gedacht haben."
               }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Hier ist ein Code für Ihre nächste Bestellung bei uns. Nennen Sie ihn, wenn Sie einen Preis anfragen."
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "Ihr Code",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
             }
           ],
           "footer": "Sie erhalten diese Nachricht, weil Sie uns jemanden empfohlen haben."
@@ -36042,25 +36140,6 @@
               "block": "email.text",
               "data": {
                 "text": "Bonjour {{recipient.first_name}}, merci pour la recommandation que vous avez faite le {{referral.introduced_on}}. Nous sommes heureux que vous ayez pensé à nous."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Voici un code pour votre prochaine commande chez nous. Indiquez-le lorsque vous demandez un prix."
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "Votre code",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
               }
             }
           ],
@@ -36080,25 +36159,6 @@
               "data": {
                 "text": "Hej {{recipient.first_name}}, tak for den anbefaling, du gav {{referral.introduced_on}}. Vi er glade for, at du tænkte på os."
               }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Her er en kode til din næste ordre hos os. Oplys den, når du beder om en pris."
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "Din kode",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
             }
           ],
           "footer": "Du får denne besked, fordi du har anbefalet os til nogen."
@@ -36116,25 +36176,6 @@
               "block": "email.text",
               "data": {
                 "text": "Dobrý den, {{recipient.first_name}}, děkujeme za doporučení, které jste nám dali {{referral.introduced_on}}. Těší nás, že jste si na nás vzpomněli."
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "Zde je kód na vaši příští objednávku u nás. Uveďte jej, až budete žádat o cenu."
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "Váš kód",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
               }
             }
           ],
@@ -36154,25 +36195,6 @@
               "data": {
                 "text": "مرحبًا {{recipient.first_name}}، شكرًا على التعريف الذي قدّمته يوم {{referral.introduced_on}}. يسعدنا أنك فكّرت بنا."
               }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "هذا رمز لطلبك القادم معنا. اذكره عند طلب السعر."
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "رمزك",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
             }
           ],
           "footer": "وصلتك هذه الرسالة لأنك عرّفتنا بأحدهم."
@@ -36190,25 +36212,6 @@
               "block": "email.text",
               "data": {
                 "text": "{{recipient.first_name}}，您好，感谢您在 {{referral.introduced_on}} 为我们引荐。很高兴您想到了我们。"
-              }
-            },
-            {
-              "block": "email.text",
-              "data": {
-                "text": "这是您下次订购时可用的代码，询价时请告知我们。"
-              },
-              "showWhen": {
-                "var": "referral.reward"
-              }
-            },
-            {
-              "block": "email.box",
-              "data": {
-                "label": "您的代码",
-                "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
               }
             }
           ],
@@ -36228,14 +36231,209 @@
               "data": {
                 "text": "{{recipient.first_name}}，您好，感謝您在 {{referral.introduced_on}} 為我們引薦。很高興您想到了我們。"
               }
+            }
+          ],
+          "footer": "您收到此郵件，是因為您曾為我們引薦。"
+        }
+      }
+    },
+    {
+      "key": "crm-referral-code",
+      "name": "A code for your next order",
+      "vars": [
+        "recipient.first_name",
+        "referral.introduced_on",
+        "referral.reward"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "A code for your next order",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "A code for your next order"
+              }
             },
             {
               "block": "email.text",
               "data": {
-                "text": "這是您下次訂購時可用的代碼，詢價時請告知我們。"
-              },
-              "showWhen": {
-                "var": "referral.reward"
+                "text": "Hello {{recipient.first_name}}, thank you again for the introduction you made on {{referral.introduced_on}}. Here is a code for your next order with us. Give it when you ask for a price."
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "Your code",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "You got this because you introduced someone to us."
+        },
+        "de-DE": {
+          "subject": "Ein Code für Ihre nächste Bestellung",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Ein Code für Ihre nächste Bestellung"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Guten Tag {{recipient.first_name}}, nochmals vielen Dank für Ihre Empfehlung vom {{referral.introduced_on}}. Hier ist ein Code für Ihre nächste Bestellung bei uns. Nennen Sie ihn, wenn Sie einen Preis anfragen."
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "Ihr Code",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese Nachricht, weil Sie uns jemanden empfohlen haben."
+        },
+        "fr-FR": {
+          "subject": "Un code pour votre prochaine commande",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Un code pour votre prochaine commande"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Bonjour {{recipient.first_name}}, merci encore pour la recommandation que vous avez faite le {{referral.introduced_on}}. Voici un code pour votre prochaine commande chez nous. Indiquez-le lorsque vous demandez un prix."
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "Votre code",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce que vous nous avez recommandé quelqu’un."
+        },
+        "da-DK": {
+          "subject": "En kode til din næste ordre",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "En kode til din næste ordre"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Hej {{recipient.first_name}}, tak igen for den anbefaling, du gav {{referral.introduced_on}}. Her er en kode til din næste ordre hos os. Oplys den, når du beder om en pris."
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "Din kode",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "Du får denne besked, fordi du har anbefalet os til nogen."
+        },
+        "cs-CZ": {
+          "subject": "Kód na vaši příští objednávku",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Kód na vaši příští objednávku"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Dobrý den, {{recipient.first_name}}, ještě jednou děkujeme za doporučení, které jste nám dali {{referral.introduced_on}}. Zde je kód na vaši příští objednávku u nás. Uveďte jej, až budete žádat o cenu."
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "Váš kód",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "Tuto zprávu dostáváte, protože jste nás někomu doporučili."
+        },
+        "ar-EG": {
+          "subject": "رمز لطلبك القادم",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "رمز لطلبك القادم"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "مرحبًا {{recipient.first_name}}، شكرًا مرة أخرى على التعريف الذي قدّمته يوم {{referral.introduced_on}}. هذا رمز لطلبك القادم معنا. اذكره عند طلب السعر."
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "رمزك",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأنك عرّفتنا بأحدهم."
+        },
+        "zh-CN": {
+          "subject": "您下次订购可用的代码",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您下次订购可用的代码"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，再次感谢您在 {{referral.introduced_on}} 为我们引荐。这是您下次订购时可用的代码，询价时请告知我们。"
+              }
+            },
+            {
+              "block": "email.box",
+              "data": {
+                "label": "您的代码",
+                "value": "{{referral.reward|}}"
+              }
+            }
+          ],
+          "footer": "您收到此邮件，是因为您曾为我们引荐。"
+        },
+        "zh-TW": {
+          "subject": "您下次訂購可用的代碼",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "您下次訂購可用的代碼"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "{{recipient.first_name}}，您好，再次感謝您在 {{referral.introduced_on}} 為我們引薦。這是您下次訂購時可用的代碼，詢價時請告知我們。"
               }
             },
             {
@@ -36243,9 +36441,6 @@
               "data": {
                 "label": "您的代碼",
                 "value": "{{referral.reward|}}"
-              },
-              "showWhen": {
-                "var": "referral.reward"
               }
             }
           ],

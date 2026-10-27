@@ -791,7 +791,12 @@
      },
      "email": "t.reidy@cobaltlegal.example",
      "phone": "0113 496 0190",
-     "may_email": false
+     "may_email": false,
+     "opt_out_offered_at": {
+      "@day": -120,
+      "@time": "11:00",
+      "@week": true
+     }
     },
     {
      "@label": "ct:ana",
@@ -843,7 +848,12 @@
      },
      "email": "owen@junoanalytics.example",
      "phone": "0161 884 7723",
-     "may_email": false
+     "may_email": false,
+     "opt_out_offered_at": {
+      "@day": -95,
+      "@time": "09:30",
+      "@week": true
+     }
     },
     {
      "@label": "ct:kit",
@@ -865,7 +875,12 @@
      },
      "email": "kit@junoanalytics.example",
      "phone": "0161 884 7730",
-     "may_email": false
+     "may_email": false,
+     "opt_out_offered_at": {
+      "@day": -21,
+      "@time": "10:45",
+      "@week": true
+     }
     },
     {
      "@label": "ct:petra",
@@ -1051,7 +1066,12 @@
      },
      "email": "yusuf@tandemrobotics.example",
      "phone": "01223 47 1108",
-     "may_email": false
+     "may_email": false,
+     "opt_out_offered_at": {
+      "@day": -60,
+      "@time": "14:15",
+      "@week": true
+     }
     },
     {
      "@label": "ct:bea",

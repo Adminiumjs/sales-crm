@@ -154,7 +154,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
     ]);
   });
 
-  it("queues the quote's e-mails only while quotes are on, a visit's with selling, a referral's thanks with accounts and a showroom booking's with the showroom", () => {
+  it("queues the quote's e-mails only while quotes are on, a visit's with selling, a referral's thanks and code with accounts and a showroom booking's with the showroom", () => {
     expect((manifest.outbox.producers as unknown as { kind: string; module?: string }[]).map((producer) => [producer.kind, producer.module])).toEqual([
       ["quote-sent", "quotes"],
       ["quote-accepted", "quotes"],
@@ -162,6 +162,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["visit-moved", "selling"],
       ["visit-cancelled", "selling"],
       ["referral-thanks", "accounts"],
+      ["referral-code", "accounts"],
       ["showroom-confirmed", "showroom"],
       ["showroom-moved", "showroom"],
       ["showroom-cancelled", "showroom"],
@@ -198,11 +199,11 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(quoted.rules?.["rollup"]).toBeUndefined();
     // The outgoing e-mails lose their link to a quote, and the quote's own e-mail.
     expect(kept.find((table) => table.ref === "outbox")!.columns.map((column) => column.ref)).not.toContain("quote_id");
-    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked", "handover-intro"]);
-    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "approval-asked", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked"]);
+    expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "referral-code", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked", "handover-intro"]);
+    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "referral-code", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked"]);
     // The visit's, the referral's, the showroom's and a delivery's e-mails still go, and read nothing of a quote.
     const templates = (left as unknown as { emailTemplates: { key: string }[] }).emailTemplates;
-    expect(templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))).toHaveLength(7);
+    expect(templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))).toHaveLength(8);
     for (const template of templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
     expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told", "sign-off-refused", "aftercare-call"]);

@@ -135,6 +135,7 @@ export function stageManifest(whole, stages, stage) {
   }
   if (doc.outbox?.producers !== undefined) doc.outbox.producers = doc.outbox.producers.filter((producer) => partOf(producer) && !goneTables.has(producer.onChange?.table));
   if (doc.outbox !== undefined) cutOutbox(doc, whole, goneColumns);
+  if (doc.people !== undefined) cutPeople(doc, goneTables, goneColumns);
 
   // Roles: what each still holds. One left with no part is not offered.
   const goneRoles = new Set();
@@ -210,8 +211,26 @@ function cutOutbox(doc, whole, goneColumns) {
     const labels = kindColumn.rules?.enumLabels?.labels;
     if (labels !== undefined) for (const kind of goneKinds) delete labels[kind];
   }
+  if (outbox.classes !== undefined) for (const kind of goneKinds) delete outbox.classes[kind];
   const stillSent = new Set([...Object.values(outbox.kinds ?? {}), ...JSON.stringify(doc.automations ?? []).matchAll(/"templateKey":"([^"]+)"/g)].map((one) => (Array.isArray(one) ? one[1] : one)));
   doc.emailTemplates = (doc.emailTemplates ?? []).filter((template) => !goneTemplates.includes(template.key) || stillSent.has(template.key));
+}
+
+/**
+ * The people of a stage: a people table that went goes, and so do the copies of a person kept on a table or in a
+ * column that went (a signer's name, before Jobs on site), and a mark carried from a table that went.
+ */
+function cutPeople(doc, goneTables, goneColumns) {
+  const gone = (table, column) => goneTables.has(table) || (column !== undefined && (goneColumns[table] ?? []).includes(column));
+  doc.people = doc.people.filter((entry) => !goneTables.has(entry.table));
+  for (const entry of doc.people) {
+    if (entry.copies !== undefined) {
+      entry.copies = entry.copies.filter((copy) => !gone(copy.table, copy.column) && !gone(copy.table, copy.via));
+      if (entry.copies.length === 0) delete entry.copies;
+    }
+    if (typeof entry.optOutMark === "object" && entry.optOutMark.carryFrom !== undefined && gone(entry.optOutMark.carryFrom.table, entry.optOutMark.carryFrom.column)) entry.optOutMark = entry.optOutMark.column;
+  }
+  if (doc.people.length === 0) delete doc.people;
 }
 
 const walk = (value, visit) => {

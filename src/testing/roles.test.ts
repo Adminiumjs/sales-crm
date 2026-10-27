@@ -179,10 +179,20 @@ const EXPORTERS: readonly RoleKey[] = ["admin", "sales-manager", "read-only"];
 
 /** Who reads a table's personal columns in clear; everybody else reads them empty. */
 const PERSONAL: Record<string, readonly RoleKey[]> = {
-  contacts: ["admin", "sales-manager", "rep", "account-manager", "front-desk"],
+  // The marketer reads a contact's address: she sends the campaigns, and a list she cannot read is a list she cannot check.
+  contacts: ["admin", "sales-manager", "rep", "account-manager", "marketer", "front-desk"],
   enquiries: ["admin", "sales-manager", "rep", "marketer", "front-desk"],
-  // The address a quote was sent to is copied from its contact: as personal there as on the contact. Read-only sees it masked.
+  // The address and the name a quote was sent to are copied from its contact: as personal there as on the contact.
+  // Read-only and the account manager see them masked.
   quotes: ["admin", "sales-manager", "rep"],
+  // Who signed a job off, or would not: the crew types the name and reads it back on its phone, the office reads it on the
+  // job. A rep, her manager, the account manager and Read-only read it masked.
+  sign_offs: ["admin", "ops-manager", "crew"],
+  refused_sign_offs: ["admin", "ops-manager", "crew"],
+  // A showroom visitor's name, before they are a contact: the front desk books them in, the rep meets them.
+  showroom_bookings: ["admin", "rep", "front-desk"],
+  // Whom a customer introduced us to, before they are a company here: the account manager thanks for it.
+  referrals: ["admin", "account-manager"],
   // A crew member's phone: the operations manager rings her crews, the CRM admin sets them up.
   crew_members: ["admin", "ops-manager"],
   // A job's street and the site's phone, and the copies of them on its visits: the office books the day and rings the site,
@@ -1132,13 +1142,36 @@ describe("a listing a table is read through is not a way in", () => {
 });
 
 describe("what a role is kept from, column by column", () => {
-  it("lets only the CRM admin take back that a contact unsubscribed", () => {
+  it("keeps who counts as a customer, and the moment a person was offered a way to say no, the server's", () => {
+    // A contact's count of won deals is Adminium's: no role types it, on a change or on a new contact (a total a new row
+    // brings would stand until a deal of theirs moves).
     for (const key of ROLES) {
-      if (key === "admin" || !holds(key, "contacts", "update")) continue;
-      expect(limitOf(key, "contacts")?.writable, key).toBeDefined();
-      expect(limitOf(key, "contacts")?.writable, key).not.toContain("unsubscribed_at");
-      expect(limitOf(key, "contacts")?.writable, key).toContain("may_email");
+      if (key === "admin") continue;
+      for (const [ref, columns] of [["contacts", ["won_deals", "opt_out_offered_at", "unsubscribed_at"]], ["enquiries", ["opt_out_offered_at"]]] as const) {
+        if (holds(key, ref, "update")) for (const column of columns) expect(limitOf(key, ref)?.writable ?? [column], `${key}: ${ref}.${column}`).not.toContain(column);
+      }
+      if (holds(key, "contacts", "create")) expect(limitOf(key, "contacts")?.creatable ?? ["won_deals"], key).not.toContain("won_deals");
+      if (holds(key, "contacts", "update")) expect(limitOf(key, "contacts")?.writable, key).toContain("may_email");
     }
+    // The mark is a strict stamp: whatever a writer sends for it, the CRM admin and a file included, the server drops.
+    for (const ref of ["contacts", "enquiries"]) {
+      expect((columnsOf(ref).find((c) => c.ref === "opt_out_offered_at")?.rules as { stamp?: { strict?: boolean } } | undefined)?.stamp?.strict, ref).toBe(true);
+    }
+  });
+
+  it("shows the count of won deals only to a role that reads every deal: a stored total is every row's", () => {
+    // A rep reads her own deals, a manager her team's, the account manager the won ones and his own: a count over every
+    // deal of a contact would tell each of them of deals they cannot open. Whoever reads every deal, or none, sees it.
+    for (const key of ROLES) {
+      if (!holds(key, "contacts", "read")) continue;
+      const someDeals = limitOf(key, "deals")?.rows?.read !== undefined;
+      const readable = limitOf(key, "contacts")?.readable;
+      if (someDeals) {
+        expect(readable, key).toBeDefined();
+        expect([...(readable ?? []), "id", "retry_key", "won_deals"].sort(), key).toEqual(columnsOf("contacts").map((c) => c.ref).sort());
+      } else expect(readable, key).toBeUndefined();
+    }
+    expect(ROLES.filter((key) => limitOf(key, "contacts")?.readable !== undefined)).toEqual(["sales-manager", "rep", "account-manager"]);
   });
 
   it("shows a rep a new starter and her patch, and not the target she was given", () => {
@@ -1170,7 +1203,7 @@ describe("what a role is kept from, column by column", () => {
 
   it("reads columns apart only where the list above says so", () => {
     const apart = ROLES.flatMap((key) => Object.entries(role(key).limits ?? {}).filter(([, limit]) => limit.readable !== undefined).map(([ref]) => `${key}: ${ref}`));
-    expect(apart).toEqual(["rep: starters", "rep: covers", "account-manager: covers", "account-manager: quotes", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "crew: deal_stock_needs", "read-only: quotes", "read-only: covers"]);
+    expect(apart).toEqual(["sales-manager: contacts", "rep: contacts", "rep: starters", "rep: covers", "account-manager: contacts", "account-manager: covers", "account-manager: quotes", "marketer: deal_marks", "ops-manager: deals", "crew: delivery_notes", "crew: deal_stock_needs", "read-only: quotes", "read-only: covers"]);
     // A crew member reads the notes of his crew's visits, not the totals Adminium keeps of every line (a line is reached by
     // its own crew, so a total over another crew's lines would show through): he counts his lines himself.
     expect(limitOf("crew", "delivery_notes")?.readable).not.toContain("ordered");

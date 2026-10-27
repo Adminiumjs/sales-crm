@@ -365,11 +365,11 @@ describe("a comment on a deal may mention a colleague", () => {
 });
 
 describe("the e-mails the app ships", () => {
-  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"];
+  const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-referral-code", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"];
   const shape = (key: string, locale = "en-US") => m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks.map((block) => block.block);
 
-  it("are seventeen: fifteen to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-approval-asked", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled", "crm-signed-copy", "crm-certificate-asked"]);
+  it("are eighteen: sixteen to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-referral-code", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled", "crm-signed-copy", "crm-certificate-asked"]);
     for (const template of m.emailTemplates) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
@@ -408,16 +408,18 @@ describe("the e-mails the app ships", () => {
     expect(shape("crm-showroom-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
     expect(shape("crm-showroom-cancelled")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
     for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-showroom-confirmed")!.locales[locale]!.blocks.slice(3).map((block) => block.showWhen), locale).toEqual([{ var: "booking.note" }, { var: "practice.showroom_address" }]);
-    // The thank-you: its sentence, and the code only when the referral holds one.
-    expect(shape("crm-referral-thanks")).toEqual(["email.heading", "email.text", "email.text", "email.box"]);
-    for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-referral-thanks")!.locales[locale]!.blocks.slice(2).map((block) => block.showWhen), locale).toEqual([{ var: "referral.reward" }, { var: "referral.reward" }]);
+    // The thank-you says thank you and gives nothing; the code is a mail of its own (marketing), sent only with a code.
+    expect(shape("crm-referral-thanks")).toEqual(["email.heading", "email.text"]);
+    expect(JSON.stringify(m.emailTemplates.find((one) => one.key === "crm-referral-thanks"))).not.toContain("referral.reward");
+    expect(shape("crm-referral-code")).toEqual(["email.heading", "email.text", "email.box"]);
+    for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === "crm-referral-code")!.locales[locale]!.blocks[2]!.data, locale).toMatchObject({ value: "{{referral.reward|}}" });
     // A delivery: its facts, and the office's phone only when the install keeps one.
     for (const key of ["crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"]) {
       expect(shape(key)).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
       for (const locale of LOCALES) expect(m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks[3]!.showWhen, `${key} ${locale}`).toEqual({ var: "practice.office_phone" });
     }
     // Each says why the reader got it.
-    for (const key of ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"]) for (const locale of LOCALES) expect((m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.footer ?? "").trim(), `${key} ${locale}`).not.toBe("");
+    for (const key of ["crm-quote-sent", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-referral-code", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"]) for (const locale of LOCALES) expect((m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.footer ?? "").trim(), `${key} ${locale}`).not.toBe("");
   });
 
   it("every button carries its record, and no customer's e-mail names a number of ours, a stage or another customer", () => {
@@ -463,11 +465,11 @@ describe("the outbox", () => {
       "quote-sent": "crm-quote-sent",
       "quote-accepted": "crm-quote-accepted",
       "handover-intro": "crm-handover-intro",
-      "approval-asked": "crm-approval-asked",
       "visit-confirmed": "crm-visit-confirmed",
       "visit-moved": "crm-visit-moved",
       "visit-cancelled": "crm-visit-cancelled",
       "referral-thanks": "crm-referral-thanks",
+      "referral-code": "crm-referral-code",
       "showroom-confirmed": "crm-showroom-confirmed",
       "showroom-moved": "crm-showroom-moved",
       "showroom-cancelled": "crm-showroom-cancelled",
@@ -497,10 +499,10 @@ describe("the outbox", () => {
     const column = (ref: string) => quotes.columns.find((one) => one.ref === ref)!;
     // Until it is sent, a quote shows where it will go: the contact's address as it is today, personal data like the contact's own.
     expect(column("to_email")).toMatchObject({ type: "text", nullable: true, rules: { personal: true, copy: { via: "sent_to_contact_id", from: "email", mode: "always", follow: true } } });
-    expect(column("to_name")).toMatchObject({ type: "text", nullable: true, rules: { copy: { via: "sent_to_contact_id", from: "name", mode: "always", follow: true } } });
+    expect(column("to_name")).toMatchObject({ type: "text", nullable: true, rules: { personal: true, copy: { via: "sent_to_contact_id", from: "name", mode: "always", follow: true } } });
     // Sending stamps where it went, and that no longer follows the contact: the record of who was mailed stays true.
     expect(column("sent_to_email").rules).toEqual({ personal: true, stamp: { set: { copy: "to_email" }, on: { column: "status", values: ["sent"] } } });
-    expect(column("sent_to_name").rules).toEqual({ stamp: { set: { copy: "to_name" }, on: { column: "status", values: ["sent"] } } });
+    expect(column("sent_to_name").rules).toEqual({ stamp: { set: { copy: "to_name" }, on: { column: "status", values: ["sent"] } }, personal: true });
   });
 });
 
@@ -545,5 +547,40 @@ describe("a referral is thanked", () => {
     expect(referrals.find((one) => one.ref === "thanked_by_id")!.rules).toEqual({ staff: true, stamp: { set: "user-id", on: { column: "thanked_at", filled: true } } });
     // The message finds its reader by the one link a referral has to a contact.
     expect(referrals.filter((one) => (one as { references?: string }).references === "contacts").map((one) => one.ref)).toEqual(["from_contact_id"]);
+  });
+
+  it("and the code for a next order, when the referral holds one, by a mail of its own that is marketing", () => {
+    expect(m.outbox.producers.find((one) => one["kind"] === "referral-code")).toEqual({
+      kind: "referral-code",
+      module: "accounts",
+      link: "referral_id",
+      onChange: { table: "referrals", columns: ["thanked_at"], changed: true, where: { column: "reward", isNull: false } },
+      replyTo: { staff: "thanked_by_id" },
+    });
+    expect((m.outbox as unknown as { classes: Record<string, string> }).classes["referral-code"]).toBe("marketing");
+    expect((m.outbox as unknown as { classes: Record<string, string> }).classes["referral-thanks"]).toBe("service");
+  });
+});
+
+describe("each mail to a contact says whether it is marketing", () => {
+  const classes = (m.outbox as unknown as { classes?: Record<string, string> }).classes ?? {};
+
+  it("classes every kind the outbox sends, and no other", () => {
+    expect(Object.keys(classes).sort()).toEqual(Object.keys(m.outbox.kinds).sort());
+    for (const [kind, said] of Object.entries(classes)) expect(["marketing", "service"], kind).toContain(said);
+  });
+
+  it("sends only the code for a next order as marketing: a quote, a booking, a delivery and a signed copy are service", () => {
+    expect(Object.entries(classes).filter(([, said]) => said === "marketing").map(([kind]) => kind)).toEqual(["referral-code"]);
+  });
+
+  it("no longer has the approval e-mail nothing ever sent: not a kind, not a template, not a value of the kind column", () => {
+    expect(Object.keys(m.outbox.kinds)).not.toContain("approval-asked");
+    expect(m.emailTemplates.map((one) => one.key)).not.toContain("crm-approval-asked");
+    const kind = m.requiredSchema.tables.find((one) => one.ref === "outbox")!.columns.find((one) => one.ref === "kind") as unknown as { enum: string[]; rules: { enumLabels: { labels: Record<string, unknown> } } };
+    expect(kind.enum).not.toContain("approval-asked");
+    expect(Object.keys(kind.rules.enumLabels.labels).sort()).toEqual([...kind.enum].sort());
+    // The bell to the manager who approves stays: a notice, not an e-mail to a contact.
+    expect(m.automations.map((one) => one.key)).toContain("approval-asked");
   });
 });

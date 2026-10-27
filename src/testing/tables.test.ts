@@ -147,7 +147,9 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "ask_for_contact_id",
     ],
   },
-  contacts: { nullable: ["reference", "job_title", "email", "phone", "may_email_by_id", "may_email_at", "unsubscribed_at"] },
+  // The old "unsubscribed" moment stays one release more: the update carries each to the do-not-email list, and nothing
+  // reads or writes it after. The opt-out mark is empty until a staff screen shows the person the line.
+  contacts: { nullable: ["reference", "job_title", "email", "phone", "may_email_by_id", "may_email_at", "unsubscribed_at", "opt_out_offered_at"] },
   territories: { nullable: ["owner_id", "area"] },
   territory_places: { nullable: [] },
   renewals: { nullable: ["deal_id", "est_value", "due_on", "every_months"] },
@@ -190,6 +192,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "passed_to_id",
       "rung_at",
       "deal_id",
+      "opt_out_offered_at",
     ],
   },
   shows: { nullable: ["ends_on"] },
@@ -1097,7 +1100,7 @@ describe("what this batch leaves for a later one", () => {
 
   it("declares the outbox over the table, with a template for each of its eight kinds", () => {
     const box = (manifest as unknown as { outbox: typeof OUTBOX_WORD & { kinds: Record<string, string> } }).outbox;
-    expect({ ...box, kinds: {}, producers: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
+    expect({ ...box, kinds: {}, classes: undefined, producers: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
     expect(Object.keys(box.kinds)).toEqual(byRef.get("outbox")?.columns.find((c) => c.ref === "kind")?.enum);
   });
 });
