@@ -161,7 +161,7 @@ test("an enquiry whose taker said the line hands its mark to the contact a claim
   // The front desk takes a call and says the line: the server marks the enquiry.
   const corin = await api("corin");
   const taken = await corin.post(data("enquiries"), {
-    data: { values: { source: "phone", company_name: "P14 Larkfield Vets", person: "Owen Pike", email: "owen@p14-larkfield.example", wants: "P14 benches for a waiting room" }, clientKey: "p14markAAAAAAAAAAAAAAAAAAAAAAAAA", optOut: { shown: true } },
+    data: { values: { source: "phone", company_name: "P14 Larkfield Vets", person: "Owen Pike", email: "owen@p14-larkfield.example", wants: "P14 benches for a waiting room", est_value: 3500 }, clientKey: "p14markAAAAAAAAAAAAAAAAAAAAAAAAA", optOut: { shown: true } },
     headers: await csrf(corin),
   });
   expect(taken.status(), await taken.text()).toBe(201);

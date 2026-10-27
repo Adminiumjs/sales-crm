@@ -277,7 +277,8 @@ test("Read-only reads the inbox with no control, contact details kept from her; 
   await page.goto(`${STAFF}inbox`);
   await expect(count(page, "open")).toHaveText("4");
   await expect(count(page, "all")).toHaveText("6");
-  await expect(cards(page).first().locator(".crm-enq-from")).toHaveText("Ines Vaughan · Cobalt Legal · contact details are hidden for your role");
+  // Who asked is a person's name (0.2.3): kept from her with the address and the phone.
+  await expect(cards(page).first().locator(".crm-enq-from")).toHaveText("Cobalt Legal · contact details are hidden for your role");
   await expect(page.locator(".crm-enq [data-act]")).toHaveCount(0);
   await expect(page.getByTestId("enquiry-add")).toHaveCount(0);
   // 390 wide, dark: nothing scrolls sideways.
@@ -287,7 +288,7 @@ test("Read-only reads the inbox with no control, contact details kept from her; 
   const grace = await api("grace");
   const headers = await csrf(grace);
   const e2 = (await rows<{ id: number; email: string | null; _masked?: string[] }>(grace, data, "enquiries", { column: "company_name", op: "eq", value: "Westgate Care" }))[0]!;
-  expect([e2.email, e2._masked]).toEqual([null, ["email", "phone"]]);
+  expect([e2.email, e2._masked]).toEqual([null, ["person", "email", "phone"]]);
   expect((await grace.post(data("enquiries"), { data: { values: { source: "phone", company_name: "P14 not hers" }, clientKey: "p14graceAAAAAAAAAAAAAAAAAAAAAAAA" }, headers })).status()).toBe(403);
   expect((await grace.post(data("enquiries", `/${String(e2.id)}/actions/claim`), { data: { from: "open" }, headers })).status()).toBe(403);
   expect((await grace.patch(data("enquiries", `/${String(e2.id)}`), { data: { values: { rung_at: "2026-07-28T09:00:00.000Z" } }, headers })).status()).toBe(403);
