@@ -64,6 +64,9 @@ test("a rep claims an enquiry from a company not on the books: the company, its 
     await expect(sheet.getByRole("radio", { name: "New company: P14 Westgate Care" })).toHaveAttribute("aria-checked", "true");
     await expect(sheet.getByTestId("new-company-note")).toHaveText("P14 Westgate Care is put on the books with Hannah Doyle as its first contact, then the deal is started there.");
     await expect(sheet.getByRole("textbox", { name: "Line up the first step" })).toHaveValue("First call with Hannah Doyle about P14 chairs for a call centre");
+    // Whoever typed the enquiry in said nothing of our mail: the sheet asks Priya to, at her first call.
+    await expect(sheet.locator(".crm-optout-line")).toHaveText("Say it when you first speak to them: “We may e-mail you now and then about our work. You can say no now, or at any time from any e-mail.”");
+    await expect(sheet.getByTestId("opt-out-carried")).toHaveCount(0);
     await picture(page, "6-priya-claim-sheet");
     // Escape gives the focus back; nothing was claimed by looking.
     await page.keyboard.press("Escape");
@@ -82,8 +85,10 @@ test("a rep claims an enquiry from a company not on the books: the company, its 
     const company = (await rows<{ id: number; name: string; town: string; account_owner_id: string }>(admin, data, "companies", { column: "name", op: "eq", value: "P14 Westgate Care" }));
     expect(company.map((row) => [row.town, row.account_owner_id])).toEqual([["Doncaster", me]]);
     expect(told.company_id).toBe(company[0]!.id);
-    const contact = await rows<{ id: number; name: string; email: string; may_email: boolean | number }>(admin, data, "contacts", { column: "company_id", op: "eq", value: company[0]!.id });
+    const contact = await rows<{ id: number; name: string; email: string; may_email: boolean | number; opt_out_offered_at: string | null }>(admin, data, "contacts", { column: "company_id", op: "eq", value: company[0]!.id });
     expect(contact.map((row) => [row.name, row.email, Boolean(row.may_email)])).toEqual([["Hannah Doyle", "hannah@p14-westgate.example", false]]);
+    // The sheet showed the line with her address: the server marked her as offered a way to say no.
+    expect(contact[0]!.opt_out_offered_at).not.toBeNull();
     const deal = (await rows<{ id: number; owner_id: string; company_id: number; contact_id: number; typed_amount: number; state: string }>(admin, data, "deals", { column: "name", op: "eq", value: "P14 chairs for a call centre" }));
     expect(deal.map((row) => [row.owner_id, row.company_id, row.contact_id, Number(row.typed_amount), row.state])).toEqual([[me, company[0]!.id, contact[0]!.id, 28000, "open"]]);
     expect(told.deal_id).toBe(deal[0]!.id);
@@ -145,6 +150,40 @@ test("the CRM admin starts a deal from a trade-show lead for a company already o
     await expect(page.locator('.crm-chip-btn[data-filter="deal"] .crm-chip-count')).toHaveText("1");
     await expect(page.locator('.crm-leads-stat[data-stat="deal"] .crm-leads-value')).toHaveText("1");
     await expect(card.getByRole("link", { name: "Open its deal" })).toBeVisible();
+  } finally {
+    await clear(admin, data);
+  }
+});
+
+test("an enquiry whose taker said the line hands its mark to the contact a claim makes of it", async ({ as, api, data }) => {
+  const admin = await api("tessa");
+  await clear(admin, data);
+  // The front desk takes a call and says the line: the server marks the enquiry.
+  const corin = await api("corin");
+  const taken = await corin.post(data("enquiries"), {
+    data: { values: { source: "phone", company_name: "P14 Larkfield Vets", person: "Owen Pike", email: "owen@p14-larkfield.example", wants: "P14 benches for a waiting room" }, clientKey: "p14markAAAAAAAAAAAAAAAAAAAAAAAAA", optOut: { shown: true } },
+    headers: await csrf(corin),
+  });
+  expect(taken.status(), await taken.text()).toBe(201);
+  const enquiry = ((await taken.json()) as { data: { id: number } }).data.id;
+  const offered = (await rows<{ opt_out_offered_at: string | null }>(admin, data, "enquiries", { column: "id", op: "eq", value: enquiry }))[0]!.opt_out_offered_at;
+  expect(offered).not.toBeNull();
+  const page = await (await as("priya")).newPage();
+  const problems = watch(page);
+  try {
+    await page.goto(`${STAFF}inbox`);
+    await cards(page).filter({ hasText: "P14 benches for a waiting room" }).locator('[data-act="claim"]').click();
+    const sheet = page.getByRole("dialog", { name: "Start a deal" });
+    // Said already: the sheet says when, and asks nothing more.
+    await expect(sheet.getByTestId("opt-out-carried")).toHaveText(/^They were offered a way to say no on .+$/);
+    await expect(sheet.locator(".crm-optout")).toHaveCount(0);
+    await sheet.getByRole("button", { name: "Add to the board" }).click();
+    await expect(page.locator(".crm-toast")).toContainText("P14 benches for a waiting room is on the board");
+    const company = (await rows<{ id: number }>(admin, data, "companies", { column: "name", op: "eq", value: "P14 Larkfield Vets" }))[0]!;
+    const contact = (await rows<{ email: string; opt_out_offered_at: string | null }>(admin, data, "contacts", { column: "company_id", op: "eq", value: company.id }))[0]!;
+    expect(contact.email).toBe("owen@p14-larkfield.example");
+    expect(new Date(contact.opt_out_offered_at!).getTime()).toBe(new Date(offered!).getTime());
+    expect(problems).toEqual([]);
   } finally {
     await clear(admin, data);
   }

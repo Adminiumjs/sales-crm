@@ -336,3 +336,57 @@ test("Contacts at 390 wide in the dark, and in Arabic right to left", async ({ a
     await picture(page, "6-leo-contacts-arabic");
   });
 });
+
+test("a new contact's sheet says the line under the address: saved, she is marked as offered a way to say no; one who said no goes on the do-not-email list instead", async ({ as, api, data }) => {
+  const context = await as("dana");
+  const page = await context.newPage();
+  const problems = watch(page);
+  const owner = await api("owner");
+  const listed = async (address: string): Promise<{ id: string; address: string | null; reason: string }[]> =>
+    ((await (await owner.get(`/api/v1/consent/stop-list?q=${encodeURIComponent(address)}`)).json()) as { data: { entries: { id: string; address: string | null; reason: string }[] } }).data.entries;
+  try {
+    await page.goto(`${STAFF}contacts`);
+    // Told, and saved: the server marks the contact. Nothing is said before there is an address to say it at.
+    await page.getByRole("button", { name: "New contact" }).click();
+    const add = page.getByRole("dialog", { name: "New contact" });
+    await add.getByLabel("Name").fill("P07 Line Told");
+    await expect(add.locator(".crm-optout")).toHaveCount(0);
+    await add.getByLabel("Email").fill("line.told@p07-optout.example");
+    await expect(add.locator(".crm-optout-line")).toHaveText("Tell them: “We may e-mail you now and then about our work. You can say no now, or at any time from any e-mail.”");
+    await add.getByRole("radio", { name: "Tandem Robotics" }).click();
+    const sent: unknown[] = [];
+    page.on("request", (request) => {
+      if (request.method() === "POST" && /crm_contacts$/.test(new URL(request.url()).pathname)) sent.push((request.postDataJSON() as { optOut?: unknown }).optOut ?? null);
+    });
+    await add.getByRole("button", { name: "Add contact" }).click();
+    await expect(page.locator(".crm-toast")).toHaveText("P07 Line Told added.");
+    expect(sent).toEqual([{ shown: true }]);
+    const told = (await rows<{ id: number; opt_out_offered_at: string | null }>(context.request, data, "contacts", { column: "name", op: "eq", value: "P07 Line Told" }))[0]!;
+    expect(told.opt_out_offered_at).not.toBeNull();
+
+    // They said no: not marked, and on the do-not-email list once saved, by Dana.
+    await page.getByRole("button", { name: "New contact" }).click();
+    const again = page.getByRole("dialog", { name: "New contact" });
+    await again.getByLabel("Name").fill("P07 Line Refused");
+    await again.getByLabel("Email").fill("line.refused@p07-optout.example");
+    const no = again.getByRole("button", { name: "They said no" });
+    await no.click();
+    await expect(no).toHaveAttribute("aria-pressed", "true");
+    await expect(again.locator(".crm-optout [role=status]")).toHaveText("They go on the do-not-email list when you save, and are not counted as offered a way to say no.");
+    await again.getByRole("radio", { name: "Tandem Robotics" }).click();
+    await again.getByRole("button", { name: "Add contact" }).click();
+    await expect(page.locator(".crm-toast")).toHaveText("P07 Line Refused is on the do-not-email list.");
+    expect(sent).toEqual([{ shown: true }, null]);
+    const refused = (await rows<{ id: number; opt_out_offered_at: string | null }>(context.request, data, "contacts", { column: "name", op: "eq", value: "P07 Line Refused" }))[0]!;
+    expect(refused.opt_out_offered_at).toBeNull();
+    expect((await listed("line.refused@p07-optout.example")).map((entry) => [entry.address, entry.reason])).toEqual([["line.refused@p07-optout.example", "hand"]]);
+    // Her sheet says so, from the server.
+    await card(page, "P07 Line Refused").locator(".crm-acc-contact-who").click();
+    const sheet = page.getByRole("dialog", { name: "P07 Line Refused" });
+    await expect(sheet.locator(".crm-acc-rec-facts > div").last()).toHaveText(/^Do-not-email listOn the do-not-email list since .+$/);
+    expect(problems).toEqual([]);
+  } finally {
+    const headers = await csrf(owner);
+    for (const address of ["line.told@p07-optout.example", "line.refused@p07-optout.example"]) for (const entry of await listed(address)) await owner.delete(`/api/v1/consent/stop-list/${entry.id}`, { headers });
+  }
+});

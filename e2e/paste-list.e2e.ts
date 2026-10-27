@@ -207,6 +207,8 @@ test("below the admin a contact is matched on its name or on nothing, never on a
   await page.goto(`${STAFF}paste-a-list`);
   await expect(wizard(page).getByRole("group", { name: "Paste a list" })).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('[data-note="modes"]')).toContainText("is left as it is. Changing what is already here by a list is the CRM admin’s to do.");
+  // A file never says a person was offered a way to say no: what it brings in never counts as an existing customer.
+  await expect(page.locator('[data-note="opt-out"]')).toHaveText("Rows brought in from a file carry no “offered a way to say no” mark, so they never count as existing customers.");
   await wizard(page).getByTestId("import-target").selectOption({ label: "Contacts" });
   await wizard(page).getByRole("textbox").fill("Company\tName\tEmail\n1\tP07 Nobody Yet\tnobody@example.test");
   await wizard(page).getByTestId("import-paste-use").click();
