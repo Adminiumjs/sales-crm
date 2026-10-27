@@ -164,13 +164,12 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
 
   /**
    * Whether a contact may be emailed, and who said so when. Read from Adminium's consent log: a tick by a colleague, a
-   * yes from before records were kept, an unsubscribe, a no at a send's review. Where this Adminium says nothing of it,
-   * from the row's own stamps as before.
+   * yes from before records were kept, an unsubscribe, a no at a send's review. Where the log has heard nothing of the
+   * contact (or this Adminium keeps none), from the row's own stamps, as before.
    */
   const mayEmailLine = (person: Person, by: string | null): string => {
-    const panel = data.consent ?? null;
-    if (panel !== null) {
-      const line = newsletterLine(panel, person.may_email === true);
+    const line = data.consent == null ? null : newsletterLine(data.consent);
+    if (line !== null) {
       const day = (at: number): string => f.date(new Date(at));
       switch (line.kind) {
         case "since":

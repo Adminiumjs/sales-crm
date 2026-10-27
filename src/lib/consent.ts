@@ -56,17 +56,20 @@ export type NewsletterLine =
   | { kind: "no" };
 
 /**
- * The newsletter's line. A yes the log never heard (ticked before records were
- * kept, or one the first send's review confirmed as that) reads "before"; an
- * unsubscribe, by the link or by the mail service, and a no at the send's
- * review are named with their day; any other no is "No".
+ * The newsletter's line. A yes the send's review confirmed as one from before
+ * records were kept reads "before"; an unsubscribe, by the link or by the mail
+ * service, and a no at the send's review are named with their day; any other
+ * no is "No". Null when the log has heard nothing of the person: the row's own
+ * stamps say who ticked the switch and when, as they did before the log.
  */
-export function newsletterLine(panel: Pick<ConsentPanel, "purposes">, ticked: boolean): NewsletterLine {
+export function newsletterLine(panel: Pick<ConsentPanel, "purposes">): NewsletterLine | null {
   const standing = panel.purposes.find((one) => one.purpose === "newsletter");
   const event = standing?.event ?? null;
-  if (standing === undefined || standing.state === "not-asked") return ticked ? { kind: "before" } : { kind: "no" };
+  if (standing === undefined || standing.state === "not-asked") return null;
   if (standing.state === "yes") {
-    if (event === null || event.detail === "before-records") return { kind: "before" };
+    // A yes the log holds from another row of the same address is not shown here: the row's own stamps speak.
+    if (event === null) return null;
+    if (event.detail === "before-records") return { kind: "before" };
     if (event.source === "staff" || event.source === "review") return event.staff === null ? { kind: "sinceAt", at: event.at } : { kind: "since", at: event.at, by: event.staff.label };
     return { kind: "sinceAt", at: event.at };
   }

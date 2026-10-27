@@ -9,30 +9,33 @@ const panel = (state: "yes" | "no" | "not-asked", one: ConsentEvent | null): Pic
 
 describe("what the contact sheet says of the newsletter, read from the consent log", () => {
   it("names the colleague who ticked it, and when", () => {
-    expect(newsletterLine(panel("yes", event("yes", "staff", { staff: { id: "u1", label: "Dana Reyes" } })), true)).toEqual({ kind: "since", at: AT, by: "Dana Reyes" });
+    expect(newsletterLine(panel("yes", event("yes", "staff", { staff: { id: "u1", label: "Dana Reyes" } })))).toEqual({ kind: "since", at: AT, by: "Dana Reyes" });
   });
 
-  it("says a yes from before records were kept is one, the switch on with no event, or one the send's review confirmed as that", () => {
-    expect(newsletterLine(panel("not-asked", null), true)).toEqual({ kind: "before" });
-    expect(newsletterLine(panel("yes", event("yes", "review", { detail: "before-records", staff: { id: "u1", label: "Mia" } })), true)).toEqual({ kind: "before" });
-    expect(newsletterLine(panel("yes", null), true)).toEqual({ kind: "before" });
+  it("says a yes the send's review confirmed as one from before records were kept is that", () => {
+    expect(newsletterLine(panel("yes", event("yes", "review", { detail: "before-records", staff: { id: "u1", label: "Mia" } })))).toEqual({ kind: "before" });
+  });
+
+  it("says nothing when the log has heard nothing of the person: the row's own stamps speak, as before the log", () => {
+    expect(newsletterLine(panel("not-asked", null))).toBeNull();
+    // Nor is a yes another row of the same address gave shown as this one's.
+    expect(newsletterLine(panel("yes", null))).toBeNull();
   });
 
   it("dates a yes that came in another way (a form, an import) without a name", () => {
-    expect(newsletterLine(panel("yes", event("yes", "import")), true)).toEqual({ kind: "sinceAt", at: AT });
+    expect(newsletterLine(panel("yes", event("yes", "import")))).toEqual({ kind: "sinceAt", at: AT });
   });
 
   it("names an unsubscribe, by the link or by the mail service, and a no at the send's review, each with its day", () => {
-    expect(newsletterLine(panel("no", event("no", "unsubscribe")), false)).toEqual({ kind: "unsubscribed", at: AT });
-    expect(newsletterLine(panel("no", event("no", "relay")), false)).toEqual({ kind: "unsubscribed", at: AT });
-    expect(newsletterLine(panel("no", event("no", "review")), false)).toEqual({ kind: "review", at: AT });
+    expect(newsletterLine(panel("no", event("no", "unsubscribe")))).toEqual({ kind: "unsubscribed", at: AT });
+    expect(newsletterLine(panel("no", event("no", "relay")))).toEqual({ kind: "unsubscribed", at: AT });
+    expect(newsletterLine(panel("no", event("no", "review")))).toEqual({ kind: "review", at: AT });
   });
 
-  it("says a plain no otherwise, and for somebody never asked whose switch is off", () => {
-    expect(newsletterLine(panel("no", event("no", "staff")), false)).toEqual({ kind: "no" });
-    expect(newsletterLine(panel("not-asked", null), false)).toEqual({ kind: "no" });
+  it("says a plain no otherwise", () => {
+    expect(newsletterLine(panel("no", event("no", "staff")))).toEqual({ kind: "no" });
     // Another person's event on the same address is never shown: the state still is.
-    expect(newsletterLine(panel("no", null), false)).toEqual({ kind: "no" });
+    expect(newsletterLine(panel("no", null))).toEqual({ kind: "no" });
   });
 });
 
