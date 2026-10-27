@@ -208,16 +208,27 @@ for (const [dialect, reachable] of LEGS) {
       for (const [who, name] of [['tessa', 'Ines Holt'], ['dana', 'Ola Berg']] as const) {
         for (const stamp of ['may_email_by_id', 'may_email_at'] as const) {
           const carried = stamp === 'may_email_by_id' ? s.ids['sam']! : '2020-01-01T09:00:00Z';
-          const brought = await bring(who, 'contacts', `Company,Name,May email,Ticked\n${String(company)},${name} ${stamp},yes,${carried}\n${String(company)},${name} plain ${stamp},yes,\n`, [
+          const columns = [
             { from: 'Company', to: 'company_id' },
             { from: 'Name', to: 'name' },
             { from: 'May email', to: 'may_email' },
-            { from: 'Ticked', to: stamp },
-          ]);
-          expect(brought.lines.map((line) => [line.status, line.column]), `${who} ${stamp}`).toEqual([
-            ['refused', stamp],
-            ['new', undefined],
-          ]);
+          ];
+          if (who === 'dana') {
+            // A rep gives a new contact only the columns her role lists (0.2.3: so no file of hers gives one a count of won
+            // deals): a file that maps a stamp is refused by name before a line is looked at.
+            const up = await s.app.inject({ method: 'POST', url: '/api/v1/imports/upload?filename=lines.csv', headers: { cookie: s.cookie[who]!, 'content-type': 'text/csv' }, payload: `Company,Name,May email,Ticked\n${String(company)},${name} ${stamp},yes,${carried}\n` });
+            expect(up.statusCode, up.body).toBe(201);
+            const asked = await s.send(who, 'POST', '/api/v1/imports', { fileId: (up.json() as { data: { fileId: string } }).data.fileId, connectionId: s.connectionId, table: s.t('contacts'), mapping: { columns: [...columns, { from: 'Ticked', to: stamp }] }, options: { mode: 'insert' } });
+            expect([said(asked), (asked.json() as { error?: { details?: { column?: string } } }).error?.details?.column], `${who} ${stamp}`).toEqual(['403 COLUMN_FORBIDDEN', stamp]);
+            const brought = await bring(who, 'contacts', `Company,Name,May email\n${String(company)},${name} plain ${stamp},yes\n`, columns);
+            expect(brought.lines.map((line) => line.status), `${who} ${stamp}`).toEqual(['new']);
+          } else {
+            const brought = await bring(who, 'contacts', `Company,Name,May email,Ticked\n${String(company)},${name} ${stamp},yes,${carried}\n${String(company)},${name} plain ${stamp},yes,\n`, [...columns, { from: 'Ticked', to: stamp }]);
+            expect(brought.lines.map((line) => [line.status, line.column]), `${who} ${stamp}`).toEqual([
+              ['refused', stamp],
+              ['new', undefined],
+            ]);
+          }
           expect(await s.rows(`select id from crm_contacts where name = '${name} ${stamp}'`)).toEqual([]);
           // The line that left it blank is stamped as whoever brought it, now.
           const plain = (await one(`select may_email, may_email_by_id, may_email_at from crm_contacts where name = '${name} plain ${stamp}'`))!;

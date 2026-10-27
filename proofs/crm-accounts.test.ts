@@ -639,13 +639,14 @@ for (const [dialect, reachable] of LEGS) {
         expect(data(await get(person, url('companies', '?select=id,name&limit=200'))).filter((row) => !String(row['name']).startsWith('P07 ')), person).toHaveLength(9);
         expect(data(await get(person, url('contacts', '?select=id,name&limit=200'))).filter((row) => !String(row['name']).startsWith('P07 ')), person).toHaveLength(13);
       }
-      // A contact's e-mail and phone are personal: kept from the marketer and Read-only, who are refused a list that names them and answered the rest with them left empty.
-      for (const person of ['lena', 'grace']) {
+      // A contact's e-mail and phone are personal: kept from Read-only, who is refused a list that names them and answered the rest with them left empty.
+      for (const person of ['grace']) {
         expect(said(await get(person, url('contacts', '?select=id,name,email&limit=5'))), person).toBe('403 COLUMN_FORBIDDEN');
         const row = data(await get(person, url('contacts', '?limit=1')))[0]!;
         expect([row['email'], row['phone'], row['_masked']], person).toEqual([null, null, expect.arrayContaining(['email', 'phone'])]);
       }
-      expect(data(await get('dana', url('contacts', '?select=id,name,email&limit=1')))[0]!['email']).toMatch(/@/);
+      // The marketer sends the campaigns: she reads who they go to (0.2.3).
+      for (const person of ['dana', 'lena']) expect(data(await get(person, url('contacts', '?select=id,name,email&limit=1')))[0]!['email'], person).toMatch(/@/);
       // A COMPANY'S STREET AND POSTAL CODE ARE NOT PERSONAL (plan 68 R3, ruling 3): every reader of companies is answered them,
       // Read-only and the marketer included, by a list that names them and by the record, while a contact's e-mail and
       // phone stay kept from those two (above). The sample's Cobalt has no postal code: the CRM admin gives it one first.

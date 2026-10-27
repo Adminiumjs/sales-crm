@@ -9,8 +9,8 @@
  * (finding P21): Dana reads "main contact on 1 open deal" for Tomas Reidy,
  * whose deal is Sam's. The count is the server's, over the deals' marks. The
  * marketer's cards say nothing of deals (her count is a company's). A
- * contact's e-mail and phone are kept from the marketer and Read-only by the
- * server.
+ * contact's e-mail and phone are kept from Read-only by the server; the
+ * marketer reads them (she sends the campaigns, 0.2.3).
  *
  * What a spec makes is called "P07 …" and taken away by the CRM admin.
  */
@@ -128,22 +128,22 @@ test("the sales manager may open every deal: each one-deal contact names it; the
   await picture(page, "2-ivy-contacts");
 });
 
-test("the marketer and Read-only are not shown e-mail and phone; the marketer is told nothing of deals; the server holds each", async ({ as, data }) => {
+test("the marketer reads who her campaigns go to, and is told nothing of deals; Read-only is not shown e-mail and phone; the server holds each", async ({ as, data }) => {
   const lena = await as("lena");
   const page = await lena.newPage();
   await page.goto(`${STAFF}contacts`);
   await expect(page.locator(".crm-acc-contact")).toHaveCount(13);
-  await expect(page.locator(".crm-acc-kept")).toHaveText("Your role is not shown e-mail addresses and phone numbers.");
-  await expect(page.locator(".crm-acc-contact-ways")).toHaveCount(0);
-  await expect(page.locator("main")).not.toContainText("@");
+  // She sends the campaigns (0.2.3): a contact's address and phone are hers to read.
+  await expect(page.locator(".crm-acc-kept")).toHaveCount(0);
+  await expect(page.locator("main")).toContainText("@");
   await expect(page.locator(".crm-acc-contact-deals")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "New contact" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Edit / })).toHaveCount(0);
   await picture(page, "3-lena-contacts");
-  // Asked directly: the e-mail is refused by name and left empty in a whole row; whose contact a mark names is refused; so is every write.
-  expect((await lena.request.get(data("contacts", "?select=id,name,email&limit=5"))).status()).toBe(403);
+  // Asked directly: the e-mail is answered; whose contact a mark names is refused; so is every write.
+  expect((await lena.request.get(data("contacts", "?select=id,name,email&limit=5"))).status()).toBe(200);
   const row = (await rows<Record<string, unknown>>(lena.request, data, "contacts"))[0]!;
-  expect([row["email"], row["phone"]]).toEqual([null, null]);
+  expect(String(row["email"])).toMatch(/@/);
   const headers = await csrf(lena.request);
   // Whose a deal is, she is never answered; and no deal at all.
   expect((await lena.request.get(data("deal_marks", "?select=owner_id&limit=5"))).status()).toBe(403);
