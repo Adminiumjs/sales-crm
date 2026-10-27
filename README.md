@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.36 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.38 or newer.
 
 ## What installs
 
@@ -143,7 +143,7 @@ npm run build       # the staff side, to dist/
 The browser specs and the proofs need a **built** Adminium checkout (`ADMINIUM_REPO`) and the
 add-ons' checkout with Invoices & Receipts and Inventory built (`ADD_ONS_REPO`). When the checkout's
 own version is older than the app's floor (a lane ahead of a release), stand it in with
-`CRM_STAND_VERSION=0.3.36`.
+`CRM_STAND_VERSION=0.3.38`.
 
 ```bash
 ADD_ONS_REPO=~/path/to/add-ons npm run stand:up   # leave one running
@@ -171,6 +171,44 @@ mail mode the people are `<name>@crm.stand` and the sample's addresses end `.sta
 The tests check the manifest against Adminium's own validator, a copy of which is in
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
+
+## Updating to 0.2.3
+
+0.2.3 needs Adminium 0.3.38, the release that e-mails a business's contacts (newsletters, the
+do-not-email list, a person's data on request). The add-ons stay at 1.0.14, and the update asks
+nothing. Every row is kept as it was; what changes:
+
+- **Who the app's people are.** Contacts and the people of enquiries are declared to Adminium:
+  their address, their name, the company they work for, and every copy of them the CRM keeps on
+  a quote, a sign-off, a delivery note or a showroom booking. Adminium finds, exports and erases
+  a person by that. Sign-offs, refused sign-offs and delivery notes are kept by law (signed
+  records of a contract): an erasure leaves them whole.
+- **"May be emailed" is the newsletter's yes**, kept in Adminium's consent log from now on. The
+  contact's sheet reads it there: who ticked it and when, an unsubscribe, a no at a send's review,
+  and whether the address is on the do-not-email list.
+- **The old "unsubscribed" moment is carried once**: each contact that had one goes on the
+  do-not-email list. The column stays this release, read by nothing, and goes in the next.
+- **Who counts as a customer:** a contact with a won deal (`won_deals`, worked out by Adminium and
+  filled for every contact by the update). The rep, the sales manager and the account manager
+  reach only some deals, so they do not read that count.
+- **The line where the CRM takes an address.** The contact sheet, "Add an enquiry" and the
+  new-deal sheet say what to tell the person ("we may e-mail you now and then; you can say no now,
+  or at any time from any e-mail"), and the save marks them as offered a way to say no; a claimed
+  enquiry hands its mark to the contact made of it. "They said no" puts the address on the
+  do-not-email list instead. Rows brought in from a file carry no mark, and the paste pages say
+  so. Only marked contacts with a won deal may be mailed as existing customers.
+- **Marketing or service.** Every e-mail is service (a quote, a booking, a delivery, a signed copy)
+  and goes whatever the do-not-email list says, except the code for a next order: the referral's
+  thank-you is now two e-mails, the thanks (service, always sent) and the code (marketing, sent
+  only to whom it may go, when the referral holds one). The approval e-mail nothing ever sent is
+  gone; the notice to the approving manager stays.
+- **Names copied from a person are personal data:** a quote's recipient and who accepted it, who
+  signed a job off or would not, a showroom visitor, an enquiry's person and whom a customer
+  introduced us to. They are read in clear by the roles whose screens show them (the crew and the
+  operations manager a signer, the front desk and the rep a visitor, the account manager a
+  referral) and masked to the others. The marketer now reads a contact's address.
+- **The showroom's settings** say that a booking's note goes into the visitor's e-mail: practical
+  notes only.
 
 ## Updating to 0.2.2
 
@@ -205,7 +243,7 @@ kept as it was; what changes:
 
 The app was released in stages: 0.2.0 was stage 1 (the first six parts); 0.2.1 was stage 3, every
 part, and updated a 0.2.0 install with its data in place (the four new parts arrive switched off).
-0.2.2 finishes the app (below) and updates a 0.2.0 or 0.2.1 install the same way. `whole/` is the app with every stage, and the only place to edit a table, a
+0.2.2 finishes the app (below) and updates a 0.2.0 or 0.2.1 install the same way; 0.2.3 updates any of the three. `whole/` is the app with every stage, and the only place to edit a table, a
 role, a page or the sample; `stage.json` says which parts each stage brings. After a change there:
 
 ```bash
