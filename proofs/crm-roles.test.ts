@@ -604,7 +604,9 @@ for (const [dialect, reachable] of LEGS) {
 
       // ── Marketer (Lena) ──────────────────────────────────────────────────────
       const contact = (await get('lena', 'contacts', '?limit=1')).json() as { data: Record<string, unknown>[] };
-      t('31 the marketer reads contacts with the address and phone masked', [contact.data[0]?.['email'] ?? null, contact.data[0]?.['phone'] ?? null].map((value) => (value === null ? 'masked' : /\*|•|…/.test(String(value)) ? 'masked' : 'shown')), ['masked', 'masked']);
+      // She sends the campaigns, so she reads who they go to: a contact's address (and phone) in clear.
+      const firstContact = await one(`SELECT email, phone FROM ${s.real('contacts')} ORDER BY id`);
+      t('31 the marketer reads contacts with the address and phone in clear', [contact.data[0]?.['email'] ?? null, contact.data[0]?.['phone'] ?? null], [firstContact['email'], firstContact['phone']]);
       t('32 the marketer reads no deal, quote or follow-up', ['deals', 'quotes', 'follow_ups'].map(async (ref) => String(await keys('lena', ref)).slice(0, 3)), ['403', '403', '403']);
       const enquiry = await post('lena', 'enquiries', { source: 'form', company_name: 'Quay Dental', person: 'A. Reed', warmth: 'warm' });
       t('33 the marketer writes an enquiry in and cannot claim it', [said(enquiry), refused(await patch('lena', 'enquiries', enquiry.statusCode < 300 ? made(enquiry) : 1, { state: 'claimed' }))], ['ok', '403']);
@@ -656,6 +658,87 @@ for (const [dialect, reachable] of LEGS) {
       void sams;
       void yes;
     }, 300_000);
+
+    it('the people the CRM keeps: a signer\'s name read by the crew and the office and masked to Read-only; the mark of the line set by a staff save that showed it, carried from a claimed enquiry, never brought by a file; "They said no" as a rep', async () => {
+      const send = (person: string, method: 'POST' | 'GET', path: string, payload?: Record<string, unknown>) => s.app.inject({ method, url: path, headers: { cookie: who(person) }, ...(payload === undefined ? {} : { payload }) });
+      const shown = (value: unknown): string => (value === null || value === undefined ? 'empty' : /\*|•|…/.test(String(value)) ? 'masked' : 'clear');
+      // A sign-off of the Blue crew's, with the name of who signed: the crew reads it in clear on its phone, the office on
+      // the job; Read-only reads it masked, as the CRM's other personal columns.
+      const signOff = await one(`SELECT id, signer_name FROM ${s.real('sign_offs')} WHERE id IN (${(await keys('f_yusuf', 'sign_offs') as number[]).join(', ') || '0'}) AND signer_name IS NOT NULL ORDER BY id`);
+      expect(signOff, 'the sample has a sign-off the crew reads').toBeDefined();
+      const signerAs = async (person: string): Promise<[unknown, boolean]> => {
+        const row = ((await get(person, 'sign_offs', `/${String(signOff['id'])}`)).json() as { data: Record<string, unknown> }).data;
+        return [row['signer_name'], ((row['_masked'] ?? []) as string[]).includes('signer_name')];
+      };
+      expect(await signerAs('f_yusuf')).toEqual([signOff['signer_name'], false]);
+      expect(await signerAs('ada')).toEqual([signOff['signer_name'], false]);
+      const [readOnly, kept] = await signerAs('grace');
+      expect([shown(readOnly), kept]).toEqual(['empty', true]);
+
+      const company = (await ids(`SELECT id FROM ${s.real('companies')}`))[0]!;
+      const mark = async (ref: string, key: number): Promise<unknown> => (await one(`SELECT opt_out_offered_at AS m FROM ${s.real(ref)} WHERE id = ${String(key)}`))['m'];
+      const create = (person: string, ref: string, values: Record<string, unknown>, optOut?: Record<string, unknown>) =>
+        s.app.inject({ method: 'POST', url: url(ref), headers: { cookie: who(person) }, payload: { values, ...(optOut === undefined ? {} : { optOut }) } });
+      // Dana, a rep, adds a contact on the contact sheet, which showed the line under the address: the server marks it.
+      const told = await create('dana', 'contacts', { company_id: company, name: 'Pat Lindqvist', email: 'pat.lindqvist@quayside.example', may_email: false }, { shown: true });
+      expect(said(told), told.body).toBe('ok');
+      expect(await mark('contacts', made(told))).not.toBeNull();
+      // Without the line, or with no address to have said it at, no mark.
+      const silent = made(await create('dana', 'contacts', { company_id: company, name: 'Sol Avery', email: 'sol.avery@quayside.example', may_email: false }));
+      expect(await mark('contacts', silent)).toBeNull();
+      const noAddress = made(await create('dana', 'contacts', { company_id: company, name: 'Rae Moss', may_email: false }, { shown: true }));
+      expect(await mark('contacts', noAddress)).toBeNull();
+      // Nobody types the mark: a value sent for it is dropped, the CRM admin's too.
+      const typed = made(await create('tessa', 'contacts', { company_id: company, name: 'Ivo Brandt', email: 'ivo.brandt@quayside.example', may_email: false, opt_out_offered_at: '2026-01-01T09:00:00Z' }));
+      expect(await mark('contacts', typed)).toBeNull();
+
+      // The same contact brought in from a file carries no mark, and a file that brings one is refused.
+      const upload = async (person: string, text: string): Promise<string> => {
+        const up = await s.app.inject({ method: 'POST', url: '/api/v1/imports/upload?filename=pasted.csv', headers: { cookie: who(person), 'content-type': 'text/csv' }, payload: text });
+        expect(up.statusCode, up.body).toBe(201);
+        return (up.json() as { data: { fileId: string } }).data.fileId;
+      };
+      const columns = [{ from: 'Company', to: 'company_id' }, { from: 'Name', to: 'name' }, { from: 'Email', to: 'email' }];
+      const prepared = await send('dana', 'POST', '/api/v1/imports', { fileId: await upload('dana', `Company\tName\tEmail\n${String(company)}\tKim Ostrova\tkim.ostrova@quayside.example\n`), connectionId: s.connectionId, table: s.t('contacts'), mapping: { columns }, options: { mode: 'insert' } });
+      expect(prepared.statusCode, prepared.body).toBe(201);
+      const run = (prepared.json() as { data: { import: { id: string } } }).data.import.id;
+      expect((await send('dana', 'POST', `/api/v1/imports/${run}/run`)).statusCode).toBe(202);
+      await s.jobs();
+      const kim = await one(`SELECT id, opt_out_offered_at AS m FROM ${s.real('contacts')} WHERE email = 'kim.ostrova@quayside.example'`);
+      expect(kim, 'the file brought Kim in').toBeDefined();
+      expect(kim['m']).toBeNull();
+      const carrying = await send('tessa', 'POST', '/api/v1/imports', { fileId: await upload('tessa', `Company\tName\tEmail\tOffered\n${String(company)}\tLou Brand\tlou.brand@quayside.example\t2026-01-01T09:00:00Z\n`), connectionId: s.connectionId, table: s.t('contacts'), mapping: { columns: [{ from: 'Company', to: 'company_id' }, { from: 'Name', to: 'name' }, { from: 'Email', to: 'email' }, { from: 'Offered', to: 'opt_out_offered_at' }] }, options: { mode: 'insert' } });
+      const refusedFile = carrying.statusCode >= 400 ? said(carrying) : said(await send('tessa', 'GET', `/api/v1/imports/${(carrying.json() as { data: { import: { id: string } } }).data.import.id}/preview`));
+      if (refusedFile === 'ok') {
+        const preview = (await send('tessa', 'GET', `/api/v1/imports/${(carrying.json() as { data: { import: { id: string } } }).data.import.id}/preview`)).json() as { data: { counts: { refused: number } } };
+        expect(preview.data.counts.refused).toBe(1);
+      } else expect(refusedFile.slice(0, 1)).toBe('4');
+      expect(await s.rows(`SELECT id FROM ${s.real('contacts')} WHERE email = 'lou.brand@quayside.example'`)).toEqual([]);
+
+      // An enquiry the marketer types in, with the line said: marked. Dana claims it and makes its person a contact, the
+      // enquiry's mark carried for the same address; for another address it is not.
+      const enquiry = await create('lena', 'enquiries', { source: 'phone', company_name: 'Quay Optics', person: 'Noa Quay', email: 'noa@quayoptics.example' }, { shown: true });
+      expect(said(enquiry), enquiry.body).toBe('ok');
+      const offeredAt = await mark('enquiries', made(enquiry));
+      expect(offeredAt).not.toBeNull();
+      const claimed = made(await create('dana', 'contacts', { company_id: company, name: 'Noa Quay', email: 'noa@quayoptics.example', may_email: false }, { from: String(made(enquiry)) }));
+      expect(new Date(String(await mark('contacts', claimed))).getTime()).toBe(new Date(String(offeredAt)).getTime());
+      const elsewhere = made(await create('dana', 'contacts', { company_id: company, name: 'Noa Quay', email: 'noa.quay@elsewhere.example', may_email: false }, { from: String(made(enquiry)) }));
+      expect(await mark('contacts', elsewhere)).toBeNull();
+
+      // "They said no", as Dana on the contact she made: the address goes on the do-not-email list, by hand, once.
+      const no = await send('dana', 'POST', '/api/v1/consent/said-no', { connectionId: s.connectionId, table: s.t('contacts'), recordId: String(silent) });
+      expect(no.statusCode, no.body).toBe(200);
+      expect((no.json() as { data: { added: boolean; stopped: { reason: string } } }).data).toMatchObject({ added: true, stopped: { reason: 'hand' } });
+      expect(((await send('dana', 'POST', '/api/v1/consent/said-no', { connectionId: s.connectionId, table: s.t('contacts'), recordId: String(silent) })).json() as { data: { added: boolean } }).data.added).toBe(false);
+      const listed = (await send('owner', 'GET', '/api/v1/consent/stop-list?q=sol.avery')).json() as { data: { entries: { address: string | null; reason: string }[] } };
+      expect(listed.data.entries.map((entry) => [entry.address, entry.reason])).toEqual([['sol.avery@quayside.example', 'hand']]);
+      // The contact sheet reads it back for the row; Read-only reads that it stands so and may change nothing.
+      const panel = (await send('grace', 'POST', '/api/v1/consent/panel', { connectionId: s.connectionId, table: s.t('contacts'), recordId: String(silent) })).json() as { data: { declared: boolean; stopped: { reason: string } | null; mayChange: boolean } };
+      expect(panel.data).toMatchObject({ declared: true, stopped: { reason: 'hand' }, mayChange: false });
+      // Somebody who may not change the contact says nothing for it: Read-only, the marketer.
+      for (const person of ['grace', 'lena']) expect(said(await send(person, 'POST', '/api/v1/consent/said-no', { connectionId: s.connectionId, table: s.t('contacts'), recordId: String(told.statusCode < 300 ? made(told) : 0) })).slice(0, 1), person).toBe('4');
+    });
 
     it('cover reaches a colleague\'s deals between its two days and not after; a helper reaches a deal and its quotes', async () => {
       const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);

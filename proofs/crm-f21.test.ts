@@ -12,7 +12,8 @@
  *  - a site visit booked, moved and cancelled writes its e-mail to the
  *    visit's contact (the outbox row and the queued mail, never a sent one),
  *    and a visit with earlier messages can still be removed;
- *  - "Say thank you" on a referral writes its e-mail, once;
+ *  - "Say thank you" on a referral writes its thanks, once (service mail), and
+ *    the code for a next order as marketing mail, skipped for whom it may not reach;
  *  - a rep's week holds her own sums and her cover of her target; a manager's
  *    the sums of the people she leads and none of another team's;
  *  - however many times a deal moves before the rules run, every move is in
@@ -27,10 +28,13 @@
  */
 import { readFileSync } from 'node:fs';
 
-import { automationsRepo, jobsRepo, rolesRepo, teamsRepo } from '@adminium/meta';
+import { automationsRepo, jobsRepo, rolesRepo, settingsRepo, teamsRepo } from '@adminium/meta';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
+import { createConsentService } from '../src/consent/index.js';
+import { createDkimKeys, createTxtLookup } from '../src/email/sender/index.js';
+import { TEST_SECRET } from './helpers.js';
+import { LEGS, said, wholeServer, type QueuedEmail, type Reply, type WholeServer } from './whole-server.helpers.js';
 
 vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.38' }));
 
@@ -44,6 +48,7 @@ for (const [dialect, reachable] of LEGS) {
     const stage: Record<string, number> = {};
     let company = 0;
     let contact = 0;
+    const dns = new Map<string, string[]>();
     type Notice = { title: string; body: string | null; actionUrl: string | null; opens?: { appKey: string; path: string }; entity: unknown; kind: string };
     const noticesOf = async (who: string): Promise<Notice[]> => ((await s.get(who, '/api/v1/me/notifications?limit=100')).json() as { data: { items: Notice[] } }).data.items;
     const made = (res: Reply): number => {
@@ -74,6 +79,8 @@ for (const [dialect, reachable] of LEGS) {
       s = await wholeServer(dialect, manifest(), {
         people: { dana: ['rep'], priya: ['rep'], noor: ['rep'], zed: ['rep'], ivy: ['sales-manager'], omar: ['sales-manager'], tessa: ['admin'], ada: ['ops-manager'], hugo: ['account-manager'] },
         smtp: true,
+        // Marketing mail's world, answered here: the DNS a sender is checked against, and its postal address.
+        compose: { marketingSeams: { lookup: createTxtLookup({ cacheMs: 0, resolve: async (name) => (dns.get(name) ?? []).map((record) => [record]) }), postalAddress: async () => 'Meridian Workplace Ltd, 4 Wharf Lane, Leeds LS1 4BR, United Kingdom' } },
       });
       // Ivy leads North (Dana, Priya); Omar leads South (Noor). Tessa, the CRM admin, leads the team Ivy is in.
       const teams = teamsRepo(s.meta);
@@ -367,30 +374,67 @@ for (const [dialect, reachable] of LEGS) {
       expect(visit).toBeGreaterThan(0);
     });
 
-    it('"Say thank you" on a referral writes its e-mail to who made the introduction, once, with the code when there is one', async () => {
+    it('"Say thank you" on a referral writes its thanks to who made the introduction, once; the code for a next order is a marketing mail of its own, sent only to whom it may go', async () => {
       await s.emails();
+      // The sender is ready for marketing mail: an address of its own domain, its signing key and DMARC published, a public
+      // address and a postal address (each faked where the world would answer: the DNS, the postal address).
+      await settingsRepo(s.meta).set('system.publicOrigin', 'https://crm.fernway.example', { updatedBy: null });
+      await settingsRepo(s.meta).set('email.smtp', { ...(await settingsRepo(s.meta).get('email.smtp'))!, from: 'Meridian <news@meridian.example>' }, { updatedBy: null });
+      const key = await createDkimKeys({ meta: s.meta, secret: TEST_SECRET }).make('meridian.example');
+      dns.set('_dmarc.meridian.example', ['v=DMARC1; p=quarantine']);
+      dns.set(key.record.name, [key.record.value]);
+      // Two more people who introduce someone: Ben said no to our mail (the do-not-email list), Cleo never said yes.
+      const ben = made(await s.make('owner', 'contacts', { company_id: company, name: 'Ben Okafor', email: 'ben.okafor@fernway-clinics.com', may_email: true }));
+      const cleo = made(await s.make('owner', 'contacts', { company_id: company, name: 'Cleo Marsh', email: 'cleo.marsh@fernway-clinics.com', may_email: false }));
+      await createConsentService({ meta: s.meta, secret: TEST_SECRET }).stop.add({ address: 'ben.okafor@fernway-clinics.com', reason: 'link' });
       const plain = made(await s.make('hugo', 'referrals', { from_contact_id: contact, referred_name: 'Somebody at Cobalt Legal', introduced_on: '2025-12-09' }));
       const coded = made(await s.make('hugo', 'referrals', { from_contact_id: contact, referred_name: 'Somebody at Low Orbit', introduced_on: '2026-02-03' }));
+      const bens = made(await s.make('hugo', 'referrals', { from_contact_id: ben, referred_name: 'Somebody at Harbour', introduced_on: '2026-02-10' }));
+      const cleos = made(await s.make('hugo', 'referrals', { from_contact_id: cleo, referred_name: 'Somebody at Pier', introduced_on: '2026-02-11' }));
       await jobs();
       expect(await s.rows('select id from crm_outbox where referral_id is not null')).toEqual([]);
       // What the Referrals screen's button writes: the moment, and with it a code if there is one.
       expect(said(await s.change('hugo', 'referrals', plain, { thanked_at: new Date().toISOString() }))).toBe('ok');
-      expect(said(await s.change('hugo', 'referrals', coded, { thanked_at: new Date().toISOString(), reward: 'THANKYOU-ANA' }))).toBe('ok');
+      for (const [ref, code] of [[coded, 'THANKYOU-ANA'], [bens, 'THANKYOU-BEN'], [cleos, 'THANKYOU-CLEO']] as const) expect(said(await s.change('hugo', 'referrals', ref, { thanked_at: new Date().toISOString(), reward: code }))).toBe('ok');
       await jobs();
       // Pressing again, or changing the note later, writes nothing more.
       expect(said(await s.change('hugo', 'referrals', plain, { thanked_at: new Date(Date.now() + 60_000).toISOString() }))).toBe('ok');
       await jobs();
-      const rows = await s.rows('select kind, referral_id, contact_id from crm_outbox where referral_id is not null order by id');
-      expect(rows.map((row) => [row['kind'], Number(row['referral_id']), Number(row['contact_id'])])).toEqual([['referral-thanks', plain, contact], ['referral-thanks', coded, contact]]);
+      await s.app.outboxSender.sendApp('crm', Date.now());
+      const rows = await s.rows('select kind, referral_id, contact_id, status, error from crm_outbox where referral_id is not null order by referral_id, id');
+      expect(rows.map((row) => [row['kind'], Number(row['referral_id']), Number(row['contact_id']), row['status'], row['error'] ?? null])).toEqual([
+        ['referral-thanks', plain, contact, 'sent', null],
+        ['referral-thanks', coded, contact, 'sent', null],
+        ['referral-code', coded, contact, 'sent', null],
+        // The thanks is service mail: it reaches whoever said no to marketing mail. The code is marketing: it does not.
+        ['referral-thanks', bens, ben, 'sent', null],
+        ['referral-code', bens, ben, 'skipped', 'Not sent: on the do-not-email list (marketing mail)'],
+        ['referral-thanks', cleos, cleo, 'sent', null],
+        ['referral-code', cleos, cleo, 'skipped', 'Not sent: has not agreed to marketing mail'],
+      ]);
       // Who thanked is the server's to say.
       expect((await s.rows(`select thanked_by_id from crm_referrals where id = ${String(plain)}`))[0]!['thanked_by_id']).toBe(s.ids['hugo']);
-      const mails = (await s.emails()).filter((mail) => mail.templateKey === 'crm-referral-thanks');
-      expect(mails.map((mail) => [mail.to, mail.subject])).toEqual([['ana.belova@fernway-clinics.com', 'Thank you for the introduction'], ['ana.belova@fernway-clinics.com', 'Thank you for the introduction']]);
-      expect(mails[0]!.text).toContain('Hello Ana, thank you for the introduction you made on');
-      expect(mails[0]!.text).not.toContain('code');
-      expect(mails[1]!.text).toContain('THANKYOU-ANA');
+      const mails = (await s.emails()) as (QueuedEmail & { mailClass?: string; headers?: Record<string, string> })[];
+      const thanks = mails.filter((mail) => mail.templateKey === 'crm-referral-thanks');
+      expect(thanks.map((mail) => [mail.to, mail.subject])).toEqual([
+        ['ana.belova@fernway-clinics.com', 'Thank you for the introduction'],
+        ['ana.belova@fernway-clinics.com', 'Thank you for the introduction'],
+        ['ben.okafor@fernway-clinics.com', 'Thank you for the introduction'],
+        ['cleo.marsh@fernway-clinics.com', 'Thank you for the introduction'],
+      ]);
+      expect(thanks[0]!.text).toContain('Hello Ana, thank you for the introduction you made on');
+      // The thanks gives nothing: no code, whether the referral holds one or not.
+      for (const mail of thanks) expect(mail.text).not.toMatch(/THANKYOU|code/i);
+      for (const mail of thanks) expect(mail.mailClass ?? 'service').toBe('service');
+      const codes = mails.filter((mail) => mail.templateKey === 'crm-referral-code');
+      expect(codes.map((mail) => [mail.to, mail.subject])).toEqual([['ana.belova@fernway-clinics.com', 'A code for your next order']]);
+      expect(codes[0]!.text).toContain('THANKYOU-ANA');
+      expect(codes[0]!.text).toContain('Hello Ana, thank you again for the introduction you made on');
+      // Marketing mail carries the way out: the one-click unsubscribe.
+      expect(codes[0]!.mailClass).toBe('marketing');
+      expect(Object.keys(codes[0]!.headers ?? {})).toContain('List-Unsubscribe');
       // The customer rule: never the name of whoever was introduced.
-      for (const mail of mails) expect(mail.text).not.toMatch(/Cobalt|Low Orbit|\{\{/);
+      for (const mail of [...thanks, ...codes]) expect(mail.text).not.toMatch(/Cobalt|Low Orbit|Harbour|Pier|\{\{/);
     });
 
     it('a rep\'s week holds her own sums and her cover of her target; a manager\'s the sums of the people she leads, and none of another team\'s', async () => {
