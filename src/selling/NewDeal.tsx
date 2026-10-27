@@ -19,9 +19,11 @@ import { useI18n, useT } from "../i18n/index.tsx";
 import { addDays, formatters } from "../lib/format.ts";
 import { useSession } from "../session/session.tsx";
 import { Icon } from "../shell/icons.tsx";
-import { newClientKey, type StaffSession } from "../staffSession.ts";
+import { saidNo } from "../lib/consent.ts";
+import { newClientKey, StaffError, type StaffSession } from "../staffSession.ts";
 import { Dialog } from "../ui/dialog.tsx";
 import { useLoad } from "../ui/load.tsx";
+import { OptOutLine } from "../ui/optOut.tsx";
 import { firstName, initials } from "../ui/people.ts";
 import { reasonOf, useToasts } from "../ui/toast.tsx";
 
@@ -53,8 +55,12 @@ export interface NewDealStart {
   firstStep?: string;
   /** A company that is not on the books yet (an enquiry's, a trade-show lead's): made with the deal, with the person who asked as its first contact. */
   newCompany?: { name: string; person?: string | null; email?: string | null; phone?: string | null; town?: string | null };
-  /** The enquiry the deal comes from. It is claimed first (from the state the screen saw), and told its deal and its company last. */
-  enquiry?: { id: number; state: string };
+  /**
+   * The enquiry the deal comes from. It is claimed first (from the state the screen saw), and told its deal and its
+   * company last. `offeredAt`: when whoever took it offered the person a way to say no to our mail; the contact made
+   * of it takes that mark with it.
+   */
+  enquiry?: { id: number; state: string; offeredAt?: string | null };
 }
 
 async function readChoices(session: StaffSession): Promise<{ stages: Stage[]; owners: Owner[] }> {
@@ -101,6 +107,20 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
   const saved = useRef<number | null>(null);
   // What is already in of the saves around the deal, so a second press goes on from where the first stopped.
   const around = useRef<{ claimed: boolean; companyId: number | null; contactId: number | null; told: boolean; keys: { company: string; contact: string } }>({ claimed: false, companyId: null, contactId: null, told: false, keys: { company: newClientKey(), contact: newClientKey() } });
+
+  /*
+   * THE PERSON MADE WITH A NEW COMPANY, and the line "you can say no to our mail". An enquiry whose taker said the line
+   * hands its mark to the contact (the server copies it, for the same address); one that carries none shows the line
+   * here, to be said at the first call, and the save says it was shown. Somebody who said no is not marked, and their
+   * address goes on the do-not-email list once the contact is made.
+   */
+  const person = (start.newCompany?.person ?? "").trim();
+  const address = (start.newCompany?.email ?? "").trim();
+  const makesContact = makeNew && start.newCompany !== undefined && person !== "" && address !== "" && session.can("contacts", "create");
+  const carried = start.enquiry?.offeredAt ?? null;
+  const offering = makesContact && carried === null;
+  const [refused, setRefused] = useState(false);
+  const mayStop = session.can("contacts", "update");
 
   const { load: choices } = useLoad(() => readChoices(session), [session]);
   const stages = choices.state === "ready" ? choices.data.stages : [];
@@ -165,9 +185,17 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
       const person = (start.newCompany.person ?? "").trim();
       if (person !== "" && around.current.contactId === null && session.can("contacts", "create")) {
         // Whether she may be sent marketing mail was never asked: it stays "no" until somebody asks her.
-        const made = await session.create<{ id: number }>("contacts", { company_id: company, name: person, email: start.newCompany.email ?? null, phone: start.newCompany.phone ?? null, may_email: false }, around.current.keys.contact);
+        const told = makesContact && carried !== null && start.enquiry !== undefined ? { optOut: { from: String(start.enquiry.id) } } : offering && !refused ? { optOut: { shown: true as const } } : {};
+        const made = await session.create<{ id: number }>("contacts", { company_id: company, name: person, email: start.newCompany.email ?? null, phone: start.newCompany.phone ?? null, may_email: false }, around.current.keys.contact, told);
         if (made.state !== "saved") return stop(made.state === "refused" ? t("deal.new.error.newContact", { reason: reasonOf(made.error, t) }) : t("ui.unknown"));
         around.current.contactId = made.row.id;
+        if (offering && refused && mayStop) {
+          try {
+            await saidNo(session, "contacts", made.row.id);
+          } catch (failed) {
+            toasts.show(t("deal.new.optOut.failed", { name: person, reason: failed instanceof StaffError ? reasonOf(failed, t) : t("ui.unknown") }), "danger", true);
+          }
+        }
       }
       contact = around.current.contactId;
     }
@@ -260,6 +288,19 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
           <p className="crm-field-note" data-testid="new-company-note">
             {(start.newCompany.person ?? "").trim() !== "" && session.can("contacts", "create") ? t("deal.new.company.new.note", { company: start.newCompany.name, person: (start.newCompany.person ?? "").trim() }) : t("deal.new.company.new.noteAlone", { company: start.newCompany.name })}
           </p>
+        )}
+        {makesContact && carried !== null && (
+          <p className="crm-field-note" data-testid="opt-out-carried">
+            {t("deal.new.optOut.offered", { date: f.date(new Date(carried)) })}
+          </p>
+        )}
+        {offering && (
+          <OptOutLine
+            words={{ line: t("deal.new.optOut.line"), no: t("deal.new.optOut.no"), noted: t(mayStop ? "deal.new.optOut.noted" : "deal.new.optOut.noted.keep") }}
+            saidNo={refused}
+            onSaidNo={setRefused}
+            disabled={busy}
+          />
         )}
         {more && <p className="crm-field-note">{t("deal.new.company.more")}</p>}
 

@@ -149,6 +149,7 @@ export function PasteList(_props: ScreenProps) {
             {mayCompanies && <li data-note="companies">{t(admin ? "acc.im.note.companies" : "acc.im.note.companies.number")}</li>}
             {mayContacts && <li data-note="contacts">{t("acc.im.note.contacts")}</li>}
             {mayContacts && <li data-note="stamps">{t("guards.paste.contacts.stamps")}</li>}
+            {mayContacts && <li data-note="opt-out">{t("acc.im.note.optOut")}</li>}
           </ul>
           <KitPart<ImportProps> part="import" className="crm-acc-im-kit mr-card" props={props} fallback={unavailable} />
           {mayDeals && <PasteDeals session={session} theme={theme} number={f.number} />}

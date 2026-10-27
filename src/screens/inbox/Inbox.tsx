@@ -45,7 +45,7 @@ export function dealFrom(row: Enquiry, firstStep: string) {
     ...(row.est_value === null ? {} : { amount: String(Number(row.est_value)) }),
     firstStep,
     ...(row.company_id === null ? { newCompany: { name: row.company_name, person: row.person, email: row.email, phone: row.phone, town: row.town } } : { companyId: row.company_id }),
-    enquiry: { id: row.id, state: row.state },
+    enquiry: { id: row.id, state: row.state, offeredAt: row.opt_out_offered_at ?? null },
   };
 }
 

@@ -17,9 +17,11 @@ import { useI18n, useT } from "../../i18n/index.tsx";
 import { formatters } from "../../lib/format.ts";
 import { useSession } from "../../session/session.tsx";
 import { Icon } from "../../shell/icons.tsx";
-import { newClientKey } from "../../staffSession.ts";
+import { saidNo } from "../../lib/consent.ts";
+import { newClientKey, StaffError } from "../../staffSession.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { useLoad } from "../../ui/load.tsx";
+import { OptOutLine } from "../../ui/optOut.tsx";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { addEnquiry, findCompanies, SOURCES, type Source } from "./data.ts";
 import { SOURCE_ICON, sourceLabel } from "./parts.tsx";
@@ -45,6 +47,10 @@ export function AddEnquiry({ onClose, onSaved }: { onClose: () => void; onSaved:
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const key = useRef(newClientKey());
+  // The line under the address, once one is typed; "They said no" is kept until the save (see `ui/optOut.tsx`).
+  const [refused, setRefused] = useState(false);
+  const offering = email.trim() !== "";
+  const mayStop = session.can("enquiries", "update");
 
   const [asked, setAsked] = useState("");
   useEffect(() => {
@@ -60,11 +66,20 @@ export function AddEnquiry({ onClose, onSaved }: { onClose: () => void; onSaved:
     if (size.trim() !== "" && read === null) return setError(t("enquiry.error.size"));
     setError(null);
     setBusy(true);
-    const saved = await addEnquiry(session, { source, company_name: company, person, email, phone, wants, text, est_value: read, town, company_id: companyId }, key.current);
-    setBusy(false);
-    if (saved.state === "refused") return setError(t("ui.refused", { reason: reasonOf(saved.error, t) }));
-    if (saved.state === "unknown") return setError(t("ui.unknown"));
+    const saved = await addEnquiry(session, { source, company_name: company, person, email, phone, wants, text, est_value: read, town, company_id: companyId }, key.current, offering && !refused);
+    if (saved.state === "refused") return (setBusy(false), setError(t("ui.refused", { reason: reasonOf(saved.error, t) })));
+    if (saved.state === "unknown") return (setBusy(false), setError(t("ui.unknown")));
     toasts.show(t("enquiry.toast", { company: company.trim() }), "pos");
+    if (offering && refused && mayStop) {
+      const name = person.trim() === "" ? company.trim() : person.trim();
+      try {
+        await saidNo(session, "enquiries", saved.row.id);
+        toasts.show(t("enquiry.optOut.done", { name }), "pos");
+      } catch (failed) {
+        toasts.show(t("enquiry.optOut.failed", { name, reason: failed instanceof StaffError ? reasonOf(failed, t) : t("ui.unknown") }), "danger", true);
+      }
+    }
+    setBusy(false);
     onSaved();
     onClose();
   };
@@ -158,6 +173,13 @@ export function AddEnquiry({ onClose, onSaved }: { onClose: () => void; onSaved:
             <input id="crm-enq-email" className="crm-input mr-fld" type="email" value={email} maxLength={200} autoComplete="off" onChange={(event) => setEmail(event.target.value)} />
           </div>
         </div>
+        {offering && (
+          <OptOutLine
+            words={{ line: t("enquiry.optOut.line"), no: t("enquiry.optOut.no"), noted: t(mayStop ? "enquiry.optOut.noted" : "enquiry.optOut.noted.keep") }}
+            saidNo={refused}
+            onSaidNo={setRefused}
+          />
+        )}
 
         <label className="crm-label" htmlFor="crm-enq-size">
           {t("enquiry.size")}

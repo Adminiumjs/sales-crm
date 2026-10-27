@@ -179,6 +179,7 @@ export function ShowroomSettings({ session, can }: { session: StaffSession; can:
         <span>{t("sh.set.mails")}</span>
       </div>
       <p className="crm-sh-set-note">{t(mails ? "sh.set.mails.note.on" : "sh.set.mails.note.off")}</p>
+      {mails && <p className="crm-sh-set-note" data-note="booking-note">{t("sh.set.mails.note.notes")}</p>}
     </Card>
   );
 }

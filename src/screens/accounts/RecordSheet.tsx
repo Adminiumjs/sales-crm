@@ -19,15 +19,17 @@
 import { useMemo, useRef, useState } from "react";
 
 import { useT } from "../../i18n/index.tsx";
+import { consentPanel, newsletterLine, saidNo, type ConsentPanel } from "../../lib/consent.ts";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import { DealLink } from "../../selling/DealLink.tsx";
 import { Icon } from "../../shell/icons.tsx";
 import { useNav } from "../../shell/nav.tsx";
-import { newClientKey, type Row, type StaffSession } from "../../staffSession.ts";
+import { newClientKey, StaffError, type Row, type StaffSession } from "../../staffSession.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { Loaded, Skeleton, useLoad } from "../../ui/load.tsx";
+import { OptOutLine } from "../../ui/optOut.tsx";
 import { initials } from "../../ui/people.ts";
-import { useToasts } from "../../ui/toast.tsx";
+import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { addressOf, fixedOn, namesOf, PAGE, type Company, type Person, type Reach } from "./data.ts";
 import { useAccounts } from "./shared.tsx";
 
@@ -55,6 +57,8 @@ interface Loaded_ {
   deals: { id: number; name: string; amount: number | string; stage: string | null }[];
   /** Who last ticked "may be emailed", by name: the server's stamp, read for a contact's view. */
   tickedBy?: string | null;
+  /** How the contact stands in Adminium's consent log and on its do-not-email list; null where this Adminium does not say. */
+  consent?: ConsentPanel | null;
 }
 
 const keptOf = (row: Row | null | undefined): string[] => (Array.isArray(row?.["_masked"]) ? (row["_masked"] as string[]) : []);
@@ -91,8 +95,11 @@ async function read(session: StaffSession, rec: Rec, reach: Reach): Promise<Load
       : Promise.resolve([]),
   ]);
   const by = rec.mode === "view" && typeof row["may_email_by_id"] === "string" ? row["may_email_by_id"] : null;
-  const tickedBy = by === null ? null : ((await namesOf(session).catch(() => ({}) as Record<string, string>))[by] ?? null);
-  return { row, kept: keptOf(row), companies: await companies, company, deals, tickedBy };
+  const [tickedBy, consent] = await Promise.all([
+    by === null ? Promise.resolve(null) : namesOf(session).then((names) => names[by] ?? null, () => null),
+    rec.mode === "view" ? consentPanel(session, "contacts", rec.id).catch(() => null) : Promise.resolve(null),
+  ]);
+  return { row, kept: keptOf(row), companies: await companies, company, deals, tickedBy, consent };
 }
 
 const shown = (value: unknown): string => (value === null || value === undefined ? "" : String(value));
@@ -147,14 +154,39 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
   const [companyId, setCompanyId] = useState<number | null>(() => (rec.kind !== "contact" ? null : row !== null ? Number(row["company_id"]) : (rec.mode === "add" ? rec.companyId : undefined) ?? null));
   // A new contact starts at "may not be emailed": somebody ticks it once she has said yes (plan 68 R8).
   const [mayEmail, setMayEmail] = useState<boolean>(() => (row === null ? false : row["may_email"] === true));
+  // "They said no" at the line under the address: kept until the save, then the saved row's address goes on the do-not-email list.
+  const [refused, setRefused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // One key for as long as the sheet is open: a save sent twice makes one record.
   const key = useRef(newClientKey());
   const set = (column: string, value: string): void => (setDraft((was) => ({ ...was, [column]: value })), setError(null));
 
-  /** Whether a contact may be emailed, and who said so when: the server's stamp, or "before this was recorded" for an older yes. */
+  /**
+   * Whether a contact may be emailed, and who said so when. Read from Adminium's consent log: a tick by a colleague, a
+   * yes from before records were kept, an unsubscribe, a no at a send's review. Where this Adminium says nothing of it,
+   * from the row's own stamps as before.
+   */
   const mayEmailLine = (person: Person, by: string | null): string => {
+    const panel = data.consent ?? null;
+    if (panel !== null) {
+      const line = newsletterLine(panel, person.may_email === true);
+      const day = (at: number): string => f.date(new Date(at));
+      switch (line.kind) {
+        case "since":
+          return t("acc.rec.ct.mayEmail.since", { date: day(line.at), name: line.by });
+        case "sinceAt":
+          return t("acc.rec.ct.mayEmail.sinceAt", { date: day(line.at) });
+        case "before":
+          return t("acc.rec.ct.mayEmail.before");
+        case "unsubscribed":
+          return t("acc.rec.ct.mayEmail.unsubscribed", { date: day(line.at) });
+        case "review":
+          return t("acc.rec.ct.mayEmail.review", { date: day(line.at) });
+        case "no":
+          return t("acc.rec.ct.mayEmail.no");
+      }
+    }
     if (person.may_email !== true) return t("acc.rec.ct.mayEmail.no");
     const at = typeof person["may_email_at"] === "string" ? new Date(person["may_email_at"]) : null;
     return at === null ? t("acc.rec.ct.mayEmail.before") : t("acc.rec.ct.mayEmail.since", { date: f.date(at), name: by ?? t("closed.someone") });
@@ -170,6 +202,8 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
       ...(hidden ? [] : [{ label: "acc.rec.fact.email" as const, value: shown(person.email), mono: true }, { label: "acc.rec.fact.phone" as const, value: shown(person.phone), mono: true }]),
       { label: "acc.rec.fact.where", value: company === null ? "" : addressOf(company, locale) },
       { label: "acc.rec.ct.mayEmail", value: mayEmailLine(person, data.tickedBy ?? null) },
+      // On the do-not-email list, whatever the newsletter says: marketing mail skips them.
+      ...(data.consent?.stopped == null ? [] : [{ label: "acc.rec.ct.stopList" as const, value: t("acc.rec.ct.mayEmail.stopped", { date: f.date(new Date(data.consent.stopped.since)) }) }]),
     ];
     const canEdit = session.can("contacts", "update") && onEdit !== undefined;
     return (
@@ -253,6 +287,14 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
   const adding = rec.mode === "add";
   // A new record's fields are all the writer's; a stored one keeps what is not hers to change, shown and not sent.
   const fixed = adding ? [] : fixedOn(isCompany ? "company" : "contact", (session.config.access?.roles ?? []).map((role) => role.slug));
+  /*
+   * THE LINE UNDER THE ADDRESS: shown on a new contact once an address is typed, and on a change of the address. The
+   * save says it was shown, and the server marks the contact as offered a way to say no. Somebody who said no is not
+   * marked: their address goes on the do-not-email list after the save, by whoever may change the contact.
+   */
+  const addressNow = (draft["email"] ?? "").trim();
+  const offering = !isCompany && texts.includes("email") && !fixed.includes("email") && addressNow !== "" && (adding || addressNow.toLowerCase() !== shown(row?.["email"]).trim().toLowerCase());
+  const mayStop = session.can("contacts", "update");
   const save = async (): Promise<void> => {
     const name = (draft["name"] ?? "").trim();
     if (name === "") return setError(t(isCompany ? "acc.rec.error.name" : "acc.rec.error.person"));
@@ -278,9 +320,18 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
     const changed: Row = adding ? values : Object.fromEntries(Object.entries(values).filter(([column, value]) => !same(column, value)));
     if (!adding && Object.keys(changed).length === 0) return onClose();
     setBusy(true);
-    const saved = await toasts.say(adding ? session.create<Row>(ref, changed, key.current) : session.update<Row>(ref, Number(row?.["id"]), changed), () =>
+    const told = offering && !refused ? { optOut: { shown: true as const } } : {};
+    const saved = await toasts.say(adding ? session.create<Row>(ref, changed, key.current, told) : session.update<Row>(ref, Number(row?.["id"]), changed, told), () =>
       t(adding ? "acc.rec.toast.added" : "acc.rec.toast.saved", { name }),
     );
+    if (saved !== null && offering && refused && mayStop) {
+      try {
+        await saidNo(session, "contacts", Number(saved["id"] ?? row?.["id"]));
+        toasts.show(t("acc.rec.ct.optOut.done", { name }), "pos");
+      } catch (error) {
+        toasts.show(t("acc.rec.ct.optOut.failed", { name, reason: error instanceof StaffError ? reasonOf(error, t) : t("ui.unknown") }), "danger", true);
+      }
+    }
     setBusy(false);
     if (saved === null) return;
     onSaved(saved);
@@ -333,6 +384,17 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
               <p className="crm-field-note" id={`crm-rec-${column}-fixed`}>
                 {t("acc.rec.fixed")}
               </p>
+            )}
+            {column === "email" && offering && (
+              <OptOutLine
+                words={{ line: t("acc.rec.ct.optOut.line"), no: t("acc.rec.ct.optOut.no"), noted: t(mayStop ? "acc.rec.ct.optOut.noted" : "acc.rec.ct.optOut.noted.keep") }}
+                saidNo={refused}
+                onSaidNo={(no) => {
+                  setRefused(no);
+                  // Somebody who just said no has not said yes to the newsletter.
+                  if (no) setMayEmail(false);
+                }}
+              />
             )}
           </div>
         ))}

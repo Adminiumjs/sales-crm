@@ -803,3 +803,34 @@
     padding-inline-start: 0;
   }
 }
+
+/* The line where the CRM takes an address: what to tell the person, and "They said no" (`ui/optOut.tsx`). */
+.crm-optout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 8px;
+  padding-block: 10px;
+  padding-inline: 12px;
+  border-radius: 10px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-optout-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  flex: 1 1 100%;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.crm-optout-line svg {
+  flex: none;
+  margin-block-start: 2px;
+}
+.crm-optout .crm-field-note {
+  margin: 0;
+  flex: 1 1 100%;
+}

@@ -214,6 +214,9 @@ function query(parts: Record<string, string | string[] | number | undefined>): s
   return text === "" ? "" : `?${text}`;
 }
 
+/** What a save says of the opt-out line: shown with the address typed, or carried from the row the person is made from. */
+export type OptOutSaid = { shown: true; from?: string } | { shown?: true; from: string };
+
 export interface StaffSession {
   readonly config: StaffConfig;
   readonly connectionId: string;
@@ -228,8 +231,9 @@ export interface StaffSession {
 
   list<R extends Row = Row>(ref: string, q?: ListQuery): Promise<Page<R>>;
   get<R extends Row = Row>(ref: string, id: Key, q?: Pick<ListQuery, "lookup" | "agg" | "measures">): Promise<R | null>;
-  create<R extends Row = Row>(ref: string, values: Row, clientKey: string, more?: { children?: Record<string, unknown> }): Promise<Saved<R>>;
-  update<R extends Row = Row>(ref: string, id: Key, values: Row, more?: { seen?: Row; children?: Record<string, unknown> }): Promise<Saved<R>>;
+  /** `optOut`: the screen showed the person the line "you can say no to our mail" with the address (`shown`), or the person is made from a row whose mark they take (`from`, its key). */
+  create<R extends Row = Row>(ref: string, values: Row, clientKey: string, more?: { children?: Record<string, unknown>; optOut?: OptOutSaid }): Promise<Saved<R>>;
+  update<R extends Row = Row>(ref: string, id: Key, values: Row, more?: { seen?: Row; children?: Record<string, unknown>; optOut?: OptOutSaid }): Promise<Saved<R>>;
   /** Remove a row. `reason` is the why, for a table that keeps one (it rides in the body, never in the address). */
   remove(ref: string, id: Key, more?: { reason?: string }): Promise<Saved<Row>>;
   /** Press a record's button. `from` is the state the screen saw; `stateColumn` is where the read-back looks. */
@@ -417,7 +421,7 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     },
     get,
 
-    create<R extends Row>(ref: string, values: Row, clientKey: string, more: { children?: Record<string, unknown> } = {}) {
+    create<R extends Row>(ref: string, values: Row, clientKey: string, more: { children?: Record<string, unknown>; optOut?: OptOutSaid } = {}) {
       // The same key every time: the server answers the row the first one made.
       return saving<R>(async () => {
         const doc = (await send("POST", data(ref), { values, clientKey, ...more })) as { data: R; replayed?: boolean };
@@ -425,7 +429,7 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
       }, null);
     },
 
-    update<R extends Row>(ref: string, id: Key, values: Row, more: { seen?: Row; children?: Record<string, unknown> } = {}) {
+    update<R extends Row>(ref: string, id: Key, values: Row, more: { seen?: Row; children?: Record<string, unknown>; optOut?: OptOutSaid } = {}) {
       return saving<R>(
         async () => ({ row: ((await send("PATCH", data(ref, `/${encodeURIComponent(String(id))}`), { values, ...more })) as { data: R }).data, replayed: false }),
         async () => {

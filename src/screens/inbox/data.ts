@@ -47,6 +47,8 @@ export interface Enquiry extends Record<string, unknown> {
   passed_to_id: string | null;
   rung_at: string | null;
   deal_id: number | null;
+  /** When whoever took it offered the person a way to say no to our mail (the server's stamp); empty from a file, or before 0.2.3. */
+  opt_out_offered_at?: string | null;
   /** The matched company's name, from the server. */
   company: string | null;
   /** The columns the server keeps from this reader (a role that reads no personal data). */
@@ -228,11 +230,13 @@ export interface NewEnquiry {
 const orNull = (text: string): string | null => (text.trim() === "" ? null : text.trim());
 
 /** Type an enquiry in. The key is made once by the dialog: sent again after a lost reply, the server answers the row the first try made. */
-export const addEnquiry = (session: StaffSession, values: NewEnquiry, clientKey: string): Promise<Saved<Enquiry>> =>
+export const addEnquiry = (session: StaffSession, values: NewEnquiry, clientKey: string, told = false): Promise<Saved<Enquiry>> =>
   session.create<Enquiry>(
     "enquiries",
     { source: values.source, company_name: values.company_name.trim(), person: orNull(values.person), email: orNull(values.email), phone: orNull(values.phone), wants: orNull(values.wants), text: orNull(values.text), est_value: values.est_value, town: orNull(values.town), company_id: values.company_id },
     clientKey,
+    // The dialog showed the line "you can say no to our mail" under the address: the server marks the enquiry as offered.
+    told ? { optOut: { shown: true } } : {},
   );
 
 /** The enquiry's own buttons on the server, each pressed from the state the screen saw. */

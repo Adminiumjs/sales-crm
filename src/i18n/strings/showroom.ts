@@ -300,4 +300,14 @@ export const showroom = tables({
   "sh.set.mails.off": ["Visitors are no longer told by e-mail.", "Besucher werden nicht mehr per E-Mail informiert.", "Les visiteurs ne sont plus prévenus par e-mail.", "Besøgende får ikke længere besked på e-mail.", "Návštěvníci už e-maily nedostávají.", "访客将不再收到邮件通知。", "訪客將不再收到郵件通知。", "لن يُبلَّغ الزوار بالبريد بعد الآن."],
   "sh.set.mails.note.on": ["A visitor who is a contact with an address is e-mailed when the booking is confirmed, moved or cancelled. A new name is not.", "Ein Besucher, der als Kontakt mit Adresse geführt ist, erhält eine E-Mail, wenn der Termin bestätigt, verschoben oder abgesagt wird. Ein neuer Name nicht.", "Un visiteur enregistré comme contact avec une adresse reçoit un e-mail quand la réservation est confirmée, déplacée ou annulée. Un nouveau nom, non.", "En besøgende, der er kontakt med en adresse, får en e-mail, når bookingen bekræftes, flyttes eller aflyses. Et nyt navn gør ikke.", "Návštěvník vedený jako kontakt s adresou dostane e-mail při potvrzení, přesunu nebo zrušení rezervace. Nové jméno ne.", "作为联系人且有地址的访客，会在预约确认、改期或取消时收到邮件。新名字不会。", "作為聯絡人且有地址的訪客，會在預約確認、改期或取消時收到郵件。新名字不會。", "يتلقى الزائر المسجّل كجهة اتصال لها عنوان رسالة عند تأكيد الحجز أو تغيير موعده أو إلغائه. أما الاسم الجديد فلا."],
   "sh.set.mails.note.off": ["Nothing is sent to visitors. Whoever books them in tells them.", "Besucher erhalten nichts. Wer den Termin einträgt, sagt Bescheid.", "Rien n’est envoyé aux visiteurs. La personne qui réserve les prévient.", "Intet sendes til besøgende. Den, der booker dem, giver besked.", "Návštěvníkům se nic neposílá. Dá jim vědět ten, kdo je objedná.", "不会给访客发送任何邮件。由预约的人自行通知。", "不會寄給訪客任何郵件。由預約的人自行通知。", "لا يُرسل شيء إلى الزوار. يُبلغهم من يحجز لهم."],
+  "sh.set.mails.note.notes": [
+    "A booking’s note goes into the visitor’s e-mail: practical notes only. Offers go out as campaigns.",
+    "Die Notiz eines Termins steht in der E-Mail an den Besucher: nur Praktisches. Angebote gehen als Kampagnen hinaus.",
+    "La note d’une réservation figure dans l’e-mail au visiteur : des informations pratiques uniquement. Les offres partent en campagnes.",
+    "En bookings note kommer med i e-mailen til den besøgende: kun praktiske oplysninger. Tilbud sendes som kampagner.",
+    "Poznámka k rezervaci se objeví v e-mailu návštěvníkovi: jen praktické informace. Nabídky se posílají jako kampaně.",
+    "预约的备注会写进发给访客的邮件：只写实用信息。优惠请通过营销活动发送。",
+    "預約的備註會寫進寄給訪客的郵件：只寫實用資訊。優惠請透過行銷活動寄送。",
+    "تظهر ملاحظة الحجز في رسالة الزائر: معلومات عملية فقط. أما العروض فتُرسل كحملات.",
+  ],
 });

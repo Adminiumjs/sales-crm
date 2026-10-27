@@ -214,6 +214,7 @@ export function PasteLeads({ shows, onShows }: { shows: Show[]; onShows: () => v
             <p className="crm-field-note">{t("paste.show.none")}</p>
           ))}
         <p className="crm-field-note">{t("paste.how")}</p>
+        <p className="crm-field-note" data-note="opt-out">{t("paste.note.optOut")}</p>
       </section>
 
       {show !== null && !making && (
