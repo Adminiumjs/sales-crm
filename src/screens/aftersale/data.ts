@@ -419,8 +419,9 @@ const referralOf = (row: ReferralRow): Referral => ({
   thankedAt: row.thanked_at,
 });
 
+// Read whole, not by a list of columns: whom a customer introduced is personal, and a list naming it is refused to a
+// reader who is not shown it; whole, it comes back empty and named in `_masked`.
 const REFERRAL_QUERY = {
-  select: ["id", "from_contact_id", "company_id", "referred_name", "deal_id", "introduced_on", "thanked_at"],
   lookup: ["from:from_contact_id.name", "from_title:from_contact_id.job_title", "from_company:from_contact_id.company_id.name", "to:company_id.name", "deal:deal_id.name", "deal_amount:deal_id.amount", "deal_state:deal_id.state"],
 };
 

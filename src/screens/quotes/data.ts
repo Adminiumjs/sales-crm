@@ -75,11 +75,10 @@ export interface Line extends Record<string, unknown> {
   list_amount: number | string | null;
 }
 
-export const QUOTE_COLUMNS = [
-  "id", "number", "family_no", "version", "status", "approval", "deal_id", "replaces_id", "valid_until", "sent_at", "decided_at", "subtotal", "tax", "tax_name", "tax_rate", "total",
-  "list_value", "under_list_pct", "unlisted_lines", "threshold_pct", "needs_approval", "may_send", "approved_pct", "asked_by_id", "asked_at", "ask_reason", "decided_by_id",
-  "approval_decided_at", "decision_note", "sent_to_contact_id", "to_name", "sent_to_name", "accepted_name", "accepted_via", "notes", "deal_state",
-];
+/*
+ * A quote is read whole, never by a list of its columns: the names it was sent to are personal, and a list that names a
+ * column its reader is not shown is refused. Read whole, they come back empty and named in `_masked`.
+ */
 export const QUOTE_LOOKUPS = ["deal:deal_id.name", "company:deal_id.company_id.name", "owner_id:deal_id.owner_id", "deal_stage:deal_id.stage_id.label", "deal_close:deal_id.expected_close"];
 export const LINE_COLUMNS = ["id", "document_id", "position", "description", "qty", "rate", "amount", "price_id", "list_rate", "list_amount"];
 
@@ -119,7 +118,7 @@ export const editable = (quote: Quote): boolean => quote.status === "draft" && q
 export async function readQuotes(session: StaffSession, where?: Condition): Promise<Quote[]> {
   const out: Quote[] = [];
   for (let offset = 0; offset < 1000; offset += 200) {
-    const page = await session.list<Quote>("quotes", { select: QUOTE_COLUMNS, lookup: QUOTE_LOOKUPS, order: ["id"], limit: 200, offset, ...(where === undefined ? {} : { where }) });
+    const page = await session.list<Quote>("quotes", { lookup: QUOTE_LOOKUPS, order: ["id"], limit: 200, offset, ...(where === undefined ? {} : { where }) });
     out.push(...page.rows);
     if (page.rows.length < 200) break;
   }

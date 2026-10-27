@@ -52,7 +52,10 @@ export interface Booking extends Record<string, unknown> {
   deal_amount?: number | string | null;
 }
 
-export const BOOKING_COLUMNS = ["id", "space_id", "company_id", "contact_id", "visitor_name", "party", "starts_at", "minutes", "rep_id", "state", "note", "outcome", "next_step", "next_step_by", "next_step_done_on", "deal_id"];
+/*
+ * A booking is read whole, never by a list of its columns: the visitor's name is personal, and a list that names a
+ * column its reader is not shown is refused. Read whole, it comes back empty and named in `_masked`.
+ */
 
 /** A deal's name and amount come along only for somebody who reads deals: the front desk does not, and a lookup she may not make would refuse the whole list. */
 export const bookingLookups = (session: Pick<StaffSession, "can">): string[] => [
@@ -146,7 +149,7 @@ export function inFilter(booking: Pick<Booking, "state" | "starts_at">, filter: 
 export async function readShowroom(session: StaffSession, now: Date, f: Formatters): Promise<ShowroomData> {
   const from = startOfToday(now, f).toISOString();
   const [page, coming, tentative, done, spaces, pieces] = await Promise.all([
-    session.list<Booking>("showroom_bookings", { select: BOOKING_COLUMNS, order: ["starts_at"], lookup: bookingLookups(session), limit: 200, count: "exact" }),
+    session.list<Booking>("showroom_bookings", { order: ["starts_at"], lookup: bookingLookups(session), limit: 200, count: "exact" }),
     count(session, "showroom_bookings", all([live, { column: "starts_at", op: "gte", value: from }])),
     count(session, "showroom_bookings", { column: "state", op: "eq", value: "tentative" }),
     count(session, "showroom_bookings", { column: "state", op: "eq", value: "done" }),
@@ -239,7 +242,6 @@ export function readSpaceDays(session: StaffSession, spaceId: number, day: strin
   const to = f.at(addDays(day, LOOK_AHEAD_DAYS + 1), "00:00").toISOString();
   return session
     .list<Booking>("showroom_bookings", {
-      select: BOOKING_COLUMNS,
       where: { and: [{ column: "space_id", op: "eq", value: spaceId }, live, { column: "starts_at", op: "gte", value: from }, { column: "starts_at", op: "lt", value: to }] },
       order: ["starts_at"],
       lookup: bookingLookups(session),
@@ -356,7 +358,7 @@ export async function readFollowUps(session: StaffSession, now: Date, f: Formatt
   const been: Condition = { column: "state", op: "eq", value: "done" };
   const today = f.dayKey(now);
   const [page, written, late, done] = await Promise.all([
-    session.list<Booking>("showroom_bookings", { select: BOOKING_COLUMNS, where: been, order: ["starts_at.desc"], lookup: bookingLookups(session), limit: 200, count: "exact" }),
+    session.list<Booking>("showroom_bookings", { where: been, order: ["starts_at.desc"], lookup: bookingLookups(session), limit: 200, count: "exact" }),
     count(session, "showroom_bookings", all([been, { column: "outcome", op: "not_null" }])),
     count(session, "showroom_bookings", all([been, { column: "next_step", op: "not_null" }, { column: "next_step_done_on", op: "is_null" }, { column: "next_step_by", op: "lt", value: today }])),
     count(session, "showroom_bookings", all([been, { column: "next_step_done_on", op: "not_null" }])),
@@ -573,7 +575,7 @@ export async function readDeskHome(session: StaffSession, now: Date, f: Formatte
   const mid = f.at(addDays(today, 1), "00:00").toISOString();
   const to = f.at(addDays(today, 2), "00:00").toISOString();
   const [soon, onToday, onTomorrow, late] = await Promise.all([
-    session.list<Booking>("showroom_bookings", { select: BOOKING_COLUMNS, where: all([live, { column: "starts_at", op: "gte", value: from }, { column: "starts_at", op: "lt", value: to }]), order: ["starts_at"], lookup: bookingLookups(session), limit: 50, count: "exact" }),
+    session.list<Booking>("showroom_bookings", { where: all([live, { column: "starts_at", op: "gte", value: from }, { column: "starts_at", op: "lt", value: to }]), order: ["starts_at"], lookup: bookingLookups(session), limit: 50, count: "exact" }),
     count(session, "showroom_bookings", all([live, { column: "starts_at", op: "gte", value: from }, { column: "starts_at", op: "lt", value: mid }])),
     count(session, "showroom_bookings", all([live, { column: "starts_at", op: "gte", value: mid }, { column: "starts_at", op: "lt", value: to }])),
     session.can("sample_loans", "read") ? session.list<Loan>("sample_loans", { select: LOAN_COLUMNS, where: all([OUT, { column: "due_back", op: "lt", value: today }]), order: ["due_back"], lookup: LOAN_LOOKUPS, limit: 50, count: "exact" }) : Promise.resolve({ rows: [] as Loan[], total: 0, next: null }),
