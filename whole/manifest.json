@@ -31221,7 +31221,7 @@
       "name": "Quote sent",
       "vars": [
         "deal.name",
-        "quote.sent_to_name",
+        "recipient.name",
         "quote.subtotal",
         "quote.tax",
         "quote.total",
@@ -31242,7 +31242,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hello {{quote.sent_to_name}}, here is the quote we talked about."
+                "text": "Hello {{recipient.name}}, here is the quote we talked about."
               }
             },
             {
@@ -31302,7 +31302,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Guten Tag {{quote.sent_to_name}}, hier ist das besprochene Angebot."
+                "text": "Guten Tag {{recipient.name}}, hier ist das besprochene Angebot."
               }
             },
             {
@@ -31362,7 +31362,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Bonjour {{quote.sent_to_name}}, voici le devis dont nous avons parlé."
+                "text": "Bonjour {{recipient.name}}, voici le devis dont nous avons parlé."
               }
             },
             {
@@ -31422,7 +31422,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hej {{quote.sent_to_name}}, her er det tilbud, vi talte om."
+                "text": "Hej {{recipient.name}}, her er det tilbud, vi talte om."
               }
             },
             {
@@ -31482,7 +31482,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Dobrý den, {{quote.sent_to_name}}, posíláme nabídku, o které jsme mluvili."
+                "text": "Dobrý den, {{recipient.name}}, posíláme nabídku, o které jsme mluvili."
               }
             },
             {
@@ -31542,7 +31542,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "مرحبًا {{quote.sent_to_name}}، هذا عرض السعر الذي تحدثنا عنه."
+                "text": "مرحبًا {{recipient.name}}، هذا عرض السعر الذي تحدثنا عنه."
               }
             },
             {
@@ -31602,7 +31602,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "{{quote.sent_to_name}}，您好，这是我们谈过的报价。"
+                "text": "{{recipient.name}}，您好，这是我们谈过的报价。"
               }
             },
             {
@@ -31662,7 +31662,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "{{quote.sent_to_name}}，您好，這是我們談過的報價。"
+                "text": "{{recipient.name}}，您好，這是我們談過的報價。"
               }
             },
             {
@@ -31717,7 +31717,7 @@
       "name": "Quote accepted",
       "vars": [
         "quote.number",
-        "quote.sent_to_name"
+        "recipient.name"
       ],
       "locales": {
         "en-US": {
@@ -31732,7 +31732,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hello {{quote.sent_to_name}}, quote {{quote.number}} has been marked as accepted."
+                "text": "Hello {{recipient.name}}, quote {{quote.number}} has been marked as accepted."
               }
             },
             {
@@ -31755,7 +31755,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Guten Tag {{quote.sent_to_name}}, das Angebot {{quote.number}} wurde als angenommen vermerkt."
+                "text": "Guten Tag {{recipient.name}}, das Angebot {{quote.number}} wurde als angenommen vermerkt."
               }
             },
             {
@@ -31778,7 +31778,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Bonjour {{quote.sent_to_name}}, le devis {{quote.number}} a été enregistré comme accepté."
+                "text": "Bonjour {{recipient.name}}, le devis {{quote.number}} a été enregistré comme accepté."
               }
             },
             {
@@ -31801,7 +31801,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Hej {{quote.sent_to_name}}, tilbud {{quote.number}} er registreret som accepteret."
+                "text": "Hej {{recipient.name}}, tilbud {{quote.number}} er registreret som accepteret."
               }
             },
             {
@@ -31824,7 +31824,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "Dobrý den, {{quote.sent_to_name}}, nabídka {{quote.number}} byla označena jako přijatá."
+                "text": "Dobrý den, {{recipient.name}}, nabídka {{quote.number}} byla označena jako přijatá."
               }
             },
             {
@@ -31847,7 +31847,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "مرحبًا {{quote.sent_to_name}}، سُجّل عرض السعر {{quote.number}} على أنه مقبول."
+                "text": "مرحبًا {{recipient.name}}، سُجّل عرض السعر {{quote.number}} على أنه مقبول."
               }
             },
             {
@@ -31870,7 +31870,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "{{quote.sent_to_name}}，您好，报价单 {{quote.number}} 已被登记为接受。"
+                "text": "{{recipient.name}}，您好，报价单 {{quote.number}} 已被登记为接受。"
               }
             },
             {
@@ -31893,7 +31893,7 @@
             {
               "block": "email.text",
               "data": {
-                "text": "{{quote.sent_to_name}} 您好，報價單 {{quote.number}} 已登記為接受。"
+                "text": "{{recipient.name}} 您好，報價單 {{quote.number}} 已登記為接受。"
               }
             },
             {

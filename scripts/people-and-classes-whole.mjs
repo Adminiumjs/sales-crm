@@ -36,7 +36,9 @@
  *  - the referral's thank-you is split: the thanks itself (service, always
  *    sent) and a new `referral-code` (marketing) that carries the code, only
  *    when the referral holds one;
- *  - `approval-asked`, a kind nothing ever sent, goes with its template.
+ *  - `approval-asked`, a kind nothing ever sent, goes with its template;
+ *  - the quote's two e-mails greet the person by the recipient's name, not by
+ *    the quote's copy of it (now personal, which an e-mail does not print).
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -240,6 +242,14 @@ kindColumn.rules.enumLabels.labels["referral-code"] = {
     code.onChange.where = { column: "reward", isNull: false };
     producers.splice(producers.indexOf(thanked) + 1, 0, code);
   }
+}
+
+// ── The quote's greeting: the name it was sent to is personal now, and an e-mail prints no personal column of a row
+// it links. The recipient's name is the same name (the producer's `recipient.name`), always filled. ─
+for (const key of ["crm-quote-sent", "crm-quote-accepted"]) {
+  const template = must(manifest.emailTemplates.find((one) => one.key === key), `template ${key}`);
+  template.locales = JSON.parse(JSON.stringify(template.locales).replaceAll("{{quote.sent_to_name}}", "{{recipient.name}}"));
+  template.vars = [...new Set(template.vars.map((name) => (name === "quote.sent_to_name" ? "recipient.name" : name)))];
 }
 
 // ── A kind nothing ever sent goes ───────────────────────────────────────────

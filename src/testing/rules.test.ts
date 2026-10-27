@@ -562,6 +562,23 @@ describe("a referral is thanked", () => {
   });
 });
 
+describe("an e-mail prints no personal column of a row it links", () => {
+  it("greets by the recipient's name, never by a copy of it Adminium keeps from e-mails", () => {
+    const links = m.outbox.links as Record<string, string>;
+    const outbox = m.requiredSchema.tables.find((one) => one.ref === "outbox")!;
+    const tableOf = new Map(Object.entries(links).map(([name, column]) => [name, (outbox.columns.find((one) => one.ref === column) as { references?: string } | undefined)?.references ?? ""]));
+    const personal = new Set(m.requiredSchema.tables.flatMap((one) => one.columns.filter((c) => (c.rules as { personal?: boolean } | undefined)?.personal === true).map((c) => `${one.ref}.${c.ref}`)));
+    const printed: string[] = [];
+    for (const template of m.emailTemplates) {
+      for (const [, name, column] of JSON.stringify(template.locales).matchAll(/\{\{([a-z_]+)\.([a-z_]+)/g)) {
+        if (tableOf.has(name!) && personal.has(`${tableOf.get(name!)}.${column!}`)) printed.push(`${template.key}: ${name!}.${column!}`);
+      }
+    }
+    expect(printed).toEqual([]);
+    for (const key of ["crm-quote-sent", "crm-quote-accepted"]) for (const locale of LOCALES) expect(JSON.stringify(m.emailTemplates.find((one) => one.key === key)!.locales[locale]), `${key} ${locale}`).toContain("{{recipient.name}}");
+  });
+});
+
 describe("each mail to a contact says whether it is marketing", () => {
   const classes = (m.outbox as unknown as { classes?: Record<string, string> }).classes ?? {};
 
