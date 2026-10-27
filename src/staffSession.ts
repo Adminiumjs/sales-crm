@@ -416,8 +416,25 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
     tableId,
 
     async list<R extends Row>(ref: string, q: ListQuery = {}) {
-      const doc = (await send("GET", data(ref, listQuery(q)), undefined)) as { data: R[]; page?: { total?: number | null }; cursor?: { next?: string | null } };
-      return { rows: doc.data, total: doc.page?.total ?? null, next: doc.cursor?.next ?? null };
+      /*
+       * A list that names a personal column this reader is not shown (a role without the right to personal data) is
+       * refused by name. The screen asked for the column to show it where it may: it is read without it and kept, as a
+       * whole row keeps it, empty and named in `_masked`. Only a column the list itself selected is dropped so.
+       */
+      let select = q.select;
+      const kept: string[] = [];
+      for (;;) {
+        try {
+          const doc = (await send("GET", data(ref, listQuery({ ...q, ...(select === undefined ? {} : { select }) })), undefined)) as { data: R[]; page?: { total?: number | null }; cursor?: { next?: string | null } };
+          const rows = kept.length === 0 ? doc.data : doc.data.map((row) => ({ ...row, ...Object.fromEntries(kept.map((column) => [column, null])), _masked: [...new Set([...(Array.isArray(row["_masked"]) ? (row["_masked"] as string[]) : []), ...kept])] }) as R);
+          return { rows, total: doc.page?.total ?? null, next: doc.cursor?.next ?? null };
+        } catch (error) {
+          const column = error instanceof StaffError && error.status === 403 && error.code === "COLUMN_FORBIDDEN" && error.details["reason"] === undefined ? error.details["column"] : undefined;
+          if (typeof column !== "string" || select === undefined || !select.includes(column) || kept.includes(column)) throw error;
+          kept.push(column);
+          select = select.filter((one) => one !== column);
+        }
+      }
     },
     get,
 

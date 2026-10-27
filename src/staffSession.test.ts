@@ -116,6 +116,26 @@ describe("a list", () => {
     expect(calls[0]!.headers["x-adminium-csrf"]).toBeUndefined();
   });
 
+  it("reads a list without a personal column its reader is not shown, and keeps it empty and named, as a whole row does", async () => {
+    const { calls, session } = open([
+      refusal(403, "COLUMN_FORBIDDEN", { table: "public.crm_stages", column: "label" }),
+      json(200, { data: [{ id: 1, odds: 0.5 }, { id: 2, odds: 0.25, _masked: ["note"] }], page: { total: 2 } }),
+    ]);
+    const page = await (await session).list("stages", { select: ["id", "label", "odds"] });
+    expect(page.rows).toEqual([
+      { id: 1, odds: 0.5, label: null, _masked: ["label"] },
+      { id: 2, odds: 0.25, label: null, _masked: ["note", "label"] },
+    ]);
+    expect(calls.map((call) => new URL(call.url, "http://x").searchParams.get("select"))).toEqual(["id,label,odds", "id,odds"]);
+  });
+
+  it("does not read past a column kept from the role's read itself, nor one the list did not select", async () => {
+    const limited = open([refusal(403, "COLUMN_FORBIDDEN", { column: "label", reason: "read-limit" })]);
+    await expect((await limited.session).list("stages", { select: ["id", "label"] })).rejects.toBeInstanceOf(StaffError);
+    const unselected = open([refusal(403, "COLUMN_FORBIDDEN", { column: "label" })]);
+    await expect((await unselected.session).list("stages", { where: { column: "label", op: "eq", value: "x" } })).rejects.toBeInstanceOf(StaffError);
+  });
+
   it("answers a row that is not there, or not theirs, as nothing", async () => {
     const { session } = open([refusal(404, "NOT_FOUND")]);
     expect(await (await session).get("deals", 7)).toBeNull();
