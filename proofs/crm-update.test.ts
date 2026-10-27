@@ -1,10 +1,17 @@
 /**
- * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0 and of the RELEASED 0.2.1, holding the sample and
- * rows typed since by the people who type them, updated to 0.2.2 (the whole app), on SQLite, Postgres and MySQL.
+ * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1 and 0.2.2, holding the sample and rows typed
+ * since by the people who type them, updated to 0.2.3 (the whole app), on SQLite, Postgres and MySQL.
  *
- * Each release is read from its git tag (`v0.2.0`, `v0.2.1`): the manifest and the `seeds/` the package shipped, as
- * the release put them in its file. The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built) and what
- * the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up when it still says the old one).
+ * Each release is read from its git tag (`v0.2.0`, `v0.2.1`, `v0.2.2`): the manifest and the `seeds/` the package
+ * shipped, as the release put them in its file. The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built;
+ * for 0.2.2, which asks for 1.0.14, the next ones) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its
+ * version is taken one up when it still says the one installed).
+ *
+ * E-mail to contacts (0.2.3, on Adminium 0.3.38): before the update the release, read as Adminium reads every manifest
+ * that says no class, still sends its quote to an address on the do-not-email list; the update carries each contact's old
+ * "unsubscribed" moment onto that list once, fills who counts as a customer for every contact, marks nobody as offered a
+ * way to say no, and asks no question an add-on's table did not; after it the quote still goes, the referral's thanks
+ * goes and the code for a next order (marketing mail) does not.
  *
  *  1. installed as released, with Invoices and Inventory as they were, and its sample;
  *  2. rows typed as the people who type them: Dana the rep (a deal, a DRAFT quote with a line on it, a follow-up on a
@@ -36,12 +43,15 @@ import BetterSqlite3 from 'better-sqlite3';
 import { sql } from 'kysely';
 import { parseDatabaseModel } from '@adminium/engine';
 import { AdapterRegistry, type AdapterProvider } from '@adminium/engine/adapter';
-import { automationsRepo, createFirstSuperAdmin, createSqliteMetaDb, firstRun, snapshotsRepo, usersRepo, type MetaDb } from '@adminium/meta';
+import { automationsRepo, createFirstSuperAdmin, createSqliteMetaDb, firstRun, settingsRepo, snapshotsRepo, usersRepo, type MetaDb } from '@adminium/meta';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { sha512Integrity } from '../src/add-ons/store.js';
 import type { AdminiumServer } from '../src/app.js';
 import { composeServer } from '../src/compose.js';
+import { encryptSecret } from '../src/config/secrets.js';
+import { createConsentService } from '../src/consent/index.js';
+import { emailSecretKey } from '../src/email/config.js';
 import { dsnCryptoFromSecret } from '../src/connections/crypto.js';
 import { runIntrospection } from '../src/connections/introspect.js';
 import { ConnectionManager } from '../src/connections/manager.js';
@@ -62,8 +72,8 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.2';
-const RELEASES = ['0.2.0', '0.2.1'] as const;
+const NEXT = '0.2.3';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2'] as const;
 type Release = (typeof RELEASES)[number];
 
 interface Column {
@@ -134,7 +144,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.2: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.3: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -331,6 +341,12 @@ async function stack(dialect: Dialect): Promise<Stack> {
   await firstRun(meta);
   const hash = await adminPasswordHash();
   await createFirstSuperAdmin(meta, { email: 'owner@crm.test', name: 'Owner', passwordHash: hash });
+  // Outgoing mail set up (never delivered: nothing listens), so a message is queued and its row says "sent".
+  await settingsRepo(meta).set(
+    'email.smtp',
+    { host: '127.0.0.1', port: 9, user: 'postmaster', passEncrypted: encryptSecret('not-a-real-password', emailSecretKey(TEST_SECRET)), from: 'Meridian <no-reply@meridian-workplace.co.uk>', secure: false },
+    { updatedBy: null },
+  );
   const registry = new AdapterRegistry<AdapterProvider>();
   await registerAdapters(registry);
   const manager = new ConnectionManager({ meta, crypto: dsnCryptoFromSecret(TEST_SECRET), registry, metaDsn: null, blockLoopback: false });
@@ -378,6 +394,8 @@ async function stack(dialect: Dialect): Promise<Stack> {
     },
     jobs: async () => {
       for (let round = 0; round < 20; round += 1) {
+        // A mail handed to the queue is the outbox's "sent": nothing listens for it, so it is never tried (as the whole-server tests keep it).
+        await meta.db.updateTable('adminium_jobs').set({ status: 'cancelled' } as never).where('kind', '=', 'email.send').where('status', '=', 'pending' as never).execute();
         await meta.db.updateTable('adminium_jobs').set({ runAt: 0 } as never).where('status', '=', 'pending' as never).execute();
         if ((await composed.jobs.worker.runOnce()) === 0) break;
       }
@@ -404,6 +422,9 @@ const said = (res: Reply): string => {
   return `${String(res.statusCode)} ${code}`.trim();
 };
 const DAY = 86_400_000;
+/** Pat, a contact typed in before the update, who said no to the business's mail; Rowan, whose old release marked him unsubscribed. */
+const PAT = 'pat.quinn@harbourline-dental.co.uk';
+const ROWAN = 'rowan.hale@harbourline-dental.co.uk';
 const inDays = (days: number, hour = 10): string => {
   const at = new Date(Date.now() + days * DAY);
   at.setUTCHours(hour, 0, 0, 0);
@@ -475,7 +496,11 @@ for (const [dialect, reachable] of LEGS) {
       let partsBefore: Record<string, boolean> = {};
       let rulesBefore: Record<string, boolean> = {};
       let updateReply: { derived?: { filled: { table: string; column: string; rows: number }[]; skipped: unknown[] } } = {};
-      const has21 = from === '0.2.1';
+      const has21 = from !== '0.2.0';
+      // 0.2.2 asks for the add-ons at 1.0.14: an install of it had them, and their next release is one patch up.
+      const fromNew = from === '0.2.2';
+      const installedAddOns = fromNew ? after : before;
+      const nextAddOns = fromNew ? (Object.fromEntries(ADD_ONS.map((key) => [key, bumped(after[key], after[key])])) as typeof after) : after;
 
       const url = (ref: string, rest = '') => `/api/v1/data/${s.connectionId}/${s.t(`crm_${ref}`)}${rest}`;
       const as = (person: string, method: string, path: string, payload?: unknown) => s.app.inject({ method: method as 'GET', url: path, headers: { cookie: cookie[person]! }, ...(payload === undefined ? {} : { payload: payload as Record<string, unknown> }) });
@@ -490,6 +515,23 @@ for (const [dialect, reachable] of LEGS) {
         expect(found, statement).toBeDefined();
         return found!;
       };
+      /** A quote of the deal to the contact at list price, sent by Dana; its key. */
+      const sendQuote = async (deal: number, to: number, price: Row): Promise<number> => {
+        const quote = made(await post('dana', 'quotes', { deal_id: deal, sent_to_contact_id: to }));
+        made(await post('dana', 'quote_lines', { document_id: quote, qty: 2, rate: price['list_rate'], price_id: price['id'], description: 'Chairs' }));
+        expect(said(await patch('dana', 'quotes', quote, { status: 'sent' }))).toBe('ok');
+        return quote;
+      };
+      /** What the outbox did: each message's kind, address, status and why, once every waiting one is due. */
+      const outboxOf = async (where: string): Promise<unknown[][]> => {
+        await s.jobs();
+        await s.rows(`update crm_outbox set due_at = '${dialect === 'mysql' ? '2000-01-01 00:00:00' : '2000-01-01T00:00:00.000Z'}' where status = 'queued'`);
+        await s.app.outboxSender.sendApp('crm', Date.now());
+        await s.jobs();
+        const to = dialect === 'mysql' ? '`to`' : '"to"';
+        return (await s.rows(`select kind, ${to} as addr, status, error from crm_outbox where ${where} order by id`)).map((row) => [row['kind'], row['addr'], row['status'], row['error'] ?? null]);
+      };
+      const quoteMail = (quote: number) => outboxOf(`quote_id = ${String(quote)}`);
       const parts = async (): Promise<Record<string, boolean>> => {
         const res = await as('owner', 'GET', '/api/v1/apps/crm/parts');
         expect(res.statusCode, res.body).toBe(200);
@@ -513,12 +555,12 @@ for (const [dialect, reachable] of LEGS) {
         await s?.close();
       });
 
-      it(`installs as ${from} was released, with Invoices and Inventory ${before.inventory?.version ?? ''} and its sample`, async () => {
-        for (const key of ADD_ONS) await upload('/api/v1/add-ons/upload', addOnTarball(before[key]!));
+      it(`installs as ${from} was released, with Invoices and Inventory as an install of it had them, and its sample`, async () => {
+        for (const key of ADD_ONS) await upload('/api/v1/add-ons/upload', addOnTarball(installedAddOns[key]!));
         await upload('/api/v1/apps/upload', appTarball(was.manifest, was.files));
         // The owner leaves one part unticked: on 0.2.0 the Inbox, on 0.2.1 the Showroom.
         const modules = has21 ? { quotes: true, inbox: true, showroom: false, jobs: true, aftercare: true, supply: true, fleet: true } : { quotes: true, inbox: false, supply: true };
-        const installed = await as('owner', 'POST', '/api/v1/apps/install', { key: 'crm', version: from, connectionId: s.connectionId, addOns: ADD_ONS.map((key) => ({ key, version: before[key]!.version })), modules });
+        const installed = await as('owner', 'POST', '/api/v1/apps/install', { key: 'crm', version: from, connectionId: s.connectionId, addOns: ADD_ONS.map((key) => ({ key, version: installedAddOns[key]!.version })), modules });
         expect(installed.statusCode, installed.body).toBe(200);
         const sample = await as('owner', 'POST', '/api/v1/apps/crm/sample-data', {});
         expect(sample.statusCode, sample.body).toBe(200);
@@ -585,9 +627,27 @@ for (const [dialect, reachable] of LEGS) {
         expect(said(await as('owner', 'PATCH', inv('purchase_orders', `/${String(order.id)}`), { values: { status: 'sent' } }))).toBe('ok');
         expect((await one(`select expected_on from inventory_purchase_orders where id = ${String(order.id)}`))['expected_on']).not.toBeNull();
         typed['receipt'] = made(await as('owner', 'POST', inv('receipts'), { values: { kind: 'delivery', po_id: order.id, place_id: order.place_id } }));
+        // E-MAIL TO CONTACTS, BEFORE THE UPDATE (engine first). Pat, typed in by Dana with an address of her own business,
+        // said no to the business's mail by a link: the do-not-email list this Adminium keeps. Dana sends her a quote. The
+        // release says no class of its mail, so Adminium reads it as service, and the quote goes.
+        typed['pat'] = made(await post('dana', 'contacts', { company_id: contact['company_id'], name: 'Pat Quinn', email: PAT, may_email: false }));
+        await createConsentService({ meta: s.meta, secret: TEST_SECRET }).stop.add({ address: PAT, reason: 'link' });
+        typed['patDeal'] = made(await post('dana', 'deals', { name: `Chairs for Pat ${from}`, company_id: contact['company_id'], contact_id: typed['pat'], stage_id: stage['id'], owner_id: id['dana'], typed_amount: 2500 }));
+        typed['patQuote'] = await sendQuote(typed['patDeal']!, typed['pat']!, price);
+        expect(await quoteMail(typed['patQuote']!)).toEqual([['quote-sent', PAT, 'sent', null]]);
+        // The release's own mark that a contact unsubscribed, as an install kept it: on a contact of the sample, on one Dana
+        // typed, and on one with no address (nothing to carry).
+        typed['rowan'] = made(await post('dana', 'contacts', { company_id: contact['company_id'], name: 'Rowan Hale', email: ROWAN, may_email: false }));
+        typed['nameless'] = made(await post('dana', 'contacts', { company_id: contact['company_id'], name: 'Sam Noaddress', may_email: false }));
+        const sampleContact = Number((await one("select id from crm_contacts where email like '%.example' order by id"))['id']);
+        await s.rows(`update crm_contacts set unsubscribed_at = '${dialect === 'mysql' ? '2026-03-02 09:00:00' : '2026-03-02T09:00:00.000Z'}' where id in (${String(sampleContact)}, ${String(typed['rowan'])}, ${String(typed['nameless'])})`);
+        // An introduction Pat made, not thanked yet: the CRM admin thanks it after the update.
+        typed['patReferral'] = made(await post('tessa', 'referrals', { from_contact_id: typed['pat'], referred_name: 'Somebody at the harbour', introduced_on: dayIn(-20) }));
         // The owner's own switches: two rules that ship off switched on, one that ships on switched off.
         const shipped = await automationsRepo(s.meta).listManagedBy('crm', s.connectionId);
         for (const [key, enabled] of [['approval-given', true], ['approval-refused', true], ['nudge-quiet', true], ['deal-made', false]] as const) {
+          // "Refused" was merged into "given" in 0.2.2: a release without it has nothing to switch.
+          if (key === 'approval-refused' && !(was.manifest.automations ?? []).some((one) => one.key === key)) continue;
           const rule = shipped.find((one) => one.templateKey === key);
           expect(rule, key).toBeDefined();
           expect(said(await as('owner', 'PATCH', `/api/v1/automations/${rule!.id}`, { enabled })), key).toBe('ok');
@@ -595,14 +655,14 @@ for (const [dialect, reachable] of LEGS) {
         await s.jobs();
       }, 600_000);
 
-      it(`Invoices and Inventory update to ${after.inventory?.version ?? ''} with every row kept`, async () => {
+      it('Invoices and Inventory update to their next version with every row kept', async () => {
         await s.jobs();
         const kept = await everyRow(s);
-        for (const key of ADD_ONS) await upload('/api/v1/add-ons/upload', addOnTarball(after[key]!));
+        for (const key of ADD_ONS) await upload('/api/v1/add-ons/upload', addOnTarball(nextAddOns[key]!));
         for (const key of ['inventory', 'invoices'] as const) {
-          const res = await as('owner', 'POST', `/api/v1/add-ons/${key}/update`, { to: after[key]!.version });
+          const res = await as('owner', 'POST', `/api/v1/add-ons/${key}/update`, { to: nextAddOns[key]!.version });
           expect(res.statusCode, `${key}: ${res.body}`).toBe(200);
-          expect((res.json() as { to: string }).to).toBe(after[key]!.version);
+          expect((res.json() as { to: string }).to).toBe(nextAddOns[key]!.version);
         }
         await s.reread();
         expect(lostOrChanged(kept, await everyRow(s))).toEqual([]);
@@ -615,7 +675,8 @@ for (const [dialect, reachable] of LEGS) {
       // does, but has no stage that works out the derived ones for the rows already there (the app's update does: E20).
       // Inventory's next version copies an order's expected day onto each delivery; a delivery begun before the update keeps
       // it empty, so once posted it cannot say whether it was late, and the supplier scorecard leaves it out.
-      it.fails('KNOWN GAP: a delivery begun before Inventory\'s update takes the day its order expected it', async () => {
+      // (An install of 0.2.2 had the Inventory that copies the day already: there is no gap to show.)
+      (fromNew ? it.skip : it.fails)('KNOWN GAP: a delivery begun before Inventory\'s update takes the day its order expected it', async () => {
         const receipts = await s.rows('select r.id, r.expected_on as got, p.expected_on as want from inventory_receipts r join inventory_purchase_orders p on p.id = r.po_id');
         expect(receipts.filter((row) => plainValue(row['got']) !== plainValue(row['want'])).map((row) => `${String(row['id'])}: ${String(plainValue(row['got']))}, the order says ${String(plainValue(row['want']))}`).slice(0, 10)).toEqual([]);
       }, 600_000);
@@ -626,19 +687,28 @@ for (const [dialect, reachable] of LEGS) {
         partsBefore = await parts();
         rulesBefore = await rules();
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
-        const asked = await as('owner', 'POST', '/api/v1/apps/crm/update', {});
-        expect(asked.statusCode, asked.body).toBe(422);
-        const named = (asked.json() as { error: { code: string; details: { roleTables: { role: string; addOn: string; table: string; wider: { actions?: string[]; columns?: string[] } }[] } } }).error;
-        const asWider = named.details.roleTables.map((grant) => ({ role: grant.role, addOn: grant.addOn, table: grant.table, actions: grant.wider.actions ?? [], columns: grant.wider.columns ?? [] })).sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`));
         const want = widerGrants(was.manifest, now.manifest);
-        // Inventory's receipts, read by Supply's three roles (the scorecard), is one of them whichever release this is.
-        expect(want.filter((grant) => grant.table === 'receipts').map((grant) => grant.role).sort()).toEqual(['admin', 'ops-manager', 'read-only']);
-        expect(asWider).toEqual(want);
-        // Refused before anything moved.
-        expect(lostOrChanged(rowsBefore, await everyRow(s))).toEqual([]);
-        const updated = await as('owner', 'POST', '/api/v1/apps/crm/update', { roleTables: true });
-        expect(updated.statusCode, updated.body).toBe(200);
-        updateReply = updated.json() as typeof updateReply;
+        const asked = await as('owner', 'POST', '/api/v1/apps/crm/update', {});
+        if (want.length === 0) {
+          // From 0.2.2 no role reads more of an add-on's table, so there is nothing to ask: the update goes. (What 0.2.3
+          // widens is the app's own tables: the marketer reads a contact's address, the crew and the office a signer's
+          // name. An update of a packaged app asks nothing of its own tables' grants.)
+          expect(fromNew).toBe(true);
+          expect(asked.statusCode, asked.body).toBe(200);
+          updateReply = asked.json() as typeof updateReply;
+        } else {
+          expect(asked.statusCode, asked.body).toBe(422);
+          const named = (asked.json() as { error: { code: string; details: { roleTables: { role: string; addOn: string; table: string; wider: { actions?: string[]; columns?: string[] } }[] } } }).error;
+          const asWider = named.details.roleTables.map((grant) => ({ role: grant.role, addOn: grant.addOn, table: grant.table, actions: grant.wider.actions ?? [], columns: grant.wider.columns ?? [] })).sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`));
+          // Inventory's receipts, read by Supply's three roles (the scorecard), is one of them from 0.2.0 and 0.2.1.
+          expect(want.filter((grant) => grant.table === 'receipts').map((grant) => grant.role).sort()).toEqual(['admin', 'ops-manager', 'read-only']);
+          expect(asWider).toEqual(want);
+          // Refused before anything moved.
+          expect(lostOrChanged(rowsBefore, await everyRow(s))).toEqual([]);
+          const updated = await as('owner', 'POST', '/api/v1/apps/crm/update', { roleTables: true });
+          expect(updated.statusCode, updated.body).toBe(200);
+          updateReply = updated.json() as typeof updateReply;
+        }
         await s.reread();
         const installed = (await s.meta.db.selectFrom('adminium_manifests').select(['version']).where('manifestKey', '=', 'crm').executeTakeFirst()) as { version: string } | undefined;
         expect(installed?.version).toBe(NEXT);
@@ -677,10 +747,13 @@ for (const [dialect, reachable] of LEGS) {
       it('every derived column the update adds holds, on every row there, the value its rule gives', async () => {
         const { derived } = addedColumns(was.manifest, now.manifest);
         const ids = derived.map((added) => `${added.table}.${added.column.ref}`).sort();
+        // 0.2.3 adds one: how many of a contact's deals are won, who counts as a customer.
         expect(ids).toEqual(
-          has21
-            ? ['deal_stock_needs.crew_id', 'follow_ups.on_deal', 'job_visits.deal_id', 'jobs.deal_owner_id', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id']
-            : ['deal_stock_needs.crew_id', 'deals.job_count', 'follow_ups.on_deal', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id'],
+          fromNew
+            ? ['contacts.won_deals']
+            : has21
+              ? ['contacts.won_deals', 'deal_stock_needs.crew_id', 'follow_ups.on_deal', 'job_visits.deal_id', 'jobs.deal_owner_id', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id']
+              : ['contacts.won_deals', 'deal_stock_needs.crew_id', 'deals.job_count', 'follow_ups.on_deal', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id'],
         );
         // What the engine says it filled and left is not in the update's reply (its schema keeps only app, from, to, pruned):
         // when it is, it must have left none. The values below are the proof either way.
@@ -724,7 +797,14 @@ for (const [dialect, reachable] of LEGS) {
         }
         expect(wrong.slice(0, 30)).toEqual([]);
         // Rows whose source is set were there to fill, for each the plan names: not a check of empty tables.
-        for (const name of ['quotes.deal_state', 'quotes.deal_owner_id', 'site_visits.deal_owner_id', 'follow_ups.on_deal', ...(has21 ? ['jobs.deal_owner_id', 'job_visits.deal_id'] : ['deals.job_count'])]) expect([name, checked[name]! > 0]).toEqual([name, true]);
+        const filled = fromNew ? [] : ['quotes.deal_state', 'quotes.deal_owner_id', 'site_visits.deal_owner_id', 'follow_ups.on_deal', ...(has21 ? ['jobs.deal_owner_id', 'job_visits.deal_id'] : ['deals.job_count'])];
+        for (const name of [...filled, 'contacts.won_deals']) expect([name, checked[name]! > 0]).toEqual([name, true]);
+        // A customer made before the update counts as one: the contact of Dana's deal won before it, and of the sample's won deals.
+        const customer = Number((await one(`select contact_id from crm_deals where id = ${String(typed['wonDeal'])}`))['contact_id']);
+        const won = Number((await one(`select count(*) as c from crm_deals where contact_id = ${String(customer)} and state = 'won'`))['c']);
+        expect(won).toBeGreaterThan(0);
+        expect(Number((await one(`select won_deals from crm_contacts where id = ${String(customer)}`))['won_deals'])).toBe(won);
+        expect(Number((await one(`select won_deals from crm_contacts where id = ${String(typed['pat'])}`))['won_deals'])).toBe(0);
 
         // By value, on the rows typed before the update.
         const quote = await one(`select deal_state, deal_owner_id from crm_quotes where id = ${String(typed['quote'])}`);
@@ -747,7 +827,11 @@ for (const [dialect, reachable] of LEGS) {
 
       it('every other column the update adds holds its stated default, or nothing', async () => {
         const { plain } = addedColumns(was.manifest, now.manifest);
-        expect(plain.length).toBeGreaterThan(20);
+        // 0.2.3's: the mark of the line, on contacts and enquiries. Every row there before it carries none: nobody brought
+        // in before was told they could say no where we took their address, so nobody is an existing customer by it.
+        if (fromNew) expect(plain.map((added) => `${added.table}.${added.column.ref}`).sort()).toEqual(['contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at']);
+        else expect(plain.length).toBeGreaterThan(20);
+        for (const ref of ['contacts', 'enquiries']) expect(Number((await one(`select count(*) as c from crm_${ref} where opt_out_offered_at is not null`))['c']), ref).toBe(0);
         const wrong: string[] = [];
         for (const { table, column } of plain) {
           const want = column.default === undefined ? null : plainValue(column.default);
@@ -760,6 +844,27 @@ for (const [dialect, reachable] of LEGS) {
         }
         expect(wrong.slice(0, 30)).toEqual([]);
       });
+
+      it('carries each old "unsubscribed" mark onto the do-not-email list; the quote still reaches Pat on it; the referral\'s thanks goes to her and its code does not', async () => {
+        // The carry: one entry for each contact the release marked unsubscribed that has an address, said why.
+        const marked = (await s.rows('select email from crm_contacts where unsubscribed_at is not null and email is not null')).map((row) => String(row['email']).toLowerCase()).sort();
+        expect(marked).toContain(ROWAN);
+        const list = (await as('owner', 'GET', '/api/v1/consent/stop-list?reason=old-mark&limit=200')).json() as { data: { entries: { address: string | null; reason: string }[]; total: number } };
+        expect(list.data.entries.map((entry) => entry.address ?? '').sort()).toEqual(marked);
+        // Pat, on the list by her own link, is there once and for her own reason.
+        const pat = (await as('owner', 'GET', `/api/v1/consent/stop-list?q=${encodeURIComponent('pat.quinn')}`)).json() as { data: { entries: { address: string | null; reason: string }[] } };
+        expect(pat.data.entries.map((entry) => [entry.address, entry.reason])).toEqual([[PAT, 'link']]);
+        // A quote is service mail: it still reaches her.
+        const price = (await s.rows('select id, list_rate, active from crm_price_list order by id')).find((row) => plainValue(row['active']) === '1' && row['list_rate'] !== null)!;
+        const again = await sendQuote(typed['patDeal']!, typed['pat']!, price);
+        expect(await quoteMail(again)).toEqual([['quote-sent', PAT, 'sent', null]]);
+        // The CRM admin thanks Pat for her introduction, with a code: the thanks is service, the code marketing, and she said no.
+        expect(said(await patch('tessa', 'referrals', typed['patReferral']!, { thanked_at: new Date().toISOString(), reward: 'THANKS-PAT' }))).toBe('ok');
+        expect(await outboxOf(`referral_id = ${String(typed['patReferral'])}`)).toEqual([
+          ['referral-thanks', PAT, 'sent', null],
+          ['referral-code', PAT, 'skipped', 'Not sent: on the do-not-email list (marketing mail)'],
+        ]);
+      }, 600_000);
 
       it('Dana herself sends the draft quote she made before the update, and the deal takes its amount', async () => {
         expect(said(await patch('dana', 'quotes', typed['quote']!, { status: 'sent' }))).toBe('ok');
@@ -805,6 +910,18 @@ for (const [dialect, reachable] of LEGS) {
         // The owner works it as before.
         expect(said(await patch('dana', 'deals', typed['deal']!, { typed_amount: 4100 }))).toBe('ok');
       });
+
+      it('a later update carries the old marks again and adds no entry: each was put on the list once', async () => {
+        const count = async (): Promise<number> => ((await as('owner', 'GET', '/api/v1/consent/stop-list?reason=old-mark&limit=200')).json() as { data: { total: number } }).data.total;
+        const before = await count();
+        expect(before).toBeGreaterThan(0);
+        // The same app numbered one patch up, as the next release would carry the same column.
+        const later = { ...now.manifest, version: NEXT.replace(/\d+$/, (patch) => String(Number(patch) + 1)) };
+        await upload('/api/v1/apps/upload', appTarball(later, now.files));
+        const updated = await as('owner', 'POST', '/api/v1/apps/crm/update', {});
+        expect(updated.statusCode, updated.body).toBe(200);
+        expect(await count()).toBe(before);
+      }, 600_000);
     });
   }
 }
