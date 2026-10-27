@@ -146,8 +146,8 @@ describe("a deal", () => {
     expect((states("quotes") as unknown as { lock: { except: string[] } }).lock.except).toEqual(["valid_until", "decided_at", "withdraw_reason", "accepted_name", "yes_seen_at"]);
     expect(column("replaces_ok").rules).toEqual({ formula: { if: [{ or: [{ isNull: "replaces_id" }, { and: [{ gte: ["replaces_deal_id", "deal_no"] }, { lte: ["replaces_deal_id", "deal_no"] }] }] }, 1, 0] } });
     // Nobody types who accepted: the customer's page does, as plain text, and the server says through which door.
-    // It is a person's name, personal data like the contact's own.
-    expect(column("accepted_name").rules).toEqual({ plainText: { max: 120 }, personal: true });
+    // A copy of the person (found and blanked with them), not marked personal: the owner's notice of a yes names them.
+    expect(column("accepted_name").rules).toEqual({ plainText: { max: 120 } });
     expect(column("accepted_via").rules).toEqual({ stamp: { set: { byOrigin: { public: "customer", staff: "staff" } }, on: { column: "status", values: ["accepted"] } } });
     for (const role of (manifest as unknown as { roles: { key: string; limits?: Record<string, { writable?: string[]; creatable?: string[] }> }[] }).roles) {
       expect(role.limits?.["quotes"]?.writable ?? [], role.key).not.toContain("accepted_name");

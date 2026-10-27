@@ -107,12 +107,13 @@ addColumn("enquiries", mark());
 }
 
 // ── Personal data: the names copied from a person, and a referral's third party ─
-// (Not a delivery note's signer: whether anybody signed is read by a formula, and a formula reads no personal
-// column. The note is kept by law, so its copy stays whole whatever the column says.)
+// Not a delivery note's signer: whether anybody signed is read by a formula, and a formula reads no personal column
+// (the note is kept by law, so its copy stays whole whatever the column says). Not who accepted a quote either: the
+// deal owner's notice of a yes on a lost deal names them, and a rule's words print no personal column. Both are still
+// declared copies of the person, found and blanked with them.
 for (const [ref, name] of [
   ["quotes", "to_name"],
   ["quotes", "sent_to_name"],
-  ["quotes", "accepted_name"],
   ["sign_offs", "signer_name"],
   ["sign_offs", "copy_sent_to"],
   ["refused_sign_offs", "signer_name"],

@@ -3702,8 +3702,7 @@
             "rules": {
               "plainText": {
                 "max": 120
-              },
-              "personal": true
+              }
             }
           },
           {

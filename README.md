@@ -202,7 +202,7 @@ nothing. Every row is kept as it was; what changes:
   thank-you is now two e-mails, the thanks (service, always sent) and the code (marketing, sent
   only to whom it may go, when the referral holds one). The approval e-mail nothing ever sent is
   gone; the notice to the approving manager stays.
-- **Names copied from a person are personal data:** a quote's recipient and who accepted it, who
+- **Names copied from a person are personal data:** a quote's recipient, who
   signed a job off or would not, a showroom visitor, an enquiry's person and whom a customer
   introduced us to. They are read in clear by the roles whose screens show them (the crew and the
   operations manager a signer, the front desk and the rep a visitor, the account manager a

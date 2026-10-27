@@ -167,10 +167,11 @@ describe("every copy of a contact on another table is named", () => {
     for (const id of followed) expect(copies.map((copy) => `${copy.table}.${copy.column}`), id).toContain(id);
   });
 
-  it("marks every copied name personal, but the delivery note's, which a formula reads (the note is kept by law, so the copy stays whole)", () => {
+  it("marks every copied name personal, but two an engine word reads: the delivery note's signer (a formula) and who accepted a quote (the owner's notice)", () => {
+    const readByWords = ["delivery_notes.signed_name", "quotes.accepted_name"];
     for (const copy of copies) {
       const personal = column(copy.table, copy.column)?.rules?.personal === true;
-      expect(personal, `${copy.table}.${copy.column}`).toBe(!(copy.table === "delivery_notes" && copy.column === "signed_name"));
+      expect(personal, `${copy.table}.${copy.column}`).toBe(!readByWords.includes(`${copy.table}.${copy.column}`));
     }
     // A name typed for whoever a customer introduced us to is a person's too, though not a contact's copy.
     expect(column("referrals", "referred_name")?.rules?.personal).toBe(true);
