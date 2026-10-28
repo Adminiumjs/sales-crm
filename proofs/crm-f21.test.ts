@@ -70,8 +70,22 @@ for (const [dialect, reachable] of LEGS) {
     /** A deal's history as the screens read it: oldest first. */
     const history = async (deal: number): Promise<[number | null, number, string | null][]> => {
       const lines = await s.rows(`select id, from_stage_id, to_stage_id, by_id, at from crm_deal_stage_changes where deal_id = ${String(deal)}`);
-      // By its moment; two lines of the same moment (an engine that keeps whole seconds) by the chain they make.
-      const sorted = [...lines].sort((one, two) => when(one['at']) - when(two['at']) || (Number(one['to_stage_id']) === Number(two['from_stage_id']) ? -1 : Number(two['to_stage_id']) === Number(one['from_stage_id']) ? 1 : Number(one['id']) - Number(two['id'])));
+      // By its moment; lines of the same moment (an engine that keeps whole seconds) by the chain they make: each takes
+      // up where the one before it left off. A pairwise sort cannot say this: of three lines, the first and the last
+      // do not touch, and their order then fell to the sort's own way of walking them.
+      const left = [...lines].sort((one, two) => when(one['at']) - when(two['at']) || Number(one['id']) - Number(two['id']));
+      const from = (line: Record<string, unknown>): number | null => (line['from_stage_id'] === null ? null : Number(line['from_stage_id']));
+      const sorted: typeof lines = [];
+      while (left.length > 0) {
+        const tied = left.filter((line) => when(line['at']) === when(left[0]!['at']));
+        const before = sorted.at(-1);
+        const next =
+          tied.find((line) => from(line) === (before === undefined ? null : Number(before['to_stage_id']))) ??
+          tied.find((line) => !tied.some((other) => other !== line && Number(other['to_stage_id']) === from(line))) ??
+          tied[0]!;
+        sorted.push(next);
+        left.splice(left.indexOf(next), 1);
+      }
       return sorted.map((line) => [line['from_stage_id'] === null ? null : Number(line['from_stage_id']), Number(line['to_stage_id']), line['by_id'] as string | null]);
     };
 
