@@ -149,7 +149,8 @@ test("a rep helping on a colleague's deal reads it all and comments; nothing tha
     await page.keyboard.press("Escape");
     // By mouse: dragged to Qualified, it stays at Proposal, and so does the deal.
     const from = (await mine.boundingBox())!;
-    const to = (await column(page, qualified.id).locator("[data-board-cell]").boundingBox())!;
+    // The whole column is the drop target (Adminium 0.3.37).
+    const to = (await column(page, qualified.id).boundingBox())!;
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
     await page.mouse.down();
     await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2 + 6, { steps: 3 });

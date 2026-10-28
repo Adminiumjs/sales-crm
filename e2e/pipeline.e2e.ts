@@ -113,7 +113,8 @@ test("a card is moved by keyboard and by mouse; the figures follow and the serve
 
   // By mouse: on to Proposal (50 %).
   const from = (await card(page, "Edit-suite chairs").boundingBox())!;
-  const to = (await column(page, proposal.id).locator("[data-board-cell]").boundingBox())!;
+  // The whole column is the drop target (Adminium 0.3.37).
+  const to = (await column(page, proposal.id).boundingBox())!;
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
   await page.mouse.down();
   await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2 + 6, { steps: 3 });

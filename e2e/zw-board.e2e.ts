@@ -129,12 +129,13 @@ test("in the console a card is dragged with the mouse and moved by keyboard; the
 
     // By mouse: Discovery to Qualified.
     const from = (await chairs.boundingBox())!;
-    const to = (await columnOf(page, qualified.id).locator("[data-board-cell]").first().boundingBox())!;
+    // The whole column is the drop target (Adminium 0.3.37), and it says so while a card is over it.
+    const to = (await columnOf(page, qualified.id).boundingBox())!;
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
     await page.mouse.down();
     await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2 + 6, { steps: 3 });
     await page.mouse.move(to.x + to.width / 2, to.y + 40, { steps: 12 });
-    await expect(columnOf(page, qualified.id).locator("[data-board-cell]").first()).toHaveAttribute("data-drop-target", "");
+    await expect(columnOf(page, qualified.id)).toHaveAttribute("data-drop-target", "");
     await page.mouse.up();
     await expect(cardIn(page, qualified.id, "Edit-suite chairs")).toBeVisible();
     await expect(spoken(page)).toHaveText(/Moved Edit-suite chairs to Qualified\./);
@@ -321,8 +322,8 @@ test("the console's board in Arabic reads right to left, in Arabic, and still mo
     await expect(columnOf(page, stages[0]!.id)).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("مسار الصفقات");
-    // Priya's three open deals, said in Arabic (the console writes its figures in Latin digits, where the staff side writes ٣).
-    await expect(page.getByTestId("board-total")).toContainText(/^3 الصفقات · المبلغ/);
+    // Priya's three open deals, said in Arabic: the count in the sentence's own digits (٣), the sums in Latin ones.
+    await expect(page.getByTestId("board-total")).toContainText(/^الصفقات: ٣ · المبلغ/);
     // The first stage stands at the right, the next to its left.
     const [first, second] = await Promise.all([columnOf(page, stages[0]!.id).boundingBox(), columnOf(page, stages[1]!.id).boundingBox()]);
     expect(second!.x).toBeLessThan(first!.x);
