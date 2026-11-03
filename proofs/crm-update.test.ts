@@ -64,7 +64,7 @@ import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.38' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.41' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 type Row = Record<string, unknown>;
