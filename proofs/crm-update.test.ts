@@ -1,11 +1,16 @@
 /**
- * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1 and 0.2.2, holding the sample and rows typed
- * since by the people who type them, updated to 0.2.3 (the whole app), on SQLite, Postgres and MySQL.
+ * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2 and 0.2.3, holding the sample and rows
+ * typed since by the people who type them, updated to 0.2.4 (the whole app), on SQLite, Postgres and MySQL.
  *
- * Each release is read from its git tag (`v0.2.0`, `v0.2.1`, `v0.2.2`): the manifest and the `seeds/` the package
- * shipped, as the release put them in its file. The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built;
- * for 0.2.2, which asks for 1.0.14, the next ones) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its
- * version is taken one up when it still says the one installed).
+ * Each release is read from its git tag (`v0.2.0` … `v0.2.3`): the manifest and the `seeds/` the package shipped, as
+ * the release put them in its file. The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
+ * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
+ * when it still says the one installed), Forms among them, installed after the CRM's update.
+ *
+ * Website forms and surveys (0.2.4, on Adminium 0.3.42): the update asks the owner for the read of Forms' invitations
+ * for the five roles that read the aftercare calls, though Forms is not there yet; the brochure and survey rules
+ * arrive off, and Surveys (which ships on) waits for Forms until it is installed. A quote still reaches an address on the do-not-email
+ * list (a service kind with no purpose); the brochure (a service kind with the newsletter purpose) does not.
  *
  * E-mail to contacts (0.2.3, on Adminium 0.3.38): before the update the release, read as Adminium reads every manifest
  * that says no class, still sends its quote to an address on the do-not-email list; the update carries each contact's old
@@ -18,8 +23,8 @@
  *     deal and one on none, and on 0.2.1 a site visit), on 0.2.1 Ada the operations manager (a job on a won deal of
  *     Dana's and a booked visit of it) and Yusuf of the Blue crew (a sign-off of that visit); the owner switches some
  *     parts and rules off and on;
- *  3. the add-ons update to their next version, every row kept (a delivery begun before it does NOT take the expected day
- *     the new Inventory copies from its order: a known engine gap, held by an `it.fails` that turns red once it is closed);
+ *  3. the add-ons update to their next version, every row kept (were the installed Inventory one that does not copy an
+ *     order's expected day, a delivery begun before it would NOT take it: a known engine gap, held by an `it.fails`);
  *  4. the CRM update is refused, naming each grant of an add-on's table it widens, and goes when the owner allows it;
  *  5. after it: every table that was there holds exactly the rows it held, each column it had as it was; the parts and
  *     the rules keep their switches (the parts it lacked arrive switched off); every derived column the update adds
@@ -27,7 +32,9 @@
  *     rule gives, and every other column it adds holds its default or nothing;
  *  6. Dana herself sends the draft quote she made before the update, and the deal takes its amount; afterwards a new
  *     quote on an open deal is made, one on a closed deal refused (R1a), and the new grant of Inventory's receipts reads
- *     as the operations manager and is refused to a rep.
+ *     as the operations manager and is refused to a rep;
+ *  7. Forms installed after the update: Surveys waits for nothing and is on (its rule still off); Forms' invitations read as a rep
+ *     and are refused to the operations manager; the brochure goes to an enquirer and is stopped at the list.
  *
  * To run: `ADD_ONS_REPO=<next add-ons, built> CRM_ADD_ONS_BEFORE=<add-ons as released, built> npm run proofs -- update`.
  */
@@ -72,8 +79,8 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.3';
-const RELEASES = ['0.2.0', '0.2.1', '0.2.2'] as const;
+const NEXT = '0.2.4';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3'] as const;
 type Release = (typeof RELEASES)[number];
 
 interface Column {
@@ -144,7 +151,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.3: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.4: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -190,7 +197,11 @@ function bumped(after: AddOn | null, before: AddOn | null): AddOn | null {
 const ADD_ONS = ['invoices', 'inventory'] as const;
 const before = Object.fromEntries(ADD_ONS.map((key) => [key, addOnAt(BEFORE_REPO, key)])) as Record<(typeof ADD_ONS)[number], AddOn | null>;
 const after = Object.fromEntries(ADD_ONS.map((key) => [key, bumped(addOnAt(AFTER_REPO, key), before[key])])) as Record<(typeof ADD_ONS)[number], AddOn | null>;
-const haveAddOns = ADD_ONS.every((key) => before[key] !== null && after[key] !== null);
+/** Forms, which no install had before: installed after the CRM's update, at the next add-ons release. */
+const formsNext = addOnAt(AFTER_REPO, 'forms');
+const haveAddOns = ADD_ONS.every((key) => before[key] !== null && after[key] !== null) && formsNext !== null;
+/** Whether an Inventory copies an order's expected day onto each delivery (from 1.0.14). */
+const copiesExpectedDay = (addOn: AddOn | null): boolean => ((addOn?.manifest['requiredSchema'] as { tables?: Table[] } | undefined)?.tables ?? []).some((table) => table.ref === 'receipts' && table.columns.some((column) => column.ref === 'expected_on'));
 
 function addOnTarball(addOn: AddOn): Uint8Array {
   return packageTarball({
@@ -335,7 +346,7 @@ async function signIn(app: AdminiumServer, email: string): Promise<string> {
 }
 
 async function stack(dialect: Dialect): Promise<Stack> {
-  process.env['ADMINIUM_ADD_ON_DEV_TRUST'] = 'invoices,inventory';
+  process.env['ADMINIUM_ADD_ON_DEV_TRUST'] = 'invoices,inventory,forms';
   const dataDir = await mkdtemp(join(tmpdir(), 'crm-update-'));
   const meta = createSqliteMetaDb({ database: new BetterSqlite3(':memory:') });
   await firstRun(meta);
@@ -425,6 +436,8 @@ const DAY = 86_400_000;
 /** Pat, a contact typed in before the update, who said no to the business's mail; Rowan, whose old release marked him unsubscribed. */
 const PAT = 'pat.quinn@harbourline-dental.co.uk';
 const ROWAN = 'rowan.hale@harbourline-dental.co.uk';
+/** Kim, who asks for the brochure on a website form after the update, on no list. */
+const KIM = 'kim.hart@harbourline-dental.co.uk';
 const inDays = (days: number, hour = 10): string => {
   const at = new Date(Date.now() + days * DAY);
   at.setUTCHours(hour, 0, 0, 0);
@@ -477,7 +490,7 @@ function lostOrChanged(was: Map<string, Map<string, Row>>, now: Map<string, Map<
 describe.skipIf(haveAddOns && RELEASES.every(tagged))('the CRM updated from its releases', () => {
   it('needs both releases tagged, and the add-ons as released and as next, built', () => {
     throw new Error(
-      `tags ${RELEASES.filter((one) => !tagged(one)).join(', ') || 'present'}; CRM_ADD_ONS_BEFORE ${BEFORE_REPO ?? 'unset'}, ADD_ONS_REPO ${AFTER_REPO ?? 'unset'}: each needs Invoices and Inventory built`,
+      `tags ${RELEASES.filter((one) => !tagged(one)).join(', ') || 'present'}; CRM_ADD_ONS_BEFORE ${BEFORE_REPO ?? 'unset'}, ADD_ONS_REPO ${AFTER_REPO ?? 'unset'}: each needs Invoices and Inventory built, the next one Forms too`,
     );
   });
 });
@@ -497,10 +510,11 @@ for (const [dialect, reachable] of LEGS) {
       let rulesBefore: Record<string, boolean> = {};
       let updateReply: { derived?: { filled: { table: string; column: string; rows: number }[]; skipped: unknown[] } } = {};
       const has21 = from !== '0.2.0';
-      // 0.2.2 asks for the add-ons at 1.0.14: an install of it had them, and their next release is one patch up.
-      const fromNew = from === '0.2.2';
-      const installedAddOns = fromNew ? after : before;
-      const nextAddOns = fromNew ? (Object.fromEntries(ADD_ONS.map((key) => [key, bumped(after[key], after[key])])) as typeof after) : after;
+      /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 already has the mark of the line and the count of won deals. */
+      const has22 = from === '0.2.2' || from === '0.2.3';
+      const has23 = from === '0.2.3';
+      const installedAddOns = before;
+      const nextAddOns = after;
 
       const url = (ref: string, rest = '') => `/api/v1/data/${s.connectionId}/${s.t(`crm_${ref}`)}${rest}`;
       const as = (person: string, method: string, path: string, payload?: unknown) => s.app.inject({ method: method as 'GET', url: path, headers: { cookie: cookie[person]! }, ...(payload === undefined ? {} : { payload: payload as Record<string, unknown> }) });
@@ -536,6 +550,11 @@ for (const [dialect, reachable] of LEGS) {
         const res = await as('owner', 'GET', '/api/v1/apps/crm/parts');
         expect(res.statusCode, res.body).toBe(200);
         return Object.fromEntries((res.json() as { parts: { id: string; on: boolean }[] }).parts.map((part) => [part.id, part.on]));
+      };
+      const waitingFor = async (part: string): Promise<string[]> => {
+        const res = await as('owner', 'GET', '/api/v1/apps/crm/parts');
+        expect(res.statusCode, res.body).toBe(200);
+        return ((res.json() as { parts: { id: string; waiting?: { key: string }[] }[] }).parts.find((one) => one.id === part)?.waiting ?? []).map((one) => one.key);
       };
       const rules = async (): Promise<Record<string, boolean>> => Object.fromEntries((await automationsRepo(s.meta).listManagedBy('crm', s.connectionId)).map((rule) => [rule.templateKey ?? rule.id, rule.enabled]));
       const upload = async (path: string, bytes: Uint8Array) => {
@@ -673,10 +692,10 @@ for (const [dialect, reachable] of LEGS) {
 
       // KNOWN ENGINE GAP, kept failing on purpose until the engine closes it: an add-on's update adds its columns as an app's
       // does, but has no stage that works out the derived ones for the rows already there (the app's update does: E20).
-      // Inventory's next version copies an order's expected day onto each delivery; a delivery begun before the update keeps
-      // it empty, so once posted it cannot say whether it was late, and the supplier scorecard leaves it out.
-      // (An install of 0.2.2 had the Inventory that copies the day already: there is no gap to show.)
-      (fromNew ? it.skip : it.fails)('KNOWN GAP: a delivery begun before Inventory\'s update takes the day its order expected it', async () => {
+      // Inventory from 1.0.14 copies an order's expected day onto each delivery; a delivery begun before an update to it
+      // keeps it empty, so once posted it cannot say whether it was late, and the supplier scorecard leaves it out.
+      // (An install whose Inventory copies the day already, as every one here from 1.0.14 does, has no gap to show.)
+      (copiesExpectedDay(installedAddOns.inventory) ? it.skip : it.fails)('KNOWN GAP: a delivery begun before Inventory\'s update takes the day its order expected it', async () => {
         const receipts = await s.rows('select r.id, r.expected_on as got, p.expected_on as want from inventory_receipts r join inventory_purchase_orders p on p.id = r.po_id');
         expect(receipts.filter((row) => plainValue(row['got']) !== plainValue(row['want'])).map((row) => `${String(row['id'])}: ${String(plainValue(row['got']))}, the order says ${String(plainValue(row['want']))}`).slice(0, 10)).toEqual([]);
       }, 600_000);
@@ -689,26 +708,24 @@ for (const [dialect, reachable] of LEGS) {
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
         const want = widerGrants(was.manifest, now.manifest);
         const asked = await as('owner', 'POST', '/api/v1/apps/crm/update', {});
-        if (want.length === 0) {
-          // From 0.2.2 no role reads more of an add-on's table, so there is nothing to ask: the update goes. (What 0.2.3
-          // widens is the app's own tables: the marketer reads a contact's address, the crew and the office a signer's
-          // name. An update of a packaged app asks nothing of its own tables' grants.)
-          expect(fromNew).toBe(true);
-          expect(asked.statusCode, asked.body).toBe(200);
-          updateReply = asked.json() as typeof updateReply;
-        } else {
-          expect(asked.statusCode, asked.body).toBe(422);
-          const named = (asked.json() as { error: { code: string; details: { roleTables: { role: string; addOn: string; table: string; wider: { actions?: string[]; columns?: string[] } }[] } } }).error;
-          const asWider = named.details.roleTables.map((grant) => ({ role: grant.role, addOn: grant.addOn, table: grant.table, actions: grant.wider.actions ?? [], columns: grant.wider.columns ?? [] })).sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`));
-          // Inventory's receipts, read by Supply's three roles (the scorecard), is one of them from 0.2.0 and 0.2.1.
-          expect(want.filter((grant) => grant.table === 'receipts').map((grant) => grant.role).sort()).toEqual(['admin', 'ops-manager', 'read-only']);
-          expect(asWider).toEqual(want);
-          // Refused before anything moved.
-          expect(lostOrChanged(rowsBefore, await everyRow(s))).toEqual([]);
-          const updated = await as('owner', 'POST', '/api/v1/apps/crm/update', { roleTables: true });
-          expect(updated.statusCode, updated.body).toBe(200);
-          updateReply = updated.json() as typeof updateReply;
-        }
+        expect(asked.statusCode, asked.body).toBe(422);
+        const named = (asked.json() as { error: { code: string; details: { roleTables: { role: string; addOn: string; table: string; wider: { actions?: string[]; columns?: string[] } }[] } } }).error;
+        const asWider = named.details.roleTables.map((grant) => ({ role: grant.role, addOn: grant.addOn, table: grant.table, actions: grant.wider.actions ?? [], columns: grant.wider.columns ?? [] })).sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`));
+        // From every release: the five roles that read the aftercare calls read when a job's survey went (Forms'
+        // invitations), though no install has Forms yet; never who it went to.
+        const invitations = want.filter((grant) => grant.addOn === 'forms' && grant.table === 'invitations');
+        expect(invitations.map((grant) => [grant.role, grant.actions]).sort()).toEqual(['account-manager', 'admin', 'read-only', 'rep', 'sales-manager'].map((role) => [role, ['read']]));
+        for (const grant of invitations) expect(grant.columns, grant.role).not.toContain('email');
+        // Inventory's receipts, read by Supply's three roles (the scorecard), from 0.2.0 and 0.2.1 only.
+        expect(want.filter((grant) => grant.table === 'receipts').map((grant) => grant.role).sort()).toEqual(has22 ? [] : ['admin', 'ops-manager', 'read-only']);
+        // And from those two, the crew's read of Inventory's items (a van's load names the item).
+        expect(want.filter((grant) => grant.table !== 'receipts' && grant.table !== 'invitations').map((grant) => `${grant.role}/${grant.addOn}/${grant.table}`)).toEqual(has22 ? [] : ['crew/inventory/items']);
+        expect(asWider).toEqual(want);
+        // Refused before anything moved.
+        expect(lostOrChanged(rowsBefore, await everyRow(s))).toEqual([]);
+        const updated = await as('owner', 'POST', '/api/v1/apps/crm/update', { roleTables: true });
+        expect(updated.statusCode, updated.body).toBe(200);
+        updateReply = updated.json() as typeof updateReply;
         await s.reread();
         const installed = (await s.meta.db.selectFrom('adminium_manifests').select(['version']).where('manifestKey', '=', 'crm').executeTakeFirst()) as { version: string } | undefined;
         expect(installed?.version).toBe(NEXT);
@@ -727,9 +744,11 @@ for (const [dialect, reachable] of LEGS) {
         expect(Object.keys(after).sort()).toEqual(now.manifest.modules.map((part) => part.id).sort());
         for (const [part, on] of Object.entries(partsBefore)) expect([part, after[part]]).toEqual([part, on]);
         const arrived = Object.keys(after).filter((part) => !(part in partsBefore));
-        expect(arrived.sort()).toEqual(has21 ? [] : ['aftercare', 'fleet', 'jobs', 'showroom']);
+        expect(arrived.sort()).toEqual(has21 ? ['surveys'] : ['aftercare', 'fleet', 'jobs', 'showroom', 'surveys']);
         for (const part of arrived) expect([part, after[part]]).toEqual([part, false]);
         expect(after[has21 ? 'showroom' : 'inbox']).toBe(false);
+        // Surveys waits for Forms, which no install has yet.
+        expect(await waitingFor('surveys')).toEqual(['forms']);
 
         const nowRules = await rules();
         const shipped = new Map((now.manifest.automations ?? []).map((rule) => [rule.key, rule.enabled !== false]));
@@ -742,18 +761,23 @@ for (const [dialect, reachable] of LEGS) {
         // "Refused" was merged into "given": an install that switched it on hears the decision through "given" now.
         expect(nowRules['approval-refused']).toBeUndefined();
         for (const [key, on] of shipped) if (!(key in rulesBefore)) expect([key, nowRules[key]]).toEqual([key, on]);
+        // 0.2.4's two arrive off: the brochure asked on a website form, and the survey after a sign-off.
+        expect([rulesBefore['brochure-asked'], rulesBefore['survey-after-sign-off']]).toEqual([undefined, undefined]);
+        expect([nowRules['brochure-asked'], nowRules['survey-after-sign-off']]).toEqual([false, false]);
       });
 
       it('every derived column the update adds holds, on every row there, the value its rule gives', async () => {
         const { derived } = addedColumns(was.manifest, now.manifest);
         const ids = derived.map((added) => `${added.table}.${added.column.ref}`).sort();
-        // 0.2.3 adds one: how many of a contact's deals are won, who counts as a customer.
+        // 0.2.3 adds one: how many of a contact's deals are won, who counts as a customer. 0.2.4 adds none.
         expect(ids).toEqual(
-          fromNew
-            ? ['contacts.won_deals']
-            : has21
-              ? ['contacts.won_deals', 'deal_stock_needs.crew_id', 'follow_ups.on_deal', 'job_visits.deal_id', 'jobs.deal_owner_id', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id']
-              : ['contacts.won_deals', 'deal_stock_needs.crew_id', 'deals.job_count', 'follow_ups.on_deal', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id'],
+          has23
+            ? []
+            : has22
+              ? ['contacts.won_deals']
+              : has21
+                ? ['contacts.won_deals', 'deal_stock_needs.crew_id', 'follow_ups.on_deal', 'job_visits.deal_id', 'jobs.deal_owner_id', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id']
+                : ['contacts.won_deals', 'deal_stock_needs.crew_id', 'deals.job_count', 'follow_ups.on_deal', 'quotes.deal_owner_id', 'quotes.deal_state', 'site_visits.deal_owner_id'],
         );
         // What the engine says it filled and left is not in the update's reply (its schema keeps only app, from, to, pruned):
         // when it is, it must have left none. The values below are the proof either way.
@@ -797,8 +821,8 @@ for (const [dialect, reachable] of LEGS) {
         }
         expect(wrong.slice(0, 30)).toEqual([]);
         // Rows whose source is set were there to fill, for each the plan names: not a check of empty tables.
-        const filled = fromNew ? [] : ['quotes.deal_state', 'quotes.deal_owner_id', 'site_visits.deal_owner_id', 'follow_ups.on_deal', ...(has21 ? ['jobs.deal_owner_id', 'job_visits.deal_id'] : ['deals.job_count'])];
-        for (const name of [...filled, 'contacts.won_deals']) expect([name, checked[name]! > 0]).toEqual([name, true]);
+        const filled = has22 ? [] : ['quotes.deal_state', 'quotes.deal_owner_id', 'site_visits.deal_owner_id', 'follow_ups.on_deal', ...(has21 ? ['jobs.deal_owner_id', 'job_visits.deal_id'] : ['deals.job_count'])];
+        for (const name of [...filled, ...(has23 ? [] : ['contacts.won_deals'])]) expect([name, checked[name]! > 0]).toEqual([name, true]);
         // A customer made before the update counts as one: the contact of Dana's deal won before it, and of the sample's won deals.
         const customer = Number((await one(`select contact_id from crm_deals where id = ${String(typed['wonDeal'])}`))['contact_id']);
         const won = Number((await one(`select count(*) as c from crm_deals where contact_id = ${String(customer)} and state = 'won'`))['c']);
@@ -829,9 +853,17 @@ for (const [dialect, reachable] of LEGS) {
         const { plain } = addedColumns(was.manifest, now.manifest);
         // 0.2.3's: the mark of the line, on contacts and enquiries. Every row there before it carries none: nobody brought
         // in before was told they could say no where we took their address, so nobody is an existing customer by it.
-        if (fromNew) expect(plain.map((added) => `${added.table}.${added.column.ref}`).sort()).toEqual(['contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at']);
+        // 0.2.4's: what a website form says of an enquiry and the brochure it asked, the outbox's enquiry, whether a piece of
+        // feedback came from the survey, and the brochure's two settings: none set on a row there before.
+        const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
+        const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
+        if (has23) expect(ids).toEqual(ours);
+        else if (has22) expect(ids).toEqual([...ours, 'contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at'].sort());
         else expect(plain.length).toBeGreaterThan(20);
-        for (const ref of ['contacts', 'enquiries']) expect(Number((await one(`select count(*) as c from crm_${ref} where opt_out_offered_at is not null`))['c']), ref).toBe(0);
+        // (0.2.0 had no feedback: the table is new to it, the column with it.)
+        for (const id of ours.filter((one) => has21 || !one.startsWith('feedback.'))) expect(ids, id).toContain(id);
+        // (From 0.2.3 the mark is the server's own on a row typed there: kept as it was, above.)
+        if (!has23) for (const ref of ['contacts', 'enquiries']) expect(Number((await one(`select count(*) as c from crm_${ref} where opt_out_offered_at is not null`))['c']), ref).toBe(0);
         const wrong: string[] = [];
         for (const { table, column } of plain) {
           const want = column.default === undefined ? null : plainValue(column.default);
@@ -846,11 +878,12 @@ for (const [dialect, reachable] of LEGS) {
       });
 
       it('carries each old "unsubscribed" mark onto the do-not-email list; the quote still reaches Pat on it; the referral\'s thanks goes to her and its code does not', async () => {
-        // The carry: one entry for each contact the release marked unsubscribed that has an address, said why.
+        // The carry: one entry for each contact the release marked unsubscribed that has an address, said why. It was 0.2.3's
+        // update that carried them: from 0.2.3 (which reads that column no more) there is nothing left to carry.
         const marked = (await s.rows('select email from crm_contacts where unsubscribed_at is not null and email is not null')).map((row) => String(row['email']).toLowerCase()).sort();
         expect(marked).toContain(ROWAN);
         const list = (await as('owner', 'GET', '/api/v1/consent/stop-list?reason=old-mark&limit=200')).json() as { data: { entries: { address: string | null; reason: string }[]; total: number } };
-        expect(list.data.entries.map((entry) => entry.address ?? '').sort()).toEqual(marked);
+        expect(list.data.entries.map((entry) => entry.address ?? '').sort()).toEqual(has23 ? [] : marked);
         // Pat, on the list by her own link, is there once and for her own reason.
         const pat = (await as('owner', 'GET', `/api/v1/consent/stop-list?q=${encodeURIComponent('pat.quinn')}`)).json() as { data: { entries: { address: string | null; reason: string }[] } };
         expect(pat.data.entries.map((entry) => [entry.address, entry.reason])).toEqual([[PAT, 'link']]);
@@ -911,10 +944,45 @@ for (const [dialect, reachable] of LEGS) {
         expect(said(await patch('dana', 'deals', typed['deal']!, { typed_amount: 4100 }))).toBe('ok');
       });
 
+      it('Forms installed after the update: Surveys waits for nothing and is on; its invitations read as a rep and not the operations manager; the brochure goes, and stops at the do-not-email list', async () => {
+        await upload('/api/v1/add-ons/upload', addOnTarball(formsNext!));
+        const added = await as('owner', 'POST', '/api/v1/add-ons', { key: 'forms', version: formsNext!.version, attachTo: ['crm'] });
+        expect(added.statusCode, added.body).toBe(200);
+        await s.jobs();
+        await s.reread();
+        // Surveys ships on: it waited only for Forms, and is on once Forms is there. Its rule stays off until the owner says.
+        expect(await waitingFor('surveys')).toEqual([]);
+        expect((await parts())['surveys']).toBe(true);
+        expect((await rules())['survey-after-sign-off']).toBe(false);
+        // The grant the owner allowed on the update: when a job's survey went, read by a rep; never by the operations manager.
+        const invitations = `/api/v1/data/${s.connectionId}/${s.t('forms_invitations')}?limit=1`;
+        const read = await as('dana', 'GET', invitations);
+        expect(read.statusCode, read.body).toBe(200);
+        expect((await as('ada', 'GET', invitations)).statusCode).toBe(403);
+        // The brochure: the owner sets its link and whom to ring, and switches its rule on. Two enquiries ask for it, as a
+        // website form would put them: Kim's goes; Pat, on the do-not-email list, gets none (service mail with the
+        // newsletter's purpose, stopped there by Adminium 0.3.42), where her quote above still went.
+        const settings = await one('select id from crm_settings order by id');
+        expect(said(await patch('owner', 'settings', Number(settings['id']), { brochure_link: 'https://meridian-workplace.co.uk/brochure.pdf', brochure_follow_up_owner_id: id['dana'] }))).toBe('ok');
+        const rule = (await automationsRepo(s.meta).listManagedBy('crm', s.connectionId)).find((one) => one.templateKey === 'brochure-asked');
+        expect(rule, 'the brochure rule').toBeDefined();
+        expect(said(await as('owner', 'PATCH', `/api/v1/automations/${rule!.id}`, { enabled: true }))).toBe('ok');
+        // The rule is the Inbox's: an owner of 0.2.0 who left the Inbox off switches it on first.
+        if (!has21) expect(said(await as('owner', 'PUT', '/api/v1/apps/crm/parts/inbox', { on: true }))).toBe('ok');
+        const asks = async (person: string, email: string) => made(await post('owner', 'enquiries', { company_name: 'Harbourline Dental', person, email, brochure: 'yes', source: 'form', from_form: 'Website form' }));
+        const kim = await asks('Kim Hart', KIM);
+        const pat = await asks('Pat Quinn', PAT);
+        // A stopped mail keeps no address.
+        expect(await outboxOf(`kind = 'brochure' and enquiry_id in (${String(kim)}, ${String(pat)})`)).toEqual([
+          ['brochure', KIM, 'sent', null],
+          ['brochure', null, 'skipped', 'Not sent: on the do-not-email list'],
+        ]);
+      }, 600_000);
+
       it('a later update carries the old marks again and adds no entry: each was put on the list once', async () => {
         const count = async (): Promise<number> => ((await as('owner', 'GET', '/api/v1/consent/stop-list?reason=old-mark&limit=200')).json() as { data: { total: number } }).data.total;
         const before = await count();
-        expect(before).toBeGreaterThan(0);
+        expect(before > 0).toBe(!has23);
         // The same app numbered one patch up, as the next release would carry the same column.
         const later = { ...now.manifest, version: NEXT.replace(/\d+$/, (patch) => String(Number(patch) + 1)) };
         await upload('/api/v1/apps/upload', appTarball(later, now.files));

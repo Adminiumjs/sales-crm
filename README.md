@@ -174,6 +174,32 @@ The tests check the manifest against Adminium's own validator, a copy of which i
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
 
+## Updating to 0.2.4
+
+0.2.4 needs Adminium 0.3.42 and suggests the add-ons at 1.0.15, Forms among them (ticked). Update
+Invoices and Inventory first; Forms can come before or after the CRM. Every row is kept as it was,
+and nothing is switched on for you:
+
+- **The update asks you to allow one thing:** the admin, the sales manager, the rep, the account
+  manager and the read-only role read when a job's survey went and whether it came back (Forms'
+  invitations; never the address it went to). Allow it and the update goes; refuse and nothing
+  changes. It is asked even before Forms is installed.
+- **Website forms.** An answer to a Forms form whose answers become enquiries arrives in the Team
+  inbox as an enquiry, carrying the form's name ("Website form · …"), the day the person wants and
+  whether they asked for the brochure. New columns `from_form`, `wanted_on`, `brochure` and
+  `brochure_link` on enquiries, and `enquiry_id` on the outbox; every row there before holds none.
+- **The brochure.** Settings has an Inbox tab: the brochure's link, and who rings an enquirer
+  nobody claimed. The rule "An enquiry asks for the brochure" arrives **off**. Switched on, it
+  e-mails the link (service mail for the newsletter's purpose: an address on the do-not-email
+  list, or a person who said no to the newsletter, gets none) and books the call two days on.
+- **Surveys** is a new part that waits for Forms: it is on once Forms is installed. The rule "A
+  job is signed off: the fit-out survey 2 days later" arrives **off**, so no survey goes until you
+  switch it on. An answer becomes the job's customer feedback,
+  marked "From the survey" (`from_survey`); the aftercare call says when the survey went and
+  whether it came back.
+- **What still goes:** quotes, bookings, deliveries and signed copies are service mail with no
+  purpose, and still reach an address on the do-not-email list.
+
 ## Updating to 0.2.3
 
 0.2.3 needs Adminium 0.3.38, the release that e-mails a business's contacts (newsletters, the
@@ -245,7 +271,7 @@ kept as it was; what changes:
 
 The app was released in stages: 0.2.0 was stage 1 (the first six parts); 0.2.1 was stage 3, every
 part, and updated a 0.2.0 install with its data in place (the four new parts arrive switched off).
-0.2.2 finishes the app (below) and updates a 0.2.0 or 0.2.1 install the same way; 0.2.3 updates any of the three. `whole/` is the app with every stage, and the only place to edit a table, a
+0.2.2 finishes the app (below) and updates a 0.2.0 or 0.2.1 install the same way; 0.2.3 updates any of the three, and 0.2.4 any of the four. `whole/` is the app with every stage, and the only place to edit a table, a
 role, a page or the sample; `stage.json` says which parts each stage brings. After a change there:
 
 ```bash
