@@ -61,14 +61,14 @@ describe("a call", () => {
   });
 
   it("lists the past due first (the oldest first), then the coming ones (soonest first), then the made ones (latest first)", () => {
-    const call = (id: number, state: Call["state"], dueAt: string): Call => ({ id, jobId: null, job: null, ownerId: null, dueAt, text: null, callNo: 1, outcome: null, done: state === "made", doneAt: null, state });
+    const call = (id: number, state: Call["state"], dueAt: string): Call => ({ id, jobId: null, job: null, ownerId: null, dueAt, text: null, callNo: 1, outcome: null, done: state === "made", doneAt: null, state, survey: null });
     const sorted = [call(1, "made", "2026-05-01T09:00:00Z"), call(2, "soon", "2026-08-22T09:00:00Z"), call(3, "late", "2026-07-20T09:00:00Z"), call(4, "made", "2026-06-03T09:00:00Z"), call(5, "soon", "2026-08-06T09:00:00Z"), call(6, "late", "2026-07-01T09:00:00Z")].sort(byCallOrder);
     expect(sorted.map((one) => one.id)).toEqual([6, 3, 5, 2, 4, 1]);
   });
 });
 
 describe("an answer, a complaint, a claim", () => {
-  const answer = (score: number, repliedAt: string | null): Answer => ({ id: score, jobId: null, job: null, score, text: null, theme: null, answeredOn: null, repliedAt, fix: null });
+  const answer = (score: number, repliedAt: string | null): Answer => ({ id: score, jobId: null, job: null, score, text: null, theme: null, answeredOn: null, repliedAt, fix: null, fromSurvey: false });
 
   it("is in a filter by its score and whether anybody replied", () => {
     expect(["all", "high", "low", "unreplied"].map((filter) => inAnswerFilter(answer(5, null), filter as never))).toEqual([true, true, false, true]);
@@ -106,15 +106,17 @@ interface Fake {
 }
 
 /** A session over fixed rows: a list answers the table's rows (cut by `limit`), a figure answers what `answer` says. */
-function fake(rows: Record<string, Row[]>, answer: (figure: Figure) => unknown, opts: { cannot?: string[]; update?: (ref: string, id: unknown) => Saved; get?: Row | null } = {}): Fake {
+function fake(rows: Record<string, Row[]>, answer: (figure: Figure) => unknown, opts: { cannot?: string[]; off?: string[]; failing?: string[]; update?: (ref: string, id: unknown) => Saved; get?: Row | null } = {}): Fake {
   const lists: Fake["lists"] = [];
   const figures: Figure[] = [];
   const updates: Fake["updates"] = [];
   const session = {
     now: () => NOW,
     can: (ref: string) => !(opts.cannot ?? []).includes(ref),
+    part: (id: string) => !(opts.off ?? []).includes(id),
     list: async (ref: string, q: ListQuery = {}): Promise<Page> => {
       lists.push({ ref, q });
+      if ((opts.failing ?? []).includes(ref)) throw new Error("refused");
       const all = rows[ref] ?? [];
       return { rows: all.slice(0, q.limit ?? 200), total: all.length, next: null };
     },
@@ -222,6 +224,42 @@ describe("Aftercare calls", () => {
     expect(data.settings.aftercareDays).toBe(28);
   });
 
+  // Forms' invitations, newest first as the server orders them: job 6 was sent one and answered it; job 8 one, not yet answered.
+  const INVITATIONS: Row[] = [
+    { record_key: "8", invited_at: "2026-07-27T09:00:00Z", answered_at: null },
+    { record_key: "6", invited_at: "2026-05-08T09:00:00Z", answered_at: "2026-05-10T19:20:00Z" },
+    { record_key: "6", invited_at: "2026-05-01T09:00:00Z", answered_at: null },
+  ];
+  const figures = () => ({ value: 0 });
+
+  it("says when each call's job was sent the survey and whether it came back, from Forms' invitations by the job they name, never who it went to", async () => {
+    const { session, lists } = fake({ ...BASE, follow_ups: CALLS, "forms:invitations": INVITATIONS }, figures);
+    const data = await readCalls(session);
+    expect(Object.fromEntries(data.rows.map((call) => [call.id, call.survey]))).toEqual({
+      9: { sentAt: "2026-05-08T09:00:00Z", answeredAt: "2026-05-10T19:20:00Z" },
+      6: { sentAt: "2026-05-08T09:00:00Z", answeredAt: "2026-05-10T19:20:00Z" },
+      8: { sentAt: "2026-07-27T09:00:00Z", answeredAt: null },
+      1: null,
+    });
+    const asked = lists.find((one) => one.ref === "forms:invitations")!.q;
+    expect(asked.where).toEqual({ and: [{ column: "record_table", op: "eq", value: "crm:jobs" }, { column: "record_key", op: "in", value: ["1", "6", "8"] }] });
+    expect(asked.select).toEqual(["record_key", "invited_at", "answered_at"]);
+    expect(asked.order).toEqual(["invited_at.desc"]);
+  });
+
+  it("asks nothing of Forms while Surveys is off or the reader reads no invitations, and says nothing when the read fails", async () => {
+    for (const opts of [{ off: ["surveys"] }, { cannot: ["forms:invitations"] }]) {
+      const { session, lists } = fake({ ...BASE, follow_ups: CALLS, "forms:invitations": INVITATIONS }, figures, opts);
+      const data = await readCalls(session);
+      expect(lists.some((one) => one.ref === "forms:invitations"), JSON.stringify(opts)).toBe(false);
+      expect(data.rows.every((call) => call.survey === null)).toBe(true);
+    }
+    const { session } = fake({ ...BASE, follow_ups: CALLS }, figures, { failing: ["forms:invitations"] });
+    const data = await readCalls(session);
+    expect(data.rows).toHaveLength(4);
+    expect(data.rows.every((call) => call.survey === null)).toBe(true);
+  });
+
   it("makes a call once: done with its outcome, only while it still reads as not done", async () => {
     const { session, updates } = fake(BASE, () => ({ value: 0 }));
     expect(await makeCall(session, 9, "more-work")).toEqual({ state: "saved", mine: true });
@@ -242,8 +280,8 @@ describe("Aftercare calls", () => {
 
 describe("What customers said", () => {
   const ANSWERS: Row[] = [
-    { id: 2, job_id: 8, score: 5, text: "In and out in a morning.", theme: "Drawings matched the room", answered_on: "2026-07-27", replied_at: null, fix_written: null },
-    { id: 3, job_id: 6, score: 5, text: "Two floors, no fuss.", theme: null, answered_on: "2026-05-09", replied_at: "2026-05-10T09:00:00Z", fix_written: null },
+    { id: 2, job_id: 8, score: 5, text: "In and out in a morning.", theme: "Drawings matched the room", answered_on: "2026-07-27", replied_at: null, fix_written: null, from_survey: 1 },
+    { id: 3, job_id: 6, score: 5, text: "Two floors, no fuss.", theme: null, answered_on: "2026-05-09", replied_at: "2026-05-10T09:00:00Z", fix_written: null, from_survey: null },
   ];
 
   it("asks every figure of the server, and names the signed-off jobs with no answer yet", async () => {
@@ -273,6 +311,16 @@ describe("What customers said", () => {
       [2, "J-08", "2026-07-27"],
       [3, "J-06", "2026-05-09"],
     ]);
+  });
+
+  it("marks an answer that came from the fit-out survey, and one typed by hand as not", async () => {
+    const { session, lists } = fake({ ...BASE, feedback: ANSWERS }, (figure) => (figure.shape === "categorical" ? grouped([]) : { value: 0 }));
+    const data = await readFeedback(session);
+    expect(data.rows.map((row) => [row.id, row.fromSurvey])).toEqual([
+      [2, true],
+      [3, false],
+    ]);
+    expect(lists.find((one) => one.ref === "feedback")?.q.select).toContain("from_survey");
   });
 
   it("cannot say which jobs are waiting when it cannot read the sign-offs", async () => {

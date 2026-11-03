@@ -13,6 +13,12 @@
  * its company and contact (copied from the won deal), the day it was signed
  * off and the day it was fitted are read only where the reader reads those
  * tables, and a row whose job cannot be read is still listed, without them.
+ *
+ * A SURVEY. With Surveys on (it waits for the Forms & surveys add-on), a job
+ * signed off may be sent the fit-out survey: the call says when it went and
+ * whether it came back, read from Forms' invitations by the job they name
+ * (`crm:jobs` and its key; when and whether only, never who it went to), and
+ * an answer that came from it is marked so (`from_survey`).
  */
 import type { Condition, Grouped, Row, Saved, StaffError, StaffSession } from "../../staffSession.ts";
 import { noValue } from "../../staffSession.ts";
@@ -204,6 +210,45 @@ export interface Call {
   done: boolean;
   doneAt: string | null;
   state: CallState;
+  /** The job's survey, where Surveys is on and the reader may see it: when it went, and when it came back. */
+  survey: Survey | null;
+}
+
+export interface Survey {
+  sentAt: string;
+  answeredAt: string | null;
+}
+
+/** How Forms names one of this app's jobs on an invitation: the app's key and the table's own short name. */
+export const JOBS_REF = "crm:jobs";
+
+interface InvitationRow extends Row {
+  record_key: string | number | null;
+  invited_at: string | null;
+  answered_at: string | null;
+}
+
+/**
+ * The latest survey each of these jobs was sent, by job. Nothing where Surveys is off or the reader reads no
+ * invitations, and nothing (not a refusal) when the read fails: the line is a help, the call is the work.
+ */
+export async function readSurveys(session: StaffSession, jobIds: readonly number[]): Promise<Map<number, Survey>> {
+  const out = new Map<number, Survey>();
+  if (jobIds.length === 0 || !session.part("surveys") || !session.can("forms:invitations", "read")) return out;
+  const page = await session
+    .list<InvitationRow>("forms:invitations", {
+      select: ["record_key", "invited_at", "answered_at"],
+      where: { and: [{ column: "record_table", op: "eq", value: JOBS_REF }, { column: "record_key", op: "in", value: [...new Set(jobIds)].map(String) }] },
+      order: ["invited_at.desc"],
+      limit: LISTED,
+    })
+    .catch(() => null);
+  for (const row of page?.rows ?? []) {
+    const job = idOf(row.record_key);
+    if (job === null || row.invited_at === null || out.has(job)) continue;
+    out.set(job, { sentAt: row.invited_at, answeredAt: row.answered_at ?? null });
+  }
+  return out;
 }
 
 interface CallRow extends Row {
@@ -234,11 +279,11 @@ export function byCallOrder(a: Call, b: Call): number {
   return (a.state === "made" ? -diff : diff) || a.id - b.id;
 }
 
-const callOf = (row: CallRow, jobs: Map<number, Job>, now: Date): Call => {
+const callOf = (row: CallRow, jobs: Map<number, Job>, now: Date, surveys: Map<number, Survey> = new Map()): Call => {
   const jobId = idOf(row.job_id);
   const done = isTrue(row.done);
   const outcome = OUTCOMES.includes(row.outcome as Outcome) ? (row.outcome as Outcome) : null;
-  return { id: Number(row.id), jobId, job: jobId === null ? null : (jobs.get(jobId) ?? null), ownerId: textOf(row.owner_id), dueAt: row.due_at, text: textOf(row.text), callNo: row.call_no === null ? null : num(row.call_no), outcome, done, doneAt: row.done_at, state: callState(done, row.due_at, now) };
+  return { id: Number(row.id), jobId, job: jobId === null ? null : (jobs.get(jobId) ?? null), ownerId: textOf(row.owner_id), dueAt: row.due_at, text: textOf(row.text), callNo: row.call_no === null ? null : num(row.call_no), outcome, done, doneAt: row.done_at, state: callState(done, row.due_at, now), survey: jobId === null ? null : (surveys.get(jobId) ?? null) };
 };
 
 const CALL_SELECT = ["id", "job_id", "owner_id", "due_at", "text", "call_no", "outcome", "done", "done_at"];
@@ -268,8 +313,9 @@ export async function readCalls(session: StaffSession): Promise<Calls> {
     session.list<CallRow>("follow_ups", { select: CALL_SELECT, where: AFTERCARE, order: ["due_at", "id"], limit: LISTED, count: "exact" }),
     readSettings(session),
   ]);
-  const [jobs, names] = await Promise.all([readJobs(session, page.rows.flatMap((row) => (idOf(row.job_id) === null ? [] : [Number(row.job_id)]))), readNames(session, page.rows.map((row) => row.owner_id))]);
-  const rows = page.rows.map((row) => callOf(row, jobs, now)).sort(byCallOrder);
+  const jobIds = page.rows.flatMap((row) => (idOf(row.job_id) === null ? [] : [Number(row.job_id)]));
+  const [jobs, names, surveys] = await Promise.all([readJobs(session, jobIds), readNames(session, page.rows.map((row) => row.owner_id)), readSurveys(session, jobIds)]);
+  const rows = page.rows.map((row) => callOf(row, jobs, now, surveys)).sort(byCallOrder);
   return { total, made, late, soon, moreWork, rows, names, settings, cut: (page.total ?? rows.length) > rows.length };
 }
 
@@ -306,6 +352,8 @@ export interface Answer {
   answeredOn: string | null;
   repliedAt: string | null;
   fix: string | null;
+  /** The answer came from the fit-out survey, not typed by hand. */
+  fromSurvey: boolean;
 }
 
 interface AnswerRow extends Row {
@@ -317,14 +365,15 @@ interface AnswerRow extends Row {
   answered_on: string | null;
   replied_at: string | null;
   fix_written: string | null;
+  from_survey?: boolean | number | string | null;
 }
 
 const answerOf = (row: AnswerRow, jobs: Map<number, Job>): Answer => {
   const jobId = idOf(row.job_id);
-  return { id: Number(row.id), jobId, job: jobId === null ? null : (jobs.get(jobId) ?? null), score: num(row.score), text: textOf(row.text), theme: textOf(row.theme), answeredOn: dayOf(row.answered_on), repliedAt: row.replied_at, fix: textOf(row.fix_written) };
+  return { id: Number(row.id), jobId, job: jobId === null ? null : (jobs.get(jobId) ?? null), score: num(row.score), text: textOf(row.text), theme: textOf(row.theme), answeredOn: dayOf(row.answered_on), repliedAt: row.replied_at, fix: textOf(row.fix_written), fromSurvey: isTrue(row.from_survey) };
 };
 
-const ANSWER_SELECT = ["id", "job_id", "score", "text", "theme", "answered_on", "replied_at", "fix_written"];
+const ANSWER_SELECT = ["id", "job_id", "score", "text", "theme", "answered_on", "replied_at", "fix_written", "from_survey"];
 
 export type AnswerFilter = "all" | "high" | "low" | "unreplied";
 export const ANSWER_FILTERS: readonly AnswerFilter[] = ["all", "high", "low", "unreplied"];

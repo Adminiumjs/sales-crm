@@ -3,10 +3,12 @@
  * P29): the answers customers gave after a job, their scores, the themes that
  * come up most, and whether somebody has thanked them.
  *
- * The survey e-mail that would ask for these (e-mail 18) waits for the Forms &
- * surveys add-on, so an answer is typed in by hand, by whoever may add one
- * (the account manager and the CRM admin): one a job, and only for a job that
- * was signed off and has none. Every figure is the server's; the theme bars
+ * The survey e-mail that asks for these (e-mail 18) is the Forms & surveys
+ * add-on's, sent by the Surveys part's rule: an answer to it arrives here by
+ * itself, marked "From the survey". Without it, or for a job with no answer,
+ * an answer is typed in by hand, by whoever may add one (the account manager
+ * and the CRM admin): one a job, and only for a job that was signed off and
+ * has none. Every figure is the server's; the theme bars
  * divide a theme's count by the answers' count, two figures it gave.
  */
 import { useMemo, useState } from "react";
@@ -83,8 +85,10 @@ export function Feedback(_props: ScreenProps) {
 
 function FeedbackBody({ data, names, filter, setFilter, canThank, busy, onThank, again }: { data: FeedbackData; names: Record<string, string>; filter: AnswerFilter; setFilter: (filter: AnswerFilter) => void; canThank: boolean; busy: number | null; onThank: (row: Answer) => void; again: boolean }) {
   const t = useT();
-  const { f } = useFacts();
+  const { f, session } = useFacts();
   const shown = data.rows.filter((row) => inAnswerFilter(row, filter));
+  // With Surveys on, answers come from the fit-out survey; typing one in is for a job with none.
+  const how = session.part("surveys") ? "ac.fb.bySurvey" : "ac.fb.byHand";
   const counts: Record<AnswerFilter, number> = { all: data.count, high: data.high, low: data.low, unreplied: data.unreplied };
   // The average to one place, as the design writes a score.
   const average = data.average === null ? null : Math.round(data.average * 10) / 10;
@@ -95,7 +99,7 @@ function FeedbackBody({ data, names, filter, setFilter, canThank, busy, onThank,
           {data.waiting.length === 0 ? t("ac.fb.waiting.none") : t("ac.fb.waiting", { jobs: data.waiting.map((job) => job.code ?? t("ac.job.hidden")).join(", ") })}
         </p>
       )}
-      <p className="crm-ac-rule">{t("ac.fb.byHand")}</p>
+      <p className="crm-ac-rule" data-testid="fb-how">{t(how)}</p>
       <div className="crm-stats crm-ac-stats">
         <Stat testId="fb-avg" tone="pos" label={t("ac.fb.avg")} value={average === null ? "—" : t("ac.fb.score", { score: f.number(average) })} sub={t("ac.fb.avg.sub", { count: f.number(data.count) }, data.count)} />
         <Stat testId="fb-replied" tone={data.replied === data.count ? "pos" : "warn"} label={t("ac.fb.replied")} value={t("ac.fb.of", { n: f.number(data.replied), all: f.number(data.count) })} sub={t("ac.fb.replied.sub")} />
@@ -118,6 +122,12 @@ function FeedbackBody({ data, names, filter, setFilter, canThank, busy, onThank,
                     <div className="crm-ac-main">
                       <div className="crm-ac-title">
                         <span className="crm-ac-what">{jobLabel(t, job)}</span>
+                        {row.fromSurvey && (
+                          <span className="crm-pill" data-testid="fb-survey">
+                            <Icon name="clipboard-list" size={13} />
+                            {t("ac.fb.fromSurvey")}
+                          </span>
+                        )}
                       </div>
                       <div className="crm-ac-meta">
                         {job !== null && job.company !== null && (
@@ -177,7 +187,7 @@ function FeedbackBody({ data, names, filter, setFilter, canThank, busy, onThank,
               );
             })}
           </ul>
-          {data.rows.length === 0 ? <Empty icon={<Icon name="star" size={21} />} title={t("ac.fb.empty")} body={t("ac.fb.byHand")} /> : shown.length === 0 && <Empty icon={<Icon name="star" size={21} />} title={t("ac.filtered.empty")} />}
+          {data.rows.length === 0 ? <Empty icon={<Icon name="star" size={21} />} title={t("ac.fb.empty")} body={t(how)} /> : shown.length === 0 && <Empty icon={<Icon name="star" size={21} />} title={t("ac.filtered.empty")} />}
           {canThank && data.rows.length > 0 && <p className="crm-ac-note">{t("ac.fb.thank.note")}</p>}
           {data.cut && <p className="crm-ac-note">{t("ac.cut")}</p>}
         </div>

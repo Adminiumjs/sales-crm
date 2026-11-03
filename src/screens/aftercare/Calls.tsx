@@ -3,7 +3,8 @@
  * by the account manager, and what came of the ones made.
  *
  * Every count is the server's, for the reader's own calls; "past due" and
- * "coming up" are told apart by the server's clock. "Made the call" asks what
+ * "coming up" are told apart by the server's clock. With Surveys on, a call
+ * says when its job's survey went and whether it came back. "Made the call" asks what
  * came of it and saves the call as made once (two people pressing at once make
  * one), reading the row back after a lost reply before it says anything.
  */
@@ -121,6 +122,13 @@ function CallsBody({ data, filter, setFilter, canMake, onMake, busy }: { data: C
                     )}
                     {job?.contact != null && <span>{job.contact}</span>}
                     {done !== null && <span className="crm-mono crm-ac-day">{t(job?.signedAt != null ? "ac.calls.signed" : "ac.calls.fitted", { day: day(done) })}</span>}
+                    {call.survey !== null && (
+                      <span className="crm-mono crm-ac-day" data-testid="ac-survey" data-answered={call.survey.answeredAt === null ? "0" : "1"}>
+                        {call.survey.answeredAt === null
+                          ? t("ac.calls.survey.open", { sent: f.date(new Date(call.survey.sentAt)) })
+                          : t("ac.calls.survey.answered", { sent: f.date(new Date(call.survey.sentAt)), answered: f.date(new Date(call.survey.answeredAt)) })}
+                      </span>
+                    )}
                   </div>
                   {call.text !== null && <p className="crm-ac-note-line">{call.text}</p>}
                 </div>
