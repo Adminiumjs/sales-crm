@@ -31297,6 +31297,8 @@
           ],
           "n": 5
         },
+        "perKeyHour": 60,
+        "perIpHour": 10,
         "plainText": [
           {
             "column": "person",
@@ -31885,6 +31887,9 @@
     "settings": {
       "table": "settings",
       "phone": "office_phone"
+    },
+    "purposes": {
+      "brochure": "newsletter"
     }
   },
   "emailTemplates": [

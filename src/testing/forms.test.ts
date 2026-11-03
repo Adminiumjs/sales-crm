@@ -18,14 +18,14 @@ import { PLAIN_TEXT_DIGITS_MOST, PLAIN_TEXT_LONGEST } from "./manifest/public-ac
 const LOCALES = ["en-US", "de-DE", "fr-FR", "da-DK", "cs-CZ", "ar-EG", "zh-CN", "zh-TW"];
 type Column = { ref: string; type: string; nullable?: boolean; maxLength?: number; enum?: string[]; references?: string; rules?: Record<string, unknown>; label?: Record<string, string> };
 type Table = { ref: string; module?: string; columns: Column[] };
-type Entry = { table: string; key?: string; methods: string[]; writable?: string[]; select?: string[]; defaults?: Record<string, unknown>; requires?: string[]; source?: string; module?: string; anonymous?: { perValue?: { columns: string[]; n: number }; plainText?: (string | { column: string; digits?: number; max?: number })[] } };
+type Entry = { table: string; key?: string; methods: string[]; writable?: string[]; select?: string[]; defaults?: Record<string, unknown>; requires?: string[]; source?: string; module?: string; anonymous?: { perValue?: { columns: string[]; n: number }; perKeyHour?: number; perIpHour?: number; plainText?: (string | { column: string; digits?: number; max?: number })[] } };
 type Role = { key: string; permissions: string[]; limits?: Record<string, { writable?: string[]; creatable?: string[] }> };
 interface Doc {
   compatibility: { minAdminiumVersion: string };
   requiredSchema: { tables: Table[] };
   publicAccess: Entry[];
   roles: Role[];
-  outbox: { links: Record<string, string>; recipient: { fallback?: Record<string, string> }; kinds: Record<string, string>; classes: Record<string, string>; producers?: { kind: string }[] };
+  outbox: { links: Record<string, string>; recipient: { fallback?: Record<string, string> }; kinds: Record<string, string>; classes: Record<string, string>; purposes?: Record<string, string>; producers?: { kind: string }[] };
   emailTemplates: { key: string; vars?: string[]; locales: Record<string, { subject: string; blocks: { block: string; data: Record<string, unknown> }[]; footer?: string }> }[];
   automations: { key: string; enabled: boolean; module?: string; name: Record<string, string>; description: Record<string, string>; trigger: Record<string, unknown>; graph: { nodes: Record<string, unknown>[] } }[];
   addOns: { suggests: { key: string; range: string; checked?: boolean; reason: Record<string, string> }[]; features: { id: string; requires: string[]; label: Record<string, string> }[] };
@@ -79,6 +79,9 @@ for (const [name, raw] of [
     it("holds the name and the company to plain text, in the engine's limits, and counts each address a day", () => {
       const caps = forms[0]!.anonymous!;
       expect(caps.perValue).toEqual({ columns: ["email"], n: 5 });
+      // An hour's cap on every form together (one key for the app's forms), and a lower one per visitor than the engine's 60.
+      expect(caps.perKeyHour).toBe(60);
+      expect(caps.perIpHour).toBe(10);
       expect(caps.plainText).toEqual([
         { column: "person", max: 120 },
         { column: "company_name", digits: 4, max: 160 },
@@ -131,6 +134,8 @@ for (const [name, raw] of [
     it("is an e-mail of its own, service mail, to the enquiry's own address, in eight languages with the link as its button", () => {
       expect(doc.outbox.kinds["brochure"]).toBe("crm-brochure");
       expect(doc.outbox.classes["brochure"]).toBe("service");
+      // Sent for the newsletter's purpose: a "no" to it, or the do-not-email list, stops it (anyone can type an address into a form).
+      expect(doc.outbox.purposes?.["brochure"]).toBe("newsletter");
       expect(doc.outbox.links["enquiry"]).toBe("enquiry_id");
       expect(doc.outbox.recipient.fallback).toEqual({ via: "enquiry_id", email: "email", name: "person" });
       expect((doc.outbox.producers ?? []).some((one) => one.kind === "brochure")).toBe(false);

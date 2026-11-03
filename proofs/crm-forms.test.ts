@@ -17,7 +17,10 @@
  *    and no follow-up; on, one service mail to the enquirer with the link in
  *    Settings, and two days on with no deal one follow-up to call them: for
  *    whoever claimed it, else for the person Settings names; with a deal, none;
- *    with no link set, no mail and still the follow-up.
+ *    with no link set, no mail and still the follow-up; never to an address
+ *    on the do-not-email list, nor to a person who said no to the newsletter
+ *    (a stranger can type anyone's address into a form);
+ *  - one visitor makes at most ten enquiries an hour, all forms together.
  *
  * The Forms add-on is the one the add-ons checkout built (`ADD_ONS_REPO`,
  * `packages/forms`), else the engine's own forms fixture: the run says which.
@@ -38,6 +41,7 @@ import { automationsRepo, paymentSettingsRepo, rolesRepo, settingsRepo, usersRep
 import { formsAddOn } from '../../../packages/manifest/test/forms-fixture.js';
 import { recordDeciderTrust } from '../src/add-ons/decider-trust.js';
 import { composeServer, type ComposedServer } from '../src/compose.js';
+import { createConsentService } from '../src/consent/index.js';
 import { decryptSecret, encryptSecret } from '../src/config/secrets.js';
 import { emailSecretKey } from '../src/email/config.js';
 import { emailEnvelopeKey } from '../src/email/send.js';
@@ -123,14 +127,15 @@ describe.each(LEGS)(`the CRM's website forms and brochure, with ${WHICH} — %s`
     await db.insertInto(formsTable).values({ id, ...named, slug, kind: 'form', state: 'live', definition: '{}', settings: '{}', published: JSON.stringify({ definition: SHOWROOM, settings }) } as never).execute();
   };
   /** A stranger's send: a fresh proof for the form, then the answer, from an address of its own. */
-  const send = async (slug: string, values: Record<string, unknown>) => {
-    const challenge = (await composed.app.inject({ method: 'GET', url: `/x/forms/api/${slug}/challenge`, headers: { host: HOST } })).json() as Doc;
-    const proof = typeof challenge.salt === 'string' ? `${challenge.id as string}.${solveProof(challenge.salt, challenge.difficulty as number)}` : 'none';
+  const send = async (slug: string, values: Record<string, unknown>, from?: string) => {
     seq += 1;
+    const remoteAddress = from ?? `198.51.100.${String(seq % 250)}`;
+    const challenge = (await composed.app.inject({ method: 'GET', url: `/x/forms/api/${slug}/challenge`, remoteAddress, headers: { host: HOST } })).json() as Doc;
+    const proof = typeof challenge.salt === 'string' ? `${challenge.id as string}.${solveProof(challenge.salt, challenge.difficulty as number)}` : 'none';
     return composed.app.inject({
       method: 'POST',
       url: `/x/forms/api/${slug}/answers`,
-      remoteAddress: `198.51.100.${String(seq % 250)}`,
+      remoteAddress,
       headers: { host: HOST, origin: ORIGIN, 'x-adminium-proof': proof, 'user-agent': 'Mozilla/5.0 proof' },
       payload: { language: 'en-US', values, query: {}, website: '' },
     });
@@ -372,6 +377,22 @@ describe.each(LEGS)(`the CRM's website forms and brochure, with ${WHICH} — %s`
     expect(await followUps('Fenn')).toEqual([]);
   });
 
+  it.skipIf(!available)('sends no brochure to an address on the do-not-email list, nor to a person who said no to the newsletter', async () => {
+    const consent = createConsentService({ meta: h.meta, secret: TEST_SECRET });
+    await consent.stop.add({ address: 'max@stopped-studio.com', reason: 'link' });
+    await consent.record({ address: 'noa@no-thanks.com', purpose: 'newsletter', source: 'import', state: 'no' });
+    expect((await send('showroom', answer('Max Stopped', 'max@stopped-studio.com'))).statusCode).toBe(200);
+    expect((await send('showroom', answer('Noa Thanks', 'noa@no-thanks.com'))).statusCode).toBe(200);
+    await runJobs();
+    expect(takeMails().filter((mail) => mail.to === 'max@stopped-studio.com' || mail.to === 'noa@no-thanks.com')).toEqual([]);
+    const said = async (email: string) => {
+      const id = Number((await enquiry(email))['id']);
+      return (await rows(`SELECT status, error FROM ${t('outbox')} WHERE kind = 'brochure' AND enquiry_id = ${String(id)}`)).map((one) => [one['status'], one['error']]);
+    };
+    expect(await said('max@stopped-studio.com')).toEqual([['skipped', 'Not sent: on the do-not-email list']]);
+    expect(await said('noa@no-thanks.com')).toEqual([['skipped', 'Not sent: they said no to the newsletter']]);
+  });
+
   it.skipIf(!available)('with no brochure link set, sends nothing and still books the follow-up', async () => {
     await setSettings({ brochure_link: null });
     expect((await send('showroom', answer('Rae Quill', 'rae@quill-house.com'))).statusCode).toBe(200);
@@ -383,5 +404,20 @@ describe.each(LEGS)(`the CRM's website forms and brochure, with ${WHICH} — %s`
     expect((await send('showroom', answer('Sol Tarn', 'sol@tarn-rooms.com', 'no'))).statusCode).toBe(200);
     await runJobs(true);
     expect(await followUps('Tarn')).toEqual([]);
+  });
+
+  it.skipIf(!available)('takes ten enquiries an hour from one visitor, all forms together, and refuses the eleventh', async () => {
+    const visitor = '203.0.113.77';
+    const second = { becomes: { table: tableIds['enquiries']!, map: { qname: 'person', qcompany: 'company_name', qemail: 'email' }, source: { column: 'from_form', value: 'Open day form' } }, limits: { perHour: 200, harder: false } };
+    await insertForm('frm_open_day', 'open-day', second);
+    for (let i = 0; i < 10; i += 1) {
+      const res = await send(i % 2 === 0 ? 'showroom' : 'open-day', answer(`Vic Caller${'abcdefghij'[i]!}`, `vic${String(i)}@caller-works.com`, 'no'), visitor);
+      expect(res.statusCode, `${String(i)}: ${res.body}`).toBe(200);
+    }
+    const eleventh = await send('open-day', answer('Vic Callerx', 'vicx@caller-works.com', 'no'), visitor);
+    expect(eleventh.statusCode, eleventh.body).toBe(429);
+    expect(await rows(`SELECT id FROM ${t('enquiries')} WHERE email = 'vicx@caller-works.com'`)).toEqual([]);
+    // Another visitor is not held by it.
+    expect((await send('open-day', answer('Wyn Other', 'wyn@other-works.com', 'no'), '203.0.113.78')).statusCode).toBe(200);
   });
 });
