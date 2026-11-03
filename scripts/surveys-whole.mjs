@@ -35,7 +35,8 @@
  *  - every role that reads the aftercare calls reads, of Forms' invitations,
  *    when a job's survey went and whether it was answered (no address, no
  *    name): the calls screen says "Survey sent";
- *  - the sample's forms (`sampleData.addOns.forms`): the showroom form, with
+ *  - the sample's forms (`sampleData.addOns.forms`), each loaded closed (or a
+ *    draft) so a fresh install serves none to strangers: the showroom form, with
  *    an answer for each of the main sample's website enquiries that names a
  *    person (each answer names the enquiry it became, which gains the form's
  *    name, the brochure asked and the day that suits); the newsletter
@@ -303,16 +304,31 @@ const LIMITS = { perHour: 200, harder: false };
  * Who a sample form tells is a role: an app's rows for an add-on name no sample person (Dana, Tessa), so the
  * showroom form tells the sales managers and the survey's low scores the CRM admins.
  *
- * No sample form says what its answers become: `becomes.table` is a table's id in this database's own
- * listing (`main.crm_enquiries` on SQLite, another on Postgres and MySQL), and a sample file can name a
- * table only by its stored ref, and only in a column that holds one. The rows the answers became are
- * here all the same, and each answer names its row.
+ * What the answers become names the table by its stored ref (`crm:enquiries`), which Adminium 0.3.42 reads
+ * wherever a table's id is asked (a sample file cannot know the id this database's listing gives it). The
+ * showroom form fills an enquiry from every question a column takes, with its name as the source; the
+ * fit-out survey fills the job's feedback: the score from the stars, the words from the long answer, and the
+ * job from the invitation (a link column is never a question's to fill).
  */
 const settings = {
-  showroom: { becomes: null, tell: [{ kind: "role", id: "crm-sales-manager" }], limits: LIMITS },
+  showroom: {
+    becomes: {
+      table: "crm:enquiries",
+      map: { qname: "person", qemail: "email", qcompany: "company_name", qday: "wanted_on", qsee: "wants", qbrochure: "brochure", qnote: "text" },
+      source: { column: "from_form", value: "Showroom form" },
+    },
+    tell: [{ kind: "role", id: "crm-sales-manager" }],
+    limits: LIMITS,
+  },
   newsletter: { becomes: null, tell: [], limits: LIMITS },
   tradeShow: { becomes: null, tell: [{ kind: "role", id: "crm-sales-manager" }], limits: LIMITS },
-  fitOut: { becomes: null, tell: [{ kind: "role", id: "crm-admin" }], tellWhen: { question: "qrecommend", atMost: 6 }, limits: LIMITS, survey: { mode: "named", linkNames: true, stopAfterDays: 30 } },
+  fitOut: {
+    becomes: { table: "crm:feedback", map: { qstars: "score", qsaid: "text" } },
+    tell: [{ kind: "role", id: "crm-admin" }],
+    tellWhen: { question: "qrecommend", atMost: 6 },
+    limits: LIMITS,
+    survey: { mode: "named", linkNames: true, stopAfterDays: 30 },
+  },
   visitFeedback: { becomes: null, tell: [], limits: LIMITS },
 };
 
@@ -343,11 +359,17 @@ const formRow = (label, key, slug, kind, state, definition, opened, updated, clo
   ...(closed === undefined ? {} : { closed_at: { "@day": closed, "@time": "17:30" } }),
   updated_at: { "@day": updated, "@time": "09:00" },
 });
+/*
+ * Every sample form that was ever published loads closed, never live: an install with a privacy notice would
+ * otherwise serve the sample's forms to strangers at once. Their answers show all the same; the owner opens a
+ * form (closed → live) when they mean to use it. No closing moment is made up for them: the newsletter took a
+ * sign-up today. The trade show form stays a draft; last spring's visit feedback was closed by hand.
+ */
 const forms = [
-  formRow("form:showroom", "showroom", "showroom", "form", "live", showroom, -60, -60),
-  formRow("form:newsletter", "newsletter", "newsletter", "form", "live", newsletter, -90, -90),
+  formRow("form:showroom", "showroom", "showroom", "form", "closed", showroom, -60, -60),
+  formRow("form:newsletter", "newsletter", "newsletter", "form", "closed", newsletter, -90, -90),
   formRow("form:trade-show", "tradeShow", "trade-show", "form", "draft", tradeShow, -6, -6),
-  formRow("form:fit-out", "fitOut", SURVEY_SLUG, "survey", "live", fitOut, -260, -260),
+  formRow("form:fit-out", "fitOut", SURVEY_SLUG, "survey", "closed", fitOut, -260, -260),
   formRow("form:visit-feedback", "visitFeedback", "showroom-feedback", "form", "closed", visitFeedback, -200, -120, -120),
 ];
 

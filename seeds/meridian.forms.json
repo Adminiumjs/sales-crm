@@ -24,7 +24,7 @@
      },
      "slug": "showroom",
      "kind": "form",
-     "state": "live",
+     "state": "closed",
      "definition": {
       "v": 1,
       "kind": "form",
@@ -196,7 +196,22 @@
       }
      },
      "settings": {
-      "becomes": null,
+      "becomes": {
+       "table": "crm:enquiries",
+       "map": {
+        "qname": "person",
+        "qemail": "email",
+        "qcompany": "company_name",
+        "qday": "wanted_on",
+        "qsee": "wants",
+        "qbrochure": "brochure",
+        "qnote": "text"
+       },
+       "source": {
+        "column": "from_form",
+        "value": "Showroom form"
+       }
+      },
       "tell": [
        {
         "kind": "role",
@@ -380,7 +395,22 @@
        }
       },
       "settings": {
-       "becomes": null,
+       "becomes": {
+        "table": "crm:enquiries",
+        "map": {
+         "qname": "person",
+         "qemail": "email",
+         "qcompany": "company_name",
+         "qday": "wanted_on",
+         "qsee": "wants",
+         "qbrochure": "brochure",
+         "qnote": "text"
+        },
+        "source": {
+         "column": "from_form",
+         "value": "Showroom form"
+        }
+       },
        "tell": [
         {
          "kind": "role",
@@ -419,7 +449,7 @@
      },
      "slug": "newsletter",
      "kind": "form",
-     "state": "live",
+     "state": "closed",
      "definition": {
       "v": 1,
       "kind": "form",
@@ -721,7 +751,7 @@
      },
      "slug": "fit-out",
      "kind": "survey",
-     "state": "live",
+     "state": "closed",
      "definition": {
       "v": 1,
       "kind": "survey",
@@ -776,7 +806,13 @@
       }
      },
      "settings": {
-      "becomes": null,
+      "becomes": {
+       "table": "crm:feedback",
+       "map": {
+        "qstars": "score",
+        "qsaid": "text"
+       }
+      },
       "tell": [
        {
         "kind": "role",
@@ -852,7 +888,13 @@
        }
       },
       "settings": {
-       "becomes": null,
+       "becomes": {
+        "table": "crm:feedback",
+        "map": {
+         "qstars": "score",
+         "qsaid": "text"
+        }
+       },
        "tell": [
         {
          "kind": "role",

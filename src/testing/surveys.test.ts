@@ -110,14 +110,15 @@ describe("the sample's forms", () => {
     ]);
   });
 
-  it("are five: the showroom form and the newsletter live, a trade show form still a draft, the fit-out survey live, last spring's visit feedback closed", () => {
+  it("are five, none live (a fresh install serves no sample form to strangers): the showroom form, the newsletter and the fit-out survey published and closed, a trade show form still a draft, last spring's visit feedback closed by hand", () => {
     expect(rows("forms").map((row) => [row["slug"], row["kind"], row["state"], row["published"] !== undefined, row["closed_at"] !== undefined])).toEqual([
-      ["showroom", "form", "live", true, false],
-      ["newsletter", "form", "live", true, false],
+      ["showroom", "form", "closed", true, false],
+      ["newsletter", "form", "closed", true, false],
       ["trade-show", "form", "draft", false, false],
-      ["fit-out", "survey", "live", true, false],
+      ["fit-out", "survey", "closed", true, false],
       ["showroom-feedback", "form", "closed", true, true],
     ]);
+    expect(rows("forms").filter((row) => row["state"] === "live")).toEqual([]);
     // Each is named in eight languages, and speaks English and German to a visitor.
     for (const row of rows("forms")) {
       expect(Object.keys((row["name"] as { "@t": Record<string, string> })["@t"]).sort(), String(row["slug"])).toEqual([...LOCALES].sort());
@@ -147,6 +148,26 @@ describe("the sample's forms", () => {
     expect(q("qnews").purpose).toBe("newsletter");
     // Who hears of each: the sales managers (a sample person is no add-on row's to name); at most 200 an hour.
     expect(formOf("showroom")["settings"]).toMatchObject({ tell: [{ kind: "role", id: "crm-sales-manager" }], limits: { perHour: 200, harder: false } });
+  });
+
+  it("say what their answers become, by the table's stored name, in the columns the app opens to forms: the showroom an enquiry, the fit-out survey the job's feedback", () => {
+    const opened = (table: string) => (whole as unknown as Doc).publicAccess.find((one) => one.table === table && one.key === "forms")!.writable!;
+    const showroom = formOf("showroom")["settings"] as { becomes: { table: string; map: Record<string, string>; source?: { column: string; value: string } } };
+    expect(showroom.becomes).toEqual({
+      table: "crm:enquiries",
+      map: { qname: "person", qemail: "email", qcompany: "company_name", qday: "wanted_on", qsee: "wants", qbrochure: "brochure", qnote: "text" },
+      source: { column: "from_form", value: "Showroom form" },
+    });
+    for (const column of [...Object.values(showroom.becomes.map), showroom.becomes.source!.column]) expect(opened("enquiries"), column).toContain(column);
+    const fitOut = formOf("fit-out")["settings"] as { becomes: { table: string; map: Record<string, string> } };
+    // The job is the invitation's to fill, never a question's.
+    expect(fitOut.becomes).toEqual({ table: "crm:feedback", map: { qstars: "score", qsaid: "text" } });
+    for (const column of Object.values(fitOut.becomes.map)) expect(opened("feedback"), column).toContain(column);
+    // Each question the map names is one the form asks.
+    for (const slug of ["showroom", "fit-out"]) {
+      const asked = (formOf(slug)["definition"] as { questions: { id: string }[] }).questions.map((one) => one.id);
+      for (const question of Object.keys((formOf(slug)["settings"] as { becomes: { map: Record<string, string> } }).becomes.map)) expect(asked, `${slug} ${question}`).toContain(question);
+    }
   });
 
   it("answer for each of the main sample's website enquiries that names a person, each answer naming the enquiry it became, which says it came from the showroom form", () => {
