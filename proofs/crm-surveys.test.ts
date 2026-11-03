@@ -165,7 +165,8 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
     const res = await as('owner', 'PATCH', `/api/v1/automations/${ruleId}`, patch);
     expect(res.statusCode, res.body).toBe(200);
   };
-  const today = () => new Date().toISOString().slice(0, 10);
+  /** Today, as the server may date it: by UTC, or by its own clock's day (they differ in the hour after a local midnight). */
+  const today = () => { const now = new Date(); const local = `${String(now.getFullYear())}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; return [now.toISOString().slice(0, 10), local]; };
 
   beforeAll(async () => {
     if (!run) return;
@@ -332,7 +333,7 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
     expect(sent.statusCode, sent.body).toBe(200);
     const [row, ...more] = await rows('feedback');
     expect(more).toEqual([]);
-    expect([Number(row!['job_id']), Number(row!['score']), row!['text'], Boolean(row!['from_survey']), String(row!['answered_on']).slice(0, 10)]).toEqual([job['ann'], 4, 'Tidy work, on time.', true, today()]);
+    expect([Number(row!['job_id']), Number(row!['score']), row!['text'], Boolean(row!['from_survey']), today().includes(String(row!['answered_on']).slice(0, 10))]).toEqual([job['ann'], 4, 'Tidy work, on time.', true, true]);
     expect([row!['theme'], row!['replied_at'], row!['fix_written']]).toEqual([null, null, null]);
     expect((await invitationOf(job['ann']!))[0]!['answered_at']).not.toBeNull();
     const again = await send('fit-out', { qrecommend: 2, qstars: 1, qsaid: 'Changed my mind.' }, token);
