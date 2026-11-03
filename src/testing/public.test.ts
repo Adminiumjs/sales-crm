@@ -34,7 +34,8 @@ for (const [name, doc] of [
   ["the released stage", released as unknown as Doc],
 ] as const) {
   describe(`the public door of ${name}`, () => {
-    const entries = doc.publicAccess ?? [];
+    // The forms door's entry is no browser key's: `forms.test.ts` holds it.
+    const entries = (doc.publicAccess ?? []).filter((entry) => entry.key !== "forms");
     const quote = entries.find((entry) => entry.table === "quotes")!;
     const line = entries.find((entry) => entry.table === "quote_lines")!;
 

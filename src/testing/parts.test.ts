@@ -64,12 +64,16 @@ describe("the app is made of ten parts", () => {
     expect(features.map((feature) => [feature.id, feature.requires])).toEqual([
       ["quotes", ["invoices"]],
       ["supply", ["inventory"]],
+      // What Forms brings across parts: no part waits for it.
+      ["web-enquiries", ["forms"]],
+      ["customer-feedback", ["forms"]],
     ]);
     expect((manifest.addOns as { requires?: unknown }).requires).toBeUndefined();
     expect(manifest.addOns.suggests.map((need) => [need.key, (need as { checked?: boolean }).checked === true])).toEqual([
       ["invoices", true],
       ["inventory", true],
       ["offers", false],
+      ["forms", true],
     ]);
   });
 });
@@ -151,6 +155,8 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["day-sheet-left-told", "jobs"],
       ["sign-off-refused", "jobs"],
       ["aftercare-call", "aftercare"],
+      // The brochure a website form's enquirer asks for goes with the Inbox.
+      ["brochure-asked", "inbox"],
     ]);
   });
 
@@ -200,13 +206,13 @@ describe("the app stands without Invoices & Receipts", () => {
     // The outgoing e-mails lose their link to a quote, and the quote's own e-mail.
     expect(kept.find((table) => table.ref === "outbox")!.columns.map((column) => column.ref)).not.toContain("quote_id");
     expect((left.outbox.producers as unknown as { kind: string }[]).map((producer) => producer.kind)).toEqual(["visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "referral-code", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked", "handover-intro"]);
-    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "referral-code", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked"]);
+    expect(Object.keys(left.outbox.kinds)).toEqual(["handover-intro", "visit-confirmed", "visit-moved", "visit-cancelled", "referral-thanks", "referral-code", "showroom-confirmed", "showroom-moved", "showroom-cancelled", "delivery-booked", "delivery-moved", "delivery-cancelled", "signed-copy", "signed-copy-to", "certificate-asked", "brochure"]);
     // The visit's, the referral's, the showroom's and a delivery's e-mails still go, and read nothing of a quote.
     const templates = (left as unknown as { emailTemplates: { key: string }[] }).emailTemplates;
     expect(templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))).toHaveLength(8);
     for (const template of templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
-    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told", "sign-off-refused", "aftercare-call"]);
+    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told", "sign-off-refused", "aftercare-call", "brochure-asked"]);
     // Every role is still there, without a grant, a limit or a part that names quotes.
     const leftRoles = left.roles as unknown as Role[];
     expect(leftRoles.map((role) => role.key)).toEqual(roles.map((role) => role.key));

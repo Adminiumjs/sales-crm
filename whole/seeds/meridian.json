@@ -42,6 +42,10 @@
      "inspection_warn_days": 30,
      "aftercare_owner_id": {
       "@person": "hugo"
+     },
+     "brochure_link": "https://meridian.example/brochure",
+     "brochure_follow_up_owner_id": {
+      "@person": "ivy"
      }
     }
    ]

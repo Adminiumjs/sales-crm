@@ -82,11 +82,14 @@ describe("the rules the app ships", () => {
   const OFFICE = ["sign-off-refused"];
   // A customer's yes on a lost deal tells its owner (plan 68 R1a): it tells people, and ships on (D2).
   const YES = ["quote-yes-on-lost"];
+  // The brochure a website form's enquirer asks for, and the call two days on: it writes to a stranger, so it ships off.
+  const BROCHURE = ["brochure-asked"];
 
-  it("are twenty-four (the most a manifest takes): six the app works by, a late yes, six that tell a crew, one that tells the office of a refused sign-off and one that books aftercare, switched on, and ten that tell people, switched off; each named and described in eight languages", () => {
-    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...OFFICE, ...AFTER]);
+  it("are twenty-five (of the thirty-two a manifest takes): six the app works by, a late yes, six that tell a crew, one that tells the office of a refused sign-off and one that books aftercare, switched on, and nine that tell people and the brochure, switched off; each named and described in eight languages", () => {
+    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...OFFICE, ...AFTER, ...BROCHURE]);
     for (const one of m.automations) {
       expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || YES.includes(one.key) || CREW.includes(one.key) || OFFICE.includes(one.key) || AFTER.includes(one.key));
+      expect(BROCHURE.includes(one.key) ? one.enabled : false, one.key).toBe(false);
       expect(inAll(one.name), `${one.key} name`).toBe(true);
       expect(inAll(one.description), `${one.key} description`).toBe(true);
     }
@@ -368,8 +371,8 @@ describe("the e-mails the app ships", () => {
   const TO_ONE = ["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-referral-code", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled"];
   const shape = (key: string, locale = "en-US") => m.emailTemplates.find((one) => one.key === key)!.locales[locale]!.blocks.map((block) => block.block);
 
-  it("are eighteen: sixteen to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
-    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-referral-code", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled", "crm-signed-copy", "crm-certificate-asked"]);
+  it("are nineteen: seventeen to one address and two weekly summaries, each in eight languages with a subject and no empty block", () => {
+    expect(m.emailTemplates.map((one) => one.key)).toEqual(["crm-quote-sent", "crm-quote-accepted", "crm-handover-intro", "crm-week-rep", "crm-week-manager", "crm-visit-confirmed", "crm-visit-moved", "crm-visit-cancelled", "crm-referral-thanks", "crm-referral-code", "crm-showroom-confirmed", "crm-showroom-moved", "crm-showroom-cancelled", "crm-delivery-booked", "crm-delivery-moved", "crm-delivery-cancelled", "crm-signed-copy", "crm-certificate-asked", "crm-brochure"]);
     for (const template of m.emailTemplates) {
       expect(Object.keys(template.locales), template.key).toEqual(LOCALES);
       for (const locale of LOCALES) {
@@ -480,6 +483,8 @@ describe("the outbox", () => {
       "signed-copy": "crm-signed-copy",
       "signed-copy-to": "crm-signed-copy",
       "certificate-asked": "crm-certificate-asked",
+      // The brochure an enquirer asked for on a website form.
+      brochure: "crm-brochure",
     });
     for (const key of Object.values(m.outbox.kinds)) expect(m.emailTemplates.map((one) => one.key)).toContain(key);
   });

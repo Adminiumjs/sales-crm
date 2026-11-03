@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.38",
+    "minAdminiumVersion": "0.3.41",
     "engines": [
       "postgres",
       "mysql",
@@ -11415,6 +11415,98 @@
             }
           },
           {
+            "ref": "from_form",
+            "type": "text",
+            "maxLength": 200,
+            "nullable": true,
+            "label": {
+              "en-US": "From the form",
+              "de-DE": "Aus dem Formular",
+              "fr-FR": "Depuis le formulaire",
+              "da-DK": "Fra formularen",
+              "cs-CZ": "Z formuláře",
+              "ar-EG": "من النموذج",
+              "zh-CN": "来自表单",
+              "zh-TW": "來自表單"
+            }
+          },
+          {
+            "ref": "brochure",
+            "type": "enum",
+            "enum": [
+              "yes",
+              "no"
+            ],
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "yes": {
+                    "en-US": "Yes",
+                    "de-DE": "Ja",
+                    "fr-FR": "Oui",
+                    "da-DK": "Ja",
+                    "cs-CZ": "Ano",
+                    "ar-EG": "نعم",
+                    "zh-CN": "是",
+                    "zh-TW": "是"
+                  },
+                  "no": {
+                    "en-US": "No",
+                    "de-DE": "Nein",
+                    "fr-FR": "Non",
+                    "da-DK": "Nej",
+                    "cs-CZ": "Ne",
+                    "ar-EG": "لا",
+                    "zh-CN": "否",
+                    "zh-TW": "否"
+                  }
+                }
+              }
+            },
+            "label": {
+              "en-US": "Asked for the brochure",
+              "de-DE": "Broschüre angefragt",
+              "fr-FR": "Brochure demandée",
+              "da-DK": "Bad om brochuren",
+              "cs-CZ": "Žádá o brožuru",
+              "ar-EG": "طلب الكتيّب",
+              "zh-CN": "索取宣传册",
+              "zh-TW": "索取宣傳冊"
+            }
+          },
+          {
+            "ref": "wanted_on",
+            "type": "date",
+            "nullable": true,
+            "label": {
+              "en-US": "Wanted on",
+              "de-DE": "Gewünscht am",
+              "fr-FR": "Souhaité le",
+              "da-DK": "Ønsket den",
+              "cs-CZ": "Požadováno na",
+              "ar-EG": "التاريخ المطلوب",
+              "zh-CN": "期望日期",
+              "zh-TW": "期望日期"
+            }
+          },
+          {
+            "ref": "brochure_link",
+            "type": "text",
+            "maxLength": 500,
+            "nullable": true,
+            "label": {
+              "en-US": "Brochure link sent",
+              "de-DE": "Gesendeter Broschüren-Link",
+              "fr-FR": "Lien de la brochure envoyé",
+              "da-DK": "Sendt brochurelink",
+              "cs-CZ": "Odeslaný odkaz na brožuru",
+              "ar-EG": "رابط الكتيّب المُرسَل",
+              "zh-CN": "已发送的宣传册链接",
+              "zh-TW": "已寄出的宣傳冊連結"
+            }
+          },
+          {
             "ref": "opt_out_offered_at",
             "type": "timestamptz",
             "nullable": true,
@@ -20744,7 +20836,8 @@
               "delivery-cancelled",
               "signed-copy",
               "signed-copy-to",
-              "certificate-asked"
+              "certificate-asked",
+              "brochure"
             ],
             "rules": {
               "enumLabels": {
@@ -20918,6 +21011,16 @@
                     "ar-EG": "طلب شهادة",
                     "zh-CN": "已索要证书",
                     "zh-TW": "已索取證書"
+                  },
+                  "brochure": {
+                    "en-US": "Brochure",
+                    "de-DE": "Broschüre",
+                    "fr-FR": "Brochure",
+                    "da-DK": "Brochure",
+                    "cs-CZ": "Brožura",
+                    "ar-EG": "الكتيّب",
+                    "zh-CN": "宣传册",
+                    "zh-TW": "宣傳冊"
                   }
                 }
               }
@@ -21376,6 +21479,22 @@
               "ar-EG": "مقاول من الباطن",
               "zh-CN": "分包商",
               "zh-TW": "分包商"
+            }
+          },
+          {
+            "ref": "enquiry_id",
+            "type": "fk",
+            "references": "enquiries",
+            "nullable": true,
+            "label": {
+              "en-US": "Enquiry",
+              "de-DE": "Anfrage",
+              "fr-FR": "Demande",
+              "da-DK": "Henvendelse",
+              "cs-CZ": "Poptávka",
+              "ar-EG": "استفسار",
+              "zh-CN": "询盘",
+              "zh-TW": "詢問"
             }
           }
         ]
@@ -22338,6 +22457,46 @@
               "ar-EG": "مراسلة العميل بشأن التوصيلات",
               "zh-CN": "通过邮件告知客户送货安排",
               "zh-TW": "以郵件告知客戶送貨安排"
+            }
+          },
+          {
+            "ref": "brochure_link",
+            "type": "text",
+            "maxLength": 500,
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "format": "url"
+              }
+            },
+            "label": {
+              "en-US": "Brochure link",
+              "de-DE": "Link zur Broschüre",
+              "fr-FR": "Lien de la brochure",
+              "da-DK": "Link til brochuren",
+              "cs-CZ": "Odkaz na brožuru",
+              "ar-EG": "رابط الكتيّب",
+              "zh-CN": "宣传册链接",
+              "zh-TW": "宣傳冊連結"
+            }
+          },
+          {
+            "ref": "brochure_follow_up_owner_id",
+            "type": "text",
+            "maxLength": 36,
+            "nullable": true,
+            "rules": {
+              "staff": true
+            },
+            "label": {
+              "en-US": "Brochure follow-ups go to",
+              "de-DE": "Nachfassen zur Broschüre geht an",
+              "fr-FR": "Relances de brochure confiées à",
+              "da-DK": "Opfølgning på brochurer går til",
+              "cs-CZ": "Navazující kroky k brožuře dostane",
+              "ar-EG": "متابعات الكتيّب تذهب إلى",
+              "zh-CN": "宣传册跟进交给",
+              "zh-TW": "宣傳冊跟進交給"
             }
           },
           {
@@ -23908,6 +24067,7 @@
             "est_value",
             "town",
             "wants",
+            "wanted_on",
             "warmth",
             "show_id",
             "company_id",
@@ -24848,6 +25008,7 @@
             "est_value",
             "town",
             "wants",
+            "wanted_on",
             "warmth",
             "show_id",
             "company_id",
@@ -25584,6 +25745,7 @@
             "est_value",
             "town",
             "wants",
+            "wanted_on",
             "warmth",
             "show_id",
             "company_id"
@@ -25674,6 +25836,7 @@
             "est_value",
             "town",
             "wants",
+            "wanted_on",
             "warmth",
             "show_id",
             "company_id",
@@ -25691,6 +25854,7 @@
             "est_value",
             "town",
             "wants",
+            "wanted_on",
             "warmth",
             "show_id",
             "company_id",
@@ -30568,6 +30732,210 @@
           }
         ]
       }
+    },
+    {
+      "key": "brochure-asked",
+      "name": {
+        "en-US": "An enquiry asks for the brochure: send it, then a follow-up after 2 days",
+        "de-DE": "Eine Anfrage bittet um die Broschüre: senden, nach 2 Tagen nachfassen",
+        "fr-FR": "Une demande réclame la brochure : l’envoyer, puis une relance 2 jours plus tard",
+        "da-DK": "En henvendelse beder om brochuren: send den, og en opfølgning efter 2 dage",
+        "cs-CZ": "Poptávka žádá o brožuru: odeslat ji a po 2 dnech navazující krok",
+        "ar-EG": "استفسار يطلب الكتيّب: أرسله، ثم متابعة بعد يومين",
+        "zh-CN": "询盘索取宣传册：发送宣传册，2 天后跟进",
+        "zh-TW": "詢問索取宣傳冊：寄出宣傳冊，2 天後跟進"
+      },
+      "description": {
+        "en-US": "When an enquiry comes in that asked for the brochure, e-mails it the brochure link set in Settings (nothing goes while no link is set). Two days later, if no deal was made of it and it was not set aside, a follow-up to call them, due the next day at 09:00: for whoever claimed it, else for the person Settings names for brochure follow-ups.",
+        "de-DE": "Geht eine Anfrage ein, die um die Broschüre bittet, schickt sie per E-Mail den Broschüren-Link aus den Einstellungen (ohne Link geht nichts hinaus). Ist zwei Tage später kein Deal daraus entstanden und wurde sie nicht abgelegt, ein Follow-up zum Anrufen, fällig am nächsten Tag um 09:00: für die Person, die sie übernommen hat, sonst für die Person, die die Einstellungen für das Nachfassen zur Broschüre nennen.",
+        "fr-FR": "Quand arrive une demande qui réclame la brochure, lui envoie par e-mail le lien de la brochure indiqué dans les Réglages (rien ne part tant qu’aucun lien n’est indiqué). Deux jours plus tard, si aucune affaire n’en est née et qu’elle n’a pas été écartée, une relance pour appeler, due le lendemain à 09:00 : pour qui l’a prise en charge, sinon pour la personne que les Réglages désignent pour les relances de brochure.",
+        "da-DK": "Når der kommer en henvendelse, der beder om brochuren, sendes linket til brochuren fra Indstillinger pr. e-mail (intet sendes, så længe der ikke er et link). Er der to dage senere ikke lavet en deal ud af den, og er den ikke lagt til side, en opfølgning om at ringe, med forfald dagen efter kl. 09:00: til den, der overtog den, ellers til den person, Indstillinger udpeger til opfølgning på brochurer.",
+        "cs-CZ": "Když přijde poptávka, která žádá o brožuru, pošle jí e-mailem odkaz na brožuru z Nastavení (dokud odkaz není nastaven, nic neodejde). Pokud z ní po dvou dnech nevznikl obchod a nebyla odložena, navazující krok zavolat s termínem další den v 09:00: pro toho, kdo ji převzal, jinak pro osobu, kterou Nastavení určuje pro navazující kroky k brožuře.",
+        "ar-EG": "عند وصول استفسار يطلب الكتيّب، يُرسَل إليه بالبريد الإلكتروني رابط الكتيّب المحدد في الإعدادات (لا يُرسَل شيء ما دام لا يوجد رابط). وبعد يومين، إن لم تُنشأ منه صفقة ولم يُستبعد، متابعة للاتصال بهم موعدها اليوم التالي الساعة 09:00: لمن استلمه، وإلا للشخص الذي تسمّيه الإعدادات لمتابعات الكتيّب.",
+        "zh-CN": "收到索取宣传册的询盘时，通过邮件发送“设置”中的宣传册链接（未设置链接时不发送）。两天后，如果仍未由此建立商机且未被搁置，则创建一条致电跟进，次日 09:00 到期：交给认领人；若无人认领，则交给“设置”中指定的宣传册跟进负责人。",
+        "zh-TW": "收到索取宣傳冊的詢問時，以郵件寄出「設定」中的宣傳冊連結（未設定連結時不寄出）。兩天後，如果仍未由此建立案件且未被擱置，則建立一筆致電跟進，隔天 09:00 到期：交給認領人；若無人認領，則交給「設定」中指定的宣傳冊跟進負責人。"
+      },
+      "enabled": false,
+      "module": "inbox",
+      "trigger": {
+        "kind": "record",
+        "event": "created",
+        "table": "enquiries",
+        "when": [
+          {
+            "left": {
+              "field": "brochure"
+            },
+            "op": "is",
+            "right": "yes"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "An enquiry asks for the brochure"
+          },
+          {
+            "id": "link",
+            "kind": "action",
+            "title": "Note the brochure link from Settings on it",
+            "action": {
+              "kind": "record.update",
+              "values": {
+                "brochure_link": {
+                  "setting": {
+                    "table": "settings",
+                    "column": "brochure_link"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "send",
+            "kind": "branch",
+            "title": "Is there a brochure link?",
+            "condition": {
+              "left": {
+                "field": "brochure_link"
+              },
+              "op": "not_empty"
+            },
+            "branches": [
+              {
+                "id": "with-link",
+                "label": "A link is set",
+                "nodes": [
+                  {
+                    "id": "mail",
+                    "kind": "action",
+                    "title": "E-mail the brochure",
+                    "action": {
+                      "kind": "record.create",
+                      "table": "outbox",
+                      "values": {
+                        "kind": "brochure",
+                        "enquiry_id": "{{record.id}}"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "no-link",
+                "label": "No brochure link in Settings: nothing sent",
+                "nodes": []
+              }
+            ]
+          },
+          {
+            "id": "wait",
+            "kind": "wait",
+            "title": "Wait 2 days",
+            "amount": 2,
+            "unit": "days"
+          },
+          {
+            "id": "no-deal",
+            "kind": "condition",
+            "title": "Still no deal made of it",
+            "condition": {
+              "left": {
+                "field": "deal_id"
+              },
+              "op": "is_empty"
+            }
+          },
+          {
+            "id": "not-dropped",
+            "kind": "condition",
+            "title": "Not set aside as not for us",
+            "condition": {
+              "left": {
+                "field": "state"
+              },
+              "op": "is_not",
+              "right": "dropped"
+            }
+          },
+          {
+            "id": "who",
+            "kind": "branch",
+            "title": "Has somebody claimed it?",
+            "condition": {
+              "left": {
+                "field": "claimed_by_id"
+              },
+              "op": "not_empty"
+            },
+            "branches": [
+              {
+                "id": "claimed",
+                "label": "Claimed",
+                "nodes": [
+                  {
+                    "id": "call-claimer",
+                    "kind": "action",
+                    "title": "A follow-up for whoever claimed it",
+                    "action": {
+                      "kind": "record.create",
+                      "table": "follow_ups",
+                      "values": {
+                        "owner_id": "{{record.claimed_by_id}}",
+                        "due_at": {
+                          "daysAfter": {
+                            "now": true,
+                            "days": 1,
+                            "at": "09:00"
+                          }
+                        },
+                        "kind": "chase",
+                        "text": "Brochure sent 2 days ago: call {{record.company_name}}"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unclaimed",
+                "label": "Nobody yet",
+                "nodes": [
+                  {
+                    "id": "call-named",
+                    "kind": "action",
+                    "title": "A follow-up for the person Settings names",
+                    "action": {
+                      "kind": "record.create",
+                      "table": "follow_ups",
+                      "values": {
+                        "owner_id": {
+                          "setting": {
+                            "table": "settings",
+                            "column": "brochure_follow_up_owner_id"
+                          }
+                        },
+                        "due_at": {
+                          "daysAfter": {
+                            "now": true,
+                            "days": 1,
+                            "at": "09:00"
+                          }
+                        },
+                        "kind": "chase",
+                        "text": "Brochure sent 2 days ago: call {{record.company_name}}"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   "publicKeys": {
@@ -30662,6 +31030,53 @@
       "visibleWith": {
         "table": "quotes",
         "via": "document_id"
+      }
+    },
+    {
+      "table": "enquiries",
+      "key": "forms",
+      "module": "inbox",
+      "methods": [
+        "POST"
+      ],
+      "writable": [
+        "person",
+        "company_name",
+        "email",
+        "phone",
+        "text",
+        "town",
+        "wants",
+        "wanted_on",
+        "brochure",
+        "from_form"
+      ],
+      "requires": [
+        "company_name"
+      ],
+      "defaults": {
+        "state": "open",
+        "source": "form"
+      },
+      "source": "from_form",
+      "anonymous": {
+        "perValue": {
+          "columns": [
+            "email"
+          ],
+          "n": 5
+        },
+        "plainText": [
+          {
+            "column": "person",
+            "max": 120
+          },
+          {
+            "column": "company_name",
+            "digits": 4,
+            "max": 160
+          }
+        ]
       }
     }
   ],
@@ -30790,13 +31205,19 @@
       "job_visit": "job_visit_id",
       "job": "job_id",
       "sign_off": "sign_off_id",
-      "subcontractor": "subcontractor_id"
+      "subcontractor": "subcontractor_id",
+      "enquiry": "enquiry_id"
     },
     "recipient": {
       "via": "contact_id",
       "table": "contacts",
       "email": "email",
-      "name": "name"
+      "name": "name",
+      "fallback": {
+        "via": "enquiry_id",
+        "email": "email",
+        "name": "person"
+      }
     },
     "kinds": {
       "quote-sent": "crm-quote-sent",
@@ -30815,7 +31236,8 @@
       "delivery-cancelled": "crm-delivery-cancelled",
       "signed-copy": "crm-signed-copy",
       "signed-copy-to": "crm-signed-copy",
-      "certificate-asked": "crm-certificate-asked"
+      "certificate-asked": "crm-certificate-asked",
+      "brochure": "crm-brochure"
     },
     "classes": {
       "quote-sent": "service",
@@ -30834,7 +31256,8 @@
       "delivery-cancelled": "service",
       "signed-copy": "service",
       "signed-copy-to": "service",
-      "certificate-asked": "service"
+      "certificate-asked": "service",
+      "brochure": "service"
     },
     "producers": [
       {
@@ -40405,6 +40828,215 @@
           "footer": "您收到這封郵件，是因為您在我們的分包商名單上。"
         }
       }
+    },
+    {
+      "key": "crm-brochure",
+      "name": "Our brochure",
+      "vars": [
+        "enquiry.brochure_link"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Our brochure",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Our brochure"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Thank you for asking for our brochure. You can read it at the link below. We will be in touch soon."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Open the brochure",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "You got this because you asked for our brochure."
+        },
+        "de-DE": {
+          "subject": "Unsere Broschüre",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Unsere Broschüre"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Vielen Dank, dass Sie unsere Broschüre angefordert haben. Sie finden sie unter dem Link unten. Wir melden uns bald bei Ihnen."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Broschüre öffnen",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "Sie erhalten diese E-Mail, weil Sie unsere Broschüre angefordert haben."
+        },
+        "fr-FR": {
+          "subject": "Notre brochure",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Notre brochure"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Merci d’avoir demandé notre brochure. Vous pouvez la lire grâce au lien ci-dessous. Nous reviendrons vers vous très bientôt."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Ouvrir la brochure",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "Vous recevez ce message parce que vous avez demandé notre brochure."
+        },
+        "da-DK": {
+          "subject": "Vores brochure",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Vores brochure"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Tak, fordi du bad om vores brochure. Du kan læse den via linket nedenfor. Vi kontakter dig snart."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Åbn brochuren",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "Du får denne e-mail, fordi du bad om vores brochure."
+        },
+        "cs-CZ": {
+          "subject": "Naše brožura",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "Naše brožura"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "Děkujeme, že jste si vyžádali naši brožuru. Najdete ji na odkazu níže. Brzy se vám ozveme."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "Otevřít brožuru",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "Tento e-mail jste dostali, protože jste si vyžádali naši brožuru."
+        },
+        "ar-EG": {
+          "subject": "كتيّبنا",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "كتيّبنا"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "شكرًا لطلبك كتيّبنا. يمكنك قراءته من الرابط أدناه. سنتواصل معك قريبًا."
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "افتح الكتيّب",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "وصلتك هذه الرسالة لأنك طلبت كتيّبنا."
+        },
+        "zh-CN": {
+          "subject": "我们的宣传册",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "我们的宣传册"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "感谢您索取我们的宣传册。您可以通过下方链接阅读。我们会尽快与您联系。"
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "打开宣传册",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "您收到这封邮件，是因为您索取了我们的宣传册。"
+        },
+        "zh-TW": {
+          "subject": "我們的宣傳冊",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "data": {
+                "text": "我們的宣傳冊"
+              }
+            },
+            {
+              "block": "email.text",
+              "data": {
+                "text": "感謝您索取我們的宣傳冊。您可以透過下方連結閱讀。我們會盡快與您聯絡。"
+              }
+            },
+            {
+              "block": "email.button",
+              "data": {
+                "label": "開啟宣傳冊",
+                "url": "{{enquiry.brochure_link}}"
+              }
+            }
+          ],
+          "footer": "您收到這封郵件，是因為您索取了我們的宣傳冊。"
+        }
+      }
     }
   ],
   "pages": [
@@ -44346,6 +44978,21 @@
           "zh-CN": "给推荐新客户的客户一份奖励。",
           "zh-TW": "給推薦新客戶的客戶一份獎勵。"
         }
+      },
+      {
+        "key": "forms",
+        "range": ">=1.0.15",
+        "checked": true,
+        "reason": {
+          "en-US": "Website forms become enquiries in the Team inbox, and surveys fill Customer feedback.",
+          "de-DE": "Website-Formulare werden zu Anfragen im Team-Eingang, und Umfragen füllen das Kundenfeedback.",
+          "fr-FR": "Les formulaires du site deviennent des demandes dans la boîte de l’équipe, et les enquêtes alimentent les avis clients.",
+          "da-DK": "Formularer på hjemmesiden bliver til henvendelser i teamets indbakke, og undersøgelser udfylder kundernes feedback.",
+          "cs-CZ": "Formuláře z webu se stávají poptávkami v týmové schránce a průzkumy plní zpětnou vazbu zákazníků.",
+          "ar-EG": "تتحول نماذج الموقع إلى استفسارات في صندوق الفريق، وتملأ الاستبيانات آراء العملاء.",
+          "zh-CN": "网站表单会变成团队收件箱中的询盘，问卷会填入客户反馈。",
+          "zh-TW": "網站表單會變成團隊收件匣中的詢問，問卷會填入客戶回饋。"
+        }
       }
     ],
     "features": [
@@ -44379,6 +45026,38 @@
         },
         "requires": [
           "inventory"
+        ]
+      },
+      {
+        "id": "web-enquiries",
+        "label": {
+          "en-US": "Web enquiries",
+          "de-DE": "Anfragen über die Website",
+          "fr-FR": "Demandes depuis le site",
+          "da-DK": "Henvendelser fra hjemmesiden",
+          "cs-CZ": "Poptávky z webu",
+          "ar-EG": "استفسارات الموقع",
+          "zh-CN": "网站询盘",
+          "zh-TW": "網站詢問"
+        },
+        "requires": [
+          "forms"
+        ]
+      },
+      {
+        "id": "customer-feedback",
+        "label": {
+          "en-US": "Customer feedback",
+          "de-DE": "Kundenfeedback",
+          "fr-FR": "Avis clients",
+          "da-DK": "Kundefeedback",
+          "cs-CZ": "Zpětná vazba zákazníků",
+          "ar-EG": "آراء العملاء",
+          "zh-CN": "客户反馈",
+          "zh-TW": "客戶回饋"
+        },
+        "requires": [
+          "forms"
         ]
       }
     ]

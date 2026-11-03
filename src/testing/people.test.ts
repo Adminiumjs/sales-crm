@@ -72,7 +72,7 @@ describe("the people of the app", () => {
       ["companies", "companies"],
       ["enquiries", "people"],
     ]);
-    expect(doc.compatibility.minAdminiumVersion).toBe("0.3.38");
+    expect(doc.compatibility.minAdminiumVersion).toBe("0.3.41");
   });
 
   it("names a contact by her name and her address, the one the outbox writes to, and greets her by her first name", () => {

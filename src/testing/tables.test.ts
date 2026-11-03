@@ -193,6 +193,11 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "rung_at",
       "deal_id",
       "opt_out_offered_at",
+      // What a website form brought, and the brochure link that went: empty on an enquiry typed in.
+      "from_form",
+      "brochure",
+      "wanted_on",
+      "brochure_link",
     ],
   },
   shows: { nullable: ["ends_on"] },
@@ -312,6 +317,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "job_id",
       "sign_off_id",
       "subcontractor_id",
+      "enquiry_id",
       "was",
       "deal_id",
       "due_at",
@@ -322,7 +328,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
     ],
   },
   settings: {
-    nullable: ["showroom_address", "depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "office_phone", "depot_lat", "depot_lng", "aftercare_owner_id"],
+    nullable: ["showroom_address", "depot_name", "depot_address", "depot_town", "depot_region", "depot_postal_code", "depot_country", "depot_place", "office_phone", "depot_lat", "depot_lng", "aftercare_owner_id", "brochure_link", "brochure_follow_up_owner_id"],
   },
 };
 
@@ -361,8 +367,9 @@ const OUTBOX_WORD = {
     // What a moved or a removed visit was, for its e-mail.
     was: "was",
   },
-  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id", sign_off: "sign_off_id", subcontractor: "subcontractor_id" },
-  recipient: { via: "contact_id", table: "contacts", email: "email", name: "name" },
+  links: { contact: "contact_id", quote: "quote_id", deal: "deal_id", visit: "visit_id", referral: "referral_id", booking: "booking_id", job_visit: "job_visit_id", job: "job_id", sign_off: "sign_off_id", subcontractor: "subcontractor_id", enquiry: "enquiry_id" },
+  // A message about an enquiry (the brochure it asked for) goes to the enquiry's own address: it names no contact.
+  recipient: { via: "contact_id", table: "contacts", email: "email", name: "name", fallback: { via: "enquiry_id", email: "email", name: "person" } },
   // The settings row, read by a template as `practice.*` (where the showroom is).
   // …and the office's phone, for "call us" in a delivery's e-mail.
   settings: { table: "settings", phone: "office_phone" },
@@ -1120,7 +1127,7 @@ describe("the outbox table is the shape the outbox word asks for", () => {
   it("keeps every link of it empty-able, since not every email is about one", () => {
     const links = (byRef.get("outbox")?.columns ?? []).filter((c) => c.type === "fk");
     // A message is about a contact, a quote, a deal, a site visit, a referral or a showroom booking.
-    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id"]);
+    expect(links.map((c) => c.ref)).toEqual(["contact_id", "quote_id", "deal_id", "visit_id", "referral_id", "booking_id", "job_visit_id", "job_id", "sign_off_id", "subcontractor_id", "enquiry_id"]);
     for (const link of links) expect(link.nullable, link.ref).toBe(true);
   });
 

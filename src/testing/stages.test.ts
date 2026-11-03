@@ -92,7 +92,9 @@ describe("the stages", () => {
           // The outbox's kinds grow with the parts that send e-mail (a delivery's, with Jobs on site): every kind kept, with its label.
           if (table.ref === "outbox" && column.ref === "kind") {
             const before = column as Column & { enum: string[]; rules: { enumLabels: { labels: Record<string, unknown> } } };
-            expect(after?.enum?.slice(0, before.enum.length), "outbox.kind").toEqual(before.enum);
+            // In the same order, and new ones at the end: a kind a later release gives an earlier part (the brochure, with the
+            // Inbox) comes after every stage's, as an update appends it to the column.
+            expect((after?.enum ?? []).filter((kind) => before.enum.includes(kind)), "outbox.kind").toEqual(before.enum);
             for (const kind of before.enum) expect((after?.rules as typeof before.rules).enumLabels.labels[kind], `outbox.kind ${kind}`).toEqual(before.rules.enumLabels.labels[kind]);
             continue;
           }

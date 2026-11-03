@@ -127,7 +127,9 @@ export function stageManifest(whole, stages, stage) {
     if (Object.keys(side.records).length === 0) delete side.records;
   }
 
-  if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id));
+  // A feature of a part goes with the part; one that is no part's (what an add-on brings across parts) stays.
+  const parts = new Set((whole.modules ?? []).map((part) => part.id));
+  if (doc.addOns?.features !== undefined) doc.addOns.features = doc.addOns.features.filter((feature) => keep.has(feature.id) || !parts.has(feature.id));
   // A document drawn from a table of a later part (the signed copy, before Jobs on site) goes with it.
   if (doc.documents !== undefined) {
     doc.documents = doc.documents.filter((document) => partOf(document) && !goneTables.has(document.table) && !JSON.stringify(document.mapping).match(/"(?:via|column)":"([a-z0-9_]+)"/g)?.some((pair) => (goneColumns[document.table] ?? []).includes(pair.split(":")[1].replace(/"/g, ""))));
