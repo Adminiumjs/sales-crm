@@ -282,7 +282,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   left_visits: { nullable: ["visit_id", "site_name", "site_town", "leave_key", "day", "now_day"] },
   waste_removals: { nullable: ["carrier", "note_number"] },
   // After the job
-  feedback: { nullable: ["text", "theme", "replied_at", "fix_written"] },
+  feedback: { nullable: ["text", "theme", "from_survey", "replied_at", "fix_written"] },
   complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "answer", "fairness", "answered_at", "settled_at"] },
   warranty_claims: { nullable: ["contact_id", "part", "cover", "cover_years", "supplier_name", "supplier", "paid_by"] },
   // Supply

@@ -25,7 +25,7 @@ export type RoleKey = "admin" | "sales-manager" | "rep" | "account-manager" | "m
 /** Whose menu leads when a person holds several roles, and whose home they land on. */
 export const ROLE_ORDER: readonly RoleKey[] = ["admin", "sales-manager", "rep", "account-manager", "marketer", "front-desk", "ops-manager", "crew", "read-only"];
 
-export type PartId = "selling" | "quotes" | "accounts" | "team" | "inbox" | "showroom" | "jobs" | "aftercare" | "supply" | "fleet";
+export type PartId = "selling" | "quotes" | "accounts" | "team" | "inbox" | "showroom" | "jobs" | "aftercare" | "surveys" | "supply" | "fleet";
 
 /** A screen with a line in a menu. Record pages (a deal, a company) are reached from these and are listed in `also`. */
 export type RouteKey =

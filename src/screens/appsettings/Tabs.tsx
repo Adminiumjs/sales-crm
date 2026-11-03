@@ -383,13 +383,14 @@ export const PARTS: readonly { id: PartId; name: MessageKey; line: MessageKey; r
   { id: "showroom", name: "nav.group.showroom", line: "aset.part.showroom", roles: ["admin", "front-desk", "read-only"] },
   { id: "jobs", name: "nav.group.jobs", line: "aset.part.jobs", roles: ["admin", "ops-manager", "crew", "read-only"] },
   { id: "aftercare", name: "nav.group.aftercare", line: "aset.part.aftercare", roles: ["admin", "account-manager", "read-only"] },
+  { id: "surveys", name: "aset.part.surveys.name", line: "aset.part.surveys", roles: ["admin", "read-only"], needs: "aset.part.surveys.needs" },
   { id: "supply", name: "nav.group.supply", line: "aset.part.supply", roles: ["admin", "ops-manager", "read-only"], needs: "aset.part.supply.needs" },
   // Stage 3's, once the install has it.
   { id: "fleet", name: "nav.group.fleet", line: "aset.part.fleet", roles: ["admin", "ops-manager", "crew", "read-only"] },
 ];
 type PartDef = (typeof PARTS)[number];
 const ALWAYS: readonly PartId[] = ["selling", "accounts", "team"];
-const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package", showroom: "store", jobs: "truck", aftercare: "heart-handshake", fleet: "truck" };
+const PART_ICON: Record<string, string> = { selling: "columns-3", quotes: "file-text", accounts: "building-2", team: "users", inbox: "inbox", supply: "package", showroom: "store", jobs: "truck", aftercare: "heart-handshake", surveys: "clipboard-list", fleet: "truck" };
 
 /**
  * A table each part's sample rows always land in: a part whose table holds none while the sample is in came by an update after

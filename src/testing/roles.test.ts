@@ -492,14 +492,14 @@ describe("the app brings nine roles", () => {
       receipts: ["id", "po_id", "status", "received_on", "late", "days_late"],
     };
     for (const r of roles) {
-      const tables = (r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables;
+      const tables = (r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables?.filter((entry) => entry.addOn === "inventory");
       // The crew reads a line's name and unit, to load the van (S14): nothing else of Inventory, and nothing it costs.
       if (r.key === "crew") {
         expect(tables, r.key).toEqual([{ addOn: "inventory", table: "items", actions: ["read"], limit: { readable: ["id", "name", "unit"] } }]);
         continue;
       }
       if (!["admin", "ops-manager", "read-only"].includes(r.key)) {
-        expect(tables, r.key).toBeUndefined();
+        expect(tables ?? [], r.key).toEqual([]);
         continue;
       }
       expect(Object.fromEntries((tables ?? []).map((entry) => [entry.table, entry.limit?.readable])), r.key).toEqual(SUPPLY_READS);
@@ -510,6 +510,21 @@ describe("the app brings nine roles", () => {
       // Each of them works in Supply: the grant has a screen to be read on.
       expect((r as { modules?: string[] }).modules, r.key).toContain("supply");
     }
+  });
+
+  it("lets every role that reads the aftercare calls read, of Forms' invitations, when a job's survey went and was answered, and nothing of who it went to", () => {
+    const READS = ["id", "form_id", "record_table", "record_key", "class", "invited_at", "answered_at", "expires_at"];
+    const readers: string[] = [];
+    for (const r of roles) {
+      const forms = ((r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables ?? []).filter((entry) => entry.addOn === "forms");
+      if (forms.length === 0) continue;
+      readers.push(r.key);
+      expect(forms, r.key).toEqual([{ addOn: "forms", table: "invitations", actions: ["read"], limit: { readable: READS } }]);
+      // The calls the line sits on are theirs to read.
+      for (const grant of ["table:@follow_ups:read", "table:@jobs:read"]) expect(r.permissions, r.key).toContain(grant);
+    }
+    expect(readers).toEqual(["admin", "sales-manager", "rep", "account-manager", "read-only"]);
+    for (const personal of ["email", "name", "language", "person_table", "person_key", "token_hash", "company", "about"]) expect(READS).not.toContain(personal);
   });
 
   it("sends nobody past the dashboard while the app has no screen of its own", () => {

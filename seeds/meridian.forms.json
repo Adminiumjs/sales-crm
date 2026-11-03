@@ -1,0 +1,1744 @@
+{
+ "format": "adminium.sample/1",
+ "app": "crm",
+ "addOn": "forms",
+ "weekAnchor": "tue",
+ "tables": [
+  {
+   "ref": "forms",
+   "rows": [
+    {
+     "@label": "form:showroom",
+     "id": "b398a577-930b-4293-a64d-4f9372bc4841",
+     "name": {
+      "@t": {
+       "en-US": "Book a showroom visit",
+       "de-DE": "Ausstellungsbesuch buchen",
+       "fr-FR": "Réserver une visite du showroom",
+       "da-DK": "Book et besøg i showroomet",
+       "cs-CZ": "Rezervace návštěvy showroomu",
+       "ar-EG": "حجز زيارة لصالة العرض",
+       "zh-CN": "预约参观展厅",
+       "zh-TW": "預約參觀展廳"
+      }
+     },
+     "slug": "showroom",
+     "kind": "form",
+     "state": "live",
+     "definition": {
+      "v": 1,
+      "kind": "form",
+      "languages": [
+       "en-US",
+       "de-DE"
+      ],
+      "defaultLanguage": "en-US",
+      "title": {
+       "en-US": "Book a showroom visit",
+       "de-DE": "Ausstellungsbesuch buchen"
+      },
+      "intro": {
+       "en-US": "Come and sit in the chairs, try the booths and bring your drawings. Tell us when, and we will have it ready.",
+       "de-DE": "Probieren Sie Stühle und Kabinen aus und bringen Sie Ihren Grundriss mit. Sagen Sie uns, wann, und wir bereiten alles vor."
+      },
+      "questions": [
+       {
+        "id": "qname",
+        "kind": "short",
+        "role": "name",
+        "required": true,
+        "label": {
+         "en-US": "Your name",
+         "de-DE": "Ihr Name"
+        }
+       },
+       {
+        "id": "qemail",
+        "kind": "short",
+        "check": "email",
+        "role": "email",
+        "required": true,
+        "label": {
+         "en-US": "Work e-mail",
+         "de-DE": "Geschäftliche E-Mail"
+        }
+       },
+       {
+        "id": "qcompany",
+        "kind": "short",
+        "role": "company",
+        "required": true,
+        "label": {
+         "en-US": "Company",
+         "de-DE": "Firma"
+        }
+       },
+       {
+        "id": "qday",
+        "kind": "date",
+        "from": "tomorrow",
+        "label": {
+         "en-US": "Which day suits you?",
+         "de-DE": "Welcher Tag passt Ihnen?"
+        }
+       },
+       {
+        "id": "qsee",
+        "kind": "several",
+        "label": {
+         "en-US": "What would you like to see?",
+         "de-DE": "Was möchten Sie sehen?"
+        },
+        "choices": [
+         {
+          "id": "booths",
+          "label": {
+           "en-US": "Acoustic booths",
+           "de-DE": "Akustikkabinen"
+          }
+         },
+         {
+          "id": "desks",
+          "label": {
+           "en-US": "Sit-stand desks",
+           "de-DE": "Sitz-Steh-Tische"
+          }
+         },
+         {
+          "id": "seating",
+          "label": {
+           "en-US": "Task seating",
+           "de-DE": "Bürostühle"
+          }
+         },
+         {
+          "id": "tables",
+          "label": {
+           "en-US": "Meeting tables",
+           "de-DE": "Besprechungstische"
+          }
+         },
+         {
+          "id": "storage",
+          "label": {
+           "en-US": "Storage and lockers",
+           "de-DE": "Stauraum und Schließfächer"
+          }
+         }
+        ]
+       },
+       {
+        "id": "qbrochure",
+        "kind": "one",
+        "label": {
+         "en-US": "Send me the brochure",
+         "de-DE": "Schicken Sie mir die Broschüre"
+        },
+        "choices": [
+         {
+          "id": "yes",
+          "label": {
+           "en-US": "Yes, please",
+           "de-DE": "Ja, bitte"
+          }
+         },
+         {
+          "id": "no",
+          "label": {
+           "en-US": "No, thank you",
+           "de-DE": "Nein, danke"
+          }
+         }
+        ]
+       },
+       {
+        "id": "qdrawings",
+        "kind": "file",
+        "maxMb": 10,
+        "kinds": [
+         "pdf",
+         "jpg",
+         "png"
+        ],
+        "many": true,
+        "label": {
+         "en-US": "Floor plans or drawings",
+         "de-DE": "Grundrisse oder Zeichnungen"
+        }
+       },
+       {
+        "id": "qnote",
+        "kind": "long",
+        "label": {
+         "en-US": "Anything else we should know?",
+         "de-DE": "Sollen wir noch etwas wissen?"
+        }
+       },
+       {
+        "id": "qnews",
+        "kind": "tick",
+        "purpose": "newsletter",
+        "label": {
+         "en-US": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+         "de-DE": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen."
+        },
+        "wordingVersion": 1,
+        "wordingChangedAt": "2026-09-01",
+        "confirm": true
+       }
+      ],
+      "ending": {
+       "kind": "words",
+       "words": {
+        "en-US": "Thank you. We will be in touch within a working day.",
+        "de-DE": "Vielen Dank. Wir melden uns innerhalb eines Werktags."
+       }
+      }
+     },
+     "settings": {
+      "becomes": null,
+      "tell": [
+       {
+        "kind": "role",
+        "id": "crm-sales-manager"
+       }
+      ],
+      "limits": {
+       "perHour": 200,
+       "harder": false
+      }
+     },
+     "published": {
+      "definition": {
+       "v": 1,
+       "kind": "form",
+       "languages": [
+        "en-US",
+        "de-DE"
+       ],
+       "defaultLanguage": "en-US",
+       "title": {
+        "en-US": "Book a showroom visit",
+        "de-DE": "Ausstellungsbesuch buchen"
+       },
+       "intro": {
+        "en-US": "Come and sit in the chairs, try the booths and bring your drawings. Tell us when, and we will have it ready.",
+        "de-DE": "Probieren Sie Stühle und Kabinen aus und bringen Sie Ihren Grundriss mit. Sagen Sie uns, wann, und wir bereiten alles vor."
+       },
+       "questions": [
+        {
+         "id": "qname",
+         "kind": "short",
+         "role": "name",
+         "required": true,
+         "label": {
+          "en-US": "Your name",
+          "de-DE": "Ihr Name"
+         }
+        },
+        {
+         "id": "qemail",
+         "kind": "short",
+         "check": "email",
+         "role": "email",
+         "required": true,
+         "label": {
+          "en-US": "Work e-mail",
+          "de-DE": "Geschäftliche E-Mail"
+         }
+        },
+        {
+         "id": "qcompany",
+         "kind": "short",
+         "role": "company",
+         "required": true,
+         "label": {
+          "en-US": "Company",
+          "de-DE": "Firma"
+         }
+        },
+        {
+         "id": "qday",
+         "kind": "date",
+         "from": "tomorrow",
+         "label": {
+          "en-US": "Which day suits you?",
+          "de-DE": "Welcher Tag passt Ihnen?"
+         }
+        },
+        {
+         "id": "qsee",
+         "kind": "several",
+         "label": {
+          "en-US": "What would you like to see?",
+          "de-DE": "Was möchten Sie sehen?"
+         },
+         "choices": [
+          {
+           "id": "booths",
+           "label": {
+            "en-US": "Acoustic booths",
+            "de-DE": "Akustikkabinen"
+           }
+          },
+          {
+           "id": "desks",
+           "label": {
+            "en-US": "Sit-stand desks",
+            "de-DE": "Sitz-Steh-Tische"
+           }
+          },
+          {
+           "id": "seating",
+           "label": {
+            "en-US": "Task seating",
+            "de-DE": "Bürostühle"
+           }
+          },
+          {
+           "id": "tables",
+           "label": {
+            "en-US": "Meeting tables",
+            "de-DE": "Besprechungstische"
+           }
+          },
+          {
+           "id": "storage",
+           "label": {
+            "en-US": "Storage and lockers",
+            "de-DE": "Stauraum und Schließfächer"
+           }
+          }
+         ]
+        },
+        {
+         "id": "qbrochure",
+         "kind": "one",
+         "label": {
+          "en-US": "Send me the brochure",
+          "de-DE": "Schicken Sie mir die Broschüre"
+         },
+         "choices": [
+          {
+           "id": "yes",
+           "label": {
+            "en-US": "Yes, please",
+            "de-DE": "Ja, bitte"
+           }
+          },
+          {
+           "id": "no",
+           "label": {
+            "en-US": "No, thank you",
+            "de-DE": "Nein, danke"
+           }
+          }
+         ]
+        },
+        {
+         "id": "qdrawings",
+         "kind": "file",
+         "maxMb": 10,
+         "kinds": [
+          "pdf",
+          "jpg",
+          "png"
+         ],
+         "many": true,
+         "label": {
+          "en-US": "Floor plans or drawings",
+          "de-DE": "Grundrisse oder Zeichnungen"
+         }
+        },
+        {
+         "id": "qnote",
+         "kind": "long",
+         "label": {
+          "en-US": "Anything else we should know?",
+          "de-DE": "Sollen wir noch etwas wissen?"
+         }
+        },
+        {
+         "id": "qnews",
+         "kind": "tick",
+         "purpose": "newsletter",
+         "label": {
+          "en-US": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+          "de-DE": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen."
+         },
+         "wordingVersion": 1,
+         "wordingChangedAt": "2026-09-01",
+         "confirm": true
+        }
+       ],
+       "ending": {
+        "kind": "words",
+        "words": {
+         "en-US": "Thank you. We will be in touch within a working day.",
+         "de-DE": "Vielen Dank. Wir melden uns innerhalb eines Werktags."
+        }
+       }
+      },
+      "settings": {
+       "becomes": null,
+       "tell": [
+        {
+         "kind": "role",
+         "id": "crm-sales-manager"
+        }
+       ],
+       "limits": {
+        "perHour": 200,
+        "harder": false
+       }
+      }
+     },
+     "published_at": {
+      "@day": -60,
+      "@time": "09:00"
+     },
+     "updated_at": {
+      "@day": -60,
+      "@time": "09:00"
+     }
+    },
+    {
+     "@label": "form:newsletter",
+     "id": "5ba2dfae-e6bc-49ce-a2ae-6106415ab15a",
+     "name": {
+      "@t": {
+       "en-US": "Newsletter sign-up",
+       "de-DE": "Newsletter-Anmeldung",
+       "fr-FR": "Inscription à la newsletter",
+       "da-DK": "Tilmelding til nyhedsbrev",
+       "cs-CZ": "Přihlášení k odběru novinek",
+       "ar-EG": "الاشتراك في النشرة الإخبارية",
+       "zh-CN": "订阅新闻简报",
+       "zh-TW": "訂閱電子報"
+      }
+     },
+     "slug": "newsletter",
+     "kind": "form",
+     "state": "live",
+     "definition": {
+      "v": 1,
+      "kind": "form",
+      "languages": [
+       "en-US",
+       "de-DE"
+      ],
+      "defaultLanguage": "en-US",
+      "title": {
+       "en-US": "Newsletter sign-up",
+       "de-DE": "Newsletter-Anmeldung"
+      },
+      "intro": {
+       "en-US": "New pieces in the showroom, open days and the odd floor we are proud of. About once a month.",
+       "de-DE": "Neue Stücke im Ausstellungsraum, Tage der offenen Tür und ab und zu eine Etage, auf die wir stolz sind. Etwa einmal im Monat."
+      },
+      "questions": [
+       {
+        "id": "qname",
+        "kind": "short",
+        "role": "name",
+        "label": {
+         "en-US": "Your name",
+         "de-DE": "Ihr Name"
+        }
+       },
+       {
+        "id": "qemail",
+        "kind": "short",
+        "check": "email",
+        "role": "email",
+        "required": true,
+        "label": {
+         "en-US": "E-mail",
+         "de-DE": "E-Mail"
+        }
+       },
+       {
+        "id": "qnews",
+        "kind": "tick",
+        "purpose": "newsletter",
+        "label": {
+         "en-US": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+         "de-DE": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen."
+        },
+        "wordingVersion": 1,
+        "wordingChangedAt": "2026-09-01",
+        "confirm": true
+       }
+      ],
+      "ending": {
+       "kind": "words",
+       "words": {
+        "en-US": "Thank you. Please click the link in the e-mail we just sent.",
+        "de-DE": "Vielen Dank. Bitte klicken Sie auf den Link in der E-Mail, die wir gerade geschickt haben."
+       }
+      }
+     },
+     "settings": {
+      "becomes": null,
+      "tell": [],
+      "limits": {
+       "perHour": 200,
+       "harder": false
+      }
+     },
+     "published": {
+      "definition": {
+       "v": 1,
+       "kind": "form",
+       "languages": [
+        "en-US",
+        "de-DE"
+       ],
+       "defaultLanguage": "en-US",
+       "title": {
+        "en-US": "Newsletter sign-up",
+        "de-DE": "Newsletter-Anmeldung"
+       },
+       "intro": {
+        "en-US": "New pieces in the showroom, open days and the odd floor we are proud of. About once a month.",
+        "de-DE": "Neue Stücke im Ausstellungsraum, Tage der offenen Tür und ab und zu eine Etage, auf die wir stolz sind. Etwa einmal im Monat."
+       },
+       "questions": [
+        {
+         "id": "qname",
+         "kind": "short",
+         "role": "name",
+         "label": {
+          "en-US": "Your name",
+          "de-DE": "Ihr Name"
+         }
+        },
+        {
+         "id": "qemail",
+         "kind": "short",
+         "check": "email",
+         "role": "email",
+         "required": true,
+         "label": {
+          "en-US": "E-mail",
+          "de-DE": "E-Mail"
+         }
+        },
+        {
+         "id": "qnews",
+         "kind": "tick",
+         "purpose": "newsletter",
+         "label": {
+          "en-US": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+          "de-DE": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen."
+         },
+         "wordingVersion": 1,
+         "wordingChangedAt": "2026-09-01",
+         "confirm": true
+        }
+       ],
+       "ending": {
+        "kind": "words",
+        "words": {
+         "en-US": "Thank you. Please click the link in the e-mail we just sent.",
+         "de-DE": "Vielen Dank. Bitte klicken Sie auf den Link in der E-Mail, die wir gerade geschickt haben."
+        }
+       }
+      },
+      "settings": {
+       "becomes": null,
+       "tell": [],
+       "limits": {
+        "perHour": 200,
+        "harder": false
+       }
+      }
+     },
+     "published_at": {
+      "@day": -90,
+      "@time": "09:00"
+     },
+     "updated_at": {
+      "@day": -90,
+      "@time": "09:00"
+     }
+    },
+    {
+     "@label": "form:trade-show",
+     "id": "1b0f975e-e49b-4102-a6d0-9c46b6e86bb0",
+     "name": {
+      "@t": {
+       "en-US": "Trade show enquiry",
+       "de-DE": "Messeanfrage",
+       "fr-FR": "Demande au salon",
+       "da-DK": "Henvendelse fra messen",
+       "cs-CZ": "Poptávka z veletrhu",
+       "ar-EG": "استفسار من المعرض التجاري",
+       "zh-CN": "展会询盘",
+       "zh-TW": "展會詢問"
+      }
+     },
+     "slug": "trade-show",
+     "kind": "form",
+     "state": "draft",
+     "definition": {
+      "v": 1,
+      "kind": "form",
+      "languages": [
+       "en-US",
+       "de-DE"
+      ],
+      "defaultLanguage": "en-US",
+      "title": {
+       "en-US": "Trade show enquiry",
+       "de-DE": "Messeanfrage"
+      },
+      "questions": [
+       {
+        "id": "qname",
+        "kind": "short",
+        "role": "name",
+        "required": true,
+        "label": {
+         "en-US": "Your name",
+         "de-DE": "Ihr Name"
+        }
+       },
+       {
+        "id": "qemail",
+        "kind": "short",
+        "check": "email",
+        "role": "email",
+        "required": true,
+        "label": {
+         "en-US": "Work e-mail",
+         "de-DE": "Geschäftliche E-Mail"
+        }
+       },
+       {
+        "id": "qcompany",
+        "kind": "short",
+        "role": "company",
+        "label": {
+         "en-US": "Company",
+         "de-DE": "Firma"
+        }
+       },
+       {
+        "id": "qsee",
+        "kind": "several",
+        "label": {
+         "en-US": "What caught your eye on the stand?",
+         "de-DE": "Was ist Ihnen am Stand aufgefallen?"
+        },
+        "choices": [
+         {
+          "id": "booths",
+          "label": {
+           "en-US": "Acoustic booths",
+           "de-DE": "Akustikkabinen"
+          }
+         },
+         {
+          "id": "desks",
+          "label": {
+           "en-US": "Sit-stand desks",
+           "de-DE": "Sitz-Steh-Tische"
+          }
+         },
+         {
+          "id": "seating",
+          "label": {
+           "en-US": "Task seating",
+           "de-DE": "Bürostühle"
+          }
+         },
+         {
+          "id": "tables",
+          "label": {
+           "en-US": "Meeting tables",
+           "de-DE": "Besprechungstische"
+          }
+         },
+         {
+          "id": "storage",
+          "label": {
+           "en-US": "Storage and lockers",
+           "de-DE": "Stauraum und Schließfächer"
+          }
+         }
+        ]
+       },
+       {
+        "id": "qnote",
+        "kind": "long",
+        "label": {
+         "en-US": "What are you working on?",
+         "de-DE": "Woran arbeiten Sie gerade?"
+        }
+       }
+      ],
+      "ending": {
+       "kind": "words",
+       "words": {
+        "en-US": "Thank you for stopping by. We will write after the show.",
+        "de-DE": "Danke für Ihren Besuch. Wir schreiben Ihnen nach der Messe."
+       }
+      }
+     },
+     "settings": {
+      "becomes": null,
+      "tell": [
+       {
+        "kind": "role",
+        "id": "crm-sales-manager"
+       }
+      ],
+      "limits": {
+       "perHour": 200,
+       "harder": false
+      }
+     },
+     "updated_at": {
+      "@day": -6,
+      "@time": "09:00"
+     }
+    },
+    {
+     "@label": "form:fit-out",
+     "id": "13a7287d-6745-4429-a5b9-003220e49939",
+     "name": {
+      "@t": {
+       "en-US": "How did your fit-out go?",
+       "de-DE": "Wie lief Ihre Einrichtung?",
+       "fr-FR": "Comment s’est passé votre aménagement ?",
+       "da-DK": "Hvordan gik jeres indretning?",
+       "cs-CZ": "Jak proběhlo vaše vybavení?",
+       "ar-EG": "كيف سار تجهيز مكتبك؟",
+       "zh-CN": "您的装修进展如何？",
+       "zh-TW": "您的裝修進行得如何？"
+      }
+     },
+     "slug": "fit-out",
+     "kind": "survey",
+     "state": "live",
+     "definition": {
+      "v": 1,
+      "kind": "survey",
+      "languages": [
+       "en-US",
+       "de-DE"
+      ],
+      "defaultLanguage": "en-US",
+      "title": {
+       "en-US": "How did your fit-out go?",
+       "de-DE": "Wie lief Ihre Einrichtung?"
+      },
+      "intro": {
+       "en-US": "Three questions, two minutes. Your answer goes straight to the team that did the work.",
+       "de-DE": "Drei Fragen, zwei Minuten. Ihre Antwort geht direkt an das Team, das die Arbeit gemacht hat."
+      },
+      "questions": [
+       {
+        "id": "qrecommend",
+        "kind": "score",
+        "recommend": true,
+        "required": true,
+        "label": {
+         "en-US": "How likely are you to recommend Meridian to a colleague?",
+         "de-DE": "Wie wahrscheinlich ist es, dass Sie Meridian weiterempfehlen?"
+        }
+       },
+       {
+        "id": "qstars",
+        "kind": "stars",
+        "required": true,
+        "label": {
+         "en-US": "How would you rate the fit-out overall?",
+         "de-DE": "Wie bewerten Sie die Einrichtung insgesamt?"
+        }
+       },
+       {
+        "id": "qsaid",
+        "kind": "long",
+        "label": {
+         "en-US": "What should we keep doing, or do better?",
+         "de-DE": "Was sollen wir beibehalten oder besser machen?"
+        }
+       }
+      ],
+      "ending": {
+       "kind": "words",
+       "words": {
+        "en-US": "Thank you. We read every answer.",
+        "de-DE": "Vielen Dank. Wir lesen jede Antwort."
+       }
+      }
+     },
+     "settings": {
+      "becomes": null,
+      "tell": [
+       {
+        "kind": "role",
+        "id": "crm-admin"
+       }
+      ],
+      "tellWhen": {
+       "question": "qrecommend",
+       "atMost": 6
+      },
+      "limits": {
+       "perHour": 200,
+       "harder": false
+      },
+      "survey": {
+       "mode": "named",
+       "linkNames": true,
+       "stopAfterDays": 30
+      }
+     },
+     "published": {
+      "definition": {
+       "v": 1,
+       "kind": "survey",
+       "languages": [
+        "en-US",
+        "de-DE"
+       ],
+       "defaultLanguage": "en-US",
+       "title": {
+        "en-US": "How did your fit-out go?",
+        "de-DE": "Wie lief Ihre Einrichtung?"
+       },
+       "intro": {
+        "en-US": "Three questions, two minutes. Your answer goes straight to the team that did the work.",
+        "de-DE": "Drei Fragen, zwei Minuten. Ihre Antwort geht direkt an das Team, das die Arbeit gemacht hat."
+       },
+       "questions": [
+        {
+         "id": "qrecommend",
+         "kind": "score",
+         "recommend": true,
+         "required": true,
+         "label": {
+          "en-US": "How likely are you to recommend Meridian to a colleague?",
+          "de-DE": "Wie wahrscheinlich ist es, dass Sie Meridian weiterempfehlen?"
+         }
+        },
+        {
+         "id": "qstars",
+         "kind": "stars",
+         "required": true,
+         "label": {
+          "en-US": "How would you rate the fit-out overall?",
+          "de-DE": "Wie bewerten Sie die Einrichtung insgesamt?"
+         }
+        },
+        {
+         "id": "qsaid",
+         "kind": "long",
+         "label": {
+          "en-US": "What should we keep doing, or do better?",
+          "de-DE": "Was sollen wir beibehalten oder besser machen?"
+         }
+        }
+       ],
+       "ending": {
+        "kind": "words",
+        "words": {
+         "en-US": "Thank you. We read every answer.",
+         "de-DE": "Vielen Dank. Wir lesen jede Antwort."
+        }
+       }
+      },
+      "settings": {
+       "becomes": null,
+       "tell": [
+        {
+         "kind": "role",
+         "id": "crm-admin"
+        }
+       ],
+       "tellWhen": {
+        "question": "qrecommend",
+        "atMost": 6
+       },
+       "limits": {
+        "perHour": 200,
+        "harder": false
+       },
+       "survey": {
+        "mode": "named",
+        "linkNames": true,
+        "stopAfterDays": 30
+       }
+      }
+     },
+     "published_at": {
+      "@day": -260,
+      "@time": "09:00"
+     },
+     "updated_at": {
+      "@day": -260,
+      "@time": "09:00"
+     }
+    },
+    {
+     "@label": "form:visit-feedback",
+     "id": "995e8037-782f-436b-aba3-079488a7e84b",
+     "name": {
+      "@t": {
+       "en-US": "Showroom visit feedback",
+       "de-DE": "Feedback zum Ausstellungsbesuch",
+       "fr-FR": "Avis sur la visite du showroom",
+       "da-DK": "Feedback på besøget i showroomet",
+       "cs-CZ": "Hodnocení návštěvy showroomu",
+       "ar-EG": "رأيك في زيارة صالة العرض",
+       "zh-CN": "展厅参观反馈",
+       "zh-TW": "展廳參觀回饋"
+      }
+     },
+     "slug": "showroom-feedback",
+     "kind": "form",
+     "state": "closed",
+     "definition": {
+      "v": 1,
+      "kind": "form",
+      "languages": [
+       "en-US",
+       "de-DE"
+      ],
+      "defaultLanguage": "en-US",
+      "title": {
+       "en-US": "Showroom visit feedback",
+       "de-DE": "Feedback zum Ausstellungsbesuch"
+      },
+      "questions": [
+       {
+        "id": "qstars",
+        "kind": "stars",
+        "required": true,
+        "label": {
+         "en-US": "How was your visit?",
+         "de-DE": "Wie war Ihr Besuch?"
+        }
+       },
+       {
+        "id": "qsaid",
+        "kind": "long",
+        "label": {
+         "en-US": "Anything we could have done better?",
+         "de-DE": "Was hätten wir besser machen können?"
+        }
+       }
+      ],
+      "ending": {
+       "kind": "words",
+       "words": {
+        "en-US": "Thank you for coming in.",
+        "de-DE": "Danke für Ihren Besuch."
+       }
+      }
+     },
+     "settings": {
+      "becomes": null,
+      "tell": [],
+      "limits": {
+       "perHour": 200,
+       "harder": false
+      }
+     },
+     "published": {
+      "definition": {
+       "v": 1,
+       "kind": "form",
+       "languages": [
+        "en-US",
+        "de-DE"
+       ],
+       "defaultLanguage": "en-US",
+       "title": {
+        "en-US": "Showroom visit feedback",
+        "de-DE": "Feedback zum Ausstellungsbesuch"
+       },
+       "questions": [
+        {
+         "id": "qstars",
+         "kind": "stars",
+         "required": true,
+         "label": {
+          "en-US": "How was your visit?",
+          "de-DE": "Wie war Ihr Besuch?"
+         }
+        },
+        {
+         "id": "qsaid",
+         "kind": "long",
+         "label": {
+          "en-US": "Anything we could have done better?",
+          "de-DE": "Was hätten wir besser machen können?"
+         }
+        }
+       ],
+       "ending": {
+        "kind": "words",
+        "words": {
+         "en-US": "Thank you for coming in.",
+         "de-DE": "Danke für Ihren Besuch."
+        }
+       }
+      },
+      "settings": {
+       "becomes": null,
+       "tell": [],
+       "limits": {
+        "perHour": 200,
+        "harder": false
+       }
+      }
+     },
+     "published_at": {
+      "@day": -200,
+      "@time": "09:00"
+     },
+     "closed_at": {
+      "@day": -120,
+      "@time": "17:30"
+     },
+     "updated_at": {
+      "@day": -120,
+      "@time": "09:00"
+     }
+    }
+   ]
+  },
+  {
+   "ref": "invitations",
+   "rows": [
+    {
+     "@label": "inv:w1",
+     "id": "9eb7306b-c69c-45d9-a3c4-88d80bbfc002",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "t.reidy@cobaltlegal.example",
+     "name": "Tomas Reidy",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:tomas"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:w1"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -250,
+      "@time": "09:00",
+      "@week": true
+     },
+     "answered_at": {
+      "@day": -250,
+      "@week": true,
+      "@time": "19:20"
+     },
+     "expires_at": {
+      "@day": -220,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-01 · Cobalt Legal",
+     "company": "Cobalt Legal",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    },
+    {
+     "@label": "inv:w2",
+     "id": "c9423c6f-d22f-4c09-ac00-010b20abf761",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "s.moore@harborfinch.example",
+     "name": "Sadie Moore",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:sadie"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:w2"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -193,
+      "@time": "09:00",
+      "@week": true
+     },
+     "expires_at": {
+      "@day": -163,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-02 · Harbor & Finch",
+     "company": "Harbor & Finch",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    },
+    {
+     "@label": "inv:w3",
+     "id": "94cef607-e4d3-4154-ac18-f8adfba5c135",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "owen@junoanalytics.example",
+     "name": "Owen Marsh",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:owen"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:w3"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -137,
+      "@time": "09:00",
+      "@week": true
+     },
+     "expires_at": {
+      "@day": -107,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-03 · Juno Analytics",
+     "company": "Juno Analytics",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    },
+    {
+     "@label": "inv:h3",
+     "id": "4d616e86-2a72-4262-a2cc-593369d57f95",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "p.lindqvist@nordwind.example",
+     "name": "Petra Lindqvist",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:petra"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:h3"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -102,
+      "@time": "09:00",
+      "@week": true
+     },
+     "expires_at": {
+      "@day": -72,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-04 · Nordwind Logistics",
+     "company": "Nordwind Logistics",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    },
+    {
+     "@label": "inv:h2",
+     "id": "71a68ab8-e8a8-4b77-a681-6dc388c6ac81",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "a.belova@fernwayclinics.example",
+     "name": "Ana Belova",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:ana"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:h2"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -95,
+      "@time": "09:00",
+      "@week": true
+     },
+     "expires_at": {
+      "@day": -65,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-05 · Fernway Clinics",
+     "company": "Fernway Clinics",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    },
+    {
+     "@label": "inv:h1",
+     "id": "3e3ae582-88cb-4779-aa42-cb975fd5ef3c",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "ines.vaughan@cobaltlegal.example",
+     "name": "Ines Vaughan",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:ines"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:h1"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -81,
+      "@time": "09:00",
+      "@week": true
+     },
+     "expires_at": {
+      "@day": -51,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-06 · Cobalt Legal",
+     "company": "Cobalt Legal",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    },
+    {
+     "@label": "inv:h4",
+     "id": "27558f6a-ecea-4294-aae5-16f71b067d34",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "email": "marta@veldtstudios.example",
+     "name": "Marta Kovac",
+     "language": "en-US",
+     "person_table": "crm:contacts",
+     "person_key": {
+      "@ref": "ct:marta"
+     },
+     "record_table": {
+      "@table": "jobs"
+     },
+     "record_key": {
+      "@ref": "job:h4"
+     },
+     "class": "marketing",
+     "invited_at": {
+      "@day": -1,
+      "@time": "09:00",
+      "@week": true
+     },
+     "answered_at": {
+      "@day": -1,
+      "@week": true,
+      "@time": "19:20"
+     },
+     "expires_at": {
+      "@day": 29,
+      "@time": "09:00",
+      "@week": true
+     },
+     "about": "J-08 · Veldt Studios",
+     "company": "Veldt Studios",
+     "rule_name": "A job is signed off: the fit-out survey 2 days later"
+    }
+   ]
+  },
+  {
+   "ref": "answers",
+   "rows": [
+    {
+     "id": "231deac5-a4f9-4d5d-a45a-7ea32b9cd77d",
+     "form_id": {
+      "@ref": "form:showroom"
+     },
+     "submitted_at": {
+      "@day": 0,
+      "@time": "08:12",
+      "@week": true
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Ines Vaughan",
+      "qemail": "ines.vaughan@cobaltlegal.example",
+      "qcompany": "Cobalt Legal",
+      "qsee": [
+       "desks"
+      ],
+      "qbrochure": "yes",
+      "qnote": "We are taking floors two and three in September. Same bench desks as the fourth floor, plus the screens. Can someone come and measure?",
+      "qnews": false
+     },
+     "email": "ines.vaughan@cobaltlegal.example",
+     "name": "Ines Vaughan",
+     "became_table": {
+      "@table": "enquiries"
+     },
+     "became_key": {
+      "@ref": "enq:ines"
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "19f8b926-1eac-4bc5-a080-cb6cf33aaf8c",
+     "form_id": {
+      "@ref": "form:showroom"
+     },
+     "submitted_at": {
+      "@day": -1,
+      "@time": "16:48",
+      "@week": true
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Hannah Doyle",
+      "qemail": "procurement@westgatecare.example",
+      "qcompany": "Westgate Care",
+      "qsee": [
+       "seating"
+      ],
+      "qbrochure": "yes",
+      "qnote": "Ninety task chairs for a new call centre in Doncaster. We need something that survives three shifts a day. Who do I speak to?",
+      "qnews": false
+     },
+     "email": "procurement@westgatecare.example",
+     "name": "Hannah Doyle",
+     "became_table": {
+      "@table": "enquiries"
+     },
+     "became_key": {
+      "@ref": "enq:hannah"
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "f87921b5-0464-470e-a2fa-6b465bb8adfd",
+     "form_id": {
+      "@ref": "form:showroom"
+     },
+     "submitted_at": {
+      "@day": -6,
+      "@time": "14:20",
+      "@week": true
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Priti Shah",
+      "qemail": "hello@marchmontdental.example",
+      "qcompany": "Marchmont Dental",
+      "qsee": [
+       "seating",
+       "tables"
+      ],
+      "qbrochure": "no",
+      "qnote": "Small job — one reception, six waiting chairs and a desk. Is that too small for you?",
+      "qnews": false
+     },
+     "email": "hello@marchmontdental.example",
+     "name": "Priti Shah",
+     "became_table": {
+      "@table": "enquiries"
+     },
+     "became_key": {
+      "@ref": "enq:priti"
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "9cd1d815-db2b-4bbe-a22b-eb934c36d345",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -80,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Rosa Kemp",
+      "qemail": "rosa.kemp@mailbox.example",
+      "qnews": true
+     },
+     "email": "rosa.kemp@mailbox.example",
+     "name": "Rosa Kemp",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "18f29c40-b706-4e90-aeb6-c2ed04471502",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -71,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Will Archer",
+      "qemail": "will.archer@mailbox.example",
+      "qnews": true
+     },
+     "email": "will.archer@mailbox.example",
+     "name": "Will Archer",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "435c0316-fd79-4dca-a807-3a1fd5cab990",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -66,
+      "@time": "12:00"
+     },
+     "language": "de-DE",
+     "values": {
+      "qname": "Anna Seidel",
+      "qemail": "anna.seidel@postfach.example",
+      "qnews": true
+     },
+     "email": "anna.seidel@postfach.example",
+     "name": "Anna Seidel",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen.",
+     "consent_version": 1
+    },
+    {
+     "id": "81bf23ea-cbe0-4821-a947-a6383dd4f15f",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -52,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Joe Finn",
+      "qemail": "joe.finn@mailbox.example",
+      "qnews": true
+     },
+     "email": "joe.finn@mailbox.example",
+     "name": "Joe Finn",
+     "confirm": "expired",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "8b070e42-70cf-4485-aaf4-9d631e0262ab",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -44,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Mei Lin",
+      "qemail": "mei.lin@mailbox.example",
+      "qnews": true
+     },
+     "email": "mei.lin@mailbox.example",
+     "name": "Mei Lin",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "53291851-c296-49df-a995-ad7186c75ce1",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -30,
+      "@time": "12:00"
+     },
+     "language": "de-DE",
+     "values": {
+      "qname": "Paul Richter",
+      "qemail": "paul.richter@postfach.example",
+      "qnews": true
+     },
+     "email": "paul.richter@postfach.example",
+     "name": "Paul Richter",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen.",
+     "consent_version": 1
+    },
+    {
+     "id": "23fdb779-4106-4b71-a4a8-01f56b7aaf56",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -18,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Zara Hussain",
+      "qemail": "zara.hussain@mailbox.example",
+      "qnews": true
+     },
+     "email": "zara.hussain@mailbox.example",
+     "name": "Zara Hussain",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "0da427d7-db30-42d4-a54b-b3b40c816bb7",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -8,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Ben Cole",
+      "qemail": "ben.cole@mailbox.example",
+      "qnews": true
+     },
+     "email": "ben.cole@mailbox.example",
+     "name": "Ben Cole",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "979146a0-b62c-48cf-a0ce-58dcf7936ddf",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": -3,
+      "@time": "12:00"
+     },
+     "language": "en-US",
+     "values": {
+      "qname": "Lily Ward",
+      "qemail": "lily.ward@mailbox.example",
+      "qnews": true
+     },
+     "email": "lily.ward@mailbox.example",
+     "name": "Lily Ward",
+     "confirm": "confirmed",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Send me Meridian's newsletter, about once a month. I can say no at any time.",
+     "consent_version": 1
+    },
+    {
+     "id": "bc9d7d8b-75ac-46cf-aaad-6bdde63fdcdd",
+     "form_id": {
+      "@ref": "form:newsletter"
+     },
+     "submitted_at": {
+      "@day": 0,
+      "@time": "12:00"
+     },
+     "language": "de-DE",
+     "values": {
+      "qname": "Jonas Peters",
+      "qemail": "jonas.peters@postfach.example",
+      "qnews": true
+     },
+     "email": "jonas.peters@postfach.example",
+     "name": "Jonas Peters",
+     "confirm": "pending",
+     "consent_purpose": "newsletter",
+     "consent_wording": "Schicken Sie mir den Newsletter von Meridian, etwa einmal im Monat. Ich kann jederzeit Nein sagen.",
+     "consent_version": 1
+    },
+    {
+     "id": "cdf05a3d-a4e7-4fe5-a5a2-5b6b28764b93",
+     "form_id": {
+      "@ref": "form:visit-feedback"
+     },
+     "submitted_at": {
+      "@day": -190,
+      "@time": "15:30"
+     },
+     "language": "en-US",
+     "values": {
+      "qstars": 5,
+      "qsaid": "Coffee was good and nobody rushed us."
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "17cc45b0-d574-4896-acd9-a55fa1ab9c76",
+     "form_id": {
+      "@ref": "form:visit-feedback"
+     },
+     "submitted_at": {
+      "@day": -176,
+      "@time": "15:30"
+     },
+     "language": "en-US",
+     "values": {
+      "qstars": 4,
+      "qsaid": "Would have liked to see the booths with the doors shut."
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "588d4009-6e50-43de-a0eb-ffe198d9f583",
+     "form_id": {
+      "@ref": "form:visit-feedback"
+     },
+     "submitted_at": {
+      "@day": -161,
+      "@time": "15:30"
+     },
+     "language": "de-DE",
+     "values": {
+      "qstars": 5,
+      "qsaid": "Sehr gute Beratung."
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "713e2553-55a5-4db9-ac9d-de15e44b992e",
+     "form_id": {
+      "@ref": "form:visit-feedback"
+     },
+     "submitted_at": {
+      "@day": -150,
+      "@time": "15:30"
+     },
+     "language": "en-US",
+     "values": {
+      "qstars": 3,
+      "qsaid": "Parking was hard to find."
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "a0a96d3a-98c9-422a-a265-b081577e8998",
+     "form_id": {
+      "@ref": "form:visit-feedback"
+     },
+     "submitted_at": {
+      "@day": -138,
+      "@time": "15:30"
+     },
+     "language": "en-US",
+     "values": {
+      "qstars": 5
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "c2ea006f-b09b-43ab-aeec-50f3326ff3b2",
+     "form_id": {
+      "@ref": "form:visit-feedback"
+     },
+     "submitted_at": {
+      "@day": -125,
+      "@time": "15:30"
+     },
+     "language": "en-US",
+     "values": {
+      "qstars": 4,
+      "qsaid": "Bring more fabric samples to the table."
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "7e5f81e3-c282-4189-a2c9-9b4087a51684",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "submitted_at": {
+      "@day": -250,
+      "@week": true,
+      "@time": "19:20"
+     },
+     "language": "en-US",
+     "values": {
+      "qrecommend": 8,
+      "qstars": 4,
+      "qsaid": "Good work. We wanted more warning that the desk was made to order."
+     },
+     "email": "t.reidy@cobaltlegal.example",
+     "name": "Tomas Reidy",
+     "became_table": {
+      "@table": "feedback"
+     },
+     "became_key": {
+      "@ref": "fb:w1"
+     },
+     "invitation_id": {
+      "@ref": "inv:w1"
+     },
+     "confirm": "none"
+    },
+    {
+     "id": "242b4d75-cd25-4e83-a308-d92c0c59127d",
+     "form_id": {
+      "@ref": "form:fit-out"
+     },
+     "submitted_at": {
+      "@day": -1,
+      "@week": true,
+      "@time": "19:20"
+     },
+     "language": "en-US",
+     "values": {
+      "qrecommend": 10,
+      "qstars": 5,
+      "qsaid": "In and out in a morning. The drawings matched the room exactly, which almost never happens."
+     },
+     "email": "marta@veldtstudios.example",
+     "name": "Marta Kovac",
+     "became_table": {
+      "@table": "feedback"
+     },
+     "became_key": {
+      "@ref": "fb:h4"
+     },
+     "invitation_id": {
+      "@ref": "inv:h4"
+     },
+     "confirm": "none"
+    }
+   ]
+  }
+ ]
+}

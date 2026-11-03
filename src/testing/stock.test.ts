@@ -34,7 +34,7 @@ const doc = manifest as unknown as {
 
 describe("the app's rows for Inventory", () => {
   it("are the file the manifest names, for an add-on the app suggests", () => {
-    expect(doc.sampleData.addOns).toEqual({ inventory: { file: "seeds/meridian.inventory.json" } });
+    expect(doc.sampleData.addOns?.["inventory"]).toEqual({ file: "seeds/meridian.inventory.json" });
     expect(doc.addOns.suggests.map((one) => one.key)).toContain("inventory");
     expect([file.format, file.app, file.addOn]).toEqual(["adminium.sample/1", "crm", "inventory"]);
   });

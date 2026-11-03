@@ -84,12 +84,14 @@ describe("the rules the app ships", () => {
   const YES = ["quote-yes-on-lost"];
   // The brochure a website form's enquirer asks for, and the call two days on: it writes to a stranger, so it ships off.
   const BROCHURE = ["brochure-asked"];
+  // The fit-out survey two days after a sign-off: it writes to a customer, and waits for a survey to send, so it ships off.
+  const SURVEY = ["survey-after-sign-off"];
 
-  it("are twenty-five (of the thirty-two a manifest takes): six the app works by, a late yes, six that tell a crew, one that tells the office of a refused sign-off and one that books aftercare, switched on, and nine that tell people and the brochure, switched off; each named and described in eight languages", () => {
-    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...OFFICE, ...AFTER, ...BROCHURE]);
+  it("are twenty-six (of the thirty-two a manifest takes): six the app works by, a late yes, six that tell a crew, one that tells the office of a refused sign-off and one that books aftercare, switched on, and nine that tell people, the brochure and the survey, switched off; each named and described in eight languages", () => {
+    expect(m.automations.map((one) => one.key)).toEqual([...WORKS, ...YES, ...TELLS, ...CREW, ...OFFICE, ...AFTER, ...BROCHURE, ...SURVEY]);
     for (const one of m.automations) {
       expect(one.enabled, one.key).toBe(WORKS.includes(one.key) || YES.includes(one.key) || CREW.includes(one.key) || OFFICE.includes(one.key) || AFTER.includes(one.key));
-      expect(BROCHURE.includes(one.key) ? one.enabled : false, one.key).toBe(false);
+      expect([...BROCHURE, ...SURVEY].includes(one.key) ? one.enabled : false, one.key).toBe(false);
       expect(inAll(one.name), `${one.key} name`).toBe(true);
       expect(inAll(one.description), `${one.key} description`).toBe(true);
     }

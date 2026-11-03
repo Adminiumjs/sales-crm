@@ -135,6 +135,11 @@ export function stageManifest(whole, stages, stage) {
     doc.documents = doc.documents.filter((document) => partOf(document) && !goneTables.has(document.table) && !JSON.stringify(document.mapping).match(/"(?:via|column)":"([a-z0-9_]+)"/g)?.some((pair) => (goneColumns[document.table] ?? []).includes(pair.split(":")[1].replace(/"/g, ""))));
     if (doc.documents.length === 0) delete doc.documents;
   }
+  // A way in from outside of a part or a table that went (a survey's answer, before Surveys) goes with it.
+  if (doc.publicAccess !== undefined) {
+    doc.publicAccess = doc.publicAccess.filter((entry) => partOf(entry) && !goneTables.has(entry.table));
+    if (doc.publicAccess.length === 0) delete doc.publicAccess;
+  }
   if (doc.outbox?.producers !== undefined) doc.outbox.producers = doc.outbox.producers.filter((producer) => partOf(producer) && !goneTables.has(producer.onChange?.table));
   if (doc.outbox !== undefined) cutOutbox(doc, whole, goneColumns);
   if (doc.people !== undefined) cutPeople(doc, goneTables, goneColumns);
@@ -291,9 +296,10 @@ export function stageFiles(stage, stages = readStages(), whole = readWhole()) {
     files[sampleFile] = `${JSON.stringify(sample, null, 1)}\n`;
     for (const asset of Object.values(sample.assets ?? {})) files[asset.file] = readFileSync(join(WHOLE, asset.file));
     for (const [key, addOn] of Object.entries(manifest.sampleData.addOns ?? {})) {
-      // An add-on's sample file goes with the part that needs the add-on.
-      const feature = (whole.addOns?.features ?? []).find((one) => (one.requires ?? []).includes(key));
-      if (feature !== undefined && !partsOf(stages, stage).includes(feature.id)) {
+      // An add-on's sample file goes with the parts that wait for the add-on (Supply for Inventory, Surveys for Forms).
+      const needs = new Set((whole.addOns?.features ?? []).filter((one) => (one.requires ?? []).includes(key)).map((one) => one.id));
+      const waiting = (whole.modules ?? []).filter((part) => needs.has(part.id) || needs.has(part.feature)).map((part) => part.id);
+      if (waiting.length > 0 && !waiting.some((part) => partsOf(stages, stage).includes(part))) {
         delete manifest.sampleData.addOns[key];
         continue;
       }

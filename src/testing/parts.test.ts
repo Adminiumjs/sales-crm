@@ -1,5 +1,5 @@
 /**
- * The ten parts of `manifest.json`, and what belongs to each.
+ * The eleven parts of `manifest.json`, and what belongs to each.
  *
  * The validator checks that a part named anywhere is a part the app has. It
  * does not know which part a table belongs to, which roles work in it, or
@@ -24,6 +24,8 @@ const PARTS: [id: string, start: "always" | "on" | "off", feature?: string][] = 
   ["showroom", "off"],
   ["jobs", "off"],
   ["aftercare", "off"],
+  // A survey after a sign-off, and its answer as the job's feedback: waits for Forms.
+  ["surveys", "on", "customer-feedback"],
   ["supply", "on", "supply"],
   ["fleet", "off"],
 ];
@@ -50,7 +52,7 @@ const pages = manifest.pages as unknown as Page[];
 const roles = manifest.roles as unknown as Role[];
 const modules = (manifest as unknown as { modules: { id: string; label: Record<string, string>; default: string; feature?: string }[] }).modules;
 
-describe("the app is made of ten parts", () => {
+describe("the app is made of eleven parts", () => {
   it("declares them in the menu's order, each with the start it is meant to have", () => {
     expect(modules.map((part) => [part.id, part.default, ...(part.feature === undefined ? [] : [part.feature])])).toEqual(PARTS.map((part) => [...part]));
   });
@@ -64,7 +66,7 @@ describe("the app is made of ten parts", () => {
     expect(features.map((feature) => [feature.id, feature.requires])).toEqual([
       ["quotes", ["invoices"]],
       ["supply", ["inventory"]],
-      // What Forms brings across parts: no part waits for it.
+      // What Forms brings: web enquiries across parts, and customer feedback, the part Surveys waits for.
       ["web-enquiries", ["forms"]],
       ["customer-feedback", ["forms"]],
     ]);
@@ -157,6 +159,8 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["aftercare-call", "aftercare"],
       // The brochure a website form's enquirer asks for goes with the Inbox.
       ["brochure-asked", "inbox"],
+      // The survey after a sign-off waits for Forms.
+      ["survey-after-sign-off", "surveys"],
     ]);
   });
 
@@ -188,6 +192,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
 
 describe("the app stands without Invoices & Receipts", () => {
   it("leaves the quotes part out, and nothing else", () => {
+    // Surveys waits for Forms by its switch only: no table of it is built on Forms' shape, so none is left out.
     expect([...optionalShapeAddOns(manifest)]).toEqual([["invoices", ["quotes"]]]);
     expect(modulesLeftOut(manifest, (addOn) => addOn !== "invoices")).toEqual(["quotes"]);
     expect(modulesLeftOut(manifest, () => true)).toEqual([]);
@@ -212,7 +217,7 @@ describe("the app stands without Invoices & Receipts", () => {
     expect(templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))).toHaveLength(8);
     for (const template of templates.filter((one) => /^crm-(visit|referral|showroom)-/.test(one.key))) expect(JSON.stringify(template), template.key).not.toMatch(/\{\{quote\.|quote_lines/);
     expect((left.pages as unknown as Page[]).filter((page) => page.ref.includes("quote"))).toEqual([]);
-    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told", "sign-off-refused", "aftercare-call", "brochure-asked"]);
+    expect((left.automations as unknown as { key: string }[]).map((rule) => rule.key)).toEqual(["deal-made", "deal-stage-changed", "deal-stage-was", "deal-won-job", "nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "deal-handed-over", "week-rep", "week-manager", "day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told", "sign-off-refused", "aftercare-call", "brochure-asked", "survey-after-sign-off"]);
     // Every role is still there, without a grant, a limit or a part that names quotes.
     const leftRoles = left.roles as unknown as Role[];
     expect(leftRoles.map((role) => role.key)).toEqual(roles.map((role) => role.key));

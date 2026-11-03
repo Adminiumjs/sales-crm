@@ -40,7 +40,8 @@ for (const [name, raw] of [
   const doc = raw as unknown as Doc;
   const table = (ref: string) => doc.requiredSchema.tables.find((one) => one.ref === ref)!;
   const column = (ref: string, col: string) => table(ref).columns.find((one) => one.ref === col)!;
-  const forms = doc.publicAccess.filter((entry) => entry.key === "forms");
+  // The website forms' entry: the survey's (on feedback) is its own file's (`surveys.test.ts`).
+  const forms = doc.publicAccess.filter((entry) => entry.key === "forms" && entry.table === "enquiries");
 
   describe(`website forms in ${name}`, () => {
     it("still passes the validator, at the first Adminium that reads a forms entry's source", () => {
@@ -50,7 +51,7 @@ for (const [name, raw] of [
     });
 
     it("opens Enquiries to forms by one entry, of the Inbox part, that only adds a row", () => {
-      expect(forms.map((entry) => entry.table)).toEqual(["enquiries"]);
+      expect(doc.publicAccess.filter((entry) => entry.key === "forms").map((entry) => entry.table)).toEqual(["enquiries", "feedback"]);
       const entry = forms[0]!;
       expect(entry.methods).toEqual(["POST"]);
       expect(entry.module).toBe(table("enquiries").module);

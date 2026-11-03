@@ -2,7 +2,7 @@
   "released": 3,
   "stages": {
     "1": ["selling", "quotes", "accounts", "team", "inbox", "supply"],
-    "2": ["showroom", "jobs", "aftercare"],
+    "2": ["showroom", "jobs", "aftercare", "surveys"],
     "3": ["fleet"]
   },
   "rows": [
@@ -15,6 +15,11 @@
   ],
   "grants": [
     { "part": "jobs", "role": "ops-manager", "permissions": ["table:@deals:read", "page:@crm-deals:view"], "limits": ["deals"] },
-    { "part": "fleet", "role": "crew", "permissions": ["table:@deal_stock_needs:read", "page:@crm-deal-stock-needs:view"], "limits": ["deal_stock_needs"], "tables": ["inventory/items"] }
+    { "part": "fleet", "role": "crew", "permissions": ["table:@deal_stock_needs:read", "page:@crm-deal-stock-needs:view"], "limits": ["deal_stock_needs"], "tables": ["inventory/items"] },
+    { "part": "surveys", "role": "admin", "tables": ["forms/invitations"] },
+    { "part": "surveys", "role": "sales-manager", "tables": ["forms/invitations"] },
+    { "part": "surveys", "role": "rep", "tables": ["forms/invitations"] },
+    { "part": "surveys", "role": "account-manager", "tables": ["forms/invitations"] },
+    { "part": "surveys", "role": "read-only", "tables": ["forms/invitations"] }
   ]
 }

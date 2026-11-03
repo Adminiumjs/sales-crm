@@ -17443,6 +17443,31 @@
               "ar-EG": "تاريخ الإجابة",
               "zh-CN": "答复日期",
               "zh-TW": "回覆日期"
+            },
+            "rules": {
+              "stamp": {
+                "set": {
+                  "byOrigin": {
+                    "public": "today"
+                  }
+                },
+                "on": "create"
+              }
+            }
+          },
+          {
+            "ref": "from_survey",
+            "type": "bool",
+            "nullable": true,
+            "label": {
+              "en-US": "From the survey",
+              "de-DE": "Aus der Umfrage",
+              "fr-FR": "Issu de l’enquête",
+              "da-DK": "Fra undersøgelsen",
+              "cs-CZ": "Z průzkumu",
+              "ar-EG": "من الاستبيان",
+              "zh-CN": "来自调查",
+              "zh-TW": "來自調查"
             }
           },
           {
@@ -22544,6 +22569,7 @@
         "showroom",
         "jobs",
         "aftercare",
+        "surveys",
         "supply",
         "fleet"
       ],
@@ -23204,6 +23230,25 @@
               "qty",
               "open_qty",
               "order_status"
+            ]
+          }
+        },
+        {
+          "addOn": "forms",
+          "table": "invitations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "form_id",
+              "record_table",
+              "record_key",
+              "class",
+              "invited_at",
+              "answered_at",
+              "expires_at"
             ]
           }
         }
@@ -24265,7 +24310,28 @@
             }
           }
         }
-      }
+      },
+      "tables": [
+        {
+          "addOn": "forms",
+          "table": "invitations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "form_id",
+              "record_table",
+              "record_key",
+              "class",
+              "invited_at",
+              "answered_at",
+              "expires_at"
+            ]
+          }
+        }
+      ]
     },
     {
       "key": "rep",
@@ -25190,7 +25256,28 @@
             }
           }
         }
-      }
+      },
+      "tables": [
+        {
+          "addOn": "forms",
+          "table": "invitations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "form_id",
+              "record_table",
+              "record_key",
+              "class",
+              "invited_at",
+              "answered_at",
+              "expires_at"
+            ]
+          }
+        }
+      ]
     },
     {
       "key": "account-manager",
@@ -25688,8 +25775,45 @@
               "by": "author_id"
             }
           }
+        },
+        "feedback": {
+          "creatable": [
+            "job_id",
+            "score",
+            "text",
+            "theme",
+            "answered_on"
+          ],
+          "writable": [
+            "score",
+            "text",
+            "theme",
+            "replied_at",
+            "fix_written"
+          ]
         }
-      }
+      },
+      "tables": [
+        {
+          "addOn": "forms",
+          "table": "invitations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "form_id",
+              "record_table",
+              "record_key",
+              "class",
+              "invited_at",
+              "answered_at",
+              "expires_at"
+            ]
+          }
+        }
+      ]
     },
     {
       "key": "marketer",
@@ -26915,6 +27039,7 @@
         "showroom",
         "jobs",
         "aftercare",
+        "surveys",
         "supply",
         "fleet"
       ],
@@ -27267,6 +27392,25 @@
               "order_status"
             ]
           }
+        },
+        {
+          "addOn": "forms",
+          "table": "invitations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "form_id",
+              "record_table",
+              "record_key",
+              "class",
+              "invited_at",
+              "answered_at",
+              "expires_at"
+            ]
+          }
         }
       ]
     }
@@ -27284,6 +27428,9 @@
     "addOns": {
       "inventory": {
         "file": "seeds/meridian.inventory.json"
+      },
+      "forms": {
+        "file": "seeds/meridian.forms.json"
       }
     },
     "people": [
@@ -30936,6 +31083,90 @@
           }
         ]
       }
+    },
+    {
+      "key": "survey-after-sign-off",
+      "name": {
+        "en-US": "A job is signed off: the fit-out survey 2 days later",
+        "de-DE": "Ein Auftrag ist abgenommen: die Umfrage zur Einrichtung 2 Tage später",
+        "fr-FR": "Un chantier est réceptionné : l’enquête sur l’aménagement 2 jours plus tard",
+        "da-DK": "En opgave er godkendt: undersøgelsen om indretningen 2 dage senere",
+        "cs-CZ": "Zakázka je převzata: průzkum k vybavení o 2 dny později",
+        "ar-EG": "اعتُمد استلام عمل: استبيان التجهيز بعد يومين",
+        "zh-CN": "工单已验收：2 天后发送装修调查",
+        "zh-TW": "工單已驗收：2 天後寄出裝修調查"
+      },
+      "description": {
+        "en-US": "Two days after a job is signed off, sends the job's contact the survey whose web address ends in fit-out, with their own link, as marketing mail: only to people who may be e-mailed for surveys. Their answer becomes the job's customer feedback. A job with no contact, or no live survey of that address, sends nothing and says why.",
+        "de-DE": "Zwei Tage nach der Abnahme eines Auftrags erhält der Kontakt des Auftrags die Umfrage, deren Webadresse auf fit-out endet, mit eigenem Link, als Werbe-E-Mail: nur an Personen, die für Umfragen angeschrieben werden dürfen. Die Antwort wird zum Kundenfeedback des Auftrags. Ohne Kontakt oder ohne veröffentlichte Umfrage unter dieser Adresse geht nichts hinaus, und der Grund wird genannt.",
+        "fr-FR": "Deux jours après la réception d’un chantier, envoie au contact du chantier l’enquête dont l’adresse web se termine par fit-out, avec son propre lien, en e-mail marketing : seulement aux personnes qui acceptent d’être contactées pour les enquêtes. Sa réponse devient l’avis client du chantier. Sans contact, ou sans enquête en ligne à cette adresse, rien ne part et la raison est indiquée.",
+        "da-DK": "To dage efter at en opgave er godkendt, sendes undersøgelsen, hvis webadresse ender på fit-out, til opgavens kontakt med deres eget link som markedsføringsmail: kun til personer, der må få e-mails om undersøgelser. Svaret bliver opgavens kundefeedback. Uden kontakt, eller uden en undersøgelse online på den adresse, sendes intet, og årsagen vises.",
+        "cs-CZ": "Dva dny po převzetí zakázky pošle kontaktu zakázky průzkum, jehož webová adresa končí na fit-out, s jeho vlastním odkazem, jako marketingový e-mail: jen lidem, kterým smíte psát kvůli průzkumům. Odpověď se stane zpětnou vazbou zákazníka k zakázce. Bez kontaktu nebo bez zveřejněného průzkumu na té adrese nic neodejde a důvod se uvede.",
+        "ar-EG": "بعد يومين من اعتماد استلام عمل، يُرسَل إلى جهة اتصال العمل الاستبيان الذي ينتهي عنوانه على الويب بـ fit-out، برابط خاص بها، كبريد تسويقي: فقط لمن يقبل رسائل الاستبيانات. تصبح إجابته رأي العميل في هذا العمل. إن لم توجد جهة اتصال، أو لا يوجد استبيان منشور بهذا العنوان، لا يُرسَل شيء ويُذكر السبب.",
+        "zh-CN": "工单验收两天后，以营销邮件把网址以 fit-out 结尾的调查发送给工单的联系人，并附上其专属链接：只发给同意接收调查邮件的人。其回答会成为该工单的客户反馈。工单没有联系人，或该网址下没有已上线的调查时，不发送，并说明原因。",
+        "zh-TW": "工單驗收兩天後，以行銷郵件把網址以 fit-out 結尾的調查寄給工單的聯絡人，並附上其專屬連結：只寄給同意接收調查郵件的人。其回答會成為該工單的客戶回饋。工單沒有聯絡人，或該網址下沒有已上線的調查時，不寄出，並說明原因。"
+      },
+      "enabled": false,
+      "module": "surveys",
+      "trigger": {
+        "kind": "record",
+        "event": "updated",
+        "table": "jobs",
+        "changedColumn": "state",
+        "when": [
+          {
+            "left": {
+              "field": "state"
+            },
+            "op": "is",
+            "right": "signed-off"
+          }
+        ]
+      },
+      "graph": {
+        "version": 1,
+        "nodes": [
+          {
+            "id": "t",
+            "kind": "trigger",
+            "title": "A job is signed off"
+          },
+          {
+            "id": "wait",
+            "kind": "wait",
+            "title": "Wait 2 days",
+            "amount": 2,
+            "unit": "days"
+          },
+          {
+            "id": "still",
+            "kind": "condition",
+            "title": "Still signed off",
+            "condition": {
+              "left": {
+                "field": "state"
+              },
+              "op": "is",
+              "right": "signed-off"
+            }
+          },
+          {
+            "id": "send",
+            "kind": "action",
+            "title": "Send the fit-out survey to the job's contact",
+            "action": {
+              "kind": "add-on.step",
+              "addOn": "forms",
+              "step": "send-survey",
+              "inputs": {
+                "survey": "fit-out",
+                "to": "@link:contact_id",
+                "class": "marketing"
+              }
+            }
+          }
+        ]
+      }
     }
   ],
   "publicKeys": {
@@ -31077,6 +31308,25 @@
             "max": 160
           }
         ]
+      }
+    },
+    {
+      "table": "feedback",
+      "key": "forms",
+      "module": "surveys",
+      "methods": [
+        "POST"
+      ],
+      "writable": [
+        "job_id",
+        "score",
+        "text"
+      ],
+      "defaults": {
+        "from_survey": true
+      },
+      "anonymous": {
+        "perIpHour": 10
       }
     }
   ],
@@ -44902,6 +45152,21 @@
         "zh-TW": "售後"
       },
       "default": "off"
+    },
+    {
+      "id": "surveys",
+      "label": {
+        "en-US": "Surveys",
+        "de-DE": "Umfragen",
+        "fr-FR": "Enquêtes",
+        "da-DK": "Undersøgelser",
+        "cs-CZ": "Průzkumy",
+        "ar-EG": "الاستبيانات",
+        "zh-CN": "调查",
+        "zh-TW": "調查"
+      },
+      "default": "on",
+      "feature": "customer-feedback"
     },
     {
       "id": "supply",
