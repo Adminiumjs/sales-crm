@@ -1107,7 +1107,7 @@ describe("what this batch leaves for a later one", () => {
 
   it("declares the outbox over the table, with a template for each of its eight kinds", () => {
     const box = (manifest as unknown as { outbox: typeof OUTBOX_WORD & { kinds: Record<string, string> } }).outbox;
-    expect({ ...box, kinds: {}, classes: undefined, producers: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
+    expect({ ...box, kinds: {}, classes: undefined, producers: undefined, purposes: undefined }).toEqual({ ...OUTBOX_WORD, producers: undefined });
     expect(Object.keys(box.kinds)).toEqual(byRef.get("outbox")?.columns.find((c) => c.ref === "kind")?.enum);
   });
 });
