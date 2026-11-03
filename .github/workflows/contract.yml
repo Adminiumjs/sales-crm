@@ -101,7 +101,7 @@ jobs:
         run: |
           cd .add-ons
           npm ci
-          npm run build -w packages/invoices -w packages/inventory
+          npm run build -w packages/invoices -w packages/inventory -w packages/forms
           cd ../.add-ons-before
           npm ci
           npm run build -w packages/invoices -w packages/inventory
