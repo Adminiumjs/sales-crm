@@ -14,13 +14,13 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | | |
 | --- | --- |
 | Key | `crm` (tables are named `crm_…`) |
-| Parts | 10: Selling, Accounts and The team always; Inbox on; Quotes on with Invoices & Receipts; Supply on with Inventory; Showroom and samples, Jobs on site, After the job and Vehicles and crew off until switched on |
+| Parts | 11: Selling, Accounts and The team always; Inbox on; Quotes on with Invoices & Receipts; Supply on with Inventory; Surveys on with Forms; Showroom and samples, Jobs on site, After the job and Vehicles and crew off until switched on |
 | Tables | 78 |
 | Screens | The app's own screens (below), a customer's quote page, and a "Sales CRM" section in Adminium's own console |
 | Roles | 9 |
-| Shipped rules | 25: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, and the brochure an enquirer asks for, switched off |
+| Shipped rules | 26: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, the brochure an enquirer asks for and the survey after a sign-off, switched off |
 | E-mails | 19, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews) |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms, the fit-out survey's seven invitations and 21 answers |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -95,7 +95,7 @@ from a phone without signal is refused; and an aftercare call booked 28 days aft
 off, for the person Settings names, else the rep who sold it (After the job). A rule of a part that
 is off does not run.
 
-One more is switched off: an enquiry that asked for the brochure on a website form is e-mailed the brochure's link from Settings (none while no link is set), and two days on, if no deal was made of it and it was not set aside, the person who claimed it, else the person Settings names, gets a follow-up to call them the next day at 09:00.
+Two more are switched off. An enquiry that asked for the brochure on a website form is e-mailed the brochure's link from Settings (none while no link is set), and two days on, if no deal was made of it and it was not set aside, the person who claimed it, else the person Settings names, gets a follow-up to call them the next day at 09:00. And two days after a job is signed off, its contact is sent the Forms survey whose web address ends `fit-out` (the sample brings one), as marketing mail: only to whoever may be e-mailed for surveys (Surveys, which waits for Forms). Their answer becomes the job's customer feedback, marked "From the survey"; the aftercare call says when the survey went and whether it came back. A job with no answer can still have one typed in by hand.
 
 Nine tell people and are switched off: a deal gone quiet, stuck in its stage, or closing soon and
 not agreed (the days are the app's settings); a follow-up due; a quote running out; a deal handed
