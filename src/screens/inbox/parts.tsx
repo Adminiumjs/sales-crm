@@ -18,6 +18,11 @@ export function whenOf(at: string, now: Date, f: Formatters, t: TFunction): stri
 }
 
 export const sourceLabel = (source: Source, t: TFunction): string => t(`inbox.source.${source}` as MessageKey);
+/** Where an enquiry came from, as its card says it: a website form by the name its form gave it ("Website form · Showroom form"). */
+export const sourceOf = (row: { source: Source; from_form?: string | null }, t: TFunction): string => {
+  const form = row.from_form?.trim() ?? "";
+  return row.source === "form" && form !== "" ? t("inbox.source.formNamed", { form }) : sourceLabel(row.source, t);
+};
 export const warmLabel = (warmth: Warmth, t: TFunction): string => t(`leads.warm.${warmth}` as MessageKey);
 
 /** Two letters for a company's tile. */

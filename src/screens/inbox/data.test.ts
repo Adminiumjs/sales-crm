@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { formatters } from "../../lib/format.ts";
 import { byWorkOrder, inInboxFilter, inboxOf, isLead, leadAge, leadState, NOT_LEAD, type Enquiry } from "./data.ts";
 import { mayPaste } from "./Leads.tsx";
-import { tileOf } from "./parts.tsx";
+import { sourceOf, tileOf } from "./parts.tsx";
+import { brochureLinkOk } from "./SettingsTab.tsx";
 
 const f = formatters({ locale: "en-US", currency: "GBP", timeZone: "Europe/London" });
 const NOW = new Date("2026-07-28T08:35:00.000Z");
@@ -63,5 +64,21 @@ describe("small things", () => {
     expect(tileOf("Slate & Barrow")).toBe("SB");
     expect(tileOf("Verity Insurance Group")).toBe("VI");
     expect(tileOf("Æther")).toBe("Æ");
+  });
+});
+
+describe("an enquiry a website form made", () => {
+  const t = ((key: string, vars?: Record<string, string>) => (key === "inbox.source.formNamed" ? `Website form · ${vars?.["form"] ?? ""}` : key === "inbox.source.form" ? "Web form" : key)) as unknown as Parameters<typeof sourceOf>[1];
+  it("says which form it came from, by the name its form gave it", () => {
+    expect(sourceOf({ source: "form", from_form: "Showroom form" }, t)).toBe("Website form · Showroom form");
+    // No name given, or only spaces: the plain source.
+    expect(sourceOf({ source: "form", from_form: "  " }, t)).toBe("Web form");
+    expect(sourceOf({ source: "form", from_form: null }, t)).toBe("Web form");
+    // A name on an enquiry that did not come from a form is not shown as one.
+    expect(sourceOf({ source: "phone", from_form: "Showroom form" }, t)).toBe("inbox.source.phone");
+  });
+  it("takes a brochure's link only as a whole https address", () => {
+    expect(brochureLinkOk("https://meridian.example/brochure.pdf")).toBe(true);
+    for (const bad of ["http://meridian.example/brochure", "https://", "https://localhost/x", "meridian.example/brochure", "https://meridian.example/a b", "javascript:alert(1)", `https://meridian.example/${"x".repeat(500)}`]) expect(brochureLinkOk(bad), bad).toBe(false);
   });
 });

@@ -47,6 +47,12 @@ export interface Enquiry extends Record<string, unknown> {
   passed_to_id: string | null;
   rung_at: string | null;
   deal_id: number | null;
+  /** What a website form's answer brought: the form's "Source" value (its name, unless the owner worded it otherwise). */
+  from_form?: string | null;
+  /** The day that suits them, when a form asked. */
+  wanted_on?: string | null;
+  /** Whether they asked for the brochure on the form. */
+  brochure?: "yes" | "no" | null;
   /** When whoever took it offered the person a way to say no to our mail (the server's stamp); empty from a file, or before 0.2.3. */
   opt_out_offered_at?: string | null;
   /** The matched company's name, from the server. */

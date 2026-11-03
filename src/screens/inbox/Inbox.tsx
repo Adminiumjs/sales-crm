@@ -33,7 +33,7 @@ import { readNames } from "../visits/data.ts";
 import { AddEnquiry } from "./AddEnquiry.tsx";
 import { YesOnLost } from "./YesOnLost.tsx";
 import { canClaim, inInboxFilter, isLead, markRung, notForUs, passOn, readInbox, readPassTo, type Enquiry, type InboxFilter } from "./data.ts";
-import { SOURCE_ICON, sourceLabel, warmLabel, WARM_TONE, whenOf } from "./parts.tsx";
+import { SOURCE_ICON, sourceOf, warmLabel, WARM_TONE, whenOf } from "./parts.tsx";
 
 const FILTERS: readonly InboxFilter[] = ["open", "mine", "all"];
 
@@ -145,8 +145,8 @@ export function Inbox(_props: ScreenProps) {
                           <div className="crm-enq-line">
                             {fresh && <span className="crm-enq-new" role="img" aria-label={t("inbox.new")} />}
                             <span className="crm-enq-subject">{subject}</span>
-                            <span className="crm-pill" data-tone="plain">
-                              {sourceLabel(row.source, t)}
+                            <span className="crm-pill" data-tone="plain" data-source-pill>
+                              {sourceOf(row, t)}
                             </span>
                             {lead && row.warmth !== null && (
                               <span className="crm-pill" data-tone={WARM_TONE[row.warmth]}>
