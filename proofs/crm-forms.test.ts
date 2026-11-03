@@ -118,7 +118,9 @@ describe.each(LEGS)(`the CRM's website forms and brochure, with ${WHICH} — %s`
   };
   const insertForm = async (id: string, slug: string, settings: FormSettingsInput) => {
     const { db } = await h.manager.data(h.connectionId);
-    await db.insertInto(formsTable).values({ id, title: slug, slug, kind: 'form', state: 'live', definition: '{}', settings: '{}', published: JSON.stringify({ definition: SHOWROOM, settings }) } as never).execute();
+    // The built add-on names a form and keeps when it changed; the engine's fixture gives it a title.
+    const named = built === null ? { title: slug } : { name: slug, updated_at: dialect === 'mysql' ? new Date().toISOString().slice(0, 19).replace('T', ' ') : new Date().toISOString() };
+    await db.insertInto(formsTable).values({ id, ...named, slug, kind: 'form', state: 'live', definition: '{}', settings: '{}', published: JSON.stringify({ definition: SHOWROOM, settings }) } as never).execute();
   };
   /** A stranger's send: a fresh proof for the form, then the answer, from an address of its own. */
   const send = async (slug: string, values: Record<string, unknown>) => {

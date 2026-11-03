@@ -6,6 +6,8 @@ import { createAppStore } from '../src/apps/store.js';
 import { createSampleDataService, findSampleApp } from '../src/apps/sample-data.js';
 import type { FileStore } from '../src/files/store.js';
 import { LEGS, installInvoicing, writerFor, type InvoicingHarness } from './invoicing-install.helpers.js';
+import { builtAddOn } from './add-ons/harness.js';
+import { addOnHarness, type Harness } from './app-add-ons.helpers.js';
 
 // The app this copy of the proofs came from (`npm run proofs` names it), not a fixed lane.
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
@@ -148,5 +150,82 @@ for (const [dialect, reachable] of LEGS) {
       expect(left).toEqual(['settings: 1']);
       expect((await usersRepo(h.meta).countByStatus()).sample).toBe(0);
     }, 240_000);
+  });
+}
+
+/**
+ * The sample with Forms (`sampleData.addOns.forms`): the app's file for the add-on is loaded with the rest and leaves
+ * with it. Needs the add-ons checkout with Forms built (`ADD_ONS_REPO`).
+ */
+const BUILT = builtAddOn('forms');
+// As the release will number it: the app suggests Forms 1.0.15 or newer, and a checkout built before the release says 1.0.14.
+const FORMS = BUILT === null ? null : { ...BUILT, version: '1.0.15', manifest: { ...BUILT.manifest, version: '1.0.15' } };
+const formsFile = () => JSON.parse(readFileSync(`${SEEDS}/meridian.forms.json`, 'utf8')) as { tables: { ref: string; own?: true; rows: unknown[] }[] };
+
+describe.skipIf(FORMS !== null)("the CRM's sample with Forms", () => {
+  it('needs the add-ons checkout with Forms built (ADD_ONS_REPO)', () => {
+    expect(FORMS).not.toBeNull();
+  });
+});
+
+for (const [dialect, reachable] of LEGS) {
+  describe.skipIf(!reachable || FORMS === null)(`the CRM's sample with Forms, on ${dialect}`, () => {
+    let h: Harness;
+    const service = () => createSampleDataService(h.sampleData);
+    const app = async () => (await findSampleApp(h.meta, 'crm'))!;
+    const real = (ref: string, own: boolean) => (own ? `crm_${ref}` : `forms_${ref}`);
+    const crmCount = async (ref: string) => count(real(ref, true));
+    const count = async (table: string, where = '1 = 1') => Number((await h.rows(`SELECT COUNT(*) AS n FROM ${table} WHERE ${where}`))[0]!['n']);
+    const held = async () => Object.fromEntries(await Promise.all(formsFile().tables.map(async (table) => [table.ref, await count(real(table.ref, table.own === true))] as const)));
+
+    beforeAll(async () => {
+      h = await addOnHarness(dialect, { unbuiltWords: {} });
+      await h.stageAddOn(FORMS!.manifest, { bundled: true, files: FORMS!.files });
+      // The harness packs text only: the picture's bytes do not matter to this proof, its place in the package does.
+      const packed = JSON.parse(readFileSync(`${SEEDS}/meridian.json`, 'utf8')) as { assets?: Record<string, { file: string; sha256: string }> };
+      for (const asset of Object.values(packed.assets ?? {})) asset.sha256 = createHash('sha256').update('png').digest('hex');
+      await h.stageApp(manifest(), { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/meridian.inventory.json': readFileSync(`${SEEDS}/meridian.inventory.json`, 'utf8'), 'seeds/meridian.forms.json': readFileSync(`${SEEDS}/meridian.forms.json`, 'utf8') });
+      const installed = await h.install('crm', String(manifest()['version']), { addOns: [{ key: 'forms', version: FORMS!.version }], modules: { inbox: true, jobs: true, aftercare: true } });
+      expect(installed.statusCode, installed.body).toBe(200);
+    }, 600_000);
+    afterAll(async () => {
+      await h?.close();
+    });
+
+    it('"Add sample data" brings the five forms, their invitations and answers, and the enquiries and feedback they made', async () => {
+      const added = await service()
+        .add(await app(), { locale: 'en-US', userId: h.owner.id, userLabel: 'owner@test' })
+        .catch((error: unknown) => {
+          throw new Error(`${String(error)} ${JSON.stringify((error as { details?: unknown }).details ?? null)}`);
+        });
+      expect(added.counts).toMatchObject({ 'forms:forms': 5, 'forms:invitations': 7, 'forms:answers': 21 });
+      expect(await held()).toEqual({ forms: 5, invitations: 7, answers: 21 });
+      // Each answer names the row it became as the engine writes one (`crm:<table>`), and the row is there.
+      const became = await h.rows(`SELECT became_table, became_key FROM forms_answers WHERE became_table IS NOT NULL ORDER BY became_table`);
+      expect(became.map((row) => row['became_table'])).toEqual(['crm:enquiries', 'crm:enquiries', 'crm:enquiries', 'crm:feedback', 'crm:feedback']);
+      for (const row of became) expect(await count(real(String(row['became_table']).slice(4), true), `id = ${String(row['became_key'])}`), String(row['became_key'])).toBe(1);
+      // The survey's invitations name each signed-off job as other rows do, and its answers their invitation; none keeps a token.
+      expect(await count('forms_invitations', `record_table = 'crm:jobs' AND token_hash IS NULL`)).toBe(7);
+      expect(await count('forms_answers', 'invitation_id IS NOT NULL')).toBe(2);
+      expect(await count('forms_answers', 'ip IS NOT NULL OR user_agent IS NOT NULL')).toBe(0);
+      // The feedback a survey made is marked so, and is the job's only answer.
+      expect(await count('crm_feedback', `from_survey = ${dialect === 'postgres' ? 'true' : '1'}`)).toBe(2);
+      // The forms are written as the builder writes them: what a visitor is served parses.
+      const { parseForm } = await import('@adminium/add-on-contracts/forms');
+      for (const row of await h.rows('SELECT slug, state, definition, settings, published FROM forms_forms')) {
+        const json = (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : value) as { definition: unknown; settings: unknown };
+        const parsed = parseForm(json(row['definition']), json(row['settings']));
+        expect(parsed.ok ? [] : parsed, String(row['slug'])).toEqual([]);
+        if (row['state'] !== 'draft') expect(json(row['published']), String(row['slug'])).toEqual({ definition: json(row['definition']), settings: json(row['settings']) });
+      }
+    }, 600_000);
+
+    it('"Remove sample data" takes all of it away again', async () => {
+      const removed = await service().remove(await app(), { keepChanged: true, userId: h.owner.id, userLabel: 'owner@test' });
+      expect(removed.kept).toBe(0);
+      expect(await held()).toEqual({ forms: 0, invitations: 0, answers: 0 });
+      expect([await crmCount('enquiries'), await crmCount('feedback'), await crmCount('jobs')]).toEqual([0, 0, 0]);
+      expect((await usersRepo(h.meta).countByStatus()).sample ?? 0).toBe(0);
+    }, 600_000);
   });
 }
