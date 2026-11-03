@@ -44,10 +44,10 @@ for (const [name, raw] of [
   const forms = doc.publicAccess.filter((entry) => entry.key === "forms" && entry.table === "enquiries");
 
   describe(`website forms in ${name}`, () => {
-    it("still passes the validator, at the first Adminium that reads a forms entry's source", () => {
+    it("still passes the validator, at the first Adminium that reads a form's table by its stored name and judges a survey on its person", () => {
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.41");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.42");
     });
 
     it("opens Enquiries to forms by one entry, of the Inbox part, that only adds a row", () => {

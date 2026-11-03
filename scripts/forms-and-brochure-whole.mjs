@@ -77,7 +77,8 @@ const words = (...row) => {
 };
 
 // ── The floor ───────────────────────────────────────────────────────────────
-manifest.compatibility.minAdminiumVersion = "0.3.41";
+// Never lowered: a later script may have raised it.
+if (manifest.compatibility.minAdminiumVersion.localeCompare("0.3.41", undefined, { numeric: true }) < 0) manifest.compatibility.minAdminiumVersion = "0.3.41";
 
 // ── What a form brings to an enquiry ────────────────────────────────────────
 addColumn(

@@ -57,7 +57,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.41' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.42' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p71t06-crm`;
 const read = (path: string) => readFileSync(`${APP}/${path}`, 'utf8');
@@ -253,8 +253,8 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
       const deal = made(await as('owner', 'POST', data('deals'), { values: { name: `Fit-out for ${who}`, company_id: company, ...(to === undefined ? {} : { contact_id: to }), owner_id: ids['owner'], stage_id: stage } }));
       job[who] = made(await as('owner', 'POST', data('jobs'), { values: { deal_id: deal, site_name: `Linden Studio, ${who}` } }));
     }
-    // Ann's yes to surveys, as a form's tick records one: her address. (A yes kept by her row alone is not read for a
-    // marketing invitation on 0.3.41: the sender judges the invitation's row, not the contact's.)
+    // Ann's yes to surveys, as a form's tick records one: her row and her address (from 0.3.42 the sender judges a
+    // marketing invitation on the contact it names, so her row's yes carries it).
     await consent().record({ person: { connectionId: h.connectionId, table: tableIds['contacts']!, key: String(contact['ann']) }, address: 'ann@lindenstudio.co.uk', purpose: 'surveys', source: 'import', state: 'yes' });
     await consent().record({ person: { connectionId: h.connectionId, table: tableIds['contacts']!, key: String(contact['cleo']) }, purpose: 'newsletter', source: 'import', state: 'yes' });
     await consent().record({ person: { connectionId: h.connectionId, table: tableIds['contacts']!, key: String(contact['dee']) }, purpose: 'surveys', source: 'import', state: 'no' });

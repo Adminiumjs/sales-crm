@@ -20,7 +20,11 @@
  *  - the forms entry on `enquiries` gets two hourly caps on top of each
  *    address's five a day: 60 an hour through it, all forms together (the
  *    engine counts the app's forms key as one), and 10 an hour from one
- *    visitor (an IPv6 subscriber's whole /64), as the survey's entry has.
+ *    visitor (an IPv6 subscriber's whole /64), as the survey's entry has;
+ *  - the floor moves to 0.3.42: on 0.3.41 a form whose answers become a row
+ *    of a table named by its stored name (`crm:feedback`, as the sample's
+ *    forms say) loses the answer, and a survey's marketing invitation is
+ *    judged on the invitation's row instead of the person's.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -47,6 +51,15 @@ const anonymous = must(entry.anonymous, "the forms entry's anonymous limits");
 const { perValue, plainText, ...rest } = anonymous;
 // Kept in the order the engine's schema lists them: per value, per key, per visitor, plain text.
 entry.anonymous = { ...(perValue === undefined ? {} : { perValue }), ...rest, perKeyHour: 60, perIpHour: 10, ...(plainText === undefined ? {} : { plainText }) };
+
+// ── The floor ───────────────────────────────────────────────────────────────
+const FLOOR = "0.3.42";
+const older = (a, b) => {
+  const [x, y] = [a, b].map((v) => v.split(".").map(Number));
+  for (let i = 0; i < 3; i += 1) if (x[i] !== y[i]) return x[i] < y[i];
+  return false;
+};
+if (older(manifest.compatibility.minAdminiumVersion, FLOOR)) manifest.compatibility.minAdminiumVersion = FLOOR;
 
 writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
 console.log("forms-door-safety-whole: whole/manifest.json written");

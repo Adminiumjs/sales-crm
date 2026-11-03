@@ -36,7 +36,7 @@ import { createDkimKeys, createTxtLookup } from '../src/email/sender/index.js';
 import { TEST_SECRET } from './helpers.js';
 import { LEGS, said, wholeServer, type QueuedEmail, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.41' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.42' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
