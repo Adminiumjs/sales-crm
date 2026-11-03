@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.38 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.41 or newer.
 
 ## What installs
 
@@ -18,8 +18,8 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | Tables | 78 |
 | Screens | The app's own screens (below), a customer's quote page, and a "Sales CRM" section in Adminium's own console |
 | Roles | 9 |
-| Shipped rules | 24: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), and nine that tell people, switched off |
-| E-mails | 18, each in eight languages |
+| Shipped rules | 25: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, and the brochure an enquirer asks for, switched off |
+| E-mails | 19, each in eight languages |
 | Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews) |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
@@ -50,7 +50,7 @@ of its documents, so it numbers the quote, works out its tax and prints it. Inst
 the Quotes part is left out (no quote tables, screens or links) and comes in when the add-on is
 connected. **Inventory** (1.0.14 or newer) keeps the stock: without it Supply's menu lines open a
 page that says what Supply waits for and who connects it. **Offers** (a reward for a customer who
-refers another) is suggested and not ticked.
+refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback.
 
 ### The roles
 
@@ -95,6 +95,8 @@ from a phone without signal is refused; and an aftercare call booked 28 days aft
 off, for the person Settings names, else the rep who sold it (After the job). A rule of a part that
 is off does not run.
 
+One more is switched off: an enquiry that asked for the brochure on a website form is e-mailed the brochure's link from Settings (none while no link is set), and two days on, if no deal was made of it and it was not set aside, the person who claimed it, else the person Settings names, gets a follow-up to call them the next day at 09:00.
+
 Nine tell people and are switched off: a deal gone quiet, stuck in its stage, or closing soon and
 not agreed (the days are the app's settings); a follow-up due; a quote running out; a deal handed
 over; a discount approved or refused (one rule); and two weekly e-mails, a rep's and account manager's own
@@ -107,7 +109,7 @@ A quote sent (with the button that opens the customer's page) and accepted; a si
 moved and cancelled, naming the rep who comes; an introduction thanked; the handover introduction;
 approval asked; the two weekly e-mails; a showroom booking and a delivery confirmed, moved and
 cancelled; the customer's signed copy of a sign-off, with what is still to put right; a
-subcontractor asked for their insurance certificate. Each in eight languages, in the recipient's.
+subcontractor asked for their insurance certificate; the brochure an enquirer asked for on a website form. Each in eight languages, in the recipient's.
 
 ### The console
 
