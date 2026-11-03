@@ -24,10 +24,10 @@ on:
   workflow_dispatch:
 
 env:
-  ADMINIUM_REF: v0.3.38
-  ADD_ONS_REF: v1.0.14
+  ADMINIUM_REF: v0.3.42
+  ADD_ONS_REF: v1.0.15
   # The add-ons an install of the released CRM had, for the update proof.
-  ADD_ONS_BEFORE_REF: v1.0.13
+  ADD_ONS_BEFORE_REF: v1.0.14
 
 jobs:
   contract:
