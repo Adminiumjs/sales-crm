@@ -144,7 +144,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(await count('inventory_items')).toBe(10);
     }, 600_000);
 
-    it('stage 2 updates that install with its data in place: three parts arrive switched off, and the crew with Jobs on site', async () => {
+    it('stage 2 updates that install with its data in place: four parts arrive switched off, and the crew with Jobs on site', async () => {
       // Rows typed since the install, beside the sample.
       await h.rows("insert into crm_lost_reasons (label, position) values ('Typed before the update', 9)");
       const before = { deals: await count('crm_deals'), followUps: await count('crm_follow_ups'), companies: await count('crm_companies'), quotes: await count('crm_quotes'), items: await count('inventory_items') };
@@ -152,7 +152,14 @@ for (const [dialect, reachable] of LEGS) {
       const two = stage(2);
       const next = { ...two.manifest, version: two.manifest.version.replace(/\d+$/, (patch) => String(Number(patch) + 1)) };
       await h.stageApp(next, packed(two));
-      const updated = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: {} });
+      // Surveys comes with stage 2: every role that reads the aftercare calls reads when a job's survey went (Forms'
+      // invitations), a wider grant on an add-on's table, which the owner allows by name, and is refused until then.
+      const asked = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: {} });
+      expect(asked.statusCode, asked.body).toBe(422);
+      const wider = (asked.json() as { error: { details: { roleTables: { role: string; addOn: string; table: string; wider: { actions: string[]; columns: string[] } }[] } } }).error.details.roleTables;
+      expect(wider.map((one) => [one.role, one.addOn, one.table, one.wider.actions])).toEqual(['admin', 'sales-manager', 'rep', 'account-manager', 'read-only'].map((role) => [role, 'forms', 'invitations', ['read']]));
+      for (const one of wider) expect(one.wider.columns, one.role).not.toContain('email');
+      const updated = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: { roleTables: true } });
       expect(updated.statusCode, updated.body).toBe(200);
 
       const made = await crmTables();
@@ -170,11 +177,11 @@ for (const [dialect, reachable] of LEGS) {
       expect(await count('crm_follow_ups', 'job_id is not null')).toBe(0);
       expect(await count('crm_jobs')).toBe(0);
 
-      // The three new parts are there to switch, and off: nobody ticked them.
+      // The four new parts are there to switch, and off: nobody ticked them (Surveys waits for Forms besides).
       const now = await parts();
-      expect(now.map((part) => part.id)).toEqual(['selling', 'quotes', 'accounts', 'team', 'inbox', 'showroom', 'jobs', 'aftercare', 'supply']);
-      expect(now.filter((part) => ['showroom', 'jobs', 'aftercare'].includes(part.id)).map((part) => part.on)).toEqual([false, false, false]);
-      expect(now.filter((part) => !['showroom', 'jobs', 'aftercare'].includes(part.id)).every((part) => part.on)).toBe(true);
+      expect(now.map((part) => part.id)).toEqual(['selling', 'quotes', 'accounts', 'team', 'inbox', 'showroom', 'jobs', 'aftercare', 'surveys', 'supply']);
+      expect(now.filter((part) => ['showroom', 'jobs', 'aftercare', 'surveys'].includes(part.id)).map((part) => part.on)).toEqual([false, false, false, false]);
+      expect(now.filter((part) => !['showroom', 'jobs', 'aftercare', 'surveys'].includes(part.id)).every((part) => part.on)).toBe(true);
       const on = await h.inject({ method: 'PUT', url: '/apps/crm/parts/jobs', payload: { on: true } });
       expect(on.statusCode, on.body).toBe(200);
       expect((await parts()).find((part) => part.id === 'jobs')!.on).toBe(true);
@@ -212,7 +219,7 @@ for (const [dialect, reachable] of LEGS) {
 
       // The parts that were there are as they were; Vehicles and crew is there to switch, and off.
       const now = await parts();
-      expect(now.map((part) => part.id)).toEqual(['selling', 'quotes', 'accounts', 'team', 'inbox', 'showroom', 'jobs', 'aftercare', 'supply', 'fleet']);
+      expect(now.map((part) => part.id)).toEqual(['selling', 'quotes', 'accounts', 'team', 'inbox', 'showroom', 'jobs', 'aftercare', 'surveys', 'supply', 'fleet']);
       for (const was of partsBefore) expect([was.id, now.find((part) => part.id === was.id)!.on]).toEqual([was.id, was.on]);
       expect(now.find((part) => part.id === 'fleet')!.on).toBe(false);
       const on = await h.inject({ method: 'PUT', url: '/apps/crm/parts/fleet', payload: { on: true } });

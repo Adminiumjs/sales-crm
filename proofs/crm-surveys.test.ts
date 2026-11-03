@@ -18,7 +18,8 @@
  *    named in the body is refused, and a second answer with the link too;
  *  - the account manager reads when the survey went and whether it was
  *    answered (the aftercare call's line), and not who it went to; the
- *    marketer reads none of it;
+ *    marketer reads none of it; Forms' Survey tab shows on the job's page to
+ *    him, and not to the operations manager, who reads no invitations;
  *  - with Forms switched off for the app, Surveys is off and waits for it,
  *    and an answer typed by hand is still taken, with the day typed and not
  *    marked as a survey's; the account manager cannot mark one so.
@@ -36,7 +37,7 @@ import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { automationsRepo, paymentSettingsRepo, rolesRepo, settingsRepo, usersRepo } from '@adminium/meta';
+import { automationsRepo, pagesRepo, paymentSettingsRepo, rolesRepo, settingsRepo, usersRepo } from '@adminium/meta';
 
 import { recordDeciderTrust } from '../src/add-ons/decider-trust.js';
 import { composeServer, type ComposedServer } from '../src/compose.js';
@@ -221,9 +222,10 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
     await composed.jobs.worker.stop();
     composed.jobs.scheduler.stop();
 
-    // The people, each signed in: the owner, the account manager who makes the aftercare calls, the marketer.
+    // The people, each signed in: the owner, the account manager who makes the aftercare calls, the marketer, and the
+    // operations manager (who reads the jobs, and nothing of Forms).
     const hash = await adminPasswordHash();
-    const people: [string, string | null][] = [['owner', null], ['hugo', 'account-manager'], ['lena', 'marketer']];
+    const people: [string, string | null][] = [['owner', null], ['hugo', 'account-manager'], ['lena', 'marketer'], ['ada', 'ops-manager']];
     for (const [name, role] of people) {
       const user = await usersRepo(h.meta).create({ email: `${name}@meridian.example`, name: `${name[0]!.toUpperCase()}${name.slice(1)}`, passwordHash: hash });
       await rolesRepo(h.meta).assignToUser(user.id, (await rolesRepo(h.meta).findBySlug(role === null ? 'super-admin' : `crm-${role}`))!.id);
@@ -358,6 +360,23 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
     expect((await as('lena', 'GET', data('invitations', '?limit=5'))).statusCode).toBe(403);
     // His aftercare call for the job is there beside it.
     expect((await rows('follow_ups', `job_id = ${String(job['ann'])} AND kind = 'aftercare'`)).length).toBe(1);
+  });
+
+  it.skipIf(!run)("shows Forms' Survey tab on the job's page to the account manager, and not to the operations manager, who reads no invitations", async () => {
+    const page = (await pagesRepo(h.meta).listForConnection(h.connectionId)).find((one) => (one.config as { source?: { table?: string } }).source?.table === tableIds['jobs'])!;
+    const tabs = async (who: string) => {
+      const res = await as(who, 'GET', `/api/v1/pages/${page.id}`);
+      expect(res.statusCode, `${who}: ${res.body}`).toBe(200);
+      const find = (value: unknown): Doc[] | null => {
+        if (Array.isArray(value)) return value.map(find).find((one) => one !== null) ?? null;
+        if (typeof value !== 'object' || value === null) return null;
+        if (Array.isArray((value as Doc)['recordTabs'])) return (value as Doc)['recordTabs'] as Doc[];
+        return Object.values(value).map(find).find((one) => one !== null) ?? null;
+      };
+      return (find(res.json()) ?? []).map((tab) => `${String(tab['addOn'])}:${String(tab['id'])}`);
+    };
+    expect(await tabs('hugo')).toEqual(['forms:survey']);
+    expect(await tabs('ada')).toEqual([]);
   });
 
   it.skipIf(!run)('with Forms switched off for the app: Surveys waits, and an answer typed by hand is taken as typed; nobody on the staff marks one as the survey\'s', async () => {
