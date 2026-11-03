@@ -62,7 +62,8 @@ test("the Team inbox with the ledger's six, as the sales manager, and each count
   await expect(cards(page)).toHaveCount(4);
   const first = cards(page).first();
   await expect(first.locator(".crm-enq-subject")).toHaveText("Sixty desks for a new floor");
-  await expect(first).toContainText("Web form");
+  // The sample's website enquiry says which form it came from.
+  await expect(first).toContainText("Website form · Showroom form");
   await expect(first.locator(".crm-enq-from")).toHaveText("Ines Vaughan · Cobalt Legal · ines.vaughan@cobaltlegal.example");
   await expect(first.locator(".crm-enq-size")).toHaveText("£44,000");
   await expect(first.locator(".crm-enq-when")).toHaveText("Today 08:12");

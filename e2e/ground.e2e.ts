@@ -53,7 +53,9 @@ test("the config says who they are, what they may do and which parts are on; not
   expect(dana.access.tables["deals"]).toEqual(["read", "create", "update"]);
   expect(dana.access.tables["stages"]).toEqual(["read"]);
   // Every part the installed stage holds was switched on at the install, and it holds no other: at the first release, six.
-  expect(dana.modules).toEqual(Object.fromEntries(stand.parts.map((part) => [part, true])));
+  // Every part is on, but Surveys, which waits for Forms on a stand without it.
+  const forms = stand.addOns.some((one) => one.key === "forms");
+  expect(dana.modules).toEqual(Object.fromEntries(stand.parts.map((part) => [part, part !== "surveys" || forms])));
   if (stand.stage === 1) expect(Object.keys(dana.modules).sort()).toEqual(["accounts", "inbox", "quotes", "selling", "supply", "team"]);
   // No table of a part that is not installed is named to anybody.
   if (stand.stage === 1) for (const later of ["jobs", "job_visits", "showroom_bookings", "feedback", "vehicles"]) expect(dana.tables[later], later).toBeUndefined();

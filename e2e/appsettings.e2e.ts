@@ -65,12 +65,12 @@ async function openSettings(page: Page): Promise<void> {
 }
 
 /**
- * The tabs a person who reads every setting is offered, in the stand's stage: stage 1's five, and from stage 2 Crews
- * (with Jobs on site) and After the job (with its part). The parts the Parts tab lists, the same way.
+ * The tabs a person who reads every setting is offered, in the stand's stage: stage 1's five, Inbox (with its part), and
+ * from stage 2 Crews (with Jobs on site) and After the job (with its part). The parts the Parts tab lists, the same way.
  */
-const TABS: readonly (readonly [string, string, string?])[] = [["Selling", "المبيعات"], ["Working time", "وقت العمل"], ["Places", "الأماكن"], ["Maps", "الخرائط"], ["Parts", "الأجزاء"], ["Crews", "الفرق", "jobs"], ["After the job", "بعد التنفيذ", "aftercare"]];
+const TABS: readonly (readonly [string, string, string?])[] = [["Selling", "المبيعات"], ["Working time", "وقت العمل"], ["Places", "الأماكن"], ["Maps", "الخرائط"], ["Parts", "الأجزاء"], ["Crews", "الفرق", "jobs"], ["Inbox", "الوارد", "inbox"], ["After the job", "بعد التنفيذ", "aftercare"]];
 const tabsOf = (stand: StandState, arabic = false): string[] => TABS.filter(([, , part]) => part === undefined || stand.parts.includes(part)).map(([en, ar]) => (arabic ? ar : en));
-const STAGE_PARTS: Record<number, string[]> = { 1: ["accounts", "inbox", "quotes", "selling", "supply", "team"], 2: ["accounts", "aftercare", "inbox", "jobs", "quotes", "selling", "showroom", "supply", "team"] };
+const STAGE_PARTS: Record<number, string[]> = { 1: ["accounts", "inbox", "quotes", "selling", "supply", "team"], 2: ["accounts", "aftercare", "inbox", "jobs", "quotes", "selling", "showroom", "supply", "surveys", "team"] };
 const partsOf = (stand: StandState): string[] => STAGE_PARTS[stand.stage] ?? [...stand.parts].sort();
 
 /** Type a number into a setting and leave the field by Enter. */

@@ -43,7 +43,7 @@ test("the CRM admin sets who makes the aftercare calls and how soon things are d
       expect(refused.status(), `${column} ${String(bad)}`).toBe(422);
     }
 
-    // The showroom's card holds a sample's loan and a tired piece; the Crews tab, a snag's days; the Parts tab, nine parts (ten from stage 3).
+    // The showroom's card holds a sample's loan and a tired piece; the Crews tab, a snag's days; the Parts tab, ten parts (eleven from stage 3).
     await page.goto(`${STAFF}settings/working-time`);
     const showroom = page.locator('[data-card="showroom-numbers"]');
     await expect(showroom).toContainText("A sample is out on loan for");
@@ -51,7 +51,7 @@ test("the CRM admin sets who makes the aftercare calls and how soon things are d
     await page.goto(`${STAFF}settings/crews`);
     await expect(page.locator('[data-card="snag-days"]')).toContainText("A snag is put right within");
     await page.goto(`${STAFF}settings/parts`);
-    await expect(page.locator(".crm-ast-part")).toHaveCount(stand.parts.includes("fleet") ? 10 : 9);
+    await expect(page.locator(".crm-ast-part")).toHaveCount(stand.parts.includes("fleet") ? 11 : 10);
     await expect(page.locator('[data-part="aftercare"]')).toContainText("Account manager");
     expect(problems).toEqual([]);
   } finally {

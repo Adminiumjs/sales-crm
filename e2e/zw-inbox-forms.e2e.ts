@@ -37,8 +37,9 @@ test("a website form's enquiry says which form it came from in the Team inbox, i
     await page.goto(`${STAFF}inbox`);
     const card = page.locator(".crm-enq").filter({ hasText: "P71F two booths" });
     await expect(card.locator("[data-source-pill]")).toHaveText("Website form · Showroom form");
-    // An enquiry typed in by phone keeps its plain source.
-    await expect(page.locator(".crm-enq").filter({ hasNotText: "P71F" }).first().locator("[data-source-pill]")).not.toContainText("·");
+    // An enquiry typed in by phone keeps its plain source; the sample's own website enquiries name their form.
+    await expect(page.locator(".crm-enq").filter({ hasText: "Veldt Studios" }).locator("[data-source-pill]")).toHaveText("Phone");
+    await expect(page.locator(".crm-enq").filter({ hasText: "Westgate Care" }).locator("[data-source-pill]")).toHaveText("Website form · Showroom form");
     expect(problems).toEqual([]);
 
     const ivy = await api("ivy");
