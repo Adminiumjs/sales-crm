@@ -45,7 +45,11 @@ const LEGAL: Record<string, unknown> = {
   display_tired_months: 8, claim_red_days: 14, inspection_warn_days: 21, delivery_emails: false, office_phone: '0113 496 0199',
   // The showroom's (P19): its hours, its address and its e-mails' switch, the CRM admin's alone.
   showroom_emails: false, showroom_opens: '10:00', showroom_closes: '18:00', showroom_address: 'Unit 2, Aire Works, Leeds',
+  // The brochure a website form's enquirer asks for: its link, the CRM admin's alone.
+  brochure_link: 'https://meridian-workplace.com/brochure.pdf',
 };
+/** The settings that name a person: the aftercare calls' and the brochure follow-ups'. */
+const PEOPLE = ['aftercare_owner_id', 'brochure_follow_up_owner_id'];
 /** Outside each number's bounds, below and above. */
 const OUT: Record<string, [unknown, unknown]> = {
   approval_threshold_pct: [-1, 51], quote_valid_days: [0, 366], quote_warn_days: [-1, 31], sitting_warm_days: [0, 365], sitting_stale_days: [1, 366], nudge_quiet_days: [2, 22], nudge_stuck_days: [6, 46],
@@ -103,9 +107,9 @@ for (const [dialect, reachable] of LEGS) {
     it('lets the sales manager write her eight settings and refuses her every other one', async () => {
       // The list this test walks is the manifest's own: a column added tomorrow is tried too.
       const every = columns();
-      expect(every.filter((ref) => !(ref in LEGAL) && ref !== 'aftercare_owner_id')).toEqual([]);
+      expect(every.filter((ref) => !(ref in LEGAL) && !PEOPLE.includes(ref))).toEqual([]);
       for (const ref of every) {
-        const value = ref === 'aftercare_owner_id' ? s.ids['hugo'] : LEGAL[ref];
+        const value = PEOPLE.includes(ref) ? s.ids['hugo'] : LEGAL[ref];
         const before = (await row('tessa', 'settings', settings))![ref];
         const tried = await s.change('ivy', 'settings', settings, { [ref]: value });
         if (MANAGERS.includes(ref)) {
@@ -123,7 +127,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('lets the CRM admin write every setting, and nobody else any', async () => {
       for (const ref of columns()) {
-        const value = ref === 'aftercare_owner_id' ? s.ids['hugo'] : LEGAL[ref];
+        const value = PEOPLE.includes(ref) ? s.ids['hugo'] : LEGAL[ref];
         expect(said(await s.change('tessa', 'settings', settings, { [ref]: value })), ref).toBe('ok');
       }
       const kept = (await row('grace', 'settings', settings))!;
