@@ -973,7 +973,8 @@ for (const [dialect, reachable] of LEGS) {
         const kim = await asks('Kim Hart', KIM);
         const pat = await asks('Pat Quinn', PAT);
         // A stopped mail keeps no address.
-        expect(await outboxOf(`kind = 'brochure' and enquiry_id in (${String(kim)}, ${String(pat)})`)).toEqual([
+        // Sorted by status: the engines return the two rows in no fixed order.
+        expect((await outboxOf(`kind = 'brochure' and enquiry_id in (${String(kim)}, ${String(pat)})`)).sort((a, b) => String(a[2]).localeCompare(String(b[2])))).toEqual([
           ['brochure', KIM, 'sent', null],
           ['brochure', null, 'skipped', 'Not sent: on the do-not-email list'],
         ]);
