@@ -49,7 +49,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at (0.3.27 until the release); the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.42' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.49' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
@@ -441,7 +441,8 @@ for (const [dialect, reachable] of LEGS) {
     });
 
     it('a stage added as a row is a column of the very next read, empty, with no update of the app', async () => {
-      const version = (await manifestsRepo(s.meta, { encrypt: (v) => v, decrypt: (v) => v }).findByKey('crm'))?.version;
+      const version = (await manifestsRepo(s.meta, { encrypt: (v) => v, decrypt: (v) => v }).findBySlug('crm', ''))?.row.version;
+      expect(version, 'the install at the app\'s own address').toBeDefined();
       // A rep and an account manager read the stages and may not add one; the CRM admin and the sales manager keep the list (F14).
       expect(said(await post('dana', 'stages', { label: 'Legal review', odds: 0.8, position: 5 }))).toMatch(/^403/);
       expect(said(await post('hugo', 'stages', { label: 'Legal review', odds: 0.8, position: 5 }))).toMatch(/^403/);
@@ -450,7 +451,7 @@ for (const [dialect, reachable] of LEGS) {
       const now = await columns('dana');
       expect(now.map(([name]) => name)).toEqual([...STAGES, 'Legal review']);
       expect(now[5]).toEqual(['Legal review', 0, 0]);
-      expect((await manifestsRepo(s.meta, { encrypt: (v) => v, decrypt: (v) => v }).findByKey('crm'))?.version).toBe(version);
+      expect((await manifestsRepo(s.meta, { encrypt: (v) => v, decrypt: (v) => v }).findBySlug('crm', ''))?.row.version).toBe(version);
     });
 
     it('dropping a card is the ordinary save: Dana moves her own deal, a won deal stays where it is, and Sam\'s is not there', async () => {

@@ -1,13 +1,17 @@
 /**
- * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2 and 0.2.3, holding the sample and rows
- * typed since by the people who type them, updated to 0.2.4 (the whole app), on SQLite, Postgres and MySQL.
+ * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3 and 0.2.4, holding the sample and
+ * rows typed since by the people who type them, updated to 0.2.5 (the whole app), on SQLite, Postgres and MySQL.
  *
- * Each release is read from its git tag (`v0.2.0` … `v0.2.3`): the manifest and the `seeds/` the package shipped, as
+ * Each release is read from its git tag (`v0.2.0` … `v0.2.4`): the manifest and the `seeds/` the package shipped, as
  * the release put them in its file. The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
  * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
  * when it still says the one installed), Forms among them, installed after the CRM's update.
  *
- * Website forms and surveys (0.2.4, on Adminium 0.3.42): the update asks the owner for the read of Forms' invitations
+ * One app per install (0.2.5, on Adminium 0.3.49): both frontends say `instances`; no table, column, grant, part or rule
+ * changes, so the update from 0.2.4 asks the owner nothing and goes at once, every row and switch kept. The releases are
+ * installed on the engine under test (0.3.49): each says an older floor, which it still meets.
+ *
+ * Website forms and surveys (0.2.4, on Adminium 0.3.42): the update to it asks the owner for the read of Forms' invitations
  * for the five roles that read the aftercare calls, though Forms is not there yet; the brochure and survey rules
  * arrive off, and Surveys (which ships on) waits for Forms until it is installed. A quote still reaches an address on the do-not-email
  * list (a service kind with no purpose); the brochure (a service kind with the newsletter purpose) does not.
@@ -71,7 +75,7 @@ import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.42' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.49' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 type Row = Record<string, unknown>;
@@ -79,8 +83,8 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.4';
-const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3'] as const;
+const NEXT = '0.2.5';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4'] as const;
 type Release = (typeof RELEASES)[number];
 
 interface Column {
@@ -151,7 +155,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.4: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.5: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -510,9 +514,10 @@ for (const [dialect, reachable] of LEGS) {
       let rulesBefore: Record<string, boolean> = {};
       let updateReply: { derived?: { filled: { table: string; column: string; rows: number }[]; skipped: unknown[] } } = {};
       const has21 = from !== '0.2.0';
-      /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 already has the mark of the line and the count of won deals. */
-      const has22 = from === '0.2.2' || from === '0.2.3';
-      const has23 = from === '0.2.3';
+      /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 and later already have the mark of the line and the count of won deals; 0.2.4 already has website forms and surveys. */
+      const has22 = from !== '0.2.0' && from !== '0.2.1';
+      const has23 = has22 && from !== '0.2.2';
+      const has24 = from === '0.2.4';
       const installedAddOns = before;
       const nextAddOns = after;
 
@@ -700,13 +705,24 @@ for (const [dialect, reachable] of LEGS) {
         expect(receipts.filter((row) => plainValue(row['got']) !== plainValue(row['want'])).map((row) => `${String(row['id'])}: ${String(plainValue(row['got']))}, the order says ${String(plainValue(row['want']))}`).slice(0, 10)).toEqual([]);
       }, 600_000);
 
-      it(`the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table, and goes when the owner allows them`, async () => {
+      it(has24 ? `the CRM update to ${NEXT} widens no grant, asks the owner nothing and goes at once` : `the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table, and goes when the owner allows them`, async () => {
         await s.jobs();
         rowsBefore = await everyRow(s);
         partsBefore = await parts();
         rulesBefore = await rules();
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
         const want = widerGrants(was.manifest, now.manifest);
+        if (has24) {
+          // 0.2.4 already holds every grant 0.2.5 does: nothing to allow, and the update goes at once.
+          expect(want).toEqual([]);
+          const updated = await as('owner', 'POST', '/api/v1/apps/crm/update', {});
+          expect(updated.statusCode, updated.body).toBe(200);
+          updateReply = updated.json() as typeof updateReply;
+          await s.reread();
+          const installed = (await s.meta.db.selectFrom('adminium_manifests').select(['version']).where('manifestKey', '=', 'crm').executeTakeFirst()) as { version: string } | undefined;
+          expect(installed?.version).toBe(NEXT);
+          return;
+        }
         const asked = await as('owner', 'POST', '/api/v1/apps/crm/update', {});
         expect(asked.statusCode, asked.body).toBe(422);
         const named = (asked.json() as { error: { code: string; details: { roleTables: { role: string; addOn: string; table: string; wider: { actions?: string[]; columns?: string[] } }[] } } }).error;
@@ -744,7 +760,7 @@ for (const [dialect, reachable] of LEGS) {
         expect(Object.keys(after).sort()).toEqual(now.manifest.modules.map((part) => part.id).sort());
         for (const [part, on] of Object.entries(partsBefore)) expect([part, after[part]]).toEqual([part, on]);
         const arrived = Object.keys(after).filter((part) => !(part in partsBefore));
-        expect(arrived.sort()).toEqual(has21 ? ['surveys'] : ['aftercare', 'fleet', 'jobs', 'showroom', 'surveys']);
+        expect(arrived.sort()).toEqual(has24 ? [] : has21 ? ['surveys'] : ['aftercare', 'fleet', 'jobs', 'showroom', 'surveys']);
         for (const part of arrived) expect([part, after[part]]).toEqual([part, false]);
         expect(after[has21 ? 'showroom' : 'inbox']).toBe(false);
         // Surveys waits for Forms, which no install has yet.
@@ -761,15 +777,15 @@ for (const [dialect, reachable] of LEGS) {
         // "Refused" was merged into "given": an install that switched it on hears the decision through "given" now.
         expect(nowRules['approval-refused']).toBeUndefined();
         for (const [key, on] of shipped) if (!(key in rulesBefore)) expect([key, nowRules[key]]).toEqual([key, on]);
-        // 0.2.4's two arrive off: the brochure asked on a website form, and the survey after a sign-off.
-        expect([rulesBefore['brochure-asked'], rulesBefore['survey-after-sign-off']]).toEqual([undefined, undefined]);
+        // 0.2.4's two arrive off: the brochure asked on a website form, and the survey after a sign-off (an install of 0.2.4 had them, off as shipped).
+        expect([rulesBefore['brochure-asked'], rulesBefore['survey-after-sign-off']]).toEqual(has24 ? [false, false] : [undefined, undefined]);
         expect([nowRules['brochure-asked'], nowRules['survey-after-sign-off']]).toEqual([false, false]);
       });
 
       it('every derived column the update adds holds, on every row there, the value its rule gives', async () => {
         const { derived } = addedColumns(was.manifest, now.manifest);
         const ids = derived.map((added) => `${added.table}.${added.column.ref}`).sort();
-        // 0.2.3 adds one: how many of a contact's deals are won, who counts as a customer. 0.2.4 adds none.
+        // 0.2.3 adds one: how many of a contact's deals are won, who counts as a customer. 0.2.4 and 0.2.5 add none.
         expect(ids).toEqual(
           has23
             ? []
@@ -854,14 +870,15 @@ for (const [dialect, reachable] of LEGS) {
         // 0.2.3's: the mark of the line, on contacts and enquiries. Every row there before it carries none: nobody brought
         // in before was told they could say no where we took their address, so nobody is an existing customer by it.
         // 0.2.4's: what a website form says of an enquiry and the brochure it asked, the outbox's enquiry, whether a piece of
-        // feedback came from the survey, and the brochure's two settings: none set on a row there before.
+        // feedback came from the survey, and the brochure's two settings: none set on a row there before. 0.2.5 adds none.
         const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
         const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
-        if (has23) expect(ids).toEqual(ours);
+        if (has24) expect(ids).toEqual([]);
+        else if (has23) expect(ids).toEqual(ours);
         else if (has22) expect(ids).toEqual([...ours, 'contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at'].sort());
         else expect(plain.length).toBeGreaterThan(20);
         // (0.2.0 had no feedback: the table is new to it, the column with it.)
-        for (const id of ours.filter((one) => has21 || !one.startsWith('feedback.'))) expect(ids, id).toContain(id);
+        if (!has24) for (const id of ours.filter((one) => has21 || !one.startsWith('feedback.'))) expect(ids, id).toContain(id);
         // (From 0.2.3 the mark is the server's own on a row typed there: kept as it was, above.)
         if (!has23) for (const ref of ['contacts', 'enquiries']) expect(Number((await one(`select count(*) as c from crm_${ref} where opt_out_offered_at is not null`))['c']), ref).toBe(0);
         const wrong: string[] = [];

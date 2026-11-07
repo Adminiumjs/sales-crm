@@ -55,7 +55,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.42' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p71t06-crm`;
 const read = (path: string) => readFileSync(`${APP}/${path}`, 'utf8');

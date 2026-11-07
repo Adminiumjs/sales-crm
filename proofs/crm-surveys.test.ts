@@ -57,7 +57,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.42' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p71t06-crm`;
 const read = (path: string) => readFileSync(`${APP}/${path}`, 'utf8');
@@ -273,7 +273,7 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
   });
 
   it.skipIf(!run)('ships the rule switched off: a job signed off gets no survey', async () => {
-    expect(await appPartIsOn(h.meta, 'crm', 'surveys')).toBe(true);
+    expect(await appPartIsOn(h.meta, 'crm', 'surveys', { installId: null, connectionId: h.connectionId })).toBe(true);
     await signOff(job['early']!);
     await runJobs(true);
     expect(await invitationOf(job['early']!)).toEqual([]);
@@ -384,7 +384,7 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
     const off = await h.inject({ method: 'PATCH', url: '/add-ons/forms', payload: { attachedTo: 'crm', enabled: false } });
     expect(off.statusCode, off.body).toBe(200);
     try {
-      expect(await appPartIsOn(h.meta, 'crm', 'surveys')).toBe(false);
+      expect(await appPartIsOn(h.meta, 'crm', 'surveys', { installId: null, connectionId: h.connectionId })).toBe(false);
       const parts = (await h.inject({ method: 'GET', url: '/apps/crm/parts' })).json() as { parts: { id: string; waiting: { key: string }[] }[] };
       expect(parts.parts.find((part) => part.id === 'surveys')!.waiting.map((one) => one.key)).toEqual(['forms']);
       // Typed by hand: the day typed, not marked as a survey's.
@@ -394,7 +394,7 @@ describe.each(LEGS)(`the CRM's survey after the job, with Forms ${FORMS?.version
     } finally {
       expect((await h.inject({ method: 'PATCH', url: '/add-ons/forms', payload: { attachedTo: 'crm', enabled: true } })).statusCode).toBe(200);
     }
-    expect(await appPartIsOn(h.meta, 'crm', 'surveys')).toBe(true);
+    expect(await appPartIsOn(h.meta, 'crm', 'surveys', { installId: null, connectionId: h.connectionId })).toBe(true);
     // Nor may he mark one as the survey's, on a new answer or on one there.
     expect((await as('hugo', 'POST', data('feedback'), { values: { job_id: job['dee'], score: 5, answered_on: '2026-10-21', from_survey: true } })).statusCode).toBeGreaterThanOrEqual(400);
     const ann = Number((await rows('feedback', `job_id = ${String(job['ann'])}`))[0]!['id']);
