@@ -21,7 +21,7 @@
 import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { authOf, expect, picture, stand, test } from "./fixtures.ts";
-import { csrf, dealNamed, inArabic, rows, STAFF, watch, type Data } from "./helpers.ts";
+import { csrf, dealNamed, dragCardTo, inArabic, putDealBack, rows, STAFF, watch, type Data } from "./helpers.ts";
 import { room } from "./p12-helpers.ts";
 
 interface Stage {
@@ -38,6 +38,14 @@ const spoken = (page: Page): Locator => page.locator("[data-board-liveregion]").
 const pageSideways = (page: Page): Promise<number> => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
 const stagesOf = (person: APIRequestContext, data: Data): Promise<Stage[]> => rows<Stage>(person, data, "stages", undefined, "&order=position");
+
+// The specs here move Edit-suite chairs; whatever one got to (a timeout ends a test before its own `finally` can call the server),
+// the deal is back in Discovery, the ledger's, before the next one, so a card left elsewhere cannot change what later specs read.
+test.afterEach(async ({ api, data }) => {
+  const dana = await api("dana");
+  const discovery = (await stagesOf(dana, data)).find((stage) => stage.label === "Discovery");
+  if (discovery !== undefined) await putDealBack(dana, data, "Edit-suite chairs", discovery.id);
+});
 
 /** Every stage this file adds, taken away as the CRM admin (nothing names one). */
 async function removeSpecStages(admin: APIRequestContext, data: Data): Promise<void> {
@@ -127,16 +135,9 @@ test("in the console a card is dragged with the mouse and moved by keyboard; the
     const chairs = cardIn(page, discovery.id, "Edit-suite chairs");
     await expect(chairs).toBeVisible();
 
-    // By mouse: Discovery to Qualified.
-    const from = (await chairs.boundingBox())!;
-    // The whole column is the drop target (Adminium 0.3.37), and it says so while a card is over it.
-    const to = (await columnOf(page, qualified.id).boundingBox())!;
-    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2 + 6, { steps: 3 });
-    await page.mouse.move(to.x + to.width / 2, to.y + 40, { steps: 12 });
-    await expect(columnOf(page, qualified.id)).toHaveAttribute("data-drop-target", "");
-    await page.mouse.up();
+    // By mouse: Discovery to Qualified. The whole column is the drop target (Adminium 0.3.37), and it says so while a card is
+    // over it: the drag lets go only then.
+    await dragCardTo(page, chairs, columnOf(page, qualified.id));
     await expect(cardIn(page, qualified.id, "Edit-suite chairs")).toBeVisible();
     await expect(spoken(page)).toHaveText(/Moved Edit-suite chairs to Qualified\./);
     await expect.poll(async () => (await dealNamed(context.request, data, "Edit-suite chairs")).stage_id).toBe(qualified.id);

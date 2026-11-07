@@ -9,7 +9,7 @@
 import type { Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { card, cardsIn, column, csrf, dealNamed, inArabic, rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
+import { card, cardsIn, column, csrf, dealNamed, dragCardTo, inArabic, putDealBack, rows, STAFF, watch, unfoldMenu } from "./helpers.ts";
 
 interface Stage {
   id: number;
@@ -17,6 +17,14 @@ interface Stage {
 }
 const total = (page: Page, stage: Stage) => column(page, stage.id).locator('[data-part="column-total"]');
 const count = (page: Page, stage: Stage) => column(page, stage.id).locator('[data-part="column-count"]');
+
+// The specs here move Edit-suite chairs; whatever one got to, the deal is back in Discovery (the ledger's) before the next one,
+// by the server, so a card left in another column cannot change the figures every later spec reads.
+test.afterEach(async ({ api, data }) => {
+  const dana = await api("dana");
+  const [discovery] = await rows<Stage>(dana, data, "stages", undefined, "&order=position");
+  await putDealBack(dana, data, "Edit-suite chairs", discovery!.id);
+});
 
 test("Dana opens her board from the menu, with the ledger's figures", async ({ as, data }) => {
   const context = await as("dana");
@@ -111,15 +119,8 @@ test("a card is moved by keyboard and by mouse; the figures follow and the serve
   await expect(page.getByTestId("board-weighted")).toHaveText("£96,220");
   expect((await dealNamed(context.request, data, "Edit-suite chairs")).stage_id).toBe(qualified.id);
 
-  // By mouse: on to Proposal (50 %).
-  const from = (await card(page, "Edit-suite chairs").boundingBox())!;
-  // The whole column is the drop target (Adminium 0.3.37).
-  const to = (await column(page, proposal.id).boundingBox())!;
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2 + 6, { steps: 3 });
-  await page.mouse.move(to.x + to.width / 2, to.y + 40, { steps: 12 });
-  await page.mouse.up();
+  // By mouse: on to Proposal (50 %). The whole column is the drop target (Adminium 0.3.37); let go once the board has it under the card.
+  await dragCardTo(page, card(page, "Edit-suite chairs"), column(page, proposal.id));
   await expect(page.locator(".crm-toast")).toContainText("Edit-suite chairs → Proposal · £1,600 weighted");
   await expect(count(page, proposal)).toHaveText("3");
   expect((await dealNamed(context.request, data, "Edit-suite chairs")).stage_id).toBe(proposal.id);

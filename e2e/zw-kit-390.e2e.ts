@@ -15,7 +15,7 @@
 import type { Page } from "@playwright/test";
 
 import { expect, picture, test } from "./fixtures.ts";
-import { csrf, dealNamed, rows, STAFF } from "./helpers.ts";
+import { csrf, dealNamed, putDealBack, rows, STAFF } from "./helpers.ts";
 import { bubble, mapServer, openTerritory, pinOf, pins, territoryRow } from "./territory-helpers.ts";
 
 const PHONE = { viewport: { width: 390, height: 844 } };
@@ -25,6 +25,13 @@ const inView = (page: Page, selector: string): Promise<boolean> =>
     const box = el.getBoundingClientRect();
     return box.left >= -1 && box.right <= window.innerWidth + 1;
   });
+
+// A card moved here is put back by the server after every test, even one that timed out before its own `finally` could.
+test.afterEach(async ({ api, data }) => {
+  const dana = await api("dana");
+  const [discovery] = await rows<{ id: number }>(dana, data, "stages", undefined, "&order=position");
+  await putDealBack(dana, data, "Edit-suite chairs", discovery!.id);
+});
 
 test("the board on Pipeline at 390: the board scrolls inside itself, the page never does, and a card moved by keyboard is followed into view", async ({ as, data }) => {
   const context = await as("dana", PHONE);

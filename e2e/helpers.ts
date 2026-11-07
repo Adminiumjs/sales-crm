@@ -2,7 +2,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { request, type APIRequestContext, type Page } from "@playwright/test";
+import { request, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 
 import { expect } from "./fixtures.ts";
 import { LEDGER_NOW, readState, STAND_DIR } from "./stand.mjs";
@@ -126,6 +126,143 @@ export function watch(page: Page): string[] {
 export const column = (page: Page, stageId: number) => page.locator(`[data-kit-part="board"] [data-board-column="${String(stageId)}"]`);
 export const card = (page: Page, title: string) => page.locator('[data-kit-part="board"]').getByRole("button", { name: title, exact: true });
 export const cardsIn = (page: Page, stageId: number): Promise<string[]> => column(page, stageId).locator("[data-board-card]").evaluateAll((cards) => cards.map((one) => one.getAttribute("aria-label") ?? ""));
+
+/** A box once it has stopped moving: read, wait a frame, read again, until two reads agree (a board that is still scrolling or laying out moves under the pointer). */
+async function settledBox(target: Locator): Promise<{ x: number; y: number; width: number; height: number }> {
+  let before = await target.boundingBox();
+  for (let tries = 0; tries < 40; tries += 1) {
+    await target.page().evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    const now = await target.boundingBox();
+    if (before !== null && now !== null && Math.abs(now.x - before.x) < 0.5 && Math.abs(now.y - before.y) < 0.5 && Math.abs(now.width - before.width) < 0.5 && Math.abs(now.height - before.height) < 0.5) return now;
+    before = now;
+  }
+  throw new Error("the box never stopped moving");
+}
+
+/** Which column the board has the held card over (`data-over`), once the frame after the last pointer move is drawn; null for none. */
+async function columnOver(page: Page): Promise<string | null> {
+  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+  const over = await page.locator("[data-board-column][data-over]").evaluateAll((all) => all.map((one) => one.getAttribute("data-board-column")));
+  return over[0] ?? null;
+}
+
+/** Until the page has drawn nothing new for 400 ms (at most 10 s): a board that has just saved a move redraws its cards once more when the server's rows come back. */
+async function quiet(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((done) => {
+        let timer = 0;
+        const observer = new MutationObserver(() => {
+          clearTimeout(timer);
+          timer = window.setTimeout(finish, 400);
+        });
+        const finish = () => {
+          observer.disconnect();
+          done();
+        };
+        observer.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+        timer = window.setTimeout(finish, 400);
+        window.setTimeout(finish, 10_000);
+      }),
+  );
+}
+
+/**
+ * Drag a board's card onto a column with the mouse, as a person does, and let go only while the board has that column as the
+ * one the card is over (`data-over`): never on the column the pointer was merely aimed at.
+ *
+ * Why not "aim at the column's middle and let go". A board that has just saved a move draws its cards again when the server's
+ * rows come back; on a slower machine (the CI runner; here, the CPU slowed 4×) a card picked up in between is the card of the
+ * old drawing, and the board then measures the new one, a column on. The held card (its overlay) rides that far ahead of the
+ * pointer, and the board chooses the column by the held card's corners (dnd-kit's closest corners), not by the pointer, so it
+ * drops a column too far. So: the board is left to finish drawing, the target is brought to the middle of the board (no
+ * sideways auto-scroll) and every box is read once it has stopped moving; the card is picked up again if the board did not
+ * start a drag (`data-dragging`); and while it is held the pointer is corrected by the distance between the column the board
+ * says it is over and the target, until the board says the target. A drag the board loses (the held card stops following the
+ * pointer) is called off (Escape) and made again; after three, the spec fails here, having moved nothing.
+ */
+export async function dragCardTo(page: Page, card: Locator, target: Locator): Promise<void> {
+  const want = await target.getAttribute("data-board-column");
+  let last: string | null = null;
+  // A drag the board loses track of (the card drawn again under it while it is held: the held card then stops following the
+  // pointer) is called off and made again from the start, up to three times.
+  for (let drags = 0; drags < 3; drags += 1) {
+    last = await dragOnce(page, card, target, want);
+    if (last === want) return;
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+    await page.keyboard.press("Escape");
+  }
+  throw new Error(`the drag never had column ${String(want)} under the card (the board had it over ${String(last)}); called off, nothing moved`);
+}
+
+/** One drag of `dragCardTo`: the column the card was let go on (the target), or, with the button still held, the one it was over instead. */
+async function dragOnce(page: Page, card: Locator, target: Locator, want: string | null): Promise<string | null> {
+  let x = 0;
+  let y = 0;
+  for (let picks = 0; ; picks += 1) {
+    await quiet(page);
+    await card.scrollIntoViewIfNeeded();
+    await target.evaluate((el) => el.scrollIntoView({ block: "nearest", inline: "center" }));
+    await settledBox(target);
+    const from = await settledBox(card);
+    [x, y] = [from.x + from.width / 2, from.y + from.height / 2];
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    // Past the board's 4px start, so the drag is on before it travels.
+    await page.mouse.move(x + 12, y + 6, { steps: 3 });
+    if ((await page.locator("[data-board-card][data-dragging]").count()) > 0) break;
+    // The card was drawn again under the pointer: nothing was picked up. Let go (closing anything that opened) and pick it up again.
+    await page.mouse.up();
+    await page.keyboard.press("Escape");
+    if (picks === 3) throw new Error("the board never started a drag of the card");
+  }
+  const to = await settledBox(target);
+  [x, y] = [to.x + to.width / 2, to.y + Math.min(40, to.height / 2)];
+  await page.mouse.move(x, y, { steps: 12 });
+  const heights = [0.5, 0.85];
+  let over: string | null = null;
+  let stuck = 0;
+  for (let tries = 0; tries < 8 && stuck < 2; tries += 1) {
+    // The board may still be scrolling itself (it follows a card it has just drawn, and scrolls while a held card nears its
+    // edge): read where the target is once it is still, and only then which column the board has the card over.
+    const aim = await settledBox(target);
+    const before = over;
+    over = await columnOver(page);
+    if (over === want) {
+      await settledBox(target);
+      if ((await columnOver(page)) === want) {
+        await page.mouse.up();
+        return want;
+      }
+      continue;
+    }
+    // Moved and still over the same other column: the held card is not following the pointer.
+    stuck = over !== null && over === before ? stuck + 1 : 0;
+    if (over !== null) {
+      // The held card is over another column: move by the distance from that column to the target.
+      const off = await settledBox(page.locator(`[data-board-column="${over}"]`).first());
+      x += aim.x + aim.width / 2 - (off.x + off.width / 2);
+    } else {
+      // Over none: try the target lower down.
+      x = aim.x + aim.width / 2;
+      y = aim.y + aim.height * (heights.shift() ?? 0.5);
+    }
+    await page.mouse.move(x, y, { steps: 6 });
+  }
+  return over;
+}
+
+/**
+ * Put a deal back in a stage by the server, whatever the test that moved it got to. Each spec that moves a sample deal runs this
+ * after every test (`test.afterEach`), so one card left in the wrong column cannot change the figures every later spec reads.
+ */
+export async function putDealBack(person: APIRequestContext, data: Data, name: string, stageId: number): Promise<void> {
+  const deal = await dealNamed(person, data, name);
+  if (deal.stage_id === stageId) return;
+  const res = await person.patch(data("deals", `/${String(deal.id)}`), { data: { values: { stage_id: stageId } }, headers: await csrf(person) });
+  expect(res.status(), `${name} back to stage ${String(stageId)}: ${await res.text()}`).toBe(200);
+}
 
 /** Run something with a person reading Arabic (their own setting in Adminium), and give them English back afterwards. */
 export async function inArabic(person: APIRequestContext, run: () => Promise<void>): Promise<void> {
