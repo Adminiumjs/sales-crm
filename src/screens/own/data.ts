@@ -17,7 +17,7 @@
  */
 import type { Formatters } from "../../lib/format.ts";
 import { addDays } from "../../lib/format.ts";
-import { LostReply, StaffError, type Condition, type Grouped, type Saved, type StaffSession } from "../../staffSession.ts";
+import { installHeaders, LostReply, StaffError, type Condition, type Grouped, type Saved, type StaffSession } from "../../staffSession.ts";
 
 /* ── The summary rules that write to her, and their state (R7) ───────────── */
 
@@ -70,7 +70,7 @@ export async function sendTest(session: StaffSession, ruleId: string, fetchImpl:
     res = await fetchImpl(`/api/v1/me/summaries/${encodeURIComponent(ruleId)}/send`, {
       method: "POST",
       credentials: "same-origin",
-      headers: { accept: "application/json", "content-type": "application/json", "x-adminium-csrf": session.config.csrfToken ?? "" },
+      headers: { accept: "application/json", "content-type": "application/json", "x-adminium-csrf": session.config.csrfToken ?? "", ...installHeaders(session.config) },
       body: "{}",
     });
   } catch {

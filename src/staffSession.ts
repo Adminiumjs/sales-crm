@@ -189,6 +189,14 @@ export interface StaffSessionOptions {
 
 const API = "/api/v1";
 const CSRF_HEADER = "x-adminium-csrf";
+/**
+ * Which install of the app a call is for (`apps/server/src/installs/resolve.ts`).
+ * One app can be installed on several databases; the staff config names this
+ * side's install, and every call carries it so `/apps/crm/*` reads that
+ * install's rules, settings and documents. Nothing is sent when the config
+ * names none (an older Adminium).
+ */
+export const INSTALL_HEADER = "x-adminium-install";
 /** The most figures the server takes in one request. */
 const FIGURES_PER_REQUEST = 40;
 const KEY_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -247,6 +255,10 @@ export interface StaffSession {
   call<T = unknown>(method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE", path: string, body?: unknown, headers?: Record<string, string>): Promise<T>;
 }
 
+/** The install header for a call made under this config: empty when the config names no install. */
+export const installHeaders = (config: Pick<StaffConfig, "installId">): Record<string, string> =>
+  config.installId === null || config.installId === undefined ? {} : { [INSTALL_HEADER]: config.installId };
+
 /** Open the session of whoever is signed in. Throws when no config answers: the page is not served by Adminium. */
 export async function connectStaffSession(opts: StaffSessionOptions = {}): Promise<StaffSession> {
   const doFetch = opts.fetchImpl ?? ((input: RequestInfo | URL, init?: RequestInit) => fetch(input, init));
@@ -277,7 +289,7 @@ export async function connectStaffSession(opts: StaffSessionOptions = {}): Promi
   const data = (ref: string, rest = ""): string => `/data/${encodeURIComponent(connectionId)}/${encodeURIComponent(tableId(ref))}${rest}`;
 
   async function send(method: string, path: string, body: unknown, headers: Record<string, string> = {}, again = true): Promise<unknown> {
-    const init: RequestInit = { method, credentials: "same-origin", headers: { accept: "application/json", ...headers } };
+    const init: RequestInit = { method, credentials: "same-origin", headers: { accept: "application/json", ...installHeaders(config!), ...headers } };
     if (method !== "GET") (init.headers as Record<string, string>)[CSRF_HEADER] = config!.csrfToken ?? "";
     if (body !== undefined) {
       if (typeof body === "string" || body instanceof Blob) init.body = body;

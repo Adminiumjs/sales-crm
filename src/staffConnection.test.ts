@@ -92,6 +92,7 @@ describe("loadStaffConfig", () => {
   it("reads everything a till boots from, and keeps nothing it does not understand", async () => {
     const fetchImpl = ok({
       connectionId: "con_42",
+      installId: "ins_7",
       appName: null,
       tables: { tickets: "pos_tickets", odd: 7 },
       settings: { business_type: "retail" },
@@ -114,6 +115,7 @@ describe("loadStaffConfig", () => {
     });
     expect(await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl })).toEqual({
       connectionId: "con_42",
+      installId: "ins_7",
       appName: null,
       tables: { tickets: "pos_tickets" },
       settings: { business_type: "retail" },
@@ -163,6 +165,25 @@ describe("loadStaffConfig", () => {
     expect(config?.addOns).toEqual({});
     // Nor any table another app shares (a server up to 0.3.7 does not say).
     expect(config?.sharedTables).toEqual({});
+  });
+
+  it("names no install from an Adminium too old to say, so no install header is sent", async () => {
+    const config = await loadStaffConfig({ hostedStaff: true, base: "/apps/crm/staff/", fetchImpl: ok({ connectionId: "con_42" }) });
+    expect(config?.installId).toBeNull();
+  });
+
+  it("gives a second install, served at its own mount, its own install id and database", async () => {
+    const docs: Record<string, unknown> = {
+      "/apps/crm/staff/surface-config.json": { connectionId: "con_north", installId: "ins_north" },
+      "/apps/crm/south/staff/surface-config.json": { connectionId: "con_south", installId: "ins_south" },
+    };
+    const fetchImpl = vi.fn(async (input: unknown) =>
+      new Response(JSON.stringify(docs[String(input)] ?? null), { status: docs[String(input)] === undefined ? 404 : 200 }),
+    ) as unknown as typeof fetch;
+    const first = await loadStaffConfig({ hostedStaff: true, base: configBase("/apps/crm/staff/", "/apps/crm/staff/"), fetchImpl });
+    const second = await loadStaffConfig({ hostedStaff: true, base: configBase("/apps/crm/staff/", "/apps/crm/south/staff/deals"), fetchImpl });
+    expect([first?.installId, first?.connectionId]).toEqual(["ins_north", "con_north"]);
+    expect([second?.installId, second?.connectionId]).toEqual(["ins_south", "con_south"]);
   });
 
   it("is null outside a hosted staff build", async () => {

@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "crm",
   "name": "Sales CRM",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "publisher": {
     "id": "adminium",
     "name": "Adminium"
@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.42",
+    "minAdminiumVersion": "0.3.49",
     "engines": [
       "postgres",
       "mysql",
@@ -45345,7 +45345,8 @@
         "contacts": "/contacts/{id}",
         "site_visits": "/visits/notes/{id}",
         "refused_sign_offs": "/sign-off/refused/{id}"
-      }
+      },
+      "instances": true
     },
     {
       "side": "customer",
@@ -45353,7 +45354,8 @@
       "entry": "index.html",
       "routes": {
         "manage": "/"
-      }
+      },
+      "instances": true
     }
   ],
   "navLinks": [

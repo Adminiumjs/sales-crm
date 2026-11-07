@@ -12,6 +12,7 @@ import { connectStaffSession, LostReply, newClientKey, noValue, StaffError } fro
 
 const CONFIG: StaffConfig = {
   connectionId: "con_1",
+  installId: null,
   appName: "Sales CRM",
   tables: { deals: "public.crm_deals", stages: "public.crm_stages" },
   settings: {},
@@ -202,6 +203,50 @@ describe("a change whose reply is lost", () => {
     const { calls, session } = open(["lost", json(200, { data: { id: 7, name: "Old" } }), json(200, { data: { id: 7, name: "Renamed" } })]);
     expect(await (await session).update("deals", 7, { name: "Renamed" }, { seen: { name: "Old" } })).toMatchObject({ state: "saved", readBack: false });
     expect(calls[2]!.body).toEqual({ values: { name: "Renamed" }, seen: { name: "Old" } });
+  });
+});
+
+describe("the install", () => {
+  const SOUTH: StaffConfig = { ...CONFIG, connectionId: "con_south", installId: "ins_south" };
+
+  it("is named on every call, the app's own routes included, when the config names it", async () => {
+    const { calls, fetchImpl } = server([
+      json(200, { data: [], page: { total: 0 } }),
+      json(201, { data: { id: 1 } }),
+      json(200, { rules: [] }),
+      json(200, { data: { state: "none" } }),
+      json(200, { contentUrl: "/f/1" }),
+    ]);
+    const session = await connectStaffSession({ config: SOUTH, fetchImpl });
+    await session.list("deals", {});
+    await session.create("deals", { name: "A" }, newClientKey());
+    await session.call("GET", "/apps/crm/rules");
+    await session.call("GET", "/apps/crm/sample-data");
+    await session.call("POST", "/apps/crm/documents/render", { kind: "signed-copy", ref: "sign_offs", pk: { id: 1 } });
+    expect(calls.map((call) => [call.url, call.headers["x-adminium-install"]])).toEqual([
+      [expect.stringMatching(/^\/api\/v1\/data\/con_south\/public\.crm_deals/), "ins_south"],
+      ["/api/v1/data/con_south/public.crm_deals", "ins_south"],
+      ["/api/v1/apps/crm/rules", "ins_south"],
+      ["/api/v1/apps/crm/sample-data", "ins_south"],
+      ["/api/v1/apps/crm/documents/render", "ins_south"],
+    ]);
+  });
+
+  it("is still named after a fresh token was read", async () => {
+    const { calls, fetchImpl } = server([
+      refusal(403, "CSRF_FAILED"),
+      json(200, { connectionId: "con_south", installId: "ins_south", csrfToken: "tok-2", tables: {}, user: CONFIG.user }),
+      json(201, { data: { id: 1 } }),
+    ]);
+    const session = await connectStaffSession({ config: SOUTH, fetchImpl, base: "/apps/crm/south/staff/" });
+    expect((await session.create("deals", { name: "A" }, newClientKey())).state).toBe("saved");
+    expect(calls.filter((call) => call.url.startsWith("/api/")).map((call) => call.headers["x-adminium-install"])).toEqual(["ins_south", "ins_south"]);
+  });
+
+  it("is not sent when the config names none (an older Adminium)", async () => {
+    const { calls, session } = open([json(200, { rules: [] })]);
+    await (await session).call("GET", "/apps/crm/rules");
+    expect("x-adminium-install" in calls[0]!.headers).toBe(false);
   });
 });
 
