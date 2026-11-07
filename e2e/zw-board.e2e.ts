@@ -188,7 +188,9 @@ test("a won deal's stage is not moved from its record: the record says it is loc
     // Every field but the close note and the lost reason is locked: the stage is shown as it is, with no control to change it.
     await expect(dialog.getByText("Stage", { exact: true })).toBeVisible();
     await expect(dialog.getByLabel(/^Stage/)).toHaveCount(0);
-    await expect(dialog.getByRole("combobox")).toHaveCount(0);
+    await expect(dialog.getByRole("combobox", { name: /Stage/ })).toHaveCount(0);
+    // The lost reason is one of the two the lock leaves open (`lock.except`): its picker is the dialog's only one.
+    await expect(dialog.getByRole("combobox")).toHaveAccessibleName("Lost reason");
     await page.keyboard.press("Escape");
   }
   await picture(page, "zw-board-3-won-record");

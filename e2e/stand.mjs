@@ -492,6 +492,11 @@ export async function standUp() {
     // Money is the install's currency: the stand's business keeps its books in pounds.
     await call("the currency", "PATCH", `/api/v1/connections/${state.connectionId}`, { currency: process.env.CRM_STAND_CURRENCY ?? "GBP" });
 
+    // The add-ons are the ones staged below and nothing else: the online catalogue (on by default) would offer the newest
+    // release adminium.dev lists, and an install names the version it is offered, so the stand would hang on what is
+    // published today. Switched off, as an owner can, the offer is the staged build.
+    await call("the online add-on catalogue switched off", "PUT", "/api/v1/add-ons/catalog", { enabled: false });
+
     // The add-ons as they are built in their checkout. Inventory is optional: Supply waits for it. `CRM_STAND_ADD_ONS` names the
     // ones to stage (`none` for none): an install without Invoices and Inventory is the smaller app, Quotes and Supply left out.
     const staged = [];
