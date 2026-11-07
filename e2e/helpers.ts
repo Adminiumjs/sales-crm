@@ -177,8 +177,8 @@ async function quiet(page: Page): Promise<void> {
  * pointer, and the board chooses the column by the held card's corners (dnd-kit's closest corners), not by the pointer, so it
  * drops a column too far. So: the board is left to finish drawing, the target is brought to the middle of the board (no
  * sideways auto-scroll) and every box is read once it has stopped moving; the card is picked up again if the board did not
- * start a drag (`data-dragging`); and while it is held the pointer is corrected by the distance between the column the board
- * says it is over and the target, until the board says the target. A drag the board loses (the held card stops following the
+ * start a drag (`data-dragging`); and while it is held the pointer tries places over the target until the board says the
+ * target. A drag the board loses (the held card stops following the
  * pointer) is called off (Escape) and made again; after three, the spec fails here, having moved nothing.
  */
 export async function dragCardTo(page: Page, card: Locator, target: Locator): Promise<void> {
@@ -217,17 +217,21 @@ async function dragOnce(page: Page, card: Locator, target: Locator, want: string
     await page.keyboard.press("Escape");
     if (picks === 3) throw new Error("the board never started a drag of the card");
   }
-  const to = await settledBox(target);
-  [x, y] = [to.x + to.width / 2, to.y + Math.min(40, to.height / 2)];
-  await page.mouse.move(x, y, { steps: 12 });
-  const heights = [0.5, 0.85];
+  // Where on the target to hold it. The board compares the held card's four corners with each column's (closest corners): a
+  // column much shorter than the target (an emptier one beside it) wins while the held card is high, and the held card (280
+  // wide, drawn from where it was picked up) need not be centred on the pointer, so the middle of the target is not always
+  // the target's. The pointer tries the target's middle first, then a little either side and higher and lower, and lets go
+  // at the first place the board names the target. (On the CI runner the middle at a card's height from the top said the
+  // column to the right, and one column to the left said the column to the left: no full column's step finds it.)
+  const tries: [number, number][] = [[0, 0.5], [-70, 0.5], [70, 0.5], [-140, 0.5], [140, 0.5], [0, 0.75], [-70, 0.75], [70, 0.75], [-140, 0.75], [0, 0.3], [-70, 0.3], [70, 0.3], [-140, 0.3]];
   let over: string | null = null;
-  let stuck = 0;
-  for (let tries = 0; tries < 8 && stuck < 2; tries += 1) {
-    // The board may still be scrolling itself (it follows a card it has just drawn, and scrolls while a held card nears its
-    // edge): read where the target is once it is still, and only then which column the board has the card over.
+  for (const [dx, at] of tries) {
+    // The board may still be scrolling itself (it follows a card it has just drawn): read where the target is once it is still.
     const aim = await settledBox(target);
-    const before = over;
+    const bottom = Math.min(aim.y + aim.height, (page.viewportSize()?.height ?? 720) - 8);
+    x = aim.x + aim.width / 2 + Math.max(-aim.width / 2 + 8, Math.min(aim.width / 2 - 8, dx));
+    y = Math.max(aim.y + 24, Math.min(bottom - 24, aim.y + (bottom - aim.y) * at));
+    await page.mouse.move(x, y, { steps: 6 });
     over = await columnOver(page);
     if (over === want) {
       await settledBox(target);
@@ -235,20 +239,7 @@ async function dragOnce(page: Page, card: Locator, target: Locator, want: string
         await page.mouse.up();
         return want;
       }
-      continue;
     }
-    // Moved and still over the same other column: the held card is not following the pointer.
-    stuck = over !== null && over === before ? stuck + 1 : 0;
-    if (over !== null) {
-      // The held card is over another column: move by the distance from that column to the target.
-      const off = await settledBox(page.locator(`[data-board-column="${over}"]`).first());
-      x += aim.x + aim.width / 2 - (off.x + off.width / 2);
-    } else {
-      // Over none: try the target lower down.
-      x = aim.x + aim.width / 2;
-      y = aim.y + aim.height * (heights.shift() ?? 0.5);
-    }
-    await page.mouse.move(x, y, { steps: 6 });
   }
   return over;
 }
