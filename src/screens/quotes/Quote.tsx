@@ -36,6 +36,7 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { firstName } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
 import { createQuote, editable, familyNo, held, LINE_COLUMNS, newest, num, readNames, readQuotes, stateOf, TONE, type Line, type Quote, type QuoteState } from "./data.ts";
+import { QuotePayments, readPayments, type Panel, type QuotePayment } from "./Payments.tsx";
 
 interface Price extends Record<string, unknown> {
   id: number;
@@ -57,6 +58,8 @@ interface QuoteData {
   names: Record<string, string>;
   validDays: number;
   warnDays: number;
+  /** What was paid of the version open, and what Adminium's payment panel says of it. */
+  pay: { rows: QuotePayment[]; panel: Panel | null };
 }
 
 /** What does not change with a save: the price list and the two settings a quote reads. Asked once per page. */
@@ -71,17 +74,18 @@ async function readFixed(session: StaffSession): Promise<{ prices: Price[]; vali
 async function read(session: StaffSession, id: number, fixed: Promise<{ prices: Price[]; validDays: number; warnDays: number }>): Promise<QuoteData | null> {
   const one = await session.get<Quote>("quotes", id);
   if (one === null) return null;
-  const [all, lines, deal, rest] = await Promise.all([
+  const [all, lines, deal, rest, pay] = await Promise.all([
     readQuotes(session, { column: "deal_id", op: "eq", value: one.deal_id }),
     session.list<Line>("quote_lines", { select: LINE_COLUMNS, where: { column: "document_id", op: "eq", value: id }, order: ["position", "id"], limit: 200 }),
     session.get<DealFacts>("deals", one.deal_id, { lookup: ["contact:contact_id.name"] }),
     fixed,
+    readPayments(session, id),
   ]);
   // The quote read by itself carries what its reader's role shows of it; the list asks for fewer columns. Where the link went comes from the first.
   const family = all.filter((quote) => (quote.family_no ?? quote.number) === (one.family_no ?? one.number)).sort((a, b) => a.version - b.version).map((quote) => (quote.id === id ? { ...quote, sent_to_email: one.sent_to_email ?? null, to_email: one.to_email ?? null } : quote));
   if (!family.some((quote) => quote.id === id)) return null;
   const names = await readNames(session, family.flatMap((quote) => [quote.owner_id, quote.asked_by_id, quote.decided_by_id]));
-  return { family, lines: lines.rows, deal, names, ...rest };
+  return { family, lines: lines.rows, deal, names, ...rest, pay };
 }
 
 export function QuotePage({ id }: { id: string }) {
@@ -104,7 +108,7 @@ export function QuotePage({ id }: { id: string }) {
       reload();
     }, [session, reload]),
   );
-  useLive(["quotes", "quote_lines"], again);
+  useLive(session.can("quote_payments", "read") ? ["quotes", "quote_lines", "quote_payments"] : ["quotes", "quote_lines"], again);
   const facts = useMemo<MenuFacts>(
     () => ({ roles: (config.access?.roles ?? []).map((role) => role.slug), part: (part: PartId) => session.part(part), reads: (table) => session.can(table, "read"), built: isBuilt }),
     [config, session],
@@ -401,6 +405,8 @@ export function QuotePage({ id }: { id: string }) {
                     </div>
                   </dl>
                   {over && quote.status === "draft" && quote.approval !== "approved" && <p className="crm-threshold">{t("quote.threshold", { pct: f.number(num(quote.threshold_pct)) })}</p>}
+
+                  {quote.id === key ? <QuotePayments session={session} quote={quote} rows={data.pay.rows} panel={data.pay.panel} f={f} when={(at) => (at === null ? "" : f.dayShort(new Date(at)))} after={again} /> : null}
 
                   <div className="crm-label" id="crm-quote-notes">{t("quote.notes")}</div>
                   {edit ? (

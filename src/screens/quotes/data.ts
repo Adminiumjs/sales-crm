@@ -53,6 +53,16 @@ export interface Quote extends Record<string, unknown> {
   accepted_name: string | null;
   accepted_via: string | null;
   notes: string | null;
+  /** What the customer is asked on acceptance (taken from Settings when the quote was made), and how it stands: the server's. */
+  pay_ask?: "off" | "deposit" | "whole" | null;
+  pay_pct?: number | string | null;
+  pay_amount?: number | string | null;
+  pay_paid?: number | string | null;
+  pay_refunded?: number | string | null;
+  pay_due?: number | string | null;
+  pay_paid_at?: string | null;
+  pay_provider?: string | null;
+  pay_open?: number | string | null;
   /** Read through the deal. */
   deal: string | null;
   company: string | null;
