@@ -299,7 +299,7 @@ for (const [dialect, reachable] of LEGS) {
       // A records page per table the role reads, the Pipeline board for the five roles that open the deals list, and the
       // console's Overview and Approvals for the CRM admin, the sales manager and Read-only (P17). A page kept off the
       // rail is still one of the role's pages: it is listed with the section, and only not drawn.
-      expect(counts).toEqual({ admin: 77, 'sales-manager': 63, rep: 61, 'account-manager': 37, marketer: 8, 'front-desk': 11, 'ops-manager': 28, crew: 20, 'read-only': 71 });
+      expect(counts).toEqual({ admin: 78, 'sales-manager': 64, rep: 62, 'account-manager': 38, marketer: 8, 'front-desk': 11, 'ops-manager': 28, crew: 20, 'read-only': 72 });
     });
 
     it('nobody reads a private table but the two people of a row: not the CRM admin, not Read-only, not the Super Admin', async () => {
@@ -336,7 +336,7 @@ for (const [dialect, reachable] of LEGS) {
         // Plan 68 R1d: the sales manager reads a deal only when somebody she leads OWNS it (`owned`), never through a helper
         // or a cover, and every row of a deal by that deal's owner (`deal`), whoever else the row names.
         ['deals', 'all owned own won+own - - won - all'],
-        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all deal own own - - - - all'],
+        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines quote_payments', 'all deal own own - - - - all'],
         // A follow-up on a deal is judged by the deal's owner for the manager; one on no deal by its own; a rep's are those she owns.
         ['follow_ups', 'all deal mine mine - - - - all'],
         // Private (plan 68 D9): each person's own, and a view nobody owns is read by nobody.
@@ -395,7 +395,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
       const opened = Object.fromEntries(ROLES.map((role) => [role, Object.values(reads).filter((row) => row[role] !== '-').length]));
-      expect(opened).toEqual({ admin: 73, 'sales-manager': 60, rep: 60, 'account-manager': 36, marketer: 8, 'front-desk': 11, 'ops-manager': 27, crew: 20, 'read-only': 67 });
+      expect(opened).toEqual({ admin: 74, 'sales-manager': 61, rep: 61, 'account-manager': 37, marketer: 8, 'front-desk': 11, 'ops-manager': 27, crew: 20, 'read-only': 68 });
 
       // Every row of every table, read as nobody (SQL).
       const raw: Record<string, Record<string, unknown>[]> = {};
