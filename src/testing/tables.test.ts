@@ -121,6 +121,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "pay_refunded",
       "pay_due",
       "pay_paid_at",
+      "pay_provider",
       "pay_open",
     ],
   },

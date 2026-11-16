@@ -158,6 +158,15 @@ const QUOTE_COLUMNS = [
     label: words("Last paid at", "Zuletzt bezahlt am", "Dernier paiement le", "Sidst betalt den", "Naposledy zaplaceno", "آخر دفعة في", "最近付款时间", "最近付款時間"),
     rules: { rollup: { from: "quote_payments", via: "quote_id", latest: { of: "paid_at", by: "paid_at" } } },
   },
+  // The service the latest payment was taken by, for the deal room's line ("Online · Stripe"); empty for one taken by hand.
+  {
+    ref: "pay_provider",
+    type: "text",
+    maxLength: 40,
+    nullable: true,
+    label: words("Last paid through", "Zuletzt bezahlt über", "Dernier paiement par", "Sidst betalt via", "Naposledy zaplaceno přes", "آخر دفعة عبر", "最近付款渠道", "最近付款管道"),
+    rules: { rollup: { from: "quote_payments", via: "quote_id", latest: { of: "provider", by: "paid_at" } } },
+  },
   // What the customer's page reads to offer "Pay now": accepted, on a deal that is not lost, and something asked.
   {
     ref: "pay_open",
