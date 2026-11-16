@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.60 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.61 or newer.
 
 ## What installs
 
@@ -86,8 +86,11 @@ asks.
 
 - **The customer** sees "Pay {amount} now" on their quote page after they accept, and a button
   in the "quote accepted" e-mail. They pay on the Stripe or PayPal page, through Adminium's pay
-  page, and come back to the quote, which then says what was paid. They can always wait for a
-  call instead. A quote accepted on a deal that was lost reads as before: nothing is taken for
+  page, and come back to the quote, which then says what was paid, or how the payment stands:
+  the bank still confirming it (some ways take days; the page says not to pay again, and the
+  quote says so each time it is opened until then), didn't finish, or the time on that page ran
+  out (nothing was taken, and "Pay now" is there again). They can always wait for a call
+  instead. A quote accepted on a deal that was lost reads as before: nothing is taken for
   work the business has written off.
 - **The office** sees a Payments block on the quote, under the totals: what was asked, each
   payment (online, with the service, or one recorded by hand in Adminium's payment panel),
@@ -209,8 +212,9 @@ The tests check the manifest against Adminium's own validator, a copy of which i
 
 ## Updating to 0.2.6
 
-0.2.6 needs Adminium 0.3.60, the release that lets an app's customers pay online. The add-ons
-stay as they are. Every row is kept as it was, and nothing is switched on for you:
+0.2.6 needs Adminium 0.3.61, the release that lets an app's customers pay online and tells them
+how a payment stands. The add-ons stay as they are. Every row is kept as it was, and nothing is
+switched on for you:
 
 - **The update asks you to allow two things:** the customer's quote link shows, of their own
   quote only, what is asked on acceptance, what was paid and given back, and what is left

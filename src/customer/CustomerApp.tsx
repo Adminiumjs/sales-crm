@@ -56,6 +56,9 @@ export function codeOf(hash: string): string {
   return /^[A-Za-z0-9-]{4,64}$/.test(code) ? code : "";
 }
 
+/** The client's calls the page makes, payments among them: a client that lacked one would not build. */
+const doorOf = (client: ReturnType<typeof createPublicClient> | null): QuoteDoor | null => client;
+
 /** The link this page opens, and how it came to be open. */
 export interface Opening {
   link: QuoteLink;
@@ -85,7 +88,7 @@ async function openLink(): Promise<Opening> {
   }
   const code = typed !== "" ? typed : (kept ?? "");
   return {
-    link: quoteLink(client as QuoteDoor | null, code, config?.tables ?? {}, side.clock),
+    link: quoteLink(doorOf(client), code, config?.tables ?? {}, side.clock),
     paying: {
       returning,
       leave: (payUrl) => {

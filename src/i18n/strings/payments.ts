@@ -22,6 +22,10 @@ export const customerpay = {
     "customer.pay.refunded": "Your payment of {amount} was refunded.",
     "customer.pay.startFailed": "The pay page could not be opened. Check your connection and try again.",
     "customer.pay.test": "Test mode — only you see this. No money moves. This quote is sample data and goes when you remove sample data.",
+    "customer.pay.bank": "Your bank is confirming the payment",
+    "customer.pay.bank.body": "Some ways to pay take a few days. Please don’t pay again. We’ll e-mail you when it has gone through.",
+    "customer.pay.unfinished": "The payment didn’t finish. Nothing was taken.",
+    "customer.pay.ranOut": "The time to pay on that page ran out. Nothing was taken.",
   },
   "de-DE": {
     "customer.pay.thanks.deposit": "Vielen Dank – das Angebot ist angenommen. Um den Auftrag zu buchen, zahlen Sie eine Anzahlung von {deposit} ({pct} von {total}).",
@@ -37,6 +41,10 @@ export const customerpay = {
     "customer.pay.refunded": "Ihre Zahlung von {amount} wurde erstattet.",
     "customer.pay.startFailed": "Die Zahlungsseite konnte nicht geöffnet werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "customer.pay.test": "Testmodus – nur Sie sehen das. Es wird kein Geld bewegt. Dieses Angebot sind Beispieldaten und verschwindet, wenn Sie die Beispieldaten entfernen.",
+    "customer.pay.bank": "Ihre Bank bestätigt die Zahlung",
+    "customer.pay.bank.body": "Manche Zahlungsarten dauern ein paar Tage. Bitte zahlen Sie nicht noch einmal. Wir schreiben Ihnen eine E-Mail, sobald sie durch ist.",
+    "customer.pay.unfinished": "Die Zahlung wurde nicht abgeschlossen. Es wurde nichts abgebucht.",
+    "customer.pay.ranOut": "Die Zeit zum Zahlen auf dieser Seite ist abgelaufen. Es wurde nichts abgebucht.",
   },
   "fr-FR": {
     "customer.pay.thanks.deposit": "Merci — le devis est accepté. Pour réserver les travaux, réglez un acompte de {deposit} ({pct} de {total}).",
@@ -52,6 +60,10 @@ export const customerpay = {
     "customer.pay.refunded": "Votre paiement de {amount} a été remboursé.",
     "customer.pay.startFailed": "La page de paiement n’a pas pu s’ouvrir. Vérifiez votre connexion et réessayez.",
     "customer.pay.test": "Mode test — vous seul le voyez. Aucun argent ne circule. Ce devis est une donnée d’exemple et disparaît quand vous retirez les données d’exemple.",
+    "customer.pay.bank": "Votre banque confirme le paiement",
+    "customer.pay.bank.body": "Certains moyens de paiement prennent quelques jours. Merci de ne pas payer une seconde fois. Nous vous enverrons un e-mail quand il sera passé.",
+    "customer.pay.unfinished": "Le paiement n’a pas abouti. Rien n’a été prélevé.",
+    "customer.pay.ranOut": "Le temps pour payer sur cette page est écoulé. Rien n’a été prélevé.",
   },
   "da-DK": {
     "customer.pay.thanks.deposit": "Tak – tilbuddet er accepteret. Betal et depositum på {deposit} ({pct} af {total}) for at booke opgaven.",
@@ -67,6 +79,10 @@ export const customerpay = {
     "customer.pay.refunded": "Din betaling på {amount} er refunderet.",
     "customer.pay.startFailed": "Betalingssiden kunne ikke åbnes. Tjek din forbindelse, og prøv igen.",
     "customer.pay.test": "Testtilstand – kun du ser dette. Der flyttes ingen penge. Dette tilbud er eksempeldata og forsvinder, når du fjerner eksempeldataene.",
+    "customer.pay.bank": "Din bank bekræfter betalingen",
+    "customer.pay.bank.body": "Nogle betalingsmåder tager et par dage. Betal ikke igen. Vi sender dig en e-mail, når den er gået igennem.",
+    "customer.pay.unfinished": "Betalingen blev ikke gennemført. Der blev ikke trukket noget.",
+    "customer.pay.ranOut": "Tiden til at betale på den side løb ud. Der blev ikke trukket noget.",
   },
   "cs-CZ": {
     "customer.pay.thanks.deposit": "Děkujeme – nabídka je přijata. Pro rezervaci práce zaplaťte zálohu {deposit} ({pct} z {total}).",
@@ -82,6 +98,10 @@ export const customerpay = {
     "customer.pay.refunded": "Vaše platba {amount} byla vrácena.",
     "customer.pay.startFailed": "Platební stránku se nepodařilo otevřít. Zkontrolujte připojení a zkuste to znovu.",
     "customer.pay.test": "Testovací režim – vidíte to jen vy. Žádné peníze se nepřevádějí. Tato nabídka jsou ukázková data a zmizí, když ukázková data odeberete.",
+    "customer.pay.bank": "Vaše banka platbu potvrzuje",
+    "customer.pay.bank.body": "Některé způsoby platby trvají několik dní. Neplaťte prosím znovu. Až platba projde, pošleme vám e-mail.",
+    "customer.pay.unfinished": "Platba nebyla dokončena. Nic nebylo strženo.",
+    "customer.pay.ranOut": "Čas na zaplacení na té stránce vypršel. Nic nebylo strženo.",
   },
   "ar-EG": {
     "customer.pay.thanks.deposit": "شكرًا — تم قبول عرض السعر. لحجز العمل، ادفع عربونًا قدره {deposit} ({pct} من {total}).",
@@ -97,6 +117,10 @@ export const customerpay = {
     "customer.pay.refunded": "تم رد دفعتك البالغة {amount}.",
     "customer.pay.startFailed": "تعذّر فتح صفحة الدفع. تحقّق من اتصالك وحاول مرة أخرى.",
     "customer.pay.test": "وضع الاختبار — أنت وحدك ترى هذا. لا تُنقل أي أموال. عرض السعر هذا من بيانات المثال ويختفي عند إزالة بيانات المثال.",
+    "customer.pay.bank": "مصرفك يؤكد الدفعة",
+    "customer.pay.bank.body": "بعض طرق الدفع تستغرق بضعة أيام. يُرجى عدم الدفع مرة أخرى. سنراسلك بالبريد الإلكتروني عند إتمامها.",
+    "customer.pay.unfinished": "لم تكتمل الدفعة. لم يُخصم أي مبلغ.",
+    "customer.pay.ranOut": "انتهى وقت الدفع على تلك الصفحة. لم يُخصم أي مبلغ.",
   },
   "zh-CN": {
     "customer.pay.thanks.deposit": "谢谢，报价单已接受。如需预订这项工作，请支付定金 {deposit}（{total} 的 {pct}）。",
@@ -112,6 +136,10 @@ export const customerpay = {
     "customer.pay.refunded": "您支付的 {amount} 已退款。",
     "customer.pay.startFailed": "无法打开付款页面。请检查网络连接后重试。",
     "customer.pay.test": "测试模式 — 只有您能看到。不会有资金变动。此报价单是示例数据，移除示例数据时会一并删除。",
+    "customer.pay.bank": "您的银行正在确认这笔付款",
+    "customer.pay.bank.body": "有些付款方式需要几天时间。请不要再次付款。付款完成后，我们会发电子邮件告诉您。",
+    "customer.pay.unfinished": "付款未完成，没有扣款。",
+    "customer.pay.ranOut": "那个页面上的付款时间已过，没有扣款。",
   },
   "zh-TW": {
     "customer.pay.thanks.deposit": "謝謝，報價單已接受。如需預訂這項工作，請支付訂金 {deposit}（{total} 的 {pct}）。",
@@ -127,6 +155,10 @@ export const customerpay = {
     "customer.pay.refunded": "您支付的 {amount} 已退款。",
     "customer.pay.startFailed": "無法開啟付款頁面。請檢查網路連線後重試。",
     "customer.pay.test": "測試模式 — 只有您看得到。不會有資金移動。這張報價單是範例資料，移除範例資料時會一併刪除。",
+    "customer.pay.bank": "您的銀行正在確認這筆付款",
+    "customer.pay.bank.body": "有些付款方式需要幾天時間。請不要再次付款。付款完成後，我們會寄電子郵件通知您。",
+    "customer.pay.unfinished": "付款未完成，沒有扣款。",
+    "customer.pay.ranOut": "那個頁面上的付款時間已過，沒有扣款。",
   },
 };
 

@@ -453,3 +453,56 @@
     text-align: center;
   }
 }
+/* How a payment stands after the pay page: the bank confirming it, didn't finish, the time on that page ran out. */
+.crm-q-said {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 12px 13px;
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+.crm-q-said[data-tone="warn"] {
+  background: var(--warn-soft);
+}
+.crm-q-said[data-tone="info"] {
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: var(--info-soft);
+}
+.crm-q-said-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+  color: var(--fg);
+  text-wrap: pretty;
+}
+.crm-q-said[data-tone="info"] .crm-q-said-head {
+  gap: 9px;
+  font-size: 14px;
+}
+.crm-q-said-head svg {
+  flex-shrink: 0;
+  margin-block-start: 1px;
+  color: var(--fg-subtle);
+}
+.crm-q-said[data-tone="warn"] .crm-q-said-head svg {
+  color: var(--warn);
+}
+.crm-q-said[data-tone="info"] .crm-q-said-head svg {
+  margin-block-start: 2px;
+  color: var(--info);
+}
+.crm-q-said-body {
+  margin: 0;
+  padding-inline-start: 26px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
