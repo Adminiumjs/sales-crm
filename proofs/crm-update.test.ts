@@ -7,11 +7,13 @@
  * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
  * when it still says the one installed), Forms among them, installed after the CRM's update.
  *
- * A quote paid online (0.2.6, on Adminium 0.3.60): a new table of the Quotes part (`quote_payments`), what a quote asks on
+ * A quote paid online (0.2.6, on Adminium 0.3.61): a new table of the Quotes part (`quote_payments`), what a quote asks on
  * acceptance and what was paid of it, and two settings. The update from every release asks the owner to let the
  * customer's link show more of a quote (what is asked, paid and left) and to let the CRM admin and the sales manager
  * refund online payments; the quote's payable arrives switched off. The releases are installed on the engine under test
- * (0.3.60): each says an older floor, which it still meets.
+ * (0.3.61): each says an older floor, which it still meets. The customer's link is the app's only public door (a quote
+ * opened by its code, no guest key): its access follows the version as a guest key's does, so the update asks nothing
+ * more of it than the wider entry.
  *
  * One app per install (0.2.5, on Adminium 0.3.49): both frontends say `instances`; no table, column, grant, part or rule
  * changed.
@@ -80,7 +82,7 @@ import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.60' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.61' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 type Row = Record<string, unknown>;
@@ -733,8 +735,8 @@ for (const [dialect, reachable] of LEGS) {
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
         const want = widerGrants(was.manifest, now.manifest);
         // Each refusal names what it asks, before anything moves; the owner allows each in turn.
-        // The customer's link is given what this version adds to it (`publicAccess`), as an owner does on the update's page.
-        const allowed: Record<string, boolean> = { publicAccess: true };
+        // Nothing is allowed up front: the quote link's own key carries the app's public access through the update.
+        const allowed: Record<string, boolean> = {};
         const reasons: string[] = [];
         let updated: Reply | null = null;
         for (let round = 0; round < 4 && updated === null; round += 1) {
