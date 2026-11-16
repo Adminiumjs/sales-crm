@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.49",
+    "minAdminiumVersion": "0.3.60",
     "engines": [
       "postgres",
       "mysql",
@@ -3808,6 +3808,316 @@
             }
           },
           {
+            "ref": "pay_ask",
+            "type": "enum",
+            "enum": [
+              "off",
+              "deposit",
+              "whole"
+            ],
+            "nullable": true,
+            "label": {
+              "en-US": "Payment asked on acceptance",
+              "de-DE": "Zahlung bei Annahme",
+              "fr-FR": "Paiement à l’acceptation",
+              "da-DK": "Betaling ved accept",
+              "cs-CZ": "Platba při přijetí",
+              "ar-EG": "الدفع عند القبول",
+              "zh-CN": "接受时付款",
+              "zh-TW": "接受時付款"
+            },
+            "rules": {
+              "default": {
+                "from": {
+                  "table": "settings",
+                  "column": "pay_ask"
+                }
+              },
+              "enumLabels": {
+                "labels": {
+                  "off": {
+                    "en-US": "None",
+                    "de-DE": "Keine",
+                    "fr-FR": "Aucun",
+                    "da-DK": "Ingen",
+                    "cs-CZ": "Žádná",
+                    "ar-EG": "لا شيء",
+                    "zh-CN": "无",
+                    "zh-TW": "無"
+                  },
+                  "deposit": {
+                    "en-US": "A deposit",
+                    "de-DE": "Eine Anzahlung",
+                    "fr-FR": "Un acompte",
+                    "da-DK": "Et depositum",
+                    "cs-CZ": "Záloha",
+                    "ar-EG": "عربون",
+                    "zh-CN": "定金",
+                    "zh-TW": "訂金"
+                  },
+                  "whole": {
+                    "en-US": "The whole amount",
+                    "de-DE": "Der ganze Betrag",
+                    "fr-FR": "Le montant total",
+                    "da-DK": "Hele beløbet",
+                    "cs-CZ": "Celá částka",
+                    "ar-EG": "المبلغ كاملًا",
+                    "zh-CN": "全额",
+                    "zh-TW": "全額"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "ref": "pay_pct",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Deposit (%)",
+              "de-DE": "Anzahlung (%)",
+              "fr-FR": "Acompte (%)",
+              "da-DK": "Depositum (%)",
+              "cs-CZ": "Záloha (%)",
+              "ar-EG": "العربون (%)",
+              "zh-CN": "定金 (%)",
+              "zh-TW": "訂金 (%)"
+            },
+            "rules": {
+              "default": {
+                "from": {
+                  "table": "settings",
+                  "column": "pay_deposit_pct"
+                }
+              }
+            }
+          },
+          {
+            "ref": "pay_amount",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Asked on acceptance",
+              "de-DE": "Bei Annahme fällig",
+              "fr-FR": "Dû à l’acceptation",
+              "da-DK": "Forfalder ved accept",
+              "cs-CZ": "Splatné při přijetí",
+              "ar-EG": "المستحق عند القبول",
+              "zh-CN": "接受时应付",
+              "zh-TW": "接受時應付"
+            },
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "eq": [
+                      "pay_ask",
+                      "deposit"
+                    ]
+                  },
+                  {
+                    "div": [
+                      {
+                        "mul": [
+                          {
+                            "coalesce": [
+                              "total",
+                              0
+                            ]
+                          },
+                          {
+                            "coalesce": [
+                              "pay_pct",
+                              0
+                            ]
+                          }
+                        ]
+                      },
+                      100
+                    ]
+                  },
+                  {
+                    "if": [
+                      {
+                        "eq": [
+                          "pay_ask",
+                          "whole"
+                        ]
+                      },
+                      {
+                        "coalesce": [
+                          "total",
+                          0
+                        ]
+                      },
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "semantic": "money"
+          },
+          {
+            "ref": "pay_paid",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Paid",
+              "de-DE": "Bezahlt",
+              "fr-FR": "Payé",
+              "da-DK": "Betalt",
+              "cs-CZ": "Zaplaceno",
+              "ar-EG": "المدفوع",
+              "zh-CN": "已付",
+              "zh-TW": "已付"
+            },
+            "rules": {
+              "rollup": {
+                "from": "quote_payments",
+                "via": "quote_id",
+                "sum": "net_amount"
+              }
+            },
+            "semantic": "money"
+          },
+          {
+            "ref": "pay_refunded",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Refunded",
+              "de-DE": "Erstattet",
+              "fr-FR": "Remboursé",
+              "da-DK": "Refunderet",
+              "cs-CZ": "Vráceno",
+              "ar-EG": "المبلغ المسترد",
+              "zh-CN": "已退款",
+              "zh-TW": "已退款"
+            },
+            "rules": {
+              "rollup": {
+                "from": "quote_payments",
+                "via": "quote_id",
+                "sum": "refunded"
+              }
+            },
+            "semantic": "money"
+          },
+          {
+            "ref": "pay_due",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Left to pay now",
+              "de-DE": "Jetzt noch offen",
+              "fr-FR": "Reste à payer",
+              "da-DK": "Mangler at betale",
+              "cs-CZ": "Zbývá zaplatit",
+              "ar-EG": "المتبقي للدفع",
+              "zh-CN": "尚需支付",
+              "zh-TW": "尚需支付"
+            },
+            "rules": {
+              "formula": {
+                "max": [
+                  0,
+                  {
+                    "sub": [
+                      {
+                        "coalesce": [
+                          "pay_amount",
+                          0
+                        ]
+                      },
+                      {
+                        "coalesce": [
+                          "pay_paid",
+                          0
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "semantic": "money"
+          },
+          {
+            "ref": "pay_paid_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Last paid at",
+              "de-DE": "Zuletzt bezahlt am",
+              "fr-FR": "Dernier paiement le",
+              "da-DK": "Sidst betalt den",
+              "cs-CZ": "Naposledy zaplaceno",
+              "ar-EG": "آخر دفعة في",
+              "zh-CN": "最近付款时间",
+              "zh-TW": "最近付款時間"
+            },
+            "rules": {
+              "rollup": {
+                "from": "quote_payments",
+                "via": "quote_id",
+                "latest": {
+                  "of": "paid_at",
+                  "by": "paid_at"
+                }
+              }
+            }
+          },
+          {
+            "ref": "pay_open",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Can be paid now",
+              "de-DE": "Jetzt bezahlbar",
+              "fr-FR": "Payable maintenant",
+              "da-DK": "Kan betales nu",
+              "cs-CZ": "Lze nyní zaplatit",
+              "ar-EG": "يمكن دفعه الآن",
+              "zh-CN": "现在可付款",
+              "zh-TW": "現在可付款"
+            },
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "and": [
+                      {
+                        "eq": [
+                          "status",
+                          "accepted"
+                        ]
+                      },
+                      {
+                        "neq": [
+                          "deal_state",
+                          "lost"
+                        ]
+                      },
+                      {
+                        "gt": [
+                          "pay_amount",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              }
+            }
+          },
+          {
             "ref": "retry_key",
             "type": "text",
             "maxLength": 64,
@@ -3899,6 +4209,12 @@
             "quote_lines": {
               "via": "document_id",
               "lock": true
+            },
+            "quote_payments": {
+              "via": "quote_id",
+              "parentIn": [
+                "accepted"
+              ]
             }
           },
           "onlyLater": [
@@ -4454,6 +4770,296 @@
           [
             "price_id"
           ]
+        ]
+      },
+      {
+        "ref": "quote_payments",
+        "label": {
+          "en-US": "Quote payment",
+          "de-DE": "Angebotszahlung",
+          "fr-FR": "Paiement de devis",
+          "da-DK": "Tilbudsbetaling",
+          "cs-CZ": "Platba za nabídku",
+          "ar-EG": "دفعة عرض السعر",
+          "zh-CN": "报价付款",
+          "zh-TW": "報價付款"
+        },
+        "labelPlural": {
+          "en-US": "Quote payments",
+          "de-DE": "Angebotszahlungen",
+          "fr-FR": "Paiements de devis",
+          "da-DK": "Tilbudsbetalinger",
+          "cs-CZ": "Platby za nabídky",
+          "ar-EG": "دفعات عروض الأسعار",
+          "zh-CN": "报价付款",
+          "zh-TW": "報價付款"
+        },
+        "module": "quotes",
+        "belongs": [
+          {
+            "via": "quote_id"
+          }
+        ],
+        "indexes": [
+          [
+            "paid_at"
+          ]
+        ],
+        "columns": [
+          {
+            "ref": "id",
+            "type": "int",
+            "role": "pk"
+          },
+          {
+            "ref": "quote_id",
+            "type": "fk",
+            "references": "quotes",
+            "index": true,
+            "label": {
+              "en-US": "Quote",
+              "de-DE": "Angebot",
+              "fr-FR": "Devis",
+              "da-DK": "Tilbud",
+              "cs-CZ": "Nabídka",
+              "ar-EG": "عرض السعر",
+              "zh-CN": "报价单",
+              "zh-TW": "報價單"
+            }
+          },
+          {
+            "ref": "amount",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "semantic": "money",
+            "label": {
+              "en-US": "Amount",
+              "de-DE": "Betrag",
+              "fr-FR": "Montant",
+              "da-DK": "Beløb",
+              "cs-CZ": "Částka",
+              "ar-EG": "المبلغ",
+              "zh-CN": "金额",
+              "zh-TW": "金額"
+            }
+          },
+          {
+            "ref": "paid_at",
+            "type": "timestamptz",
+            "nullable": true,
+            "label": {
+              "en-US": "Paid at",
+              "de-DE": "Bezahlt am",
+              "fr-FR": "Payé le",
+              "da-DK": "Betalt den",
+              "cs-CZ": "Zaplaceno dne",
+              "ar-EG": "وقت الدفع",
+              "zh-CN": "付款时间",
+              "zh-TW": "付款時間"
+            }
+          },
+          {
+            "ref": "method",
+            "type": "enum",
+            "enum": [
+              "online",
+              "bank-transfer",
+              "cash",
+              "card",
+              "cheque",
+              "other"
+            ],
+            "default": "online",
+            "label": {
+              "en-US": "Way paid",
+              "de-DE": "Zahlungsweg",
+              "fr-FR": "Moyen de paiement",
+              "da-DK": "Betalingsmåde",
+              "cs-CZ": "Způsob platby",
+              "ar-EG": "طريقة الدفع",
+              "zh-CN": "付款方式",
+              "zh-TW": "付款方式"
+            },
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "online": {
+                    "en-US": "Online",
+                    "de-DE": "Online",
+                    "fr-FR": "En ligne",
+                    "da-DK": "Online",
+                    "cs-CZ": "Online",
+                    "ar-EG": "عبر الإنترنت",
+                    "zh-CN": "在线",
+                    "zh-TW": "線上"
+                  },
+                  "bank-transfer": {
+                    "en-US": "Bank transfer",
+                    "de-DE": "Überweisung",
+                    "fr-FR": "Virement",
+                    "da-DK": "Bankoverførsel",
+                    "cs-CZ": "Bankovní převod",
+                    "ar-EG": "تحويل بنكي",
+                    "zh-CN": "银行转账",
+                    "zh-TW": "銀行轉帳"
+                  },
+                  "cash": {
+                    "en-US": "Cash",
+                    "de-DE": "Bar",
+                    "fr-FR": "Espèces",
+                    "da-DK": "Kontant",
+                    "cs-CZ": "Hotově",
+                    "ar-EG": "نقدًا",
+                    "zh-CN": "现金",
+                    "zh-TW": "現金"
+                  },
+                  "card": {
+                    "en-US": "Card on a terminal",
+                    "de-DE": "Karte am Terminal",
+                    "fr-FR": "Carte sur un terminal",
+                    "da-DK": "Kort på en terminal",
+                    "cs-CZ": "Karta na terminálu",
+                    "ar-EG": "بطاقة على جهاز دفع",
+                    "zh-CN": "刷卡终端",
+                    "zh-TW": "刷卡終端"
+                  },
+                  "cheque": {
+                    "en-US": "Cheque",
+                    "de-DE": "Scheck",
+                    "fr-FR": "Chèque",
+                    "da-DK": "Check",
+                    "cs-CZ": "Šek",
+                    "ar-EG": "شيك",
+                    "zh-CN": "支票",
+                    "zh-TW": "支票"
+                  },
+                  "other": {
+                    "en-US": "Other",
+                    "de-DE": "Sonstiges",
+                    "fr-FR": "Autre",
+                    "da-DK": "Andet",
+                    "cs-CZ": "Jiné",
+                    "ar-EG": "أخرى",
+                    "zh-CN": "其他",
+                    "zh-TW": "其他"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "ref": "payment_ref",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "unique": true,
+            "label": {
+              "en-US": "Payment reference",
+              "de-DE": "Zahlungsreferenz",
+              "fr-FR": "Référence du paiement",
+              "da-DK": "Betalingsreference",
+              "cs-CZ": "Reference platby",
+              "ar-EG": "مرجع الدفع",
+              "zh-CN": "付款参考号",
+              "zh-TW": "付款參考號"
+            }
+          },
+          {
+            "ref": "provider",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "label": {
+              "en-US": "Taken by",
+              "de-DE": "Abgewickelt über",
+              "fr-FR": "Encaissé par",
+              "da-DK": "Gennemført via",
+              "cs-CZ": "Přes službu",
+              "ar-EG": "عبر خدمة",
+              "zh-CN": "收款服务",
+              "zh-TW": "收款服務"
+            }
+          },
+          {
+            "ref": "currency",
+            "type": "text",
+            "maxLength": 3,
+            "nullable": true,
+            "label": {
+              "en-US": "Currency",
+              "de-DE": "Währung",
+              "fr-FR": "Devise",
+              "da-DK": "Valuta",
+              "cs-CZ": "Měna",
+              "ar-EG": "العملة",
+              "zh-CN": "货币",
+              "zh-TW": "貨幣"
+            }
+          },
+          {
+            "ref": "refunded",
+            "type": "decimal",
+            "scale": "currency",
+            "default": 0,
+            "semantic": "money",
+            "label": {
+              "en-US": "Refunded",
+              "de-DE": "Erstattet",
+              "fr-FR": "Remboursé",
+              "da-DK": "Refunderet",
+              "cs-CZ": "Vráceno",
+              "ar-EG": "المبلغ المسترد",
+              "zh-CN": "已退款",
+              "zh-TW": "已退款"
+            }
+          },
+          {
+            "ref": "net_amount",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "semantic": "money",
+            "label": {
+              "en-US": "Kept after refunds",
+              "de-DE": "Nach Erstattungen",
+              "fr-FR": "Après remboursements",
+              "da-DK": "Efter refusioner",
+              "cs-CZ": "Po vrácení",
+              "ar-EG": "بعد الاسترداد",
+              "zh-CN": "退款后金额",
+              "zh-TW": "退款後金額"
+            },
+            "rules": {
+              "formula": {
+                "sub": [
+                  "amount",
+                  {
+                    "coalesce": [
+                      "refunded",
+                      0
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "ref": "note",
+            "type": "text",
+            "maxLength": 500,
+            "nullable": true,
+            "label": {
+              "en-US": "Note",
+              "de-DE": "Notiz",
+              "fr-FR": "Note",
+              "da-DK": "Note",
+              "cs-CZ": "Poznámka",
+              "ar-EG": "ملاحظة",
+              "zh-CN": "备注",
+              "zh-TW": "備註"
+            }
+          }
         ]
       },
       {
@@ -21621,6 +22227,83 @@
             }
           },
           {
+            "ref": "pay_ask",
+            "type": "enum",
+            "enum": [
+              "off",
+              "deposit",
+              "whole"
+            ],
+            "default": "off",
+            "label": {
+              "en-US": "Ask for payment when a customer accepts a quote",
+              "de-DE": "Bei Annahme eines Angebots um Zahlung bitten",
+              "fr-FR": "Demander un paiement quand un client accepte un devis",
+              "da-DK": "Bed om betaling, når en kunde accepterer et tilbud",
+              "cs-CZ": "Požádat o platbu, když zákazník přijme nabídku",
+              "ar-EG": "اطلب الدفع عندما يقبل العميل عرض سعر",
+              "zh-CN": "客户接受报价时请求付款",
+              "zh-TW": "客戶接受報價時請求付款"
+            },
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "off": {
+                    "en-US": "Off",
+                    "de-DE": "Aus",
+                    "fr-FR": "Désactivé",
+                    "da-DK": "Fra",
+                    "cs-CZ": "Vypnuto",
+                    "ar-EG": "إيقاف",
+                    "zh-CN": "关闭",
+                    "zh-TW": "關閉"
+                  },
+                  "deposit": {
+                    "en-US": "A deposit",
+                    "de-DE": "Eine Anzahlung",
+                    "fr-FR": "Un acompte",
+                    "da-DK": "Et depositum",
+                    "cs-CZ": "Záloha",
+                    "ar-EG": "عربون",
+                    "zh-CN": "定金",
+                    "zh-TW": "訂金"
+                  },
+                  "whole": {
+                    "en-US": "The whole amount",
+                    "de-DE": "Der ganze Betrag",
+                    "fr-FR": "Le montant total",
+                    "da-DK": "Hele beløbet",
+                    "cs-CZ": "Celá částka",
+                    "ar-EG": "المبلغ كاملًا",
+                    "zh-CN": "全额",
+                    "zh-TW": "全額"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "ref": "pay_deposit_pct",
+            "type": "int",
+            "default": 20,
+            "label": {
+              "en-US": "Deposit (%)",
+              "de-DE": "Anzahlung (%)",
+              "fr-FR": "Acompte (%)",
+              "da-DK": "Depositum (%)",
+              "cs-CZ": "Záloha (%)",
+              "ar-EG": "العربون (%)",
+              "zh-CN": "定金 (%)",
+              "zh-TW": "訂金 (%)"
+            },
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 99
+              }
+            }
+          },
+          {
             "ref": "visit_emails",
             "type": "bool",
             "default": true,
@@ -22608,6 +23291,7 @@
         "table:@quotes:export",
         "table:@quotes:read_pii",
         "table:@quote_lines:read",
+        "table:@quote_payments:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
         "table:@quote_lines:delete",
@@ -22854,6 +23538,7 @@
         "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
+        "page:@crm-quote-payments:view",
         "page:@crm-comments:view",
         "page:@crm-saved-views:view",
         "page:@crm-saved-searches:view",
@@ -22933,7 +23618,8 @@
         "table:@sign_offs:read_pii",
         "table:@refused_sign_offs:read_pii",
         "table:@showroom_bookings:read_pii",
-        "table:@referrals:read_pii"
+        "table:@referrals:read_pii",
+        "payments:@:refund"
       ],
       "limits": {
         "saved_views": {
@@ -23300,6 +23986,7 @@
         "table:@quotes:update",
         "table:@quotes:read_pii",
         "table:@quote_lines:read",
+        "table:@quote_payments:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
         "table:@quote_lines:delete",
@@ -23447,6 +24134,7 @@
         "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
+        "page:@crm-quote-payments:view",
         "page:@crm-comments:view",
         "page:@crm-saved-views:view",
         "page:@crm-saved-searches:view",
@@ -23498,7 +24186,8 @@
         "page:@crm-deal-stock-needs:view",
         "page:@crm-settings:view",
         "page:@crm-overview:view",
-        "page:@crm-approvals:view"
+        "page:@crm-approvals:view",
+        "payments:@:refund"
       ],
       "limits": {
         "deals": {
@@ -24211,7 +24900,9 @@
             "sitting_stale_days",
             "nudge_quiet_days",
             "nudge_stuck_days",
-            "nudge_soon_days"
+            "nudge_soon_days",
+            "pay_ask",
+            "pay_deposit_pct"
           ]
         },
         "refused_sign_offs": {
@@ -24309,6 +25000,15 @@
               "by": "run_by_id"
             }
           }
+        },
+        "quote_payments": {
+          "rows": {
+            "read": {
+              "reach": "team",
+              "via": "quote_id",
+              "by": "deal_owner_id"
+            }
+          }
         }
       },
       "tables": [
@@ -24374,6 +25074,7 @@
         "table:@quotes:update",
         "table:@quotes:read_pii",
         "table:@quote_lines:read",
+        "table:@quote_payments:read",
         "table:@quote_lines:create",
         "table:@quote_lines:update",
         "table:@quote_lines:delete",
@@ -24489,6 +25190,7 @@
         "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
+        "page:@crm-quote-payments:view",
         "page:@crm-comments:view",
         "page:@crm-saved-views:view",
         "page:@crm-saved-searches:view",
@@ -25255,6 +25957,13 @@
               "reach": "own"
             }
           }
+        },
+        "quote_payments": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
         }
       },
       "tables": [
@@ -25313,6 +26022,7 @@
         "table:@saved_searches:delete",
         "table:@quotes:read",
         "table:@quote_lines:read",
+        "table:@quote_payments:read",
         "table:@comments:read",
         "table:@comments:create",
         "table:@comments:update",
@@ -25403,6 +26113,7 @@
         "page:@crm-activities:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
+        "page:@crm-quote-payments:view",
         "page:@crm-comments:view",
         "page:@crm-deal-stage-changes:view",
         "page:@crm-deal-amount-changes:view",
@@ -25720,7 +26431,15 @@
             "withdrawn_at",
             "yes_seen_at",
             "deal_state",
-            "deal_owner_id"
+            "deal_owner_id",
+            "pay_ask",
+            "pay_pct",
+            "pay_amount",
+            "pay_paid",
+            "pay_refunded",
+            "pay_due",
+            "pay_paid_at",
+            "pay_open"
           ]
         },
         "quote_lines": {
@@ -25791,6 +26510,13 @@
             "replied_at",
             "fix_written"
           ]
+        },
+        "quote_payments": {
+          "rows": {
+            "read": {
+              "reach": "own"
+            }
+          }
         }
       },
       "tables": [
@@ -27057,6 +27783,7 @@
         "table:@quotes:read",
         "table:@quotes:export",
         "table:@quote_lines:read",
+        "table:@quote_payments:read",
         "table:@quote_lines:export",
         "table:@comments:read",
         "table:@saved_views:read",
@@ -27127,6 +27854,7 @@
         "page:@crm-price-list:view",
         "page:@crm-quotes:view",
         "page:@crm-quote-lines:view",
+        "page:@crm-quote-payments:view",
         "page:@crm-comments:view",
         "page:@crm-saved-views:view",
         "page:@crm-saved-searches:view",
@@ -27256,7 +27984,15 @@
             "withdrawn_at",
             "yes_seen_at",
             "deal_state",
-            "deal_owner_id"
+            "deal_owner_id",
+            "pay_ask",
+            "pay_pct",
+            "pay_amount",
+            "pay_paid",
+            "pay_refunded",
+            "pay_due",
+            "pay_paid_at",
+            "pay_open"
           ]
         },
         "covers": {
@@ -31196,7 +31932,15 @@
         "notes",
         "sent_at",
         "decided_at",
-        "accepted_name"
+        "accepted_name",
+        "pay_ask",
+        "pay_pct",
+        "pay_amount",
+        "pay_paid",
+        "pay_refunded",
+        "pay_due",
+        "pay_paid_at",
+        "pay_open"
       ],
       "filters": [
         {
@@ -32394,7 +33138,12 @@
       "name": "Quote accepted",
       "vars": [
         "quote.number",
-        "recipient.name"
+        "recipient.name",
+        "quote.total",
+        "quote.pay_due",
+        "quote.share_code",
+        "pay_url",
+        "manage_url"
       ],
       "locales": {
         "en-US": {
@@ -32410,6 +33159,57 @@
               "block": "email.text",
               "data": {
                 "text": "Hello {{recipient.name}}, quote {{quote.number}} has been marked as accepted."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "Quote",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "Total",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "To pay now",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "To book the work, pay {{quote.pay_due.money}} online. You’ll pay on the Stripe or PayPal page. Or wait for us to call you."
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Pay {{quote.pay_due.money}} online",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Open your quote",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -32436,6 +33236,57 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "Angebot",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "Summe",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "Jetzt zu zahlen",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "Um den Auftrag zu buchen, zahlen Sie {{quote.pay_due.money}} online. Sie zahlen auf der Seite von Stripe oder PayPal. Oder warten Sie, bis wir Sie anrufen."
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "{{quote.pay_due.money}} online zahlen",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Ihr Angebot öffnen",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
               "block": "email.text",
               "data": {
                 "text": "Falls Sie es nicht angenommen oder uns nicht darum gebeten haben, antworten Sie auf diese Nachricht, und wir klären das."
@@ -32456,6 +33307,57 @@
               "block": "email.text",
               "data": {
                 "text": "Bonjour {{recipient.name}}, le devis {{quote.number}} a été enregistré comme accepté."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "Devis",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "Total",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "À payer maintenant",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "Pour réserver les travaux, payez {{quote.pay_due.money}} en ligne. Vous paierez sur la page Stripe ou PayPal. Ou attendez notre appel."
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Payer {{quote.pay_due.money}} en ligne",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Ouvrir votre devis",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -32482,6 +33384,57 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "Tilbud",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "I alt",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "Betales nu",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "Betal {{quote.pay_due.money}} online for at booke opgaven. Du betaler på siden hos Stripe eller PayPal. Eller vent, til vi ringer til dig."
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Betal {{quote.pay_due.money}} online",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Åbn dit tilbud",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
               "block": "email.text",
               "data": {
                 "text": "Hvis du ikke har accepteret det eller bedt os om det, så svar på denne besked, så retter vi det."
@@ -32502,6 +33455,57 @@
               "block": "email.text",
               "data": {
                 "text": "Dobrý den, {{recipient.name}}, nabídka {{quote.number}} byla označena jako přijatá."
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "Nabídka",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "Celkem",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "K zaplacení teď",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "Chcete-li si práci zarezervovat, zaplaťte {{quote.pay_due.money}} online. Zaplatíte na stránce Stripe nebo PayPal. Nebo počkejte, až vám zavoláme."
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Zaplatit {{quote.pay_due.money}} online",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "Otevřít nabídku",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -32528,6 +33532,57 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "عرض السعر",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "الإجمالي",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "المطلوب دفعه الآن",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "لحجز العمل، ادفع {{quote.pay_due.money}} عبر الإنترنت. ستدفع على صفحة Stripe أو PayPal. أو انتظر اتصالنا بك."
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "ادفع {{quote.pay_due.money}} عبر الإنترنت",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "افتح عرض السعر",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
               "block": "email.text",
               "data": {
                 "text": "إذا لم تقبله أو لم تطلب منا ذلك، ردّ على هذه الرسالة وسنصحّح الأمر."
@@ -32551,6 +33606,57 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "报价单",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "合计",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "现在应付",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "如需预订这项工作，请在线支付 {{quote.pay_due.money}}。您将在 Stripe 或 PayPal 的页面上付款。也可以等我们给您打电话。"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "在线支付 {{quote.pay_due.money}}",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "打开您的报价单",
+                "url": "{{manage_url}}#{{quote.share_code}}"
+              }
+            },
+            {
               "block": "email.text",
               "data": {
                 "text": "如果这不是您本人接受的，也不是您让我们办理的，请回复此邮件，我们会予以更正。"
@@ -32571,6 +33677,57 @@
               "block": "email.text",
               "data": {
                 "text": "{{recipient.name}} 您好，報價單 {{quote.number}} 已登記為接受。"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "lines": [
+                  {
+                    "label": "報價單",
+                    "amount": "{{quote.number}}"
+                  },
+                  {
+                    "label": "合計",
+                    "amount": "{{quote.total.money}}"
+                  },
+                  {
+                    "label": "現在應付",
+                    "amount": "{{quote.pay_due.money}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "text": "如需預訂這項工作，請線上支付 {{quote.pay_due.money}}。您將在 Stripe 或 PayPal 的頁面上付款。也可以等我們打電話給您。"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "線上支付 {{quote.pay_due.money}}",
+                "url": "{{pay_url}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "showWhen": {
+                "var": "pay_url"
+              },
+              "data": {
+                "label": "開啟您的報價單",
+                "url": "{{manage_url}}#{{quote.share_code}}"
               }
             },
             {
@@ -43045,6 +44202,33 @@
       "module": "quotes"
     },
     {
+      "ref": "crm-quote-payments",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.crm.page.quote_payments",
+        "fallback": "Quote payments"
+      },
+      "titles": {
+        "de-DE": "Angebotszahlungen",
+        "fr-FR": "Paiements de devis",
+        "da-DK": "Tilbudsbetalinger",
+        "cs-CZ": "Platby za nabídky",
+        "ar-EG": "دفعات عروض الأسعار",
+        "zh-CN": "报价付款",
+        "zh-TW": "報價付款"
+      },
+      "nav": {
+        "group": "selling",
+        "icon": "banknote",
+        "order": 21,
+        "offRail": true
+      },
+      "bindings": {
+        "rows": "quote_payments"
+      },
+      "module": "quotes"
+    },
+    {
       "ref": "crm-comments",
       "template": "page-crud",
       "title": {
@@ -45484,5 +46668,60 @@
         }
       }
     }
-  ]
+  ],
+  "payments": {
+    "payables": [
+      {
+        "table": "quotes",
+        "label": "number",
+        "amount": {
+          "column": "pay_amount"
+        },
+        "currency": {
+          "column": "currency"
+        },
+        "due": {
+          "column": "pay_due"
+        },
+        "payments": {
+          "kind": "table",
+          "table": "quote_payments",
+          "link": "quote_id",
+          "amount": "amount",
+          "paidAt": "paid_at",
+          "method": {
+            "column": "method",
+            "values": {
+              "*": "online"
+            }
+          },
+          "note": "note",
+          "reference": "payment_ref",
+          "refunded": "refunded",
+          "provider": "provider",
+          "currency": "currency"
+        },
+        "customerEmail": "sent_to_email",
+        "payableWhen": [
+          {
+            "column": "status",
+            "eq": "accepted"
+          },
+          {
+            "column": "deal_state",
+            "in": [
+              "open",
+              "won"
+            ]
+          },
+          {
+            "column": "pay_amount",
+            "gt": 0
+          }
+        ],
+        "returnTo": "/",
+        "receipt": "engine"
+      }
+    ]
+  }
 }

@@ -19,7 +19,7 @@ interface States {
   initial: string;
   moves: Record<string, Move[]>;
   lock?: { when: string[]; except?: string[] };
-  children?: Record<string, { via: string; lock?: boolean; createIn?: string[] }>;
+  children?: Record<string, { via: string; lock?: boolean; createIn?: string[]; parentIn?: string[] }>;
   actions?: { id: string; move?: { to: string }; set?: Record<string, unknown>; in?: string[]; ask?: string[]; handOver?: boolean; label: Record<string, string> }[];
 }
 interface Table {
@@ -178,10 +178,10 @@ describe("what a state locks", () => {
   it("a sent quote and its lines; a sent or signed-off time sheet and its lines; a closed deal", () => {
     const locks = Object.fromEntries(tables.filter((one) => one.states?.lock !== undefined).map((one) => [one.ref, one.states!.lock!.when]));
     expect(locks).toEqual({ deals: ["won", "lost"], quotes: ["sent", "accepted", "declined", "withdrawn"], time_sheets: ["sent", "signed-off"] });
-    const children = Object.fromEntries(tables.filter((one) => one.states?.children !== undefined).map((one) => [one.ref, Object.entries(one.states!.children!).map(([child, rule]) => `${child}${rule.lock === true ? " locked" : ""}${rule.createIn === undefined ? "" : ` made in ${rule.createIn.join(", ")}`}`)]));
+    const children = Object.fromEntries(tables.filter((one) => one.states?.children !== undefined).map((one) => [one.ref, Object.entries(one.states!.children!).map(([child, rule]) => `${child}${rule.lock === true ? " locked" : ""}${rule.createIn === undefined ? "" : ` made in ${rule.createIn.join(", ")}`}${rule.parentIn === undefined ? "" : ` written in ${rule.parentIn.join(", ")}`}`)]));
     // On a closed deal nobody is added or taken off.
     // A signed-off job still takes a sign-off: the correction of the one it holds (F19), never a change of it.
-    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked"], jobs: ["sign_offs made in open, installed, signed-off"], time_sheets: ["time_sheet_lines locked"] });
+    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked", "quote_payments written in accepted"], jobs: ["sign_offs made in open, installed, signed-off"], time_sheets: ["time_sheet_lines locked"] });
   });
 });
 

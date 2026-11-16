@@ -78,6 +78,8 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["quotes"], "RCUDX", "RCU:deal", "RCU;r=own;u=own-not-helper", "R:own", "-", "-", "-", "-", "RX"],
   // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
   [["quote_lines"], "RCUDX", "RCUD:deal-quote", "RCUD;r=own;u=own-not-helper;d=own-not-helper", "R:own", "-", "-", "-", "-", "RX"],
+  // A quote's payments are written by Adminium alone, when money arrives or is given back: read wherever the quote is.
+  [["quote_payments"], "R", "R:deal-pay", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
   // Private (plan 68 D9): each person's own, and nobody else's, the install's owner included. A view nobody owns is nobody's.
@@ -204,7 +206,7 @@ const PERSONAL: Record<string, readonly RoleKey[]> = {
 };
 
 /** The settings the sales manager may change: the Selling keys. */
-const SELLING_KEYS = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days"];
+const SELLING_KEYS = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days", "pay_ask", "pay_deposit_pct"];
 
 /** Each button that hands a row to a colleague, and the roles that press it. */
 const HAND_OVERS: Record<string, readonly RoleKey[]> = {
@@ -215,7 +217,7 @@ const HAND_OVERS: Record<string, readonly RoleKey[]> = {
 
 /** The nine parts, each a heading of the menu, and the last heading for the app's own two tables. */
 const PARTS: readonly (readonly [string, readonly string[]])[] = [
-  ["selling", ["stages", "deals", "deal_stage_changes", "follow_ups", "activities", "lost_reasons", "quotes", "quote_lines", "comments", "saved_views", "saved_searches", "nudge_snoozes", "deal_members", "deal_marks", "site_visits", "visit_notes", "visit_agreed", "price_list", "deal_amount_changes"]],
+  ["selling", ["stages", "deals", "deal_stage_changes", "follow_ups", "activities", "lost_reasons", "quotes", "quote_lines", "quote_payments", "comments", "saved_views", "saved_searches", "nudge_snoozes", "deal_members", "deal_marks", "site_visits", "visit_notes", "visit_agreed", "price_list", "deal_amount_changes"]],
   ["accounts", ["companies", "contacts", "territories", "territory_places", "renewals", "referrals"]],
   ["team", ["reps", "targets", "one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas", "actions", "meetings", "meeting_slots", "meeting_decisions", "threads", "thread_members", "messages", "starters", "starter_steps", "covers", "cover_notes"]],
   ["inbox", ["enquiries", "shows"]],
@@ -281,6 +283,7 @@ const REACHES: Record<string, Reach> = {
   deal: { reach: "team", via: "deal_id", by: "owner_id" },
   // Two links down, by the parent's copy of the deal's owner: a quote's lines, a visit's notes, a job's rows.
   "deal-quote": { reach: "team", via: "document_id", by: "deal_owner_id" },
+  "deal-pay": { reach: "team", via: "quote_id", by: "deal_owner_id" },
   "deal-visit": { reach: "team", via: "visit_id", by: "deal_owner_id" },
   "deal-job": { reach: "team", via: "job_id", by: "deal_owner_id" },
   // A follow-up on a deal by its deal's owner; one on no deal (a job's call) by its own owner.
@@ -536,10 +539,15 @@ describe("the app brings nine roles", () => {
   it("grants only a table right, a page to view, and the app's staff screens", () => {
     const known = /^(table:@[a-z_]+:(read|create|update|delete|export|import|read_pii)|page:@[a-z][a-z0-9-]*:view|app:@:staff)$/;
     for (const r of roles) {
-      expect(r.permissions.filter((grant) => !known.test(grant)), r.key).toEqual([]);
+      expect(r.permissions.filter((grant) => !known.test(grant) && grant !== "payments:@:refund"), r.key).toEqual([]);
       expect(r.permissions.length, `${r.key} repeats a grant`).toBe(new Set(r.permissions).size);
       expect(r.permissions, r.key).toContain("app:@:staff");
     }
+  });
+
+  it("lets the CRM admin and the sales manager give back what was paid online for a quote, and nobody else", () => {
+    const refunders = roles.filter((r) => r.permissions.includes("payments:@:refund")).map((r) => r.key);
+    expect(refunders).toEqual(["admin", "sales-manager"]);
   });
 
   it("names only tables and pages the manifest declares", () => {
@@ -559,13 +567,13 @@ describe("the matrix covers every table, and every table's every role", () => {
   it("lists each of the manifest's tables once", () => {
     expect(MATRIX_TABLES.length).toBe(new Set(MATRIX_TABLES).size);
     expect([...MATRIX_TABLES].sort()).toEqual(tables.map((table) => table.ref).sort());
-    expect(MATRIX_TABLES).toHaveLength(78);
+    expect(MATRIX_TABLES).toHaveLength(79);
   });
 
-  it("has nine roles by seventy-eight tables: 702 cells", () => {
+  it("has nine roles by seventy-nine tables: 711 cells", () => {
     let cells = 0;
     for (const key of ROLES) cells += EXPECTED.get(key)?.size ?? 0;
-    expect(cells).toBe(702);
+    expect(cells).toBe(711);
   });
 });
 
@@ -797,7 +805,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 77, "sales-manager": 63, rep: 61, "account-manager": 37, marketer: 8, "front-desk": 11, "ops-manager": 28, crew: 20, "read-only": 71 });
+    expect(menu).toEqual({ admin: 78, "sales-manager": 64, rep: 62, "account-manager": 38, marketer: 8, "front-desk": 11, "ops-manager": 28, crew: 20, "read-only": 72 });
   });
 });
 

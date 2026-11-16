@@ -84,9 +84,9 @@ describe("every table and page is in the part of its menu heading", () => {
   // The section's first run (the console's twelve entries, P17) has no heading: those pages are read by their own part.
   const headingOf = new Map(pages.filter((page) => page.bindings !== undefined).map((page) => [Object.values(page.bindings)[0]!, page.nav.group === "console" ? page.module : page.nav.group]));
 
-  it("puts the two quote tables and the price list they read in the part of their own, and every other table in its heading's part", () => {
-    // Only a quote's line reads a price: with no quotes the price list would be a page nothing uses.
-    const ofQuotes = ["quotes", "quote_lines", "price_list", "deal_amount_changes"];
+  it("puts the three quote tables and the price list they read in the part of their own, and every other table in its heading's part", () => {
+    // Only a quote's line reads a price: with no quotes the price list would be a page nothing uses. A quote's payments go with it.
+    const ofQuotes = ["quotes", "quote_lines", "quote_payments", "price_list", "deal_amount_changes"];
     for (const table of tables) {
       const heading = headingOf.get(table.ref);
       const expected = ofQuotes.includes(table.ref) ? "quotes" : heading === "setup" ? undefined : heading;
@@ -196,7 +196,7 @@ describe("the app stands without Invoices & Receipts", () => {
     expect([...optionalShapeAddOns(manifest)]).toEqual([["invoices", ["quotes"]]]);
     expect(modulesLeftOut(manifest, (addOn) => addOn !== "invoices")).toEqual(["quotes"]);
     expect(modulesLeftOut(manifest, () => true)).toEqual([]);
-    expect([...tablesLeftOut(manifest, ["quotes"])].sort()).toEqual(["deal_amount_changes", "price_list", "quote_lines", "quotes"]);
+    expect([...tablesLeftOut(manifest, ["quotes"])].sort()).toEqual(["deal_amount_changes", "price_list", "quote_lines", "quote_payments", "quotes"]);
   });
 
   it("is a whole manifest with the part left out", () => {
@@ -204,7 +204,9 @@ describe("the app stands without Invoices & Receipts", () => {
     const result = validateManifest(left);
     expect(result.ok ? [] : result.issues).toEqual([]);
     const kept = left.requiredSchema.tables as unknown as Table[];
-    expect(kept).toHaveLength(tables.length - 4);
+    expect(kept).toHaveLength(tables.length - 5);
+    // Nothing is paid online without quotes: the quote's payable goes with them.
+    expect((left as { payments?: unknown }).payments).toBeUndefined();
     // A deal's quoted amount is a plain, empty column until quotes are there.
     const quoted = kept.find((table) => table.ref === "deals")!.columns.find((column) => column.ref === "quoted_amount")!;
     expect(quoted.rules?.["rollup"]).toBeUndefined();

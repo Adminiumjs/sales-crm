@@ -25,8 +25,15 @@ interface Entry {
 }
 type Doc = { publicAccess?: Entry[]; publicKeys?: Record<string, unknown>; frontends: { side: string; routes?: Record<string, string> }[]; emailTemplates: { key: string; vars?: string[]; locales: Record<string, { blocks: { block: string; data: Record<string, unknown> }[] }> }[] };
 
-/** Everything a customer may ever read of a quote and of a line: F16's list, and `id` to tie a line to its quote. */
-const QUOTE = ["id", "number", "version", "status", "valid_until", "currency", "tax_name", "tax_rate", "subtotal", "tax", "total", "notes", "sent_at", "decided_at", "accepted_name"];
+/**
+ * Everything a customer may ever read of a quote and of a line: F16's list, and `id` to tie a line to its quote; then
+ * what the quote asks on acceptance, what was paid and given back and when, what is left, and whether it can be paid
+ * now (accepted, on a deal that is not lost). Nothing of the deal itself.
+ */
+const QUOTE = [
+  ...["id", "number", "version", "status", "valid_until", "currency", "tax_name", "tax_rate", "subtotal", "tax", "total", "notes", "sent_at", "decided_at", "accepted_name"],
+  ...["pay_ask", "pay_pct", "pay_amount", "pay_paid", "pay_refunded", "pay_due", "pay_paid_at", "pay_open"],
+];
 const LINE = ["id", "document_id", "position", "description", "qty", "rate", "discount_kind", "discount", "currency", "amount"];
 
 for (const [name, doc] of [
@@ -55,7 +62,7 @@ for (const [name, doc] of [
     it("answers exactly the allowed columns of a quote and of a line, and never the code", () => {
       expect(quote.select).toEqual(QUOTE);
       expect(line.select).toEqual(LINE);
-      for (const hidden of ["share_code", "deal_id", "list_value", "under_list_pct", "approval", "ask_reason", "decision_note", "asked_by_id", "decided_by_id", "to_email", "sent_to_email", "sent_to_name", "threshold_pct", "withdraw_reason", "accepted_via"]) {
+      for (const hidden of ["share_code", "deal_id", "deal_state", "list_value", "under_list_pct", "approval", "ask_reason", "decision_note", "asked_by_id", "decided_by_id", "to_email", "sent_to_email", "sent_to_name", "threshold_pct", "withdraw_reason", "accepted_via"]) {
         expect(quote.select, hidden).not.toContain(hidden);
       }
       for (const hidden of ["price_id", "list_rate", "list_amount", "unlisted", "unlisted_amount", "retry_key"]) expect(line.select, hidden).not.toContain(hidden);

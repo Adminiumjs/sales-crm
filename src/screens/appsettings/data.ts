@@ -4,7 +4,7 @@
  * The settings are ONE row. Who may write which of its columns is the
  * server's to say (the manifest's `limits.settings.writable` for the sales
  * manager; every column for the CRM admin). The app's config says only that a
- * person may update the table, not which columns, so the manager's eight are
+ * person may update the table, not which columns, so the manager's ten are
  * listed here too, and a test holds this list to the manifest's.
  *
  * WHO ADDS UP. Counts and sums come from the server. What is worked out here
@@ -19,7 +19,7 @@ export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 export type Day = (typeof DAYS)[number];
 
 /** The columns that say how the team sells: the only ones a sales manager writes. Held to the manifest by `data.test.ts`. */
-export const MANAGER_WRITES: readonly string[] = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days"];
+export const MANAGER_WRITES: readonly string[] = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days", "pay_ask", "pay_deposit_pct"];
 
 /** The least and the most each number takes, as the server holds them (the manifest's `validation`). Held to the manifest by `data.test.ts`. */
 export const BOUNDS: Record<string, readonly [number, number]> = {
@@ -31,6 +31,8 @@ export const BOUNDS: Record<string, readonly [number, number]> = {
   nudge_quiet_days: [3, 21],
   nudge_stuck_days: [7, 45],
   nudge_soon_days: [3, 30],
+  // What a customer pays when accepting a quote, when a deposit is asked: a whole percentage of the quote.
+  pay_deposit_pct: [1, 99],
   working_day_hours: [4, 12],
   lead_cold_days: [1, 365],
   // Stage 2's (P24): a sample's loan, a tired display piece, a snag, an aftercare call, a complaint's answer, a claim gone red.
@@ -58,6 +60,9 @@ export interface SettingsRow extends Record<string, unknown> {
   work_from: string;
   work_to: string;
   distance_unit: "km" | "miles";
+  /** What is asked when a customer accepts a quote. Empty from a server that does not have it yet. */
+  pay_ask?: "off" | "deposit" | "whole" | null;
+  pay_deposit_pct?: number | string | null;
   depot_name: string | null;
   depot_address: string | null;
   depot_town: string | null;

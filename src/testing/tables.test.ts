@@ -112,10 +112,23 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "withdrawn_at",
       "deal_state",
       "yes_seen_at",
+      // What is asked when the customer accepts, read from Settings when the quote is made: empty on a quote made before,
+      // which asks nothing. What was paid, refunded and when, and what is left, are the server's.
+      "pay_ask",
+      "pay_pct",
+      "pay_amount",
+      "pay_paid",
+      "pay_refunded",
+      "pay_due",
+      "pay_paid_at",
+      "pay_open",
     ],
   },
   price_list: { nullable: [] },
   quote_lines: { nullable: ["description", "rate", "discount", "currency", "amount", "price_id", "list_rate"] },
+  // A payment of an accepted quote, written by Adminium: an online one carries its reference, service and currency; one
+  // recorded by hand in Adminium's payment panel may carry a note and no reference.
+  quote_payments: { nullable: ["paid_at", "payment_ref", "provider", "currency", "net_amount", "note"] },
   comments: { nullable: ["at", "parent_id", "settled_by_id", "settled_at"] },
   saved_views: { nullable: ["owner_id"] },
   saved_searches: { nullable: ["owner_id", "last_run_at"] },
@@ -333,7 +346,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
 };
 
 /** How many tables the manifest holds: the 75 of the app's ten parts, the price list, and the weekdays a crew works. */
-const TABLE_COUNT = 78;
+const TABLE_COUNT = 79;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -484,7 +497,7 @@ describe("the manifest holds the tables listed here, and no other", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
 
-  it("has seventy-eight of them", () => {
+  it("has seventy-nine of them", () => {
     expect(tables).toHaveLength(TABLE_COUNT);
     expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });

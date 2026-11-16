@@ -395,7 +395,16 @@ describe("the e-mails the app ships", () => {
   it("draws each for a mail client: a heading, its words, its facts as rows, and the button the design gives it", () => {
     // The quote: the deal's name, what it comes to, until when, and the button that opens the customer's page.
     expect(shape("crm-quote-sent")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.button", "email.text"]);
-    expect(shape("crm-quote-accepted")).toEqual(["email.heading", "email.text", "email.text"]);
+    // Accepted: today's three blocks; between them, only while the quote can be paid online now (`pay_url` is filled only
+    // then), what is to pay, the pay button and a button back to the quote. With nothing to pay online it reads as before.
+    expect(shape("crm-quote-accepted")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.button", "email.button", "email.text"]);
+    for (const locale of LOCALES) {
+      const blocks = m.emailTemplates.find((one) => one.key === "crm-quote-accepted")!.locales[locale]!.blocks;
+      expect(blocks.map((block) => block.showWhen?.var ?? null), locale).toEqual([null, null, "pay_url", "pay_url", "pay_url", "pay_url", null]);
+      expect(blocks.filter((block) => block.block === "email.button").map((block) => block.data.url), locale).toEqual(["{{pay_url}}", "{{manage_url}}#{{quote.share_code}}"]);
+      // The amount is the server's, in the quote's own currency: never a figure the mail works out.
+      expect(JSON.stringify(blocks), locale).toContain("{{quote.pay_due.money}}");
+    }
     // A visit: who comes (only when the rep can be named), day, time, where, what for. No button: a mail client drops a calendar file made in the page.
     expect(shape("crm-visit-confirmed")).toEqual(["email.heading", "email.text", "email.text", "email.tax-breakdown"]);
     expect(shape("crm-visit-moved")).toEqual(["email.heading", "email.text", "email.text", "email.tax-breakdown"]);
