@@ -31,6 +31,7 @@ import { peopleOf } from "../team/data.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { ASKING_LENGTH, ASKING_MAX, askingOf, num, readSelling, type PriceRow, type ReasonRow, type RepRow, type SellingData, type StageRow, LIST_PAGE } from "./data.ts";
 import { AskLine, Card, NumField, useSaveSettings, type Rights } from "./parts.tsx";
+import { PaymentsCard } from "./Payments.tsx";
 
 type ListTable = "stages" | "lost_reasons";
 type Listed = (StageRow | ReasonRow) & { odds?: number | string };
@@ -641,6 +642,7 @@ export function Selling({ session, f, rights }: { session: StaffSession; f: Form
                     <AskLine>{t(linkState === "set" ? "aset.links.set" : linkState === "unset" ? "aset.links.unset" : "aset.links.unknown")}</AskLine>
                   </Card>
                 )}
+                <PaymentsCard session={session} row={data.settings} f={f} rights={rights} save={save} />
                 <Card name="sitting" title={t("aset.sitting.title")} sub={t("aset.sitting.sub")}>
                   <div className="crm-ast-fields">
                     {field("sitting_warm_days", "aset.sitting.warm", days(num(value("sitting_warm_days"))), t("aset.sitting.warm.now", { count: f.number(data.warm) }, data.warm), { max: num(value("sitting_stale_days")) - 1 })}
