@@ -478,6 +478,50 @@ for (const [dialect, reachable] of LEGS) {
       expect(money(seen['pay_due'])).toBe(money(seen['pay_amount']));
     });
 
+    it("tells the customer's link how its own quote's payment stands, in one word, and nothing of another quote", async () => {
+      const { id, code } = await quoteOf();
+      const other = await quoteOf();
+      const session = await open(code);
+      const quote = await quoteRow(id);
+      const due = money(quote['pay_due'])!;
+      const currency = String(quote['currency']);
+      const stands = async (of: number, as = session): Promise<{ status: number; body: Record<string, unknown> }> => {
+        const res = await pub('GET', `/payments/state?ref=${refs.quotes}&id=${String(of)}`, { session: as });
+        return { status: res.statusCode, body: res.statusCode === 200 ? ((res.json() as { data: Record<string, unknown> }).data) : {} };
+      };
+      // Nothing started yet.
+      expect(await stands(id)).toEqual({ status: 200, body: { state: 'none' } });
+      const attempts = paymentAttemptsRepo(s.meta);
+      // Each attempt a second after the one before, so which is the newest never rests on two in one millisecond.
+      let at = Date.now();
+      const begun = async (): Promise<string> => {
+        n += 1;
+        at += 1_000;
+        const attempt = (await attempts.create({ provider: PROVIDER, mode: 'live', accountId: 'acct', payable: ref(id), payableLabel: `Q-${String(id)}`, amount: due, currency, linkId: null, nonce: `nonce-${dialect}-${String(n)}`.padEnd(22, 'x'), createdBy: null }, at))!;
+        await attempts.move(attempt.id, 'open', { providerRef: `cs_${dialect}_${String(n)}` });
+        return attempt.id;
+      };
+      // A checkout open at the service; the bank confirming it; it did not finish.
+      const first = await begun();
+      expect((await stands(id)).body).toEqual({ state: 'open' });
+      await attempts.move(first, 'processing', {});
+      expect((await stands(id)).body).toEqual({ state: 'confirming' });
+      await attempts.move(first, 'failed', {});
+      expect((await stands(id)).body).toEqual({ state: 'failed' });
+      // The time to pay on the service's page ran out.
+      await attempts.move(await begun(), 'expired', {});
+      expect((await stands(id)).body).toEqual({ state: 'expired' });
+      // Paid: the money arrived, whether or not it is written into the quote yet.
+      await attempts.move(await begun(), 'succeeded', { takenAmount: due, takenCurrency: currency, paymentRef: `pi_${dialect}_${String(n)}`, paidWith: { method: 'card', label: 'Visa', delayed: false } });
+      expect((await stands(id)).body).toEqual({ state: 'paid' });
+      // Another quote's link reads nothing of this one, and its own quote has no payment.
+      const elsewhere = await open(other.code);
+      expect((await stands(id, elsewhere)).status).toBe(404);
+      expect(await stands(other.id, elsewhere)).toEqual({ status: 200, body: { state: 'none' } });
+      // No link opened: nothing.
+      expect((await pub('GET', `/payments/state?ref=${refs.quotes}&id=${String(id)}`)).statusCode).toBeGreaterThanOrEqual(400);
+    });
+
     it('writes a payment once into the quote\'s payments, with its reference, service and currency, and moves neither the quote nor the deal', async () => {
       const [crm] = await profile();
       await payableProfilesRepo(s.meta).update(crm!.id, { enabled: true });
