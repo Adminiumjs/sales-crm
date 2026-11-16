@@ -35,7 +35,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at (0.3.26 until the release); the app's floor is the release to come.
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.60' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
@@ -249,7 +249,11 @@ const said = (res: Reply): string => {
 };
 
 /** Everything a customer may ever read of a quote and of a line (F16's list, and the keys that tie a line to its quote). */
-const QUOTE = ['id', 'number', 'version', 'status', 'valid_until', 'currency', 'tax_name', 'tax_rate', 'subtotal', 'tax', 'total', 'notes', 'sent_at', 'decided_at', 'accepted_name'];
+const QUOTE = [
+  ...['id', 'number', 'version', 'status', 'valid_until', 'currency', 'tax_name', 'tax_rate', 'subtotal', 'tax', 'total', 'notes', 'sent_at', 'decided_at', 'accepted_name'],
+  // What the quote asks on acceptance, what was paid, given back and is left, and whether it can be paid now: of its own quote only.
+  ...['pay_ask', 'pay_pct', 'pay_amount', 'pay_paid', 'pay_refunded', 'pay_due', 'pay_paid_at', 'pay_open'],
+];
 const LINE = ['id', 'document_id', 'position', 'description', 'qty', 'rate', 'discount_kind', 'discount', 'currency', 'amount'];
 
 for (const [dialect, reachable] of LEGS) {

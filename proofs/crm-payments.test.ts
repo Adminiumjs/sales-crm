@@ -623,7 +623,8 @@ for (const [dialect, reachable] of LEGS) {
     it('asks to show the customer more of a quote and to let two roles refund, and goes when the owner allows both', async () => {
       await s.upload(now, readFileSync(`${SEEDS}/meridian.json`, 'utf8'));
       // Each refusal names what it asks, before anything moves; the owner allows each in turn.
-      const allowed: Record<string, boolean> = {};
+      // The customer's link is given what this version adds to it (`publicAccess`), as an owner does on the update's page.
+      const allowed: Record<string, boolean> = { publicAccess: true };
       const refusals: string[] = [];
       let updated: Reply | null = null;
       for (let round = 0; round < 4 && updated === null; round += 1) {
@@ -665,5 +666,27 @@ for (const [dialect, reachable] of LEGS) {
       const profiles = (await payableProfilesRepo(s.meta).list(s.connectionId)).filter((one) => one.ownerApp === 'crm');
       expect(profiles.map((one) => [one.tableName, one.enabled])).toEqual([[s.t('quotes'), false]]);
     });
+
+    it("lets the customer's link read what is asked of the quote it opens, once allowed", async () => {
+      const visitor = { authorization: `Bearer ${s.token['quote']!}`, origin: ORIGIN };
+      const config = await s.app.inject({ method: 'GET', url: '/api/v1/public/config', headers: visitor });
+      const names = Object.keys(((config.json() as { data?: { refs: Record<string, unknown> }; refs?: Record<string, unknown> }).data ?? (config.json() as { refs: Record<string, unknown> })).refs);
+      const quotes = names.find((one) => one === 'crm_quotes' || one.startsWith('crm_quotes_'))!;
+      const code = String((await s.rows("SELECT share_code FROM crm_quotes WHERE status = 'accepted' ORDER BY id"))[0]!['share_code']);
+      const opened = await s.app.inject({ method: 'POST', url: '/api/v1/public/claim/token', remoteAddress: '10.79.0.1', headers: visitor, payload: { token: code } });
+      expect(opened.statusCode, opened.body).toBe(200);
+      const session = (opened.json() as { data: { session: string } }).data.session;
+      const read = await s.app.inject({ method: 'GET', url: `/api/v1/public/records/${quotes}`, remoteAddress: '10.79.0.2', headers: { ...visitor, 'x-adminium-public-session': session } });
+      expect(read.statusCode, read.body).toBe(200);
+      const body = read.json() as { data?: Record<string, unknown>[] } | Record<string, unknown>[];
+      const row = (Array.isArray(body) ? body : (body.data ?? []))[0]!;
+      expect(Object.keys(row)).toEqual(expect.arrayContaining(['pay_ask', 'pay_amount', 'pay_due', 'pay_open']));
+    });
+
+    it('asks nothing more of the next update of the same app', async () => {
+      await s.upload({ ...now, version: now.version.replace(/\d+$/, (patch) => String(Number(patch) + 1)) }, readFileSync(`${SEEDS}/meridian.json`, 'utf8'));
+      const again = await s.app.inject({ method: 'POST', url: '/api/v1/apps/crm/update', headers: { cookie: s.owner }, payload: {} });
+      expect(again.statusCode, again.body).toBe(200);
+    }, 900_000);
   });
 }
