@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Paying for an accepted quote online: on the engine words of Adminium 0.3.60.
+ * Paying for an accepted quote online: on the engine words of Adminium 0.3.61.
  *
  * Changes `whole/manifest.json` only. Finds everything by key or name,
  * asserts what it needs, and is idempotent: run twice, it changes nothing
@@ -73,8 +73,8 @@ const put = (ref, columnDef, after) => {
   columns.splice(behind + 1, 0, columnDef);
 };
 
-// The payable words, the refund right and the pay-link entries are Adminium 0.3.60's.
-manifest.compatibility.minAdminiumVersion = "0.3.60";
+// The payable words, the refund right and the pay-link entries are Adminium 0.3.61's; 0.3.61 lets the payable go with the Quotes part when that part is left out.
+manifest.compatibility.minAdminiumVersion = "0.3.61";
 
 // ── What is asked: the setting ──────────────────────────────────────────────
 const ASK_LABELS = {
