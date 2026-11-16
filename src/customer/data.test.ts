@@ -4,8 +4,8 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { codeOf } from "./CustomerApp.tsx";
-import { quoteLink, ranOut, today, type CustomerQuote, type QuoteDoor } from "./data.ts";
+import { codeOf, wentToPay } from "./CustomerApp.tsx";
+import { payable, quoteLink, ranOut, today, type CustomerQuote, type QuoteDoor } from "./data.ts";
 
 type Row = Record<string, unknown>;
 const sent: Row = { id: 7, number: "Q-1002", version: 2, status: "sent", valid_until: "2026-08-27", currency: "GBP", tax_name: "VAT", tax_rate: "20.00", subtotal: "2970.00", tax: "594.00", total: "3564.00", notes: null, sent_at: "2026-07-28T08:10:00.000Z", decided_at: null, accepted_name: null };
@@ -181,5 +181,101 @@ describe("the small readers", () => {
     expect(codeOf("#")).toBe("");
     expect(codeOf("#<script>")).toBe("");
     expect(codeOf("#a/b")).toBe("");
+  });
+});
+
+describe("paying for an accepted quote", () => {
+  const accepted: Row = { ...sent, status: "accepted", decided_at: "2026-07-28T09:00:00.000Z", accepted_name: "Ruth Adeyemi", pay_ask: "deposit", pay_pct: 20, pay_amount: "712.80", pay_paid: "0.00", pay_refunded: "0.00", pay_due: "712.80", pay_paid_at: null, pay_open: 1 };
+  const paying = (said: { online: boolean; test?: true } | Error, started: { payUrl: string } | Error = { payUrl: "https://pay.example.com/pay/abc" }) => {
+    const s = server(accepted);
+    const asked: string[] = [];
+    s.door.payments = {
+      available: async () => {
+        if (said instanceof Error) throw said;
+        return said;
+      },
+      start: async (ref, id) => {
+        asked.push(`${ref} ${id}`);
+        if (started instanceof Error) throw started;
+        return started;
+      },
+    };
+    return { ...s, asked };
+  };
+  const opened = async (link: ReturnType<typeof quoteLink>): Promise<CustomerQuote> => {
+    const result = await link.open();
+    if (result.state !== "open") throw new Error(result.state);
+    return result.quote;
+  };
+
+  it("reads what is asked, paid, given back and left as the server says it", async () => {
+    const quote = await opened(quoteLink(paying({ online: true }).door, "GOODCODE12345678", tables, NOW));
+    expect(quote).toMatchObject({ payAsk: "deposit", payPct: 20, payAmount: 712.8, payPaid: 0, payRefunded: 0, payDue: 712.8, payPaidAt: null, payOpen: true });
+    // A quote made before anything was asked, or read by a server that says nothing of it, asks nothing.
+    const s = server({ ...sent, status: "accepted" });
+    expect(await opened(quoteLink(s.door, "GOODCODE12345678", tables, NOW))).toMatchObject({ payAsk: "off", payDue: 0, payOpen: false });
+  });
+
+  it("offers Pay now only while the business takes payments online and something is left to pay", async () => {
+    const quote = await opened(quoteLink(paying({ online: true }).door, "GOODCODE12345678", tables, NOW));
+    expect(payable(quote, { online: true, test: false })).toBe(true);
+    expect(payable(quote, { online: false, test: false })).toBe(false);
+    expect(payable(quote, null)).toBe(false);
+    expect(payable({ ...quote, payDue: 0 }, { online: true, test: false })).toBe(false);
+    // Accepted on a deal that was lost: the page reads as it always did.
+    expect(payable({ ...quote, payOpen: false }, { online: true, test: false })).toBe(false);
+    expect(payable({ ...quote, payAsk: "off" }, { online: true, test: false })).toBe(false);
+    expect(payable({ ...quote, status: "sent" }, { online: true, test: false })).toBe(false);
+  });
+
+  it("says nothing is offered by a client that knows no payments, or when Adminium does not answer", async () => {
+    const plain = server(accepted);
+    expect(await quoteLink(plain.door, "GOODCODE12345678", tables, NOW).offer()).toEqual({ online: false, test: false });
+    expect(await quoteLink(paying(new Error("down")).door, "GOODCODE12345678", tables, NOW).offer()).toEqual({ online: false, test: false });
+    expect(await quoteLink(paying({ online: true, test: true }).door, "GOODCODE12345678", tables, NOW).offer()).toEqual({ online: true, test: true });
+    expect(await quoteLink(null, "GOODCODE12345678", tables, NOW).offer()).toEqual({ online: false, test: false });
+  });
+
+  it("asks Adminium for the quote's pay link by its key alone, never an amount", async () => {
+    const s = paying({ online: true });
+    const link = quoteLink(s.door, "GOODCODE12345678", tables, NOW);
+    const quote = await opened(link);
+    expect(await link.pay(quote)).toEqual({ state: "go", payUrl: "https://pay.example.com/pay/abc" });
+    expect(s.asked).toEqual(["crm_quotes 7"]);
+  });
+
+  it("reads the quote again when Adminium will not start it, and says so when it does not answer", async () => {
+    for (const error of [refused("PUBLIC_PAY_REFUSED", 409), refused("PUBLIC_REF_NOT_FOUND", 404)]) {
+      const link = quoteLink(paying({ online: true }, error).door, "GOODCODE12345678", tables, NOW);
+      expect(await link.pay(await opened(link)), error.message).toEqual({ state: "changed" });
+    }
+    const down = quoteLink(paying({ online: true }, refused("PUBLIC_NETWORK_UNAVAILABLE", 0)).door, "GOODCODE12345678", tables, NOW);
+    expect(await down.pay(await opened(down))).toEqual({ state: "unreachable" });
+  });
+
+  it("reads the quote again through the link already opened, without opening it again", async () => {
+    const s = paying({ online: true });
+    const link = quoteLink(s.door, "GOODCODE12345678", tables, NOW);
+    await opened(link);
+    s.set({ ...accepted, pay_paid: "712.80", pay_due: "0.00", pay_paid_at: "2026-07-28T09:05:00.000Z" });
+    const again = await link.refresh();
+    expect(again.state === "open" ? again.quote : null).toMatchObject({ payPaid: 712.8, payDue: 0 });
+    expect(s.calls.filter((call) => call.startsWith("open "))).toHaveLength(1);
+  });
+});
+
+describe("coming back from the pay page", () => {
+  const kept = (value: string | null) => ({ getItem: () => value });
+  it("opens the quote this tab went to pay for, for a few hours", () => {
+    const at = Date.parse("2026-07-28T09:00:00Z");
+    expect(wentToPay(kept(JSON.stringify({ code: "GOODCODE12345678", at })), at + 60_000)).toBe("GOODCODE12345678");
+    expect(wentToPay(kept(JSON.stringify({ code: "GOODCODE12345678", at })), at + 4 * 3_600_000)).toBeNull();
+  });
+  it("takes nothing that is not a code, and no storage at all", () => {
+    expect(wentToPay(kept(JSON.stringify({ code: "<script>", at: Date.now() })))).toBeNull();
+    expect(wentToPay(kept("not json"))).toBeNull();
+    expect(wentToPay(kept(null))).toBeNull();
+    expect(wentToPay(null)).toBeNull();
+    expect(wentToPay({ getItem: () => { throw new Error("refused"); } })).toBeNull();
   });
 });

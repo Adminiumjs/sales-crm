@@ -330,3 +330,126 @@
     flex: 1 1 0;
   }
 }
+/* Paying for an accepted quote: the thanks, "Pay now" and the lines under it, what was paid. */
+.crm-q-test {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 18px 0 0;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: var(--warn-soft);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--fg);
+}
+.crm-q-test svg {
+  flex-shrink: 0;
+  margin-block-start: 1px;
+  color: var(--warn);
+}
+.crm-q-paying {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.crm-q-thanks,
+.crm-q-paid,
+.crm-q-wait,
+.crm-q-rest {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.crm-q-thanks {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-q-thanks svg,
+.crm-q-paid svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--pos);
+}
+.crm-q-paid {
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: var(--pos-soft);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.crm-q-wait {
+  align-items: center;
+  justify-content: center;
+  min-block-size: 48px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+}
+.crm-q-spin {
+  flex-shrink: 0;
+  animation: crm-q-spin 0.9s linear infinite;
+}
+@keyframes crm-q-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crm-q-spin {
+    animation: none;
+  }
+}
+.crm-q-rest {
+  font-size: 13.5px;
+  color: var(--fg-muted);
+}
+.crm-q-rest svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: var(--fg-subtle);
+}
+.crm-q-pay {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-q-pay .crm-q-problem {
+  margin: 0;
+}
+.crm-q-paybtn {
+  align-self: flex-start;
+  min-block-size: 48px;
+  font-size: 15px;
+  font-weight: 800;
+}
+.crm-q-service,
+.crm-q-orwait {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+.crm-q-orwait {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+@media (max-width: 639px) {
+  .crm-q-paybtn {
+    align-self: stretch;
+  }
+  .crm-q-service,
+  .crm-q-orwait {
+    text-align: center;
+  }
+}

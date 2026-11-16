@@ -18,6 +18,7 @@ import { aftercare } from "../strings/aftercare.ts";
 import { base } from "../strings/base.ts";
 import { cover } from "../strings/cover.ts";
 import { customer } from "../strings/customer.ts";
+import { customerpay, quotepay } from "../strings/payments.ts";
 import { callnotes } from "../strings/callnotes.ts";
 import { finding } from "../strings/finding.ts";
 import { deal } from "../strings/deal.ts";
@@ -77,6 +78,8 @@ const AREAS = [
   aftersale satisfies Area<(typeof aftersale)["en-US"]>,
   aftercare satisfies Area<(typeof aftercare)["en-US"]>,
   customer satisfies Area<(typeof customer)["en-US"]>,
+  customerpay satisfies Area<(typeof customerpay)["en-US"]>,
+  quotepay satisfies Area<(typeof quotepay)["en-US"]>,
   appsettings satisfies Area<(typeof appsettings)["en-US"]>,
   finding satisfies Area<(typeof finding)["en-US"]>,
   callnotes satisfies Area<(typeof callnotes)["en-US"]>,
@@ -101,7 +104,7 @@ const AREAS = [
  * ones, not the staff screens'. `SURFACE_SIDE` folds at build time, so the
  * tables left out here are not in that bundle at all.
  */
-const SHIPPED: readonly Partial<Record<LocaleTag, Record<string, string>>>[] = SURFACE_SIDE === "customer" ? [base, customer] : AREAS;
+const SHIPPED: readonly Partial<Record<LocaleTag, Record<string, string>>>[] = SURFACE_SIDE === "customer" ? [base, customer, customerpay] : AREAS;
 
 export const MESSAGES = Object.fromEntries(
   LOCALE_TAGS.map((t) => [t, Object.assign({}, ...SHIPPED.map((a) => a[t] ?? {}))]),
@@ -123,6 +126,8 @@ export type MessageKey =
   | keyof (typeof inbox)["en-US"]
   | keyof (typeof own)["en-US"]
   | keyof (typeof customer)["en-US"]
+  | keyof (typeof customerpay)["en-US"]
+  | keyof (typeof quotepay)["en-US"]
   | keyof (typeof appsettings)["en-US"]
   | keyof (typeof finding)["en-US"]
   | keyof (typeof callnotes)["en-US"]
