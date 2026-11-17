@@ -187,7 +187,8 @@ test("a won deal's stage is not moved from its record: the record says it is loc
     await edit.click();
     const dialog = page.getByRole("dialog");
     // Every field but the close note and the lost reason is locked: the stage is shown as it is, with no control to change it.
-    await expect(dialog.getByText("Stage", { exact: true })).toBeVisible();
+    // Its label carries the mark of a field the deal must have (Adminium marks every required field so, locked or not).
+    await expect(dialog.getByText(/^Stage\s*\*?$/)).toBeVisible();
     await expect(dialog.getByLabel(/^Stage/)).toHaveCount(0);
     await expect(dialog.getByRole("combobox", { name: /Stage/ })).toHaveCount(0);
     // The lost reason is one of the two the lock leaves open (`lock.except`): its picker is the dialog's only one.
