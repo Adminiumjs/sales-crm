@@ -42,7 +42,7 @@
  *     (a copy, a formula, a total: worked out here from the two manifests) holds, on every row there, the value its
  *     rule gives, and every other column it adds holds its default or nothing;
  *  6. Dana herself sends the draft quote she made before the update, and the deal takes its amount; afterwards a new
- *     quote on an open deal is made, one on a closed deal refused (R1a), and the new grant of Inventory's receipts reads
+ *     quote on an open deal is made, one on a closed deal refused, and the new grant of Inventory's receipts reads
  *     as the operations manager and is refused to a rep;
  *  7. Forms installed after the update: Surveys waits for nothing and is on (its rule still off); Forms' invitations read as a rep
  *     and are refused to the operations manager; the brochure goes to an enquirer and is stopped at the list.
@@ -984,7 +984,7 @@ for (const [dialect, reachable] of LEGS) {
         expect(Number(quote['total'])).toBeGreaterThan(0);
       });
 
-      it('afterwards the roles work: a new quote on an open deal, none on a closed one (R1a), the receipts read as the operations manager only', async () => {
+      it('afterwards the roles work: a new quote on an open deal, none on a closed one, the receipts read as the operations manager only', async () => {
         const open = await one(`select id from crm_deals where owner_id = '${id['dana']!}' and state = 'open' and id <> ${String(typed['deal'])} order by id`);
         const fresh = made(await post('dana', 'quotes', { deal_id: open['id'] }));
         const row = await one(`select deal_state, deal_owner_id from crm_quotes where id = ${String(fresh)}`);
@@ -1005,7 +1005,7 @@ for (const [dialect, reachable] of LEGS) {
         expect((await as('dana', 'GET', receipts)).statusCode).toBe(403);
       });
 
-      it('a helper on a deal before the update reads it and comments after it, and changes and adds nothing of it (ruling 1d); her own follow-up stays hers', async () => {
+      it('a helper on a deal before the update reads it and comments after it, and changes and adds nothing of it; her own follow-up stays hers', async () => {
         expect((await as('priya', 'GET', url('deals', `/${String(typed['deal'])}`))).statusCode).toBe(200);
         expect((await as('priya', 'GET', url('quotes', `/${String(typed['quote'])}`))).statusCode).toBe(200);
         expect(said(await patch('priya', 'deals', typed['deal']!, { typed_amount: 9999 }))).toBe('404 NOT_FOUND');

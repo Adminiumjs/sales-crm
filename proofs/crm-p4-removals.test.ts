@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 68, phase 4 (T26b): STEPS READ THROUGH A PLAN, A REMOVED MESSAGE, AND
+ * STEPS READ THROUGH A PLAN, A REMOVED MESSAGE, AND
  * WHAT A REMOVAL KEEPS, against the whole server on SQLite, Postgres and
  * MySQL, with the app's own manifest, each try made signed in as the person
  * it is about.
  *
- *  - R4a/R4b (E27): a rep reads every step of her own coaching plan, the one
+ *  - a rep reads every step of her own coaching plan, the one
  *    her manager owns included, and changes only the steps she owns or set; a
  *    manager reads the steps her rep set in her coaching and one-to-ones and
  *    the meeting actions her reps set, never another manager's coaching or
  *    one-to-one with the same rep; a colleague hangs nothing on a plan that
  *    is not hers.
- *  - R4d (E19): a message is removed by its own button, which empties its
+ *  - a message is removed by its own button, which empties its
  *    words: by its author, and by the CRM admin in a conversation she is in;
  *    never by another member, nor by the CRM admin elsewhere; the words are
  *    never changed after the message is made; a member's history of a
  *    removed message holds no words; the audit log keeps them.
- *  - S3 (E8): a member taken off a deal is kept under the deal, read by whoever
+ *  - a member taken off a deal is kept under the deal, read by whoever
  *    reads the deal now (404 for anybody else); no reason is taken.
- *  - S16 (E8): a cancelled site visit, showroom booking and job visit keep
+ *  - a cancelled site visit, showroom booking and job visit keep
  *    their why, read through the deal, the space or the job; a reader who
  *    does not read the parent is answered 404; the crew reads none through a
  *    job; a visit removed from a crew's tomorrow still leaves its note for
- *    that crew (D17).
- *  - X8 (E20): no undo is offered for a removed member row (a locked child of
+ *    that crew.
+ *  - no undo is offered for a removed member row (a locked child of
  *    its deal), so none can put back the owner it was removed under; a row
  *    made after the deal changes hands takes the CURRENT owner.
  *
@@ -115,7 +115,7 @@ for (const [dialect, reachable] of LEGS) {
       await s?.close();
     });
 
-    describe('steps read through a coaching plan and a one-to-one (R4a, R4b)', () => {
+    describe('steps read through a coaching plan and a one-to-one', () => {
       const step: Record<string, number> = {};
       let areaIvy = 0;
       let areaMara = 0;
@@ -181,7 +181,7 @@ for (const [dialect, reachable] of LEGS) {
       });
     });
 
-    describe('a removed message (R4d)', () => {
+    describe('a removed message', () => {
       let direct = 0;
       let group = 0;
       const msg: Record<string, number> = {};
@@ -235,7 +235,7 @@ for (const [dialect, reachable] of LEGS) {
       });
     });
 
-    describe('a member taken off a deal (S3), and no undo of it (X8)', () => {
+    describe('a member taken off a deal, and no undo of it', () => {
       it('keeps the removed member under the deal, for whoever reads the deal now', async () => {
         const deal = await dealOf('dana', 'Nordwind fit-out');
         const member = made(await s.make('dana', 'deal_members', { deal_id: deal, user_id: s.ids['sam'] }));
@@ -253,7 +253,7 @@ for (const [dialect, reachable] of LEGS) {
         expect((await under('lena', 'deals', deal, 'deal_members')).statusCode).toBeGreaterThanOrEqual(403);
       });
 
-      it('offers no undo of a removed member, so no undo can bring back the owner the row was taken off under (X8)', async () => {
+      it('offers no undo of a removed member, so no undo can bring back the owner the row was taken off under', async () => {
         // A member row is a locked child of its deal (a closed deal's people stay as they were): an undo writes with no
         // rules, so the server offers none for it, by any person. The deal's owner a removed row kept cannot come back
         // through one; where an undo does bring a row back elsewhere, E20 re-reads its copies (the engine's own test).
@@ -277,7 +277,7 @@ for (const [dialect, reachable] of LEGS) {
       });
     });
 
-    describe('a cancelled visit\'s why (S16)', () => {
+    describe('a cancelled visit\'s why', () => {
       it('keeps a site visit\'s why, read through its deal by whoever reads the deal', async () => {
         const deal = await dealOf('dana', 'Cobalt records room');
         const visit = made(await s.make('dana', 'site_visits', { deal_id: deal, contact_id: contact, rep_id: s.ids['dana'], starts_at: at(5), minutes: 60, purpose: 'Walk the floor' }));
@@ -339,7 +339,7 @@ for (const [dialect, reachable] of LEGS) {
         }
         // The crew reads no job, so nothing through one: neither its own visit's why nor another crew's.
         for (const who of ['yusuf', 'rina']) expect((await under(who, 'jobs', job, 'job_visits')).statusCode, who).toBeGreaterThanOrEqual(403);
-        // The crew a visit left (tomorrow, removed) is still told, each its own and not the other's (D17).
+        // The crew a visit left (tomorrow, removed) is still told, each its own and not the other's.
         const left = await s.rows(`select crew_id, visit_id from crm_left_visits where visit_id in (${String(visits['blue'])}, ${String(visits['red'])})`);
         expect(left.map((one) => [Number(one['crew_id']), Number(one['visit_id'])]).sort()).toEqual([[crew['blue'], visits['blue']], [crew['red'], visits['red']]].sort());
       });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Plan 68, T04 (S5): the Team screens' left-out pieces, as columns of the whole app and values of its sample.
+ * The Team screens' left-out pieces, as columns of the whole app and values of its sample.
  *
  *  - `meeting_slots.covered`: a running-order tick (yes/no, no by default);
  *  - `one_to_one_sessions`: the four drawn "what to cover" ticks (`cover_sitting`, `cover_biggest`, `cover_target`,

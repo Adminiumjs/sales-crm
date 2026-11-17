@@ -1,5 +1,5 @@
 /**
- * Area bundle: **Jobs on site**, the office side and the route (P20, P21).
+ * Area bundle: **Jobs on site**, the office side and the route.
  * Two halves, each a key at a time (see `table.ts`): `jobs-office.ts` (the
  * menu, Deliveries, the booking dialog, the day sheet, the operations
  * manager's home) and `jobs-more.ts` (the route, the sign-off, a job's site,

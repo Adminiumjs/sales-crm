@@ -1,9 +1,9 @@
 /**
- * P25, part B: TIME SHEETS (the office) and MY HOURS (the crew's phone), both
+ * Vehicles and crew, part B: TIME SHEETS (the office) and MY HOURS (the crew's phone), both
  * sides of one week, on a stand of stage 3 (`CRM_STAND_STAGE=3`).
  *
- * - The office's Time sheets on the sample's week (Mon 20 to Fri 24 Jul, the
- *   ledger's §53), as the operations manager, every figure compared with what
+ * - The office's Time sheets on the sample's week (Mon 20 to Fri 24 Jul, as
+ *   the ledger has it), as the operations manager, every figure compared with what
  *   the server answers her; Read-only reads it with nothing to press and the
  *   server refuses her the move; a rep is refused the page and the rows.
  * - His My hours on that week (Yusuf, 28 + 7 = 35 h, sent), read only.
@@ -65,7 +65,7 @@ test("Time sheets: the sample's week with the ledger's figures, as the server an
   const toSign = await figure(ada, stand, "time_sheets", [...week, { column: "state", op: "eq", value: "sent" }], { fn: "count", alias: "v" });
   const lines = await figure(ada, stand, "time_sheet_lines", days, { fn: "count", alias: "v" });
   const onAJob = await figure(ada, stand, "time_sheet_lines", [...days, { column: "job_id", op: "gt", value: 0 }], { fn: "count", alias: "v" });
-  // The ledger's §53: 123 h on the job, 31 h travel, 5 still to sign off; 11 of 25 lines on a job; 2 days off; none over the week.
+  // 123 h on the job, 31 h travel, 5 still to sign off; 11 of 25 lines on a job; 2 days off; none over the week.
   expect([onJob, travel, toSign, lines, onAJob]).toEqual([123, 31, 5, 25, 11]);
   await expect(page.locator('[data-figure="onjob"] [data-value]')).toHaveText(`${String(onJob)} h`);
   await expect(page.locator('[data-figure="travel"] [data-value]')).toHaveText(`${String(travel)} h`);

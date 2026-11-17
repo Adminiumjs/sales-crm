@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * THE SALES CRM'S RULES AND E-MAILS OF STAGE 1 (F21), against the whole
+ * THE SALES CRM'S RULES AND E-MAILS OF STAGE 1, against the whole
  * server on SQLite, Postgres and MySQL, with the app's own manifest and
  * signed in as the people they are about:
  *
@@ -472,7 +472,7 @@ for (const [dialect, reachable] of LEGS) {
       await makeDeal('owner', 'Depot', 'noor', { stage_id: stage['b'], typed_amount: 90000 });
       for (const [rep, amount] of [['dana', 50000], ['priya', 40000], ['noor', 100000]] as const) made(await s.make('owner', 'targets', { rep_id: s.ids[rep], year, amount }));
       made(await s.make('owner', 'follow_ups', { deal_id: danaBig, owner_id: s.ids['dana'], due_at: at(-2), text: 'Send the revised layout', kind: 'step' }));
-      // Noor, of Omar's team, helps on Dana's Atrium and has a follow-up of her own there (plan 68 R1d): it is Dana's deal, so
+      // Noor, of Omar's team, helps on Dana's Atrium and has a follow-up of her own there: it is Dana's deal, so
       // it is in no week of Omar's.
       made(await s.make('owner', 'deal_members', { deal_id: danaBig, user_id: s.ids['noor'] }));
       made(await s.make('owner', 'follow_ups', { deal_id: danaBig, owner_id: s.ids['noor'], due_at: at(-1), text: 'Noor surveys the atrium', kind: 'step' }));

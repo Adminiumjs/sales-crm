@@ -51,7 +51,7 @@ describe("a certificate's state, by the server's today and the warning days", ()
     expect(certState("2026-07-12", TODAY, 42)).toBe("out");
     expect(certState("2026-07-27", TODAY, 42)).toBe("out");
     expect(certState("2026-07-28", TODAY, 42)).toBe("soon");
-    // The ledger's (§64): Rina's first aid 24 days on, Mo's working at height 18, both soon; Cal's 46, just outside.
+    // The ledger's: Rina's first aid 24 days on, Mo's working at height 18, both soon; Cal's 46, just outside.
     expect(certState("2026-08-21", TODAY, 42)).toBe("soon");
     expect(certState("2026-09-08", TODAY, 42)).toBe("soon");
     expect(certState("2026-09-09", TODAY, 42)).toBe("ok");

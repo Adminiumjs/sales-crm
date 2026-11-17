@@ -5,7 +5,7 @@
  *
  * `whole/` holds the app as it will be when every stage is out: every part,
  * every table, the whole sample. A release ships the parts that have screens
- * and no others (ruling R5): a part with no screen yet is not "switched off",
+ * and no others: a part with no screen yet is not "switched off",
  * it is NOT IN THE FILE, so an owner cannot tick it, its roles are not
  * offered, and its rules do not run. It arrives later as an update.
  *

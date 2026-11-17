@@ -1,6 +1,6 @@
 /**
- * P11, the manager's home: the Team view (ledger §5), a rep's one-to-one
- * (§10) and Stage health (§11); the homes of the CRM admin and Read-only.
+ * The manager's home: the Team view, a rep's one-to-one
+ * and Stage health; the homes of the CRM admin and Read-only.
  *
  * Reached from the menu as the sales manager, the CRM admin and Read-only,
  * and it is where each of them lands. A rep, the account manager, the
@@ -176,7 +176,7 @@ test("a rep, the account manager, the marketer and the front desk have no Team v
       expect((await figure(direct, stand, table, { shape: "single-metric", aggregations: [{ fn: "count", alias: "n" }] })).status, `${person}'s figure over ${table}`).toBe(403);
     }
   }
-  // The account manager reads a deal once it is won (ruling R6), and an open one only while he is listed on it (P23): on the
+  // The account manager reads a deal once it is won, and an open one only while he is listed on it: on the
   // sample he is on none, so no open deal, no lost one, and none of the feed's rows; the nudges' table is never his.
   const hugo = await api("hugo");
   for (const table of ["activities", "deal_stage_changes", "deal_amount_changes"]) {
@@ -341,7 +341,7 @@ test("Stage health: the ledger's five stages, their ages and the deal sitting lo
     await expect(stage(one.label).locator('.crm-hl-buckets [data-figure="stale"]')).toHaveText(String(stale));
   }
 
-  // Plan 68 S15: "typical age" is the server's middle moment of each stage's open deals (of an even count, the earlier of
+  // "Typical age" is the server's middle moment of each stage's open deals (of an even count, the earlier of
   // the two middle ones), counted in days to 28 July where the business is. Nothing on the page sorts rows.
   const london = (at: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(at));
   const middles = await figure<{ items: { key: string; values: { middle: string | null } }[] }>(context.request, stand, "deals", { shape: "categorical", filters: [OPEN], groupBy: ["stage_id"], aggregations: [{ fn: "count", alias: "n" }, { fn: "median", column: "entered_stage_at", alias: "middle" }], limit: 50 });

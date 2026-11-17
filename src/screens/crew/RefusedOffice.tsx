@@ -1,5 +1,5 @@
 /**
- * A SIGN-OFF REFUSED ON ARRIVAL, as the office reads it (plan 68 S19, the
+ * A SIGN-OFF REFUSED ON ARRIVAL, as the office reads it (the
  * design's office "Refused on arrival"). The crew's phone writes the record
  * when the refusal comes back (`queue.tsx`); it says who signed and when, on
  * whose phone, when it reached the server, and the snag that stopped it. It

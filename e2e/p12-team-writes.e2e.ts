@@ -1,5 +1,5 @@
 /**
- * Plan 68, T04 (S5): the Team screens' five writes and their left-out pieces, on the sample, on the ledger's Tuesday
+ * The Team screens' five writes and their left-out pieces, on the sample, on the ledger's Tuesday
  * 28 July 2026. A conversation started with its people; the meeting's running order ticked off ("N of 6 covered")
  * and a decision carried over; a coaching area with its why, what good looks like and live number, added and renamed;
  * a one-to-one's "what to cover" ticked, something else raised, its length, and its actions under it; a new starter
@@ -54,7 +54,7 @@ test.afterEach(async ({ api, data }) => {
   await tidy(api, data);
 });
 
-test("Messages: a new conversation is made with its people; with one colleague already talked to, that one opens (T04, D3, D12)", async ({ as, api, data }) => {
+test("Messages: a new conversation is made with its people; with one colleague already talked to, that one opens", async ({ as, api, data }) => {
   const context = await as("dana");
   await room(context.request, data, 80);
   const page = await context.newPage();
@@ -228,7 +228,7 @@ test("One-to-one notes: what to cover ticked off and something else raised, kept
   const first = page.locator(".crm-no-session").first();
   await expect(first.getByTestId("notes-minutes")).toHaveText("30 minutes");
   await expect(first.getByTestId("notes-covered").locator("li")).toHaveText(["The deal longest in its stage", "Follow-ups past due", "Spec: the August cover"]);
-  // An action keeps its session from stage 2 on (T04): stage 1 has no `actions.session_id`, and lists none under it.
+  // An action keeps its session from stage 2 on: stage 1 has no `actions.session_id`, and lists none under it.
   const keepsSession = stand.stage >= 2;
   if (keepsSession) await expect(first.getByTestId("notes-session-actions").locator(".crm-tw-action")).toHaveText(/Spec: brief Sam on Cobalt Legal/);
   else await expect(first.getByTestId("notes-session-actions")).toHaveCount(0);
@@ -289,7 +289,7 @@ test("New starter: her patch, the server's count; a starter made with the last o
   expect(problems).toEqual([]);
 });
 
-test("the sales manager sets no target of her own, nor her own first-year target, and marks only the decisions of a meeting she runs (plan 68 X2)", async ({ as, api, data }) => {
+test("the sales manager sets no target of her own, nor her own first-year target, and marks only the decisions of a meeting she runs", async ({ as, api, data }) => {
   const admin = await api("tessa");
   const adminHeaders = await csrf(admin);
   const context = await as("ivy");

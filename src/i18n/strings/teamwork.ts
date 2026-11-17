@@ -210,7 +210,7 @@ const enUS = {
   "starter.phase.month.sub": "Doing it alone, with someone nearby.",
   "starter.phase.count": "{done} of {all}",
   "starter.phase.none": "Nothing in this part.",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "{done} of {all} covered",
   "meeting.toast.covered": "{item} is covered.",
   "meeting.toast.uncovered": "{item} is not covered yet.",
@@ -497,7 +497,7 @@ const deDE: Table = {
   "starter.phase.month.sub": "Selbst machen, mit jemandem in der Nähe.",
   "starter.phase.count": "{done} von {all}",
   "starter.phase.none": "In diesem Abschnitt steht nichts.",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "{done} von {all} besprochen",
   "meeting.toast.covered": "{item} ist besprochen.",
   "meeting.toast.uncovered": "{item} ist noch nicht besprochen.",
@@ -782,7 +782,7 @@ const frFR: Table = {
   "starter.phase.month.sub": "Faire seul, avec quelqu’un à proximité.",
   "starter.phase.count": "{done} sur {all}",
   "starter.phase.none": "Rien dans cette partie.",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "{done} sur {all} traités",
   "meeting.toast.covered": "{item} est traité.",
   "meeting.toast.uncovered": "{item} n’est pas encore traité.",
@@ -1067,7 +1067,7 @@ const daDK: Table = {
   "starter.phase.month.sub": "Gøre det selv, med nogen i nærheden.",
   "starter.phase.count": "{done} af {all}",
   "starter.phase.none": "Intet i denne del.",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "{done} af {all} gennemgået",
   "meeting.toast.covered": "{item} er gennemgået.",
   "meeting.toast.uncovered": "{item} er ikke gennemgået endnu.",
@@ -1352,7 +1352,7 @@ const csCZ: Table = {
   "starter.phase.month.sub": "Zvládat to samostatně, s někým nablízku.",
   "starter.phase.count": "{done} z {all}",
   "starter.phase.none": "V této části nic není.",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "probráno {done} z {all}",
   "meeting.toast.covered": "{item} je probráno.",
   "meeting.toast.uncovered": "{item} ještě není probráno.",
@@ -1637,7 +1637,7 @@ const zhCN: Table = {
   "starter.phase.month.sub": "独立上手，身边有人照应。",
   "starter.phase.count": "{done}/{all}",
   "starter.phase.none": "这一部分没有内容。",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "已讲 {done}/{all}",
   "meeting.toast.covered": "{item} 已讲完。",
   "meeting.toast.uncovered": "{item} 还没讲。",
@@ -1922,7 +1922,7 @@ const zhTW: Table = {
   "starter.phase.month.sub": "獨立上手，身邊有人照應。",
   "starter.phase.count": "{done}/{all}",
   "starter.phase.none": "這一部分沒有內容。",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "已談 {done}/{all}",
   "meeting.toast.covered": "{item} 已談完。",
   "meeting.toast.uncovered": "{item} 還沒談。",
@@ -2207,7 +2207,7 @@ const arEG: Table = {
   "starter.phase.month.sub": "العمل بمفرده، مع وجود من هو قريب.",
   "starter.phase.count": "{done} من {all}",
   "starter.phase.none": "لا شيء في هذا الجزء.",
-  // T04 (S5): the Team screens' writes and their left-out pieces.
+  // the Team screens' writes and their left-out pieces.
   "meeting.order.covered": "تمت تغطية {done} من {all}",
   "meeting.toast.covered": "تمت تغطية {item}.",
   "meeting.toast.uncovered": "لم تتم تغطية {item} بعد.",

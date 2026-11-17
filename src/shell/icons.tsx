@@ -16,9 +16,9 @@ import { CircleOff, Frown, MessageSquareOff, PackageX, PhoneCall, PhoneOff, Shie
 import { Camera, CircleX, Hourglass, Navigation, RefreshCw, WifiOff } from "lucide-react";
 // Time sheets and training; Vehicles and crew, part A.
 import { BadgeCheck, Fuel, Shield, ShieldX } from "lucide-react";
-// A crew's vehicle for the day (plan 68 S14).
+// A crew's vehicle for the day.
 import { Ban, ChevronsUpDown, Info } from "lucide-react";
-// The signed copy (plan 68 S13).
+// The signed copy.
 import { Download } from "lucide-react";
 // A quote's payments.
 import { Undo2 } from "lucide-react";

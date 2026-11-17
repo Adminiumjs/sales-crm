@@ -1,5 +1,5 @@
 /**
- * "VEHICLE FOR THE DAY" (plan 68 S14, M3 §1): the one vehicle a crew's day
+ * "VEHICLE FOR THE DAY": the one vehicle a crew's day
  * goes on, picked from a list that says of each vehicle how it stands that
  * day (the crew's own, with another crew, hired until a day, not hired that
  * day, another crew's own not in use).

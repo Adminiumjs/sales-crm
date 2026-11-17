@@ -8,7 +8,7 @@
  * crew's van is not there for him, and nothing he makes can name it. A reply
  * lost on its way back is staged on a fill (the same key answers the row the
  * first one made), and a check that gets nowhere kept on the phone and sent
- * by itself (plan 68 S19). What he reports shows on
+ * by itself. What he reports shows on
  * the operations manager's open Vehicles screen without a reload. Everything
  * the spec writes is taken away, so the van's reading is the ledger's again.
  */
@@ -110,7 +110,7 @@ test("My vehicle: his crew's van only, from My day and his menu; the check befor
       expect(refused.status(), `${ref}: ${await refused.text()}`).toBe(409);
     }
 
-    // The check before the day, where nothing gets through though the phone says it has signal (plan 68 S19): kept on the
+    // The check before the day, where nothing gets through though the phone says it has signal: kept on the
     // phone, "No signal" said, nothing saved; sent by itself once a request gets through again.
     const check = page.getByTestId("fl-my-check");
     for (const tick of ["Tyres", "Fluids", "Lights", "Straps"]) await check.getByRole("checkbox", { name: tick }).click();
@@ -154,7 +154,7 @@ test("My vehicle: his crew's van only, from My day and his menu; the check befor
     await fill.getByLabel("Litres").fill("35.5");
     await fill.getByLabel("What it cost (GBP)").fill("51.80");
     await fill.getByLabel("Odometer (km)").fill("118,300");
-    // Said, and still to be saved (the design's fill, plan 68 S19).
+    // Said, and still to be saved (the design's fill).
     await expect(fill.locator("#crm-fl-my-below")).toHaveText("That is less than the vehicle’s last reading Last reading 118,420 km. Check it; you can still save it.");
     await expect(fill.getByTestId("fl-my-fill-go")).toBeEnabled();
     await fill.getByLabel("Odometer (km)").fill("118,650");

@@ -1,7 +1,7 @@
 /**
  * THE APP BY STAGE (`scripts/stage-manifest.mjs`, `stage.json`).
  *
- * A release ships the parts that have screens and no others (ruling R5): the
+ * A release ships the parts that have screens and no others: the
  * rest are not in the file, so an owner cannot tick them and their roles are
  * not offered. Held here:
  *
@@ -224,7 +224,7 @@ describe("stage 1, the first release", () => {
   });
 });
 
-describe("a crew's vehicle for the day comes with Vehicles and crew (plan 68 S14)", () => {
+describe("a crew's vehicle for the day comes with Vehicles and crew", () => {
   it("leaves stage 2 with no van_days, no vehicle on a visit and no occupancy of one, and no stock need a crew reads", () => {
     const two = stage(2).manifest as unknown as { requiredSchema: { tables: { ref: string; occupies?: { resource: string }; columns: { ref: string }[]; belongs?: unknown[] }[] }; roles: { key: string; permissions: string[]; tables?: unknown[] }[] };
     const tables = new Map(two.requiredSchema.tables.map((table) => [table.ref, table]));

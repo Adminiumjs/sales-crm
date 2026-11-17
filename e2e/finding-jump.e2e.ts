@@ -234,7 +234,7 @@ test("Read-only: every deal her role reads, her own menu's screens, nothing to s
   await page.keyboard.press("Escape");
 });
 
-test("in a deal's room Jump also edits the amount and closes the deal, only where the room's own buttons would (S4)", async ({ as, data }) => {
+test("in a deal's room Jump also edits the amount and closes the deal, only where the room's own buttons would", async ({ as, data }) => {
   const context = await as("dana");
   const page = await context.newPage();
   const problems = watch(page);

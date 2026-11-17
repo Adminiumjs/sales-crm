@@ -1,5 +1,5 @@
 /**
- * Plan 67 Part 3 session 9, "Sign in with two-factor on", in Adminium's console with the CRM installed. Corin (the
+ * "Sign in with two-factor on", in Adminium's console with the CRM installed. Corin (the
  * front desk, a sample person) sets up two-factor on Account → Security; the spec takes the setup key the server makes
  * and works out each code itself (RFC 6238, on the stand's own clock, which is not the machine's). Then Corin signs in
  * through the sign-in form: the code step is drawn (on an ordinary connection and on a slow one, throttled through the

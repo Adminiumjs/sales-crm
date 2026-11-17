@@ -1,9 +1,9 @@
 /**
- * Plan 67, P17: THE CONSOLE'S "SALES CRM" SECTION, against the whole server on SQLite, Postgres and
+ * THE CONSOLE'S "SALES CRM" SECTION, against the whole server on SQLite, Postgres and
  * MySQL, with the app's own manifest and its sample, at the ledger's moment, SIGNED IN AS THE
  * PEOPLE IT IS FOR AND AS THE ONES IT IS NOT FOR.
  *
- * - The section's rail is the twelve entries drawn (D10; ruling Q4 of §0.16): Overview, Pipeline,
+ * - The section's rail is the twelve entries drawn: Overview, Pipeline,
  *   Deals, Companies, Contacts, Quotes, Approvals, Enquiries, Jobs, then Rules, Emails and Sample
  *   data under Setup; every other page is kept off it and still opens. Each person is listed only
  *   what they may open.
@@ -310,7 +310,7 @@ for (const [dialect, reachable] of LEGS) {
       for (const person of ['tessa', 'ivy', 'grace']) expect([person, await rail(person)]).toEqual([person, [['', app]]]);
       // A rep: no Overview and no Approvals (she asks; she does not answer).
       expect(await rail('dana')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Quotes', 'Enquiries', 'Jobs']]]);
-      // The account manager: the won deals' board and list, the accounts, and the quotes of a deal he is on (R6, T37).
+      // The account manager: the won deals' board and list, the accounts, and the quotes of a deal he is on.
       expect(await rail('hugo')).toEqual([['', ['Pipeline', 'Deals', 'Companies', 'Contacts', 'Quotes', 'Jobs']]]);
       // The operations manager: Jobs, and with Jobs on (this proof installs every part) the Deals list, whose won deals her
       // jobs are made from (P20's grant, `stage.json`; stage 1 has neither: she reads no deal there).
@@ -321,13 +321,13 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(cards).sort()).toEqual(['by-stage', 'forecast', 'jobs-this-week', 'open-deals', 'open-pipeline', 'reps', 'sitting', 'team-cover', 'unclaimed-enquiries', 'weighted', 'won-this-year']);
       for (const person of ['owner', 'tessa', 'grace']) {
         expect([person, await value(person, 'open-pipeline'), await value(person, 'weighted'), await value(person, 'open-deals'), await value(person, 'won-this-year')]).toEqual([person, 286300, 156562.5, 14, 81600]);
-        // Target cover: 81,600 booked plus 156,562.50 weighted, of 450,000 (§14: 53 %).
+        // Target cover: 81,600 booked plus 156,562.50 weighted, of 450,000 (53 %).
         expect(Math.round(Number(await value(person, 'team-cover')) * 100), person).toBe(53);
         expect([person, await value(person, 'unclaimed-enquiries')]).toEqual([person, 4]);
-        // No job visit is booked in the week of 27 July (§33: the three booked are 4, 5 and 6 August).
+        // No job visit is booked in the week of 27 July (the three booked are 4, 5 and 6 August).
         expect([person, await value(person, 'jobs-this-week')]).toEqual([person, 0]);
       }
-      // Pipeline by stage (§2): each stage's value and weighted value, in the stages' order.
+      // Pipeline by stage: each stage's value and weighted value, in the stages' order.
       const stages = (await answer('owner', cards['by-stage']!)).result as { items: { label: string; values: { value: number; weighted: number } }[] };
       expect(stages.items.map((item) => [item.label, Number(item.values.value), Number(item.values.weighted)])).toEqual([
         ['Discovery', 36350, 3635],
@@ -336,10 +336,10 @@ for (const [dialect, reachable] of LEGS) {
         ['Negotiation', 105400, 79050],
         ['Verbal', 24600, 22140],
       ]);
-      // The forecast by month of expected close (§5): July to October.
+      // The forecast by month of expected close: July to October.
       const months = (await answer('owner', cards['forecast']!)).result as { points: { t: string; v: number }[] };
       expect(months.points.map((point) => [point.t.slice(0, 7), Number(point.v)])).toEqual([['2026-07', 38340], ['2026-08', 87670], ['2026-09', 28212.5], ['2026-10', 2340]]);
-      // The reps (§14): open deals, weighted, booked this year, target, cover; the team's line under them.
+      // The reps: open deals, weighted, booked this year, target, cover; the team's line under them.
       const reps = (await answer('owner', cards['reps']!)).result as { rows: { name: string; open: number; weighted: number; booked: number; target: number; cover: number }[]; totals: Record<string, number> };
       expect(reps.rows.map((row) => [row.name.split(' ')[0], Number(row.open), Number(row.weighted), Number(row.booked), Number(row.target), Math.round(Number(row.cover) * 100)])).toEqual([
         ['Dana', 6, 95740, 28400, 140000, 89],
@@ -348,7 +348,7 @@ for (const [dialect, reachable] of LEGS) {
         ['Sam', 3, 44590, 26400, 130000, 55],
       ]);
       expect([Number(reps.totals['open']), Number(reps.totals['weighted']), Number(reps.totals['booked']), Number(reps.totals['target']), Math.round(Number(reps.totals['cover']) * 100)]).toEqual([14, 156562.5, 81600, 450000, 53]);
-      // Sitting longest (§5, §2): d12 34 days, d5 32, d2 20, then d8 19 and d1 14.
+      // Sitting longest: d12 34 days, d5 32, d2 20, then d8 19 and d1 14.
       const sitting = (await answer('owner', cards['sitting']!)).result as { rows: { name: string; days: number; stage: string }[] };
       expect(sitting.rows.map((row) => [row.name, Number(row.days), row.stage])).toEqual([
         ['Depot supervisor stations', 34, 'Qualified'],
@@ -364,10 +364,10 @@ for (const [dialect, reachable] of LEGS) {
       expect([await value('ivy', 'open-pipeline'), await value('ivy', 'weighted'), await value('ivy', 'open-deals'), await value('ivy', 'won-this-year')]).toEqual([286300, 156562.5, 14, 81600]);
       // …but a row limit holds her, so the whole team's cover and reps are refused, never her part shown as the whole.
       for (const key of ['team-cover', 'reps']) expect([key, (await answer('ivy', cards[key]!)).code]).toEqual([key, 'TEAM_FIGURE_WHOLE_ONLY']);
-      // Dana, a rep, reaches her own (§1, §2): 6 deals, 143,400, 95,740 weighted, 28,400 won this year; the team's two refused.
+      // Dana, a rep, reaches her own: 6 deals, 143,400, 95,740 weighted, 28,400 won this year; the team's two refused.
       expect([await value('dana', 'open-pipeline'), await value('dana', 'weighted'), await value('dana', 'open-deals'), await value('dana', 'won-this-year')]).toEqual([143400, 95740, 6, 28400]);
       for (const key of ['team-cover', 'reps']) expect([key, (await answer('dana', cards[key]!)).code]).toEqual([key, 'TEAM_FIGURE_WHOLE_ONLY']);
-      // Her columns, weighted (§2): Discovery 320, Proposal 24,500, Negotiation 55,800, Verbal 15,120; no deal of hers is Qualified.
+      // Her columns, weighted: Discovery 320, Proposal 24,500, Negotiation 55,800, Verbal 15,120; no deal of hers is Qualified.
       const danas = (await answer('dana', cards['by-stage']!)).result as { items: { label: string; values: { weighted: number } }[] };
       expect(danas.items.map((item) => [item.label, Number(item.values.weighted)])).toEqual([['Discovery', 320], ['Proposal', 24500], ['Negotiation', 55800], ['Verbal', 15120]]);
       // The account manager reads won deals only: no open deal at all, and the whole team's two refused.
@@ -383,11 +383,11 @@ for (const [dialect, reachable] of LEGS) {
       expect(approvals.status).toBe(200);
       const card = (key: string) => approvals.cards.find((one) => one.i === key)!;
       for (const person of ['owner', 'ivy', 'tessa', 'grace']) {
-        // §27: one waiting, Q-1001 v2 (d5, Sam), 10.5 % off list.
+        // One waiting, Q-1001 v2 (d5, Sam), 10.5 % off list.
         // A quote is named as the screens name it: its family's number and its version (the document's own number is Q-1008).
         const waiting = (await answer(person, card('waiting'))).result as { rows: { family_no: string; version: number; number: string; deal: string; under_list_pct: number }[] };
         expect([person, waiting.rows.map((row) => [row.family_no, Number(row.version), row.number, row.deal, Math.round(Number(row.under_list_pct) * 10) / 10])]).toEqual([person, [['Q-1001', 2, 'Q-1008', 'Showroom refit, phase one', 10.5]]]);
-        // §9: the newest sent versions, running out first: Q-1001 ran out on 26 July, Q-1002 runs out on 30 July, Q-1003 on 7 August.
+        // The newest sent versions, running out first: Q-1001 ran out on 26 July, Q-1002 runs out on 30 July, Q-1003 on 7 August.
         const out = (await answer(person, card('running-out'))).result as { rows: { family_no: string; version: number; valid_until: unknown }[] };
         const day = (value: unknown): string => (value instanceof Date ? value.toISOString() : String(value)).slice(0, 10);
         expect([person, out.rows.slice(0, 3).map((row) => [row.family_no, Number(row.version), day(row.valid_until)])]).toEqual([person, [['Q-1001', 1, '2026-07-26'], ['Q-1002', 1, '2026-07-30'], ['Q-1003', 1, '2026-08-07']]]);

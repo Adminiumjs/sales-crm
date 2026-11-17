@@ -1,5 +1,5 @@
 /**
- * HELPING ON A COLLEAGUE'S DEAL (ruling 1d, owner 2026-10-25): a rep listed on
+ * HELPING ON A COLLEAGUE'S DEAL: a rep listed on
  * a deal she does not own ("Also on this deal") reads the deal and everything
  * on it, and comments. She changes nothing else of it: not its stage, amount,
  * contact or close, not its quotes, and she logs nothing on it and books

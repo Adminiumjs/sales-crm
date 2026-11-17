@@ -6,7 +6,7 @@
  * "stale" one, are counts the server makes (the marks are the business's own
  * settings; the cut-off moments are worked out from the server's clock). The
  * design's "typical age" is the server's median of the moment each deal
- * entered its stage (plan 68 S15, E9: of a date, the earlier of the two
+ * entered its stage (of a date, the earlier of the two
  * middle ones), asked beside each stage's count: nothing here sorts rows to
  * find a middle, and the page only counts the days from that moment to now.
  */
@@ -85,7 +85,7 @@ export function Health({ rest = [] }: Partial<ScreenProps>) {
   const [now, setNow] = useState(() => session.now());
   const today = f.dayKey(now);
   const [who, setWho] = useState<string | null>(null);
-  // `stage-health/view/<id>`: narrowed to the person a saved view names (S7).
+  // `stage-health/view/<id>`: narrowed to the person a saved view names.
   const view = useSavedView("health", rest);
   const viewId = view.state === "ready" ? view.view.id : null;
   useEffect(() => {

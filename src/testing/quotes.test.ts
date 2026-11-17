@@ -271,14 +271,14 @@ describe("a version says whether it needs approval, and whether it may be sent",
       ["ask-approval", { approval: "asked" }, ["draft"], ["ask_reason"]],
       ["approve", { approval: "approved" }, ["draft"], ["decision_note"]],
       ["refuse", { approval: "refused" }, ["draft"], ["decision_note"]],
-      // Plan 68 S2: a decision put back to asked, with a note; the decision before it stays in the record's history.
+      // A decision put back to asked, with a note; the decision before it stays in the record's history.
       ["reopen-approval", { approval: "asked" }, ["draft"], ["decision_note"]],
     ]);
     const asked = { column: "approval", values: ["asked"] };
     const decided = { column: "approval", values: ["approved", "refused"] };
     // Who asked is who wrote the reason: a reopen puts the request back to asked and leaves the asker as she was.
     expect(column("quotes", "asked_by_id").rules?.stamp).toEqual({ set: "user-id", on: { column: "ask_reason", filled: true } });
-    // Decided only from asked, never by the asker nor the deal's owner; back to asked only on a draft (E1).
+    // Decided only from asked, never by the asker nor the deal's owner; back to asked only on a draft.
     expect((column("quotes", "approval").rules as { changes?: unknown } | undefined)?.changes).toEqual([
       { to: ["approved", "refused"], from: ["asked"], notBy: ["asked_by_id", "deal_id.owner_id"] },
       { to: ["asked"], from: ["none", "approved", "refused"], while: { column: "status", in: ["draft"] } },
@@ -369,8 +369,8 @@ describe("a version says whether it needs approval, and whether it may be sent",
   it("holds the send to the approval, beside the shape's own condition", () => {
     const send = table("quotes").states?.moves["draft"]?.[0] as Move;
     expect(send.to).toBe("sent");
-    // …and to a version of the same deal it replaces, to somebody with an address to send it to, and to a deal still open
-    // (plan 68 R1a): its state kept in step on the quote, a column the app added.
+    // …and to a version of the same deal it replaces, to somebody with an address to send it to, and to a deal still open:
+    // its state kept in step on the quote, a column the app added.
     expect(send.requires?.where).toEqual([{ column: "total", gt: 0 }, { column: "may_send", eq: 1 }, { column: "replaces_ok", eq: 1 }, { column: "to_email", isNull: false }, { column: "deal_state", eq: "open" }]);
     expect(table("quotes").columns.find((one) => one.ref === "deal_state")?.rules).toEqual({ copy: { via: "deal_id", from: "state", mode: "always", follow: true } });
     expect(shapeConformanceIssues(manifest as never, shapes).map((issue) => `${issue.code}: ${issue.message}`)).toEqual([]);

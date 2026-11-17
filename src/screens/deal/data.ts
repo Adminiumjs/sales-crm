@@ -148,7 +148,7 @@ export interface TimelineData {
   stageChanges: StageChange[];
   amountLines: AmountLine[];
   history: HistoryRow[];
-  /** Who is on the deal, with who added them and on what day (the room passes its own read); and who was taken off, by whom and when (plan 68 S3). */
+  /** Who is on the deal, with who added them and on what day (the room passes its own read); and who was taken off, by whom and when. */
   members?: Member[];
   removedMembers?: Removed<{ user_id?: string | null }>[];
 }

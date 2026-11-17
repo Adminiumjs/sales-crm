@@ -1,5 +1,5 @@
 /**
- * STAGE 2'S SETTINGS ON THE SETTINGS SCREEN (P24, B24): who makes the aftercare calls and how soon each thing of
+ * STAGE 2'S SETTINGS ON THE SETTINGS SCREEN: who makes the aftercare calls and how soon each thing of
  * After the job is due (a tab of its own), a sample's loan and a tired display piece (the showroom's card, Working
  * time), how long a snag has (the Crews tab), and the three parts on the Parts tab. The CRM admin writes them,
  * Read-only reads them and presses nothing, and the server holds every number between its bounds. Runs on a stand of

@@ -1,12 +1,12 @@
 /**
- * A HIRED VEHICLE'S DAYS on Vehicles (plan 68 S14, M3 4a–4g): "Hired {from}
+ * A HIRED VEHICLE'S DAYS on Vehicles: "Hired {from}
  * to {to}" with "Change the hire days", and "Where it goes": each day a crew
  * has it (and a visit then), each opening that day's Route. "Add a hired
  * vehicle" takes its name, plate, model and the two days, every one of them.
  *
  * The server holds a crew's day to the hire days (a day outside them is
  * refused). Shortening the hire past a day already given to a crew is
- * refused here, naming the first such day (M3 BN-5): that day is moved first.
+ * refused here, naming the first such day: that day is moved first.
  */
 import { useState, type ReactNode } from "react";
 

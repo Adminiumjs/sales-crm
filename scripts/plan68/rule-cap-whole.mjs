@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Plan 68, the rule cap (§10.10, owner 2026-10-24): a manifest ships at most 24 rules, and T05 brings
+// The rule cap: a manifest ships at most 24 rules, and vans on the day brought
 // the CRM to 25. `approval-given` and `approval-refused` become one rule, kept under the key `approval-given`: the
 // same change (a quote's approval decided), the same person told (who asked), both shipped switched off.
 // Each notice keeps its words; a branch picks which. `approval-asked` stays its own rule: it ships
 // switched on, and these two are off for the install's owner to switch on.
 //
-// The key stays `approval-given` (T09): an update rewrites a rule of the same key and keeps the owner's switch, so an
+// The key stays `approval-given`: an update rewrites a rule of the same key and keeps the owner's switch, so an
 // install that switched the approval notice on keeps it on (a new key would arrive switched off, and the two old rules
 // would go). `approval-refused` goes, unless its owner edited it; one switched on alone is lost (the bell for "refused").
 //

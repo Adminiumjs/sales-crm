@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Plan 68, phase 5 (T31): a quote's approval threshold is the settings' value, taken when the quote is made. Nobody
+// A quote's approval threshold is the settings' value, taken when the quote is made. Nobody
 // writes it afterwards: a sales manager who could set it to 100 on her own deal's quote would need no approval at all,
 // round the S2 guard that keeps her from deciding her own.
 //

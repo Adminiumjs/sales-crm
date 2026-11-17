@@ -35,14 +35,14 @@ export const BOUNDS: Record<string, readonly [number, number]> = {
   pay_deposit_pct: [1, 99],
   working_day_hours: [4, 12],
   lead_cold_days: [1, 365],
-  // Stage 2's (P24): a sample's loan, a tired display piece, a snag, an aftercare call, a complaint's answer, a claim gone red.
+  // Stage 2's: a sample's loan, a tired display piece, a snag, an aftercare call, a complaint's answer, a claim gone red.
   loan_days: [1, 90],
   display_tired_months: [1, 60],
   snag_days: [1, 90],
   aftercare_days: [1, 365],
   complaint_answer_days: [1, 30],
   claim_red_days: [1, 180],
-  // Stage 3's (P25): when a certificate runs out soon, when a vehicle's inspection is due soon.
+  // Stage 3's: when a certificate runs out soon, when a vehicle's inspection is due soon.
   certificate_warn_days: [1, 180],
   inspection_warn_days: [1, 90],
 };
@@ -178,7 +178,7 @@ export interface StageRow extends Record<string, unknown> {
   label: string;
   odds: number | string;
   position: number;
-  /** Up to five questions, one a line, that Call notes offers for a deal at this stage (plan 68 S11). */
+  /** Up to five questions, one a line, that Call notes offers for a deal at this stage. */
   worth_asking?: string | null;
 }
 
@@ -214,7 +214,7 @@ const OPEN: Condition = { column: "state", op: "eq", value: "open" };
 
 /** The most stages or lost reasons Settings reads (and counts deals for): far more than any business keeps. */
 export const LIST_MOST = 1000;
-/** How many of a list Settings shows before "Show more" (plan 68 X4). */
+/** How many of a list Settings shows before "Show more". */
 export const LIST_PAGE = 50;
 
 /** Every row of a short list, read a page of 200 at a time (a list answers 200 at most), up to {@link LIST_MOST}. */
@@ -256,7 +256,7 @@ export async function readSelling(session: StaffSession, f: Formatters): Promise
   const today = f.dayKey(session.now());
   const [settings, stages, reasons] = await Promise.all([
     readSettings(session),
-    // Every stage and every reason, however many (plan 68 X4): the screen shows them fifty at a time.
+    // Every stage and every reason, however many: the screen shows them fifty at a time.
     everyRow<StageRow>(session, "stages", { select: ["id", "label", "odds", "position", "worth_asking"], order: ["position", "id"] }),
     everyRow<ReasonRow>(session, "lost_reasons", { select: ["id", "label", "position"], order: ["position", "id"] }),
   ]);

@@ -16,7 +16,7 @@ export interface Meeting extends Record<string, unknown> {
   id: number;
   at: string;
   minutes: number;
-  /** Who runs it, stamped by the server when it is made (plan 68 X2); empty on a meeting made before 0.2.2. */
+  /** Who runs it, stamped by the server when it is made; empty on a meeting made before 0.2.2. */
   run_by_id?: string | null;
 }
 export interface Slot extends Record<string, unknown> {
@@ -25,7 +25,7 @@ export interface Slot extends Record<string, unknown> {
   who_id: string | null;
   minutes: number;
   position: number;
-  /** Ticked off in the meeting (T04): yes or no, no on an install updated from before it. */
+  /** Ticked off in the meeting: yes or no, no on an install updated from before it. */
   covered: unknown;
 }
 export interface Decision extends Record<string, unknown> {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Plan 68, phase 4 (T26b): R4a, R4b, R4d, S3, S16 (and X8's test, which needs
- * no manifest change).
+ * Steps read through a plan, a removed message, and what a removal keeps
+ * (and the test that no removed member can be undone, which needs no manifest change).
  *
  * Changes `whole/manifest.json` only (the sample needs no new row: every
  * message it holds is live by the column's default). Finds everything by key

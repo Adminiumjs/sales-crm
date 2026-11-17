@@ -254,7 +254,7 @@ describe("the sample's rows are the ledger's", () => {
     expect(out).toHaveLength(1);
   });
 
-  it("vehicles and crew (§57, §65, §67, §68): fills measured from the reading before each; the subcontractors' spend; the claims", () => {
+  it("vehicles and crew: fills measured from the reading before each; the subcontractors' spend; the claims", () => {
     const fills = rows("fuel_fills");
     // Each fill carries the van's reading before it (its last fill's, or the opening one): the distance is the server's formula.
     const measured = fills.filter((fill) => typeof fill["prev_odometer"] === "number");
@@ -268,13 +268,13 @@ describe("the sample's rows are the ledger's", () => {
       const own = fills.filter((fill) => ref(fill["vehicle_id"]) === van["@label"]).map((fill) => Number(fill["odometer"]));
       expect(Math.max(...own), String(van["@label"])).toBe(van["odometer"]);
     }
-    // §68: five, one not covered (Marek Sowa, 28 days ago), 53 days bought for 17,800; each with an address to ask for a certificate.
+    // Five, one not covered (Marek Sowa, 28 days ago), 53 days bought for 17,800; each with an address to ask for a certificate.
     const subs = rows("subcontractors");
     expect(subs.reduce((total, one) => total + Number(one["days_used"]), 0)).toBe(53);
     expect(subs.reduce((total, one) => total + Number(one["day_rate"]) * Number(one["days_used"]), 0)).toBe(17_800);
     expect(subs.filter((one) => moment(one["insurance_until"])!.day < 0).map((one) => [one["name"], moment(one["insurance_until"])!.day])).toEqual([["Marek Sowa", -28]]);
     for (const one of subs) expect(String(one["email"]), String(one["name"])).toMatch(/^[a-z.]+@[a-z-]+\.example$/);
-    // §67: five incidents, two open; 5,870 claimed, 750 of excess on the settled, 2,160 paid out, 2,960 still claimed.
+    // Five incidents, two open; 5,870 claimed, 750 of excess on the settled, 2,160 paid out, 2,960 still claimed.
     const claims = rows("insurance_incidents");
     const open = claims.filter((one) => one["state"] === "open");
     expect([claims.length, open.length]).toEqual([5, 2]);

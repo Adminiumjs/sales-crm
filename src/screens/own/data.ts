@@ -19,7 +19,7 @@ import type { Formatters } from "../../lib/format.ts";
 import { addDays } from "../../lib/format.ts";
 import { installHeaders, LostReply, StaffError, type Condition, type Grouped, type Saved, type StaffSession } from "../../staffSession.ts";
 
-/* ── The summary rules that write to her, and their state (R7) ───────────── */
+/* ── The summary rules that write to her, and their state ───────────── */
 
 export interface Summary {
   id: string;
@@ -225,7 +225,7 @@ export function reasonsFor(session: Pick<StaffSession, "can" | "part">, slugs: r
   if (ownsDeals && quotes && session.can("quotes", "read")) out.push("quoteRunsOut");
   if (quotes && slugs.includes("crm-sales-manager")) out.push("approvalAsked");
   if (quotes && session.can("quotes", "create")) out.push("approvalAnswered");
-  // The field crew: a visit of today or tomorrow that starts at another time, moves onto those days or comes to his crew (P22).
+  // The field crew: a visit of today or tomorrow that starts at another time, moves onto those days or comes to his crew.
   if (session.part("jobs") && slugs.includes("crm-crew")) out.push("visitChanged");
   return out;
 }
@@ -351,7 +351,7 @@ export async function saveDetails(session: StaffSession, was: Details, choice: D
 
 /** The screens a view can be saved from and reopened on. */
 export type ViewScreen = "pipeline" | "archive" | "quotes" | "visits" | "team" | "week" | "health" | "feed" | "lost";
-// This week, Stage health, the Activity feed and Why we lose take a view too (plan 68 S7). Today narrows nothing: it has none.
+// This week, Stage health, the Activity feed and Why we lose take a view too. Today narrows nothing: it has none.
 export const VIEW_SCREENS: readonly ViewScreen[] = ["pipeline", "archive", "quotes", "visits", "team", "week", "health", "feed", "lost"];
 
 /**
@@ -383,7 +383,7 @@ export interface ViewFilters {
 
 export interface SavedView extends Record<string, unknown> {
   id: number;
-  /** Whose it is: hers (the table is private; a view with no owner, left from before plan 68, is read by nobody). */
+  /** Whose it is: hers (the table is private; a view with no owner, left from an older release, is read by nobody). */
   owner_id: string | null;
   made_by_id: string;
   name: string;
@@ -477,7 +477,7 @@ export async function viewFigure(session: StaffSession, view: SavedView, stages:
 const totalOf = (session: StaffSession, ref: string, where: Condition[]): Promise<number> =>
   session.list(ref, { select: ["id"], ...(where.length === 0 ? {} : { where: { and: where } }), limit: 1, count: "exact" }).then((page) => page.total ?? page.rows.length);
 
-/** Save a view: always her own. Saved views are private (plan 68 D9): a view nobody owns would be read by nobody. */
+/** Save a view: always her own. Saved views are private: a view nobody owns would be read by nobody. */
 export const saveView = (session: StaffSession, name: string, filters: ViewFilters, clientKey: string): Promise<Saved<SavedView>> =>
   session.create<SavedView>("saved_views", { name: name.trim(), filters, owner_id: session.config.user?.id ?? null, pinned: false }, clientKey);
 
@@ -522,8 +522,8 @@ export interface Found {
 }
 
 /**
- * What a saved search looks through, table by table: the words a person reads on the screens. Never the whole row
- * (plan 68 K2): the server's quick search (`q`) looks through EVERY text column of a table, a person's id among them, a
+ * What a saved search looks through, table by table: the words a person reads on the screens. Never the whole row:
+ * the server's quick search (`q`) looks through EVERY text column of a table, a person's id among them, a
  * stage move's key and a save's retry key. A staff id is `usr_` and 26 letters and digits, so "bea" found every deal of
  * somebody whose id held those three letters (each deal names its owner), and a move key in hex found deals at random.
  * And a table whose columns the server had not in hand would have answered every row to `q`, where a named column that

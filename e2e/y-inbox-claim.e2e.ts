@@ -1,5 +1,5 @@
 /**
- * P14, an enquiry turned into a deal ("a new company from here", decision 35).
+ * An enquiry turned into a deal ("a new company from here").
  *
  * WHY THIS FILE RUNS LATE (`y-`). Claiming makes a deal. A deal that has lived
  * a minute cannot be removed by any app role (the rows the rules hang on it
@@ -35,7 +35,7 @@ test("a rep claims an enquiry from a company not on the books: the company, its 
   const admin = await api("tessa");
   await clear(admin, data);
   const before = { companies: (await rows(admin, data, "companies")).length, contacts: (await rows(admin, data, "contacts")).length, open: (await rows(admin, data, "deals", { column: "state", op: "eq", value: "open" })).length };
-  // §28: a claim makes one company, one contact, one deal and one follow-up (on the untouched sample: 9, 13 and 14 become 10, 14 and 15).
+  // A claim makes one company, one contact, one deal and one follow-up (on the untouched sample: 9, 13 and 14 become 10, 14 and 15).
   // The specs before this one may have left a deal of their own behind, so the count is taken here and the claim is held to "one more of each".
   const corin = await api("corin");
   const taken = await corin.post(data("enquiries"), {
@@ -94,7 +94,7 @@ test("a rep claims an enquiry from a company not on the books: the company, its 
     expect(told.deal_id).toBe(deal[0]!.id);
     const steps = await rows<{ text: string; owner_id: string }>(admin, data, "follow_ups", { column: "deal_id", op: "eq", value: deal[0]!.id });
     expect(steps.map((row) => [row.text, row.owner_id])).toEqual([["First call with Hannah Doyle about P14 chairs for a call centre", me]]);
-    // §28: one company, one contact, one deal more.
+    // One company, one contact, one deal more.
     expect({ companies: (await rows(admin, data, "companies")).length, contacts: (await rows(admin, data, "contacts")).length, open: (await rows(admin, data, "deals", { column: "state", op: "eq", value: "open" })).length }).toEqual({ companies: before.companies + 1, contacts: before.contacts + 1, open: before.open + 1 });
 
     // Her inbox says so, and the deal opens from it.

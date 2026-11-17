@@ -1,5 +1,5 @@
 /**
- * Area bundle: **the crew's offline queue** (plan 68 S19): the signal line,
+ * Area bundle: **the crew's offline queue**: the signal line,
  * the pill, the list of what waits on the phone, a refusal on arrival and the
  * office's view of a refused sign-off. A key at a time (see `table.ts`).
  */

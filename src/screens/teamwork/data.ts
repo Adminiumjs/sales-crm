@@ -80,7 +80,7 @@ export function alsoIn(action: Pick<Action, "one_to_one_id" | "meeting_id" | "co
 }
 
 /**
- * Whether the reader ticks this action: one she owns or set (plan 68 R4a/R4b). A rep reads every step of her coaching
+ * Whether the reader ticks this action: one she owns or set. A rep reads every step of her coaching
  * plan and a manager the steps her reps set in their coaching and one-to-ones; the server holds each change to the
  * person the row names as its owner or its setter.
  */

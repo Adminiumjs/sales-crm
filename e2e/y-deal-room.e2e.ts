@@ -1,5 +1,5 @@
 /**
- * P04, the Deal room (ledger §3, §8, §15, §29).
+ * The Deal room.
  *
  * d1 "Fourth-floor desk rows" (Nordwind Logistics, Dana): 52,800 from Q-1002
  * version 1; weighted 39,600 at 75 %; 14 days in Negotiation (warm); opened
@@ -52,7 +52,7 @@ async function retire(api: (person: string) => Promise<APIRequestContext>, data:
     for (const step of await rows<{ id: number }>(admin, data, "follow_ups", { column: "deal_id", op: "eq", value: deal.id })) {
       expect((await admin.delete(data("follow_ups", `/${String(step.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
     }
-    // A visit not yet made would go with the hand-over below (plan 68 R1c): the spec's own are taken away first.
+    // A visit not yet made would go with the hand-over below: the spec's own are taken away first.
     for (const visit of await rows<{ id: number }>(admin, data, "site_visits", { column: "deal_id", op: "eq", value: deal.id })) {
       expect((await admin.delete(data("site_visits", `/${String(visit.id)}?confirm=true`), { headers })).status()).toBeLessThan(300);
     }
@@ -64,8 +64,8 @@ async function retire(api: (person: string) => Promise<APIRequestContext>, data:
 const userId = async (person: APIRequestContext): Promise<string> => ((await (await person.get(`${STAFF}surface-config.json`)).json()) as { user: { id: string } }).user.id;
 const line = (page: Page, text: string | RegExp) => page.locator(".crm-room-line").filter({ hasText: text });
 /**
- * The room's own lines (things logged, changes of stage, quotes) are `n`; who was added to or taken off the deal (plan 68
- * S3) is a line too, and an earlier spec of the run may have changed who is on it, so those are counted apart. The pill
+ * The room's own lines (things logged, changes of stage, quotes) are `n`; who was added to or taken off the deal
+ * is a line too, and an earlier spec of the run may have changed who is on it, so those are counted apart. The pill
  * counts every line.
  */
 async function ownLines(scope: Page, n: number): Promise<void> {
@@ -321,7 +321,7 @@ test("an open deal is worked from its room: the amount typed, the stage, what is
   expect(await said()).toEqual([1, 1, 1]);
   // Asked every five seconds: the rows land a minute after the moves, and Dana's minute of requests is mostly spent by now.
   await expect.poll(async () => (await rows(dana, data, "deal_stage_changes", { column: "deal_id", op: "eq", value: deal.id })).length, { timeout: 200_000, intervals: [5000] }).toBe(3);
-  // Each line names where the deal went from, where to, and who moved it (F21), whatever happened after.
+  // Each line names where the deal went from, where to, and who moved it, whatever happened after.
   const lines = await rows<{ from_stage_id: number | null; to_stage_id: number; by_id: string }>(dana, data, "deal_stage_changes", { column: "deal_id", op: "eq", value: deal.id }, "&order=at,id");
   expect(lines.map((one) => [one.from_stage_id, one.to_stage_id])).toEqual([[null, discovery.id], [discovery.id, qualified.id], [qualified.id, proposal.id]]);
   expect(lines.map((one) => one.by_id)).toEqual([deal.me, deal.me, await userId(ivy)]);
@@ -364,7 +364,7 @@ test("also on this deal: the owner adds a colleague, who then reads it, comments
   await expect(pool).toHaveCount(0);
   const listed = await rows<{ id: number; user_id: string; added_by_id: string; since: string }>(dana, data, "deal_members", { column: "deal_id", op: "eq", value: deal.id });
   expect(listed.map((one) => [one.user_id, one.added_by_id, one.since.slice(0, 10)])).toEqual([[priyaId, deal.me, "2026-07-28"]]);
-  // The timeline says it, on the day (plan 68 S3).
+  // The timeline says it, on the day.
   await expect(line(page, "Priya Raman added by Dana Whitlock.")).toContainText("Tue, Jul 28");
 
   // Priya opens it now, in her own room: marked as on it, with no "Add someone" and no way to take herself or anybody off.
@@ -374,7 +374,7 @@ test("also on this deal: the owner adds a colleague, who then reads it, comments
   await expect(hers.getByRole("heading", { level: 1 })).toHaveText("Room spec: people");
   await expect(hers.getByTestId("room-on").locator(`[data-member="${priyaId}"]`)).toContainText("helping");
   await expect(hers.getByTestId("room-on").getByRole("button")).toHaveCount(0);
-  // She helps (ruling 1d): she reads it all and comments, and Dana makes the changes. Said where she would look for the
+  // She helps: she reads it all and comments, and Dana makes the changes. Said where she would look for the
   // controls, and none of them is drawn: no stage to press, no amount to change, no Close, no composer, no call notes.
   await expect(hers.getByTestId("room-helping")).toHaveText("You’re helping on this deal: Dana makes the changes. You can read all of it and comment.");
   await expect(hers.locator(".crm-room-steps button")).toHaveCount(0);
@@ -411,7 +411,7 @@ test("also on this deal: the owner adds a colleague, who then reads it, comments
   await expect(on).toContainText("Nobody yet.");
   expect((await rows(dana, data, "deal_members", { column: "deal_id", op: "eq", value: deal.id })).length).toBe(0);
   expect((await priya.get(data("deals", `/${String(deal.id)}`))).status()).toBe(404);
-  // The timeline keeps both: who added her, and who took her off and when, read from the deal's removed people (plan 68 S3).
+  // The timeline keeps both: who added her, and who took her off and when, read from the deal's removed people.
   await expect(line(page, "Priya Raman taken off by Dana Whitlock.")).toBeVisible();
   await expect(line(page, "Priya Raman added by Dana Whitlock.")).toHaveCount(0);
   const offUrl = data("deals", `/${String(deal.id)}/removed/${data("deal_members").split("/").pop()!}`);
@@ -606,7 +606,7 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   await expect(threads.first()).toContainText("the number off list is 9.1%");
   await expect(threads.first().locator(".crm-cmt-reply")).toHaveCount(1);
   await expect(threads.first().locator(".crm-cmt-reply")).toContainText("Ivy Sandoval");
-  // When each was written, as the server keeps it (S18): Dana's yesterday evening, Ivy's reply this morning.
+  // When each was written, as the server keeps it: Dana's yesterday evening, Ivy's reply this morning.
   await expect(threads.first().locator(".crm-cmt-head .crm-cmt-when").first()).toHaveText("Yesterday 17:20");
   await expect(threads.first().locator(".crm-cmt-reply .crm-cmt-when")).toHaveText("Today 08:05");
   // Hers to settle; Leo's is not, and the server says the same.
@@ -700,8 +700,8 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   const settled = (await rows<{ settled_at: string | null; settled_by_id: string | null }>(dana, data, "comments", { column: "id", op: "eq", value: stored[0]!.id }))[0]!;
   expect([settled.settled_at !== null, settled.settled_by_id]).toEqual([true, deal.me]);
   await page.getByRole("button", { name: "Show settled" }).click();
-  // WHO SETTLED IS THE SERVER'S (plan 68 R1b): the thread names her, and nobody types it. Dana may not send it at all, nor
-  // may the CRM admin, who changes of a comment only whether it is settled (plan 68 X6): she is stamped as who settled it.
+  // WHO SETTLED IS THE SERVER'S: the thread names her, and nobody types it. Dana may not send it at all, nor
+  // may the CRM admin, who changes of a comment only whether it is settled: she is stamped as who settled it.
   await expect(page.getByTestId("cmt-settled")).toHaveText("Settled by Dana Whitlock");
   const thread = `/${String(stored[0]!.id)}`;
   const typed = await dana.patch(data("comments", thread), { data: { values: { settled_by_id: ivyId } }, headers: await csrf(dana) });
@@ -711,7 +711,7 @@ test("comments: threads and replies, mentions through Adminium's own box, the qu
   expect((await tessa.patch(data("comments", thread), { data: { values: { settled_at: null } }, headers: await csrf(tessa) })).status()).toBe(200);
   const forged = await tessa.patch(data("comments", thread), { data: { values: { settled_at: new Date().toISOString(), settled_by_id: ivyId } }, headers: await csrf(tessa) });
   expect([forged.status(), ((await forged.json()) as { error?: { code?: string } }).error?.code]).toEqual([403, "COLUMN_FORBIDDEN"]);
-  // …and she rewords nobody's comment (plan 68 X6).
+  // …and she rewords nobody's comment.
   expect((await tessa.patch(data("comments", thread), { data: { values: { text: "Spec: reworded by the CRM admin" } }, headers: await csrf(tessa) })).status()).toBe(403);
   expect((await tessa.patch(data("comments", thread), { data: { values: { settled_at: new Date().toISOString() } }, headers: await csrf(tessa) })).status()).toBe(200);
   expect((await rows<{ settled_by_id: string | null }>(dana, data, "comments", { column: "id", op: "eq", value: stored[0]!.id }))[0]!.settled_by_id).toBe(tessaId);
@@ -778,7 +778,7 @@ test("hand a deal over: a rep hands on her own with a note; the server carries h
   await expect(fact(brief, "Expected close")).toHaveText("Aug 14, 2026");
   await expect(fact(brief, "Main contact")).toHaveText("Petra Lindqvist");
   await expect(fact(brief, "Currently")).toHaveText("Dana Whitlock");
-  // Two open follow-ups on it, the first late. What goes with the deal is said before she presses anything (plan 68 R1c):
+  // Two open follow-ups on it, the first late. What goes with the deal is said before she presses anything:
   // her two booked visits (v2, v10) and her two open follow-ups, counted from what she reads.
   await expect(page.getByTestId("hand-steps-title")).toHaveText("2 open follow-ups on it");
   await expect(brief.locator(".crm-hand-steps li")).toHaveCount(2);
@@ -793,7 +793,7 @@ test("hand a deal over: a rep hands on her own with a note; the server carries h
   await expect(who.getByRole("radio")).toHaveText([/Priya$/, /Sam$/, /Leo$/]);
   await expect(page.getByTestId("hand-who-note")).toHaveText("Currently Dana Whitlock. Pick who takes it.");
   // "Tell the new owner" is the rule's real state (off as installed); the introduction to the customer is offered, and on,
-  // since Petra has an address (S1).
+  // since Petra has an address.
   await expect(page.getByTestId("hand-tell")).toHaveText("The new owner is not told: the rule that tells them is switched off. The person who runs this install switches it on.");
   await expect(page.getByTestId("hand-introduce")).toHaveText("Introduce the new owner to the customer by email");
   await expect(page.getByTestId("hand-introduce")).toHaveAttribute("aria-checked", "true");
@@ -862,7 +862,7 @@ test("hand a deal over: a rep hands on her own with a note; the server carries h
   const hersDone = hers.getByTestId("hand-done");
   await expect(hersDone).toContainText("Room spec: handed is Sam Okonjo's now.");
   await expect(hersDone).toContainText("1 open follow-up moved to Sam's queue.");
-  // She left "Introduce Sam" on: the customer gets the introduction once its quarter-hour is up (S1); the spec's deal is
+  // She left "Introduce Sam" on: the customer gets the introduction once its quarter-hour is up; the spec's deal is
   // closed before then, which drops it.
   await expect(hers.getByTestId("hand-introduced")).toHaveText("Ines Vaughan gets an email introducing Sam in a quarter of an hour.");
   const queued = await rows<{ kind: string; status: string }>(await api("tessa"), data, "outbox", { and: [{ column: "deal_id", op: "eq", value: deal.id }, { column: "kind", op: "eq", value: "handover-intro" }] });

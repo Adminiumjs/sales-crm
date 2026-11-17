@@ -1,5 +1,5 @@
 /**
- * Area bundle, second half: **Jobs on site** (P20, P21): the route, the
+ * Area bundle, second half: **Jobs on site**: the route, the
  * office's sign-off, a job's site, the snag list, delivery notes, recycling,
  * and Settings → Crews. `jobs.ts` puts the two halves together.
  */

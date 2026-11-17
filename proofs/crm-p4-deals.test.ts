@@ -1,22 +1,22 @@
 /**
- * Plan 68, phase 4 (T26a): a deal, its hand-over, its approvals and its quotes on Adminium 0.3.35's words, against the
+ * A deal, its hand-over, its approvals and its quotes on Adminium 0.3.35's words, against the
  * whole server with the app's manifest and its sample, on SQLite, Postgres and MySQL, SIGNED IN AS THE PERSON EACH RULE
  * LIMITS, and as the one it lets through:
  *
- *  - R1a (E28): no new quote on a won or a lost deal, by any door; one on an open deal is made; the sample (history)
+ *  - no new quote on a won or a lost deal, by any door; one on an open deal is made; the sample (history)
  *    still brings quotes on won deals;
- *  - R1c (E12): a hand-over moves the old owner's visits not yet made and her open follow-ups to the new owner in its
+ *  - a hand-over moves the old owner's visits not yet made and her open follow-ups to the new owner in its
  *    own write, and nothing else: a made visit, a done follow-up, a helper's and a manager's own rows stay; a clash of
  *    the new owner's own refuses it whole;
- *  - R1d (E11): another team's manager whose rep helps on Dana's deal is refused the deal and every row of it (the
+ *  - another team's manager whose rep helps on Dana's deal is refused the deal and every row of it (the
  *    list, the record, its history, figures and board totals, a search, an export, the bell), the helper's own visit
  *    and follow-up included; the helper reads and comments; the quiet line (the deal's mark) names Dana, no amount;
- *  - S2 (E1): a request is decided only from asked, never by who asked nor by the deal's owner, by PATCH, bulk edit and
+ *  - a request is decided only from asked, never by who asked nor by the deal's owner, by PATCH, bulk edit and
  *    the button; "Reopen it" puts a decision back to asked, keeps the asker, and the decision before stays in history;
- *  - X2 (E1): the sales manager never changes her own target nor her own starter row, and a meeting's decisions only
+ *  - the sales manager never changes her own target nor her own starter row, and a meeting's decisions only
  *    when she runs it;
  *  - E4: a quote and its lines are one write; a line refused refuses the quote;
- *  - ruling 1d (Adminium 0.3.36, `notThrough`): a helper on a deal reads it and everything on it and comments, and
+ *  - helpers (Adminium 0.3.36, `notThrough`): a helper on a deal reads it and everything on it and comments, and
  *    changes, sends, asks, logs, books and adds nothing of it by any door; her own follow-up and visit made before stay
  *    hers; whoever covers for the owner, the owner, the manager and the CRM admin write as before; the account manager
  *    makes his aftercare calls, and hangs no follow-up of his on a deal that is not his.
@@ -417,7 +417,7 @@ for (const [dialect, reachable] of LEGS) {
       const helped = await deal('dana', 'P4 Atrium refit', 'dana', { typed_amount: 61000 });
       expect(said(await post('dana', 'deal_members', { deal_id: helped, user_id: owner('noor') }))).toBe('ok');
       // The helper: she reads the deal and comments on it. Her own visit and follow-up there are made for her (since 0.3.36
-      // a helper books and adds nothing on the deal herself: ruling 1d, proved below).
+      // a helper books and adds nothing on the deal herself, proved below).
       expect((await get('noor', 'deals', `/${String(helped)}`)).statusCode).toBe(200);
       const comment = made(await post('noor', 'comments', { deal_id: helped, text: 'Noor can survey the atrium on Friday' }));
       const noorsVisit = await visit('tessa', helped, 'noor', 6);
@@ -477,7 +477,7 @@ for (const [dialect, reachable] of LEGS) {
       // The helper comments, and her reply is there; she does not hand the deal over or change its amount.
       expect(said(await post('noor', 'comments', { deal_id: helped, parent_id: comment, text: 'Friday at ten' }))).toBe('ok');
 
-      // The bell: Noor asks for a discount on Dana's quote. A helper asks nothing (ruling 1d); while she COVERS for Dana she
+      // The bell: Noor asks for a discount on Dana's quote. A helper asks nothing; while she COVERS for Dana she
       // does. Ivy, who leads the DEAL's owner, is told, and the CRM admin; Omar, Noor's lead, is not.
       type Told = { title: string };
       const toldOf = async (person: string): Promise<number> => ((await s.meta.db.selectFrom('adminium_notifications').select(['title']).where('userId', '=', owner(person)).where('title', 'like', '%needs your approval').execute()) as Told[]).length;
@@ -493,7 +493,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(await keys('ivy', 'quotes', { column: 'asked_at', op: 'not_null' })).toContain(quote);
     });
 
-    it('ruling 1d: a helper reads the deal and comments, and changes, sends, logs, books and adds nothing of it; the cover, the owner, the manager and the CRM admin write', async () => {
+    it('a helper reads the deal and comments, and changes, sends, logs, books and adds nothing of it; the cover, the owner, the manager and the CRM admin write', async () => {
       const del = (person: string, ref: string, key: unknown) => s.app.inject({ method: 'DELETE', url: url(ref, `/${String(key)}?confirm=true`), headers: { cookie: who(person) } });
       const contact = (await ids(`SELECT id FROM ${s.real('contacts')} WHERE company_id = ${String(company)} AND email IS NOT NULL`))[0]!;
       expect(contact, 'the first company has a contact with an address').toBeGreaterThan(0);
@@ -709,7 +709,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(history.body).toContain('approved');
       expect(history.body).toContain('Approved at 25 %');
       expect(said(await press('ivy', 'quotes', danas, 'refuse', 'draft', { decision_note: 'Hold the list price' }))).toBe('ok');
-      // After a refusal the rep changes the version and asks again (plan-67 decision 63): hers to do.
+      // After a refusal the rep changes the version and asks again: hers to do.
       expect(said(await press('dana', 'quotes', danas, 'ask-approval', 'draft', { ask_reason: 'Two fewer panels' }))).toBe('ok');
       expect((await row(danas))['asked_by_id']).toBe(owner('dana'));
       // Back to asked only on a draft: another team's manager reaches none of it to try.

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Plan 68, phase 5 (T31): what the crew types that e-mail 17 prints to the customer (a snag's put-right note) is held to
+// What the crew types that e-mail 17 prints to the customer (a snag's put-right note) is held to
 // plain text, as every other staff text in a customer's mail is (a deal's name, a visit's purpose): no address of any
 // kind, no long run of digits.
 //

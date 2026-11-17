@@ -6,7 +6,7 @@
  *
  * He writes his own days while the week is his (open, or sent back): "Add a
  * day" and "Change" on a line (the design draws the lines read-only, with no
- * way to write one: D6 §5 item 13). The first day he writes makes the week's
+ * way to write one). The first day he writes makes the week's
  * sheet. "Send for sign-off" moves the week on; once sent it is the office's,
  * and once signed off it changes no more. The server holds each of these,
  * and holds him to his own sheet (`proofs/crm-hours.test.ts`).
@@ -14,8 +14,8 @@
  * The totals are the server's, kept on his sheet as the lines are written.
  *
  * With no signal a day, a change and "Send for sign-off" are kept on the
- * phone and sent when the signal is back, in order (plan 68 S19,
- * `hourLines.ts`): a week made on this phone is sent before its days. The
+ * phone and sent when the signal is back, in order
+ * (`hourLines.ts`): a week made on this phone is sent before its days. The
  * days waiting show with "Waiting to send"; the totals stay the server's.
  *
  * Address: `my-hours` (the week just gone), `my-hours/<a day of the week>`.

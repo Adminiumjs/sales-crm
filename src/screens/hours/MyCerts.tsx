@@ -2,7 +2,7 @@
  * MY CERTIFICATES, on the crew's phone (P25, the design's crew My
  * certificates): his own, soonest to run out first, each with its last day,
  * the days left (or since it ran out), a chip when it has run out or runs out
- * within the warning days (one setting, 42 by default: ruling Q12), and the
+ * within the warning days (one setting, 42 by default), and the
  * day of a course the office booked for it. Nothing to press: the office
  * keeps them (Training).
  *

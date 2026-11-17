@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, stage 2: THE FIELD CREW'S PHONE (P22), against the whole server on
+ * Stage 2: THE FIELD CREW'S PHONE, against the whole server on
  * SQLite, Postgres and MySQL, with the app's own manifest and Jobs on site
  * switched on, each try made signed in as the person it is about.
  *
@@ -292,7 +292,7 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.make('yusuf', 'job_visits', { job_id: at.blueJob, kind: 'drop', what: 'More', hours: 1, crew_size: 1 })).statusCode).toBe(403);
     });
 
-    it("lets his phone write down a sign-off refused on arrival, for his crew's visit and a snag that stops that job alone, once a key; read as sign-offs are, changed by nobody (plan 68 S19)", async () => {
+    it("lets his phone write down a sign-off refused on arrival, for his crew's visit and a snag that stops that job alone, once a key; read as sign-offs are, changed by nobody", async () => {
       const { job } = await wonJob('Floor boxes for bay 3');
       expect(said(await s.change('ada', 'jobs', job, { site_name: 'Tandem Robotics' }))).toBe('ok');
       const visitId = await visit(job, 'Test-floor workbenches: return visit', 'blue', 'return');
@@ -374,7 +374,7 @@ for (const [dialect, reachable] of LEGS) {
       await jobs();
       const told = async (who: string): Promise<number> => ((await s.get(who, '/api/v1/me/notifications?limit=100')).json() as { data: { items: { title: string }[] } }).data.items.filter((item) => item.title === 'A sign-off was refused on arrival: Tandem Robotics').length;
       expect([await told('ada'), await told('yusuf'), await told('dana')]).toEqual([1, 0, 0]);
-      // The snag a record names cannot be removed while the record holds it, by the office or the CRM admin (T09)...
+      // The snag a record names cannot be removed while the record holds it, by the office or the CRM admin...
       for (const who of ['ada', 'tessa']) expect((await s.send(who, 'DELETE', url('snags', `/${String(stopper)}?confirm=true`))).statusCode, who).toBe(409);
       // ...and the CRM admin may delete the record (the office may not), after which the snag can go.
       expect((await s.send('ada', 'DELETE', url('refused_sign_offs', `/${String(id)}?confirm=true`))).statusCode).toBeGreaterThanOrEqual(403);
@@ -409,7 +409,7 @@ for (const [dialect, reachable] of LEGS) {
 }
 
 /**
- * WHAT TO LOAD (plan 68 S14): a deal's stock need names the visit its stock goes on, and the crew of that visit reads it
+ * WHAT TO LOAD: a deal's stock need names the visit its stock goes on, and the crew of that visit reads it
  * (`deal_stock_needs.crew_id`, the visit's crew kept by the server). The need's reach is the manifest's own, whether or
  * not Inventory is installed: so Supply is put on here without the add-on (its link to a stock line is a plain number),
  * and Inventory's item name and unit, a grant of the add-on's, are held by the unit tests.
@@ -478,7 +478,7 @@ for (const [dialect, reachable] of LEGS) {
       await s?.close();
     });
 
-    it("refuses a need on a visit of another deal's job, by the office or by moving the need's deal (T09)", async () => {
+    it("refuses a need on a visit of another deal's job, by the office or by moving the need's deal", async () => {
       // Another customer's won deal, its job and a booked visit of Red's.
       const company = Number((await s.rows(`select company_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['company_id']);
       const stage = Number((await s.rows(`select stage_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['stage_id']);
@@ -532,7 +532,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(deal.data).filter((key) => !key.endsWith('_id') && !key.startsWith('_') && !['id', 'name', 'state', 'closed_on', 'job_count'].includes(key))).toEqual([]);
       expect(await ids('grace', 'deal_stock_needs')).toEqual([at.need, at.other].sort((a, b) => a - b));
     });
-    it('a rep helping on a deal reads its stock needs and changes none (ruling 1d); its owner and the office do', async () => {
+    it('a rep helping on a deal reads its stock needs and changes none; its owner and the office do', async () => {
       const company = Number((await s.rows(`select company_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['company_id']);
       const stage = Number((await s.rows(`select stage_id from ${s.t('deals')} where id = ${String(at.deal)}`))[0]!['stage_id']);
       const open = made(await s.make('dana', 'deals', { name: 'Mezzanine shelving', company_id: company, owner_id: s.ids['dana'], stage_id: stage, typed_amount: 12_000 }));

@@ -72,7 +72,7 @@ export function CompanyProfile({ id }: { id: number }) {
             ...((reach === "won" || reach === "count") && data.openEverybody !== null ? [{ key: "deals", label: "acc.cp.fact.deals" as MessageKey, value: f.number(data.openEverybody) }] : []),
             { key: "people", label: "acc.cp.fact.people", value: f.number(num(company.people)) },
           ];
-          // Hers, her team's or nobody's (plan 68 X3): the server holds the rest.
+          // Hers, her team's or nobody's: the server holds the rest.
           const canEdit = data.changeable;
           const canAddPerson = session.can("contacts", "create");
           const showsDeals = reach !== "none";

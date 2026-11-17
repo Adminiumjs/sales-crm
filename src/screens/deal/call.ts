@@ -1,5 +1,5 @@
 /**
- * CALL NOTES, as the screen reads and writes them (ledger §25).
+ * CALL NOTES, as the screen reads and writes them.
  *
  * A call is one row of `activities` (kind `call`), written as the person, on
  * the deal; the server stamps who wrote it and when. Every line of the notes
@@ -69,7 +69,7 @@ export function callText(opening: string | null, notes: string): string {
 
 export interface CallDeal extends Deal {
   stage: string | null;
-  /** The questions the stage's "worth asking" holds, one a line (S11). */
+  /** The questions the stage's "worth asking" holds, one a line. */
   asking?: string | null;
 }
 

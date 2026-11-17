@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Plan 68, phase 4 (T26a): deals, the hand-over, approvals and quotes on the
+ * Deals, the hand-over, approvals and quotes on the
  * engine's new words (Adminium 0.3.35).
  *
- *  - R1a (E28): a quote is made only on an open deal (`quotes` create held to
+ *  - a quote is made only on an open deal (`quotes` create held to
  *    `deal_state = open`); history (imports, the sample) still brings one on a
  *    closed deal.
- *  - R1c (E12): the hand-over carries the OLD owner's booked visits and open
+ *  - the hand-over carries the OLD owner's booked visits and open
  *    follow-ups to the new owner in its own write; anybody else's stay.
- *  - R1d (E11): the sales manager reaches a deal only when somebody she leads
+ *  - the sales manager reaches a deal only when somebody she leads
  *    OWNS it (never through a helper's listing or a cover), and every row that
  *    belongs through a deal by that deal's owner. Two links deep (a quote's
  *    lines, a visit's notes, a job's rows) the parent keeps a copy of the
@@ -97,14 +97,14 @@ for (const [ref, via] of [["quotes", "deal_id"], ["site_visits", "deal_id"], ["j
 }
 if (table("meetings").belongs !== undefined && !sameJson(table("meetings").belongs, [{ column: "run_by_id" }])) fail("meetings already belongs some other way");
 
-/* ─── R1a: a quote is made only on an open deal (E28) ─── */
+/* ─── A quote is made only on an open deal ─── */
 
 quotes.states.create = { requires: { where: [{ column: "deal_state", eq: "open" }] } };
 
-/* ─── R1c: the hand-over carries the old owner's booked visits and open follow-ups (E12) ─── */
+/* ─── The hand-over carries the old owner's booked visits and open follow-ups ─── */
 
 // Booked visits are carried too: the engine places each carried row of a table with `occupies` under its slot's lock,
-// as a single change is placed (plan-68-engine 4a7cf9c1a); the new owner's own clash refuses the whole hand-over
+// as a single change is placed (engine commit 4a7cf9c1a); the new owner's own clash refuses the whole hand-over
 // (409 BOOKING_TAKEN) and nothing moves. `HAND_OVER_CARRIES_VISITS` in src/selling/handover.ts says the same to the
 // sheet, and a unit test holds the two equal.
 const CARRY_VISITS = true;
@@ -113,7 +113,7 @@ handOver.carries = [
   { table: "follow_ups", via: "deal_id", column: "owner_id", where: [{ column: "done", eq: false }] },
 ];
 
-/* ─── R1d: the deal's owner judges every row that belongs through it (E11) ─── */
+/* ─── The deal's owner judges every row that belongs through it ─── */
 
 const OWNER_COPY = {
   ref: "deal_owner_id",

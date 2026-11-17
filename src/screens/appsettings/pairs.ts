@@ -1,6 +1,6 @@
 /**
- * SETTINGS' PAIRS (plan 68 X4): four settings the server keeps on one side of
- * another (E14), each refusal naming BOTH columns (`out-of-range` on each):
+ * SETTINGS' PAIRS: four settings the server keeps on one side of
+ * another, each refusal naming BOTH columns (`out-of-range` on each):
  * warm below stale, the quote's warning below its validity, the working day's
  * start before its end, the showroom's opening before its closing. A screen
  * that saves one of them says the refusal in the reader's words, naming both

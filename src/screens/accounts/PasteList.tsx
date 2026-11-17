@@ -12,14 +12,13 @@
  *  - anybody else has no such line in their menu, and the server refuses them
  *    the import itself.
  *
- * PAST DEALS (plan 68 R5): the CRM admin also brings in deals won and lost
+ * PAST DEALS: the CRM admin also brings in deals won and lost
  * before, in a wizard of their own below (`PasteDeals.tsx`); a closed one
  * needs its closed date. Who ticked "may be emailed", and when, are never a
- * list's to say (R8): the page says so where it explains the columns.
+ * list's to say: the page says so where it explains the columns.
  *
  * WHAT "ALREADY HERE" MEANS. For the CRM admin a company is matched on its
- * name, letter for letter. Everybody else is held to some companies (plan 68
- * X3), and the server matches such a writer's list only on a column no two
+ * name, letter for letter. Everybody else is held to some companies, and the server matches such a writer's list only on a column no two
  * rows share: for them a company is matched on its customer number, and a
  * line with none is a new company (the page says so). A contact is
  * matched on nothing to begin with (two people may share a name), so every
@@ -84,7 +83,7 @@ export function PasteList(_props: ScreenProps) {
   // The CRM admin is whoever may also take a company away; the install's owner counts as her.
   const admin = session.can("companies", "delete");
   const modes = useMemo(() => modesFor(admin, session.can("companies", "update")), [admin, session]);
-  // Past deals are the CRM admin's to bring in (plan 68 R5): the server refuses everybody else the import.
+  // Past deals are the CRM admin's to bring in: the server refuses everybody else the import.
   const mayDeals = admin && session.can("deals", "create");
 
   const props = useMemo<ImportProps | null>(() => {

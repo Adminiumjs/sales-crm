@@ -10,7 +10,7 @@
  * the rep gave it), and whether a renewal's day has come.
  *
  * WHAT A READER SEES OF A DEAL is the server's to cut. The account manager
- * reads a deal only once it is won (ruling R6), so for him an open deal's
+ * reads a deal only once it is won, so for him an open deal's
  * name and amount do not arrive, "open now" is nothing, and a referral whose
  * deal is still open says only that there is one.
  */

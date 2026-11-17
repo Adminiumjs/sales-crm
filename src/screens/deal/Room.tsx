@@ -9,7 +9,7 @@
  * WHAT CAN BE DONE is asked of the server every time; this page only leaves a
  * control out when pressing it could not work (the person's role has no such
  * right, or the deal is closed). A rep HELPING on a colleague's deal reads it
- * all and comments, and changes nothing (ruling 1d, `selling/helping.ts`):
+ * all and comments, and changes nothing (`selling/helping.ts`):
  * the page draws her no control that changes the deal, logs on it or makes a
  * quote, and says plainly that the owner makes the changes.
  *
@@ -243,7 +243,7 @@ export function Room({ id }: { id: string }) {
     const owner = nameOf(deal.owner_id);
     const mine = deal.owner_id !== null && deal.owner_id === me;
     // What was logged and said on a deal: every deal's for the roles that read every deal they open; the account manager's only
-    // on a deal he is on (P23). On a won deal he only reads, neither is his: an empty list must not say "nothing", and the
+    // on a deal he is on. On a won deal he only reads, neither is his: an empty list must not say "nothing", and the
     // comments are not offered.
     const onDeal = mine || members.some((member) => member.user_id === me);
     const readsAll = onDeal || rolesOf((config.access?.roles ?? []).map((role) => role.slug)).some((role) => READS_EVERY_HISTORY.includes(role));

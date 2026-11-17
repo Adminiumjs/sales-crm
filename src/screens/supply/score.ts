@@ -1,5 +1,5 @@
 /**
- * THE SUPPLIER SCORE (plan 68 S12, the design's screen 60), worked out from
+ * THE SUPPLIER SCORE (the design's screen 60), worked out from
  * figures the server counted: a supplier's deliveries of the last 90 days that
  * say whether they were late, how many of them were, how late the late ones
  * were on average, and its warranty claims of the year.

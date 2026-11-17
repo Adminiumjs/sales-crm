@@ -257,7 +257,7 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-/* A list longer than fifty: the rest a press away (plan 68 X4). */
+/* A list longer than fifty: the rest a press away. */
 .crm-ast-more {
   display: flex;
   align-items: center;
@@ -642,7 +642,7 @@
   }
 }
 
-/* A stage's "worth asking" questions (plan 68 S11): a small count button beside its odds. */
+/* A stage's "worth asking" questions: a small count button beside its odds. */
 .crm-ast-asking {
   gap: 6px;
 }

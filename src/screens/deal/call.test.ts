@@ -1,5 +1,5 @@
 /**
- * Call notes (ledger §25): what is picked out of the notes, what is stored,
+ * Call notes: what is picked out of the notes, what is stored,
  * and how a call and its next steps are saved.
  */
 import { describe, expect, it } from "vitest";

@@ -129,7 +129,7 @@ export function Feed({ rest = [] }: Partial<ScreenProps>) {
   const [now, setNow] = useState(() => session.now());
   const [type, setType] = useState<Type>("all");
   const [who, setWho] = useState<string | null>(null);
-  // `activity/view/<id>`: the kind of line and the person a saved view names (S7).
+  // `activity/view/<id>`: the kind of line and the person a saved view names.
   const view = useSavedView("feed", rest);
   const viewId = view.state === "ready" ? view.view.id : null;
   useEffect(() => {

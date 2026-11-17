@@ -1,5 +1,5 @@
 /**
- * Area bundle: **The supplier scorecard** (plan 68 S12, the design's screen
+ * Area bundle: **The supplier scorecard** (the design's screen
  * 60): on time over the last 90 days, late deliveries, claims of the year, the
  * score and its band, read from Inventory's receipts. A key at a time (see
  * `table.ts`); a plural is `one|other` (Czech `one|few|other`, Arabic

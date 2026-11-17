@@ -1,8 +1,8 @@
 /**
- * P11, Nudges (ledger §17): quiet 2 (d8, d12), stuck 2 (d5, d12), soon 1
+ * Nudges: quiet 2 (d8, d12), stuck 2 (d5, d12), soon 1
  * (d6); 4 deals caught of 14 open.
  *
- * Ten of the app's rules ship switched off (ruling R7). Only somebody who may
+ * Ten of the app's rules ship switched off. Only somebody who may
  * manage Adminium's automations reads whether a rule is on: the install's
  * owner is told each rule's real state; the sales manager and the CRM admin
  * are told who decides, and nothing is guessed.

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Plan 68, phase 5 (T31): a sign-off names who signed. A blank name would let e-mail 17 fail once Invoices draws the
+// A sign-off names who signed. A blank name would let e-mail 17 fail once Invoices draws the
 // signed copy (its signer is a required slot); the server refuses it, as the phone's form already did.
 //
 // Run: node scripts/plan68/p5-signer-whole.mjs  (idempotent)

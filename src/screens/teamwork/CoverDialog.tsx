@@ -55,7 +55,7 @@ export function CoverDialog({ edit, who, covers, wide, onClose, onDone }: { edit
     if (!day.test(from)) return t("cover.dlg.err.first");
     if (from < today && (isNew || from !== was.starts_on)) return t("cover.dlg.err.past");
     if (to !== "" && (!day.test(to) || to < from)) return t("cover.dlg.err.order");
-    // A year at most (plan 68 X5, D11): longer is "until further notice", an empty last day. The server holds it too.
+    // A year at most: longer is "until further notice", an empty last day. The server holds it too.
     if (to !== "" && to > addDays(from, COVER_MOST_DAYS)) return t("guards.cover.year");
     const clash = covers.find((one) => one.id !== was?.id && one.owner_id === away && coverState(one, today) !== "over" && from <= (one.ends_on ?? "9999-12-31") && one.starts_on <= (to === "" ? "9999-12-31" : to));
     return clash === undefined ? null : t("cover.dlg.err.taken", { away: firstName(name(away)) });

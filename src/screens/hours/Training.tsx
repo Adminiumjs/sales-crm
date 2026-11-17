@@ -4,7 +4,7 @@
  * site.
  *
  * "Runs out soon" is within the warning days of the settings (42 by default,
- * one setting for this screen and the crew's phone: ruling Q12). Every count
+ * one setting for this screen and the crew's phone). Every count
  * is the server's, for the reader's rows; the browser only says of each
  * certificate whether its last day is before today or within the warning days
  * of it, and how many days that is.

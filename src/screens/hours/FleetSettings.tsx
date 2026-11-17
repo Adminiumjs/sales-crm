@@ -1,7 +1,7 @@
 /**
- * Vehicles and crew's own numbers on the settings row (P25): how many days
+ * Vehicles and crew's own numbers on the settings row: how many days
  * before a certificate runs out it is said to run out soon (Training, and the
- * crew's My certificates: ruling Q12, 42 by default), and how many before a
+ * crew's My certificates; 42 by default), and how many before a
  * vehicle's inspection is due it is said to be due soon. Held between bounds
  * by the server (`rules.validation`, mirrored in `appsettings/data.ts`
  * `BOUNDS`). Shown on the Crews tab while the part is on; the CRM admin's to

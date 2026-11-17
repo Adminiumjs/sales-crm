@@ -831,7 +831,7 @@
   overflow-x: auto;
 }
 
-/* Past deals (plan 68 R5): their own wizard, the numbers a line names, whose they are. */
+/* Past deals: their own wizard, the numbers a line names, whose they are. */
 .crm-acc-im-deals {
   margin-block-start: 36px;
 }

@@ -71,7 +71,7 @@ test("the console's Pipeline as the sales manager and as Dana: the stages in ord
   const stages = await stagesOf(ivyContext.request, data);
   expect(stages.map((stage) => stage.label)).toEqual(["Discovery", "Qualified", "Proposal", "Negotiation", "Verbal"]);
 
-  // The sales manager: the team's 14 deals, £286,300 at full value (ledger §2), and each stage's count, full and weighted.
+  // The sales manager: the team's 14 deals, £286,300 at full value, and each stage's count, full and weighted.
   const ivy = await ivyContext.newPage();
   const problems = watch(ivy);
   await ivy.goto("/p/crm-pipeline");
@@ -98,7 +98,7 @@ test("the console's Pipeline as the sales manager and as Dana: the stages in ord
   await picture(ivy, "zw-board-1-ivy-console");
   expect(problems).toEqual([]);
 
-  // Dana: her own 6 deals, £143,400 (ledger §2: 1 · 0 · 2 · 2 · 1).
+  // Dana: her own 6 deals, £143,400 (1 · 0 · 2 · 2 · 1).
   const dana = await (await as("dana")).newPage();
   await dana.goto("/p/crm-pipeline");
   await expect(columnOf(dana, stages[0]!.id)).toBeVisible();

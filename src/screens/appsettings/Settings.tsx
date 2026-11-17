@@ -2,7 +2,7 @@
  * SETTINGS: how the business works in this app, and which of its parts are
  * in use.
  *
- * WHO OPENS IT (the design's D2, and ruling Q6):
+ * WHO OPENS IT (as the design draws it):
  *  - the CRM admin, and the person who runs the install: five tabs, all of
  *    Selling, Working time and Places theirs to write;
  *  - the sales manager: Selling only, with no tabs. She writes how the team
@@ -34,11 +34,11 @@ const TABS = [
   { id: "places", path: "places", icon: "map-pin", label: "aset.tab.places" },
   { id: "maps", path: "maps", icon: "map", label: "aset.tab.maps" },
   { id: "parts", path: "parts", icon: "blocks", label: "aset.tab.parts" },
-  // The crews, their people and days (F20): with Jobs on site or Vehicles and crew, a later stage's parts.
+  // The crews, their people and days: with Jobs on site or Vehicles and crew, a later stage's parts.
   { id: "crews", path: "crews", icon: "users", label: "jb.tab.crews" },
   // The brochure a website form's enquirer asks for, and who rings them while nobody has claimed the enquiry: with the Inbox.
   { id: "inbox", path: "inbox", icon: "inbox", label: "nav.group.inbox" },
-  // Who makes the aftercare calls, and how soon each thing of the part is due (P24): with After the job.
+  // Who makes the aftercare calls, and how soon each thing of the part is due: with After the job.
   { id: "aftercare", path: "after-the-job", icon: "heart-handshake", label: "nav.group.aftercare" },
 ] as const satisfies readonly { id: string; path: string; icon: string; label: MessageKey }[];
 type TabId = (typeof TABS)[number]["id"];

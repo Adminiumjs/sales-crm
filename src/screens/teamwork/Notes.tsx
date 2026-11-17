@@ -11,7 +11,7 @@
  * read as done in Coaching and in the weekly meeting too, and the other way
  * round.
  *
- * WHAT TO COVER (T04). The record suggests up to four things (read from the
+ * WHAT TO COVER. The record suggests up to four things (read from the
  * deals, the target and the queue, never kept); the manager ticks them off as
  * they are talked through and adds anything else to raise, and the session
  * keeps both with how long it ran. Where an action keeps its session (the

@@ -1,5 +1,5 @@
 /**
- * WHAT TO LOAD for one visit (plan 68 S14, M3 §1 2.8–2.10, 5.3): "Stock for
+ * WHAT TO LOAD for one visit: "Stock for
  * this job" (the deal's needs that go on the visit: Inventory's line, the
  * count and its unit, never what it costs) and "On the delivery note" (its
  * lines, as ordered: what goes on the vehicle before the visit, CD-10). Each

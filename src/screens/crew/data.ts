@@ -1,5 +1,5 @@
 /**
- * THE FIELD CREW'S PHONE (P22): what his screens read, and how a tick, a
+ * THE FIELD CREW'S PHONE: what his screens read, and how a tick, a
  * snag, "put right" and a sign-off are sent.
  *
  * WHAT HE READS. His crew's visits (the server holds him to the visits of the
@@ -13,8 +13,8 @@
  * WHO COUNTS. The server: a day's visits and hours, a snag list's counts. The
  * browser puts a visit under its day and reads a visit's own four ticks.
  *
- * KEPT ON THE PHONE WITH NO SIGNAL (plan 68 S19, replacing ruling Q1's
- * online-only phone). Each save is a line of the offline queue
+ * KEPT ON THE PHONE WITH NO SIGNAL (it was an
+ * online-only phone at first). Each save is a line of the offline queue
  * (`queue.tsx`): sent at once with signal, else kept with its retry key and
  * its files and sent in order when the signal is back.
  *
@@ -218,7 +218,7 @@ export const ticksOpen = (visit: Pick<CrewVisit, "day" | "state">, today: string
  * Whether a visit offers "Sign off the job": a job with no sign-off yet, on a
  * visit that fits or comes back to finish the work (not a drop of goods), on
  * its day or after it. A return visit to a job already signed shows that
- * sign-off instead (B19).
+ * sign-off instead.
  */
 export const offersSignOff = (visit: Pick<CrewVisit, "kind" | "day">, signed: boolean, today: string): boolean => !signed && visit.kind !== "drop" && (dayKeyOf(visit.day) ?? "9999") <= today;
 
@@ -258,7 +258,7 @@ export function telHref(phone: string | null): string | null {
   return `tel:${trimmed.startsWith("+") ? "+" : ""}${digits}`;
 }
 
-/* ─── Saving: each save a line of the phone's offline queue (`queue.tsx`, plan 68 S19) ─── */
+/* ─── Saving: each save a line of the phone's offline queue (`queue.tsx`) ─── */
 
 /** One of the four ticks, set or taken back: a change of the visit, sent at once or kept on the phone. */
 export const tickLine = (visit: Pick<CrewVisit, "id" | "job_id" | "site_name">, tick: Tick, on: boolean): NewLine => ({
@@ -356,7 +356,7 @@ export function snagsAtSigning(open: SignOffDraft["open"]): string {
 export function signOffLine(draft: SignOffDraft, key: string): NewLine {
   const values: Row = { visit_id: draft.visitId, signer_name: draft.signer.trim(), signature: draft.signature, photos: draft.photos.length === 0 ? null : [...draft.photos] };
   CHECKS.forEach((check, i) => (values[check] = draft.checks[i] === true));
-  // What the customer was shown, written with the sign-off: the signed copy prints these (plan 68 S13).
+  // What the customer was shown, written with the sign-off: the signed copy prints these.
   values["snags_at_signing"] = snagsAtSigning(draft.open);
   values["check_words"] = draft.checkWords.map((words) => words.replace(/\s+/g, " ").trim()).join("\n").slice(0, 1000);
   // The extra address goes with the sign-off itself, so a sign-off kept on the phone with no signal keeps it too.

@@ -89,7 +89,7 @@ describe("the working week", () => {
     expect(workingDays("2026-08-15", "2026-08-16")).toBe(0);
     expect(workingDays("2026-08-21", "2026-08-10")).toBe(0);
   });
-  it("counts working days by arithmetic: the same as a day-by-day count, over a year's span, never walking the days (plan 68 X5)", () => {
+  it("counts working days by arithmetic: the same as a day-by-day count, over a year's span, never walking the days", () => {
     const walk = (from: string, to: string, days: ReadonlySet<Day>): number => {
       let n = 0;
       for (let at = Date.parse(`${from}T12:00:00Z`); at <= Date.parse(`${to}T12:00:00Z`); at += 86_400_000) if (days.has(dayOfKey(new Date(at).toISOString().slice(0, 10)))) n += 1;

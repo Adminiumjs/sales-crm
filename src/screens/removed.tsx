@@ -1,5 +1,5 @@
 /**
- * WHAT WAS TAKEN AWAY, AND WHY (plan 68 S3, S16; Adminium's E8).
+ * WHAT WAS TAKEN AWAY, AND WHY (as Adminium keeps a removal).
  *
  * A table that keeps its removed rows (`removal.history`) answers them only
  * through a row they hung on that the reader reads NOW: a deal's people taken

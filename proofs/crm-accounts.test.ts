@@ -1,5 +1,5 @@
 /**
- * Plan 67, P07: what the Accounts screens ask of the server, against the whole server on SQLite,
+ * What the Accounts screens ask of the server, against the whole server on SQLite,
  * Postgres and MySQL, with the app's own manifest and its sample, at the ledger's moment, SIGNED
  * IN AS THE PEOPLE THE SCREENS ARE FOR AND AS THE ONES THEY ARE NOT FOR.
  *
@@ -446,8 +446,8 @@ for (const [dialect, reachable] of LEGS) {
       const paste = 'Number\tName\tSector\tTown\nP07-K\tP07 Kestrel Print\tPrinting\tYork\nP07-V\tP07 Verity Insurance\tInsurance\tDurham\nP07-H\tP07 Halden Foods\tFood\tRipon\n';
       const count = async (table: string, like: string): Promise<number> => Number((await one(`SELECT COUNT(*) AS n FROM ${s.real(table)} WHERE name LIKE '${like}'`))['n']);
 
-      // As the screen offers a rep: a line already here is left as it is, matched on the company's customer number (plan 68
-      // X3 holds her to some companies, and a writer held to some rows matches a list only on a column no two rows share:
+      // As the screen offers a rep: a line already here is left as it is, matched on the company's customer number (the
+      // server holds her to some companies, and a writer held to some rows matches a list only on a column no two rows share:
       // by the name, the server refuses her, which crm-g3 proves).
       expect(await run('dana', paste, 'companies', COLS, { mode: 'skip', matchColumn: 'customer_no' })).toMatchObject({ counts: { new: 3, here: 0, refused: 0 }, stats: { inserted: 3, skipped: 0 } });
       expect(await count('companies', 'P07 %')).toBe(3);
@@ -479,9 +479,9 @@ for (const [dialect, reachable] of LEGS) {
       expect(Number((await one(`SELECT company_id FROM ${s.real('contacts')} WHERE name = 'P07 Ada Lowe'`))['company_id'])).toBe(halden);
       for (const person of ['hugo', 'grace', 'lena']) expect(await run(person, people, 'contacts', CONTACT, { mode: 'insert' }), person).toBe('403 TABLE_FORBIDDEN');
 
-      // MAY BE EMAILED (plan 68 R8, Q1 = A): a list that does not bring the column, or says no, makes contacts at "no"; a yes
-      // brought in is stamped as its bringer's, now. (A blank cell in a brought column is refused as "required" until E23
-      // reads an empty cell as the column's default: phase 4.)
+      // MAY BE EMAILED: a list that does not bring the column, or says no, makes contacts at "no"; a yes
+      // brought in is stamped as its bringer's, now. (A blank cell in a brought column is refused as "required" until the engine
+      // reads an empty cell as the column's default.)
       const asStored = async (name: string) => one(`SELECT may_email, may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE name = '${name}'`);
       const said_no = await run('dana', `Company\tName\tMay\n${String(halden)}\tP07 No Line\tno\n`, 'contacts', [['Company', 'company_id'], ['Name', 'name'], ['May', 'may_email']], { mode: 'insert' });
       const unsaid = await run('dana', `Company\tName\n${String(halden)}\tP07 Unsaid Line\n`, 'contacts', [['Company', 'company_id'], ['Name', 'name']], { mode: 'insert' });
@@ -514,7 +514,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await send('dana', 'PATCH', url('deals', `/${String(id)}`), { values: { company_id: cobalt, contact_id: null } }))).toBe('ok');
     });
 
-    it('a new contact may not be emailed until somebody ticks it, and the server says who and when (R8)', async () => {
+    it('a new contact may not be emailed until somebody ticks it, and the server says who and when', async () => {
       const names = await byName('companies');
       const cobalt = names['Cobalt Legal']!;
       // The sample: six of the thirteen say yes, each ticked by a colleague on a day; the rest say no.
@@ -647,7 +647,7 @@ for (const [dialect, reachable] of LEGS) {
       }
       // The marketer sends the campaigns: she reads who they go to (0.2.3).
       for (const person of ['dana', 'lena']) expect(data(await get(person, url('contacts', '?select=id,name,email&limit=1')))[0]!['email'], person).toMatch(/@/);
-      // A COMPANY'S STREET AND POSTAL CODE ARE NOT PERSONAL (plan 68 R3, ruling 3): every reader of companies is answered them,
+      // A COMPANY'S STREET AND POSTAL CODE ARE NOT PERSONAL: every reader of companies is answered them,
       // Read-only and the marketer included, by a list that names them and by the record, while a contact's e-mail and
       // phone stay kept from those two (above). The sample's Cobalt has no postal code: the CRM admin gives it one first.
       expect(said(await send('tessa', 'PATCH', url('companies', `/${String(cobalt)}`), { values: { postal_code: 'LS1 4BJ' } }))).toBe('ok');
@@ -663,7 +663,7 @@ for (const [dialect, reachable] of LEGS) {
       }
 
       // Changing a company: its rep (Cobalt is Dana's account), the manager and the admin; the account manager not this one
-      // (plan 68 X3, below); Read-only and the marketer are refused.
+      // (below); Read-only and the marketer are refused.
       const town = async (): Promise<string> => String((await one(`SELECT town FROM ${s.real('companies')} WHERE id = ${String(cobalt)}`))['town']);
       for (const person of ['dana', 'ivy', 'tessa']) expect(said(await send(person, 'PATCH', url('companies', `/${String(cobalt)}`), { values: { town: 'Leeds' } })), person).toBe('ok');
       expect(said(await send('hugo', 'PATCH', url('companies', `/${String(cobalt)}`), { values: { town: 'Elsewhere' } }))).toMatch(/^40[34] /);

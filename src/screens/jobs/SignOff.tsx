@@ -7,16 +7,16 @@
  * customer's drawn signature and the photos of the finished work: those are
  * files on a row (engine task T26), which this install does not have yet, so
  * the office signs nothing here and the screen says so. A sign-off once made
- * is never changed, by anybody (F19): a correction would be a new one that
+ * is never changed, by anybody: a correction would be a new one that
  * names it, and the newest stands.
  *
  * Under "Who signed", the signed copy Invoices & Receipts draws, to download
- * (plan 68 S13, `SignedCopy.tsx`): only once it is drawn.
+ * (`SignedCopy.tsx`): only once it is drawn.
  *
  * What the office does here: adds a snag (one that stops the sign-off or not),
  * and keeps a job's site (`SiteDialog`). Addresses: `sign-off/<job>`, and
- * `sign-off/refused/<record>` from the bell (a sign-off refused on arrival,
- * plan 68 S19: `crew/RefusedOffice.tsx`).
+ * `sign-off/refused/<record>` from the bell (a sign-off refused on arrival:
+ * `crew/RefusedOffice.tsx`).
  */
 import { useCallback, useState } from "react";
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Plan 68, phase 4 (T27, E25): the weekly summaries' "cover" counts this year, as the console's Target cover does: open
+// The weekly summaries' "cover" counts this year, as the console's Target cover does: open
 // deals (no closed day yet) and deals won THIS year, against this year's target. Before, it counted every won deal
-// ever (plan-67 decision 135). `within` is the business's calendar year; `orEmpty` keeps the open deals.
+// ever. `within` is the business's calendar year; `orEmpty` keeps the open deals.
 //
 // Run: node scripts/plan68/t27-summaries-whole.mjs  (idempotent; finds everything by key)
 import { readFileSync, writeFileSync } from "node:fs";

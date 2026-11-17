@@ -174,7 +174,7 @@ export function Comments({ id }: { id: string }) {
     }
     again();
   };
-  // Settled is "has a moment it was settled at". Who settled it is the server's: it stamps whoever changes that moment, so the screen sends the moment alone (plan 68 R1b).
+  // Settled is "has a moment it was settled at". Who settled it is the server's: it stamps whoever changes that moment, so the screen sends the moment alone.
   const settle = async (thread: Comment): Promise<void> => {
     setBusy(true);
     const settled = thread.settled_at !== null;

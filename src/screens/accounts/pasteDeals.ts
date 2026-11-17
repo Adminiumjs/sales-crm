@@ -1,5 +1,5 @@
 /**
- * PAST DEALS ON PASTE A LIST (plan 68 R5): what the page does to the
+ * PAST DEALS ON PASTE A LIST: what the page does to the
  * import's calls on their way.
  *
  * WHOSE THE DEALS ARE. A deal names its owner, a person; a list of past deals

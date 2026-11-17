@@ -1,5 +1,5 @@
 /**
- * HIS CREW'S VEHICLE THAT DAY, on My day (plan 68 S14, M3 5a–5e): "{plate} ·
+ * HIS CREW'S VEHICLE THAT DAY, on My day: "{plate} ·
  * {name}", and "Not your usual vehicle today." when the office put the crew's
  * day on another vehicle than its own (a hired one, say). He reads his crew's
  * own days only, and of the vehicle what the day's row keeps of it.

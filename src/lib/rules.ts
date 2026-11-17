@@ -1,5 +1,5 @@
 /**
- * WHETHER A RULE IS SWITCHED ON (ruling R7).
+ * WHETHER A RULE IS SWITCHED ON.
  *
  * Ten of the app's rules tell people (a nudge, a hand-over, the weekly
  * summaries) and ship switched off: whoever runs the install switches them

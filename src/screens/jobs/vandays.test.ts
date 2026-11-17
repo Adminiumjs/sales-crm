@@ -1,6 +1,6 @@
 /**
- * How the booking dialog and the Day sheet say a vehicle stands for a crew's day (plan 68 S14, M3 §7), on the
- * sample of M3: Blue on YJ19 KPX, Red on the hired ML24 VDR (hired Mon 27 Jul to Fri 14 Aug) on Wed 5 Aug.
+ * How the booking dialog and the Day sheet say a vehicle stands for a crew's day, on the
+ * vehicle-days sample: Blue on YJ19 KPX, Red on the hired ML24 VDR (hired Mon 27 Jul to Fri 14 Aug) on Wed 5 Aug.
  */
 import { describe, expect, it } from "vitest";
 
@@ -48,13 +48,13 @@ describe("a vehicle for a crew's day", () => {
     expect(refusalOf(left, 1, BLUE, "2026-08-06")).toBeNull();
   });
 
-  it("defaults a crew's day to its row's vehicle, else to its own (CD-8, CD-9)", () => {
+  it("defaults a crew's day to its row's vehicle, else to its own", () => {
     expect(defaultVehicle(SAMPLE, RED, "2026-08-05")).toBe(3);
     expect(defaultVehicle(SAMPLE, RED, "2026-08-06")).toBe(2);
     expect(defaultVehicle(SAMPLE, null, "2026-08-06")).toBeNull();
   });
 
-  it("counts the days past a vehicle's service on the office's today (CD-11)", () => {
+  it("counts the days past a vehicle's service on the office's today", () => {
     expect(serviceOver(RED_VAN, "2026-07-28")).toBe(8);
     expect(serviceOver(BLUE_VAN, "2026-07-28")).toBe(0);
     expect(serviceOver(HIRED, "2026-07-28")).toBe(0);

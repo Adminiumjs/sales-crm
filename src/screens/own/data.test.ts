@@ -21,7 +21,7 @@ const MANAGER = REP;
 const ACCOUNT = { deals: ["read"], follow_ups: ["read", "create", "update"] };
 const MARKETER = { enquiries: ["read", "create"], companies: ["read"] };
 
-describe("the state of a rule, as far as a person can be told (R7)", () => {
+describe("the state of a rule, as far as a person can be told", () => {
   it("is on or off when the server says, and not known otherwise", () => {
     expect(ruleState({ enabled: true })).toBe("on");
     expect(ruleState({ enabled: false })).toBe("off");
@@ -32,7 +32,7 @@ describe("the state of a rule, as far as a person can be told (R7)", () => {
   });
 });
 
-describe("what can reach a person, cut to her roles and parts (P26)", () => {
+describe("what can reach a person, cut to her roles and parts", () => {
   it("lists for a rep what a rule can tell a rep, and no approval put to her", () => {
     expect(reasonsFor(person(REP), ["crm-rep"])).toEqual(["followUp", "nudge", "handedOver", "quoteRunsOut", "approvalAnswered"]);
     expect(kindsFor(person(REP), ["crm-rep"])).toEqual(["mention", "automation.notice"]);
@@ -40,7 +40,7 @@ describe("what can reach a person, cut to her roles and parts (P26)", () => {
   it("adds the approval asked for the sales manager", () => {
     expect(reasonsFor(person(MANAGER), ["crm-sales-manager"])).toContain("approvalAsked");
   });
-  it("lists for the field crew the change of a visit of his, while Jobs on site is on, and nothing else (P22)", () => {
+  it("lists for the field crew the change of a visit of his, while Jobs on site is on, and nothing else", () => {
     const CREW = { job_visits: ["read", "update"], snags: ["read", "create", "update"], sign_offs: ["read", "create"] };
     expect(reasonsFor(person(CREW), ["crm-crew"])).toEqual(["visitChanged"]);
     expect(kindsFor(person(CREW), ["crm-crew"])).toEqual(["mention", "automation.notice"]);
@@ -150,7 +150,7 @@ describe("a saved view's filters", () => {
   });
 });
 
-describe("a saved search looks through the words a person reads, and no id, key or hash (plan 68 K2)", () => {
+describe("a saved search looks through the words a person reads, and no id, key or hash", () => {
   it("names its columns, case aside, with the typed % _ and \\ taken as typed", () => {
     expect(wordsIn(["name", "town"], "bea")).toEqual({ or: [{ column: "name", op: "ilike", value: "%bea%" }, { column: "town", op: "ilike", value: "%bea%" }] });
     expect(wordsIn(["name"], "50%_a\\b")).toEqual({ or: [{ column: "name", op: "ilike", value: "%50\\%\\_a\\\\b%" }] });

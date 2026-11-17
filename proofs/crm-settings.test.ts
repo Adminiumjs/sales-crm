@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, F18 and F20 (their stage-1 part): SETTINGS, PLACES AND THE ROWS A
+ * Stage 1: SETTINGS, PLACES AND THE ROWS A
  * BUSINESS SETS UP FIRST, against the whole server on SQLite, Postgres and
  * MySQL, with the app's own manifest, each try made signed in as the person it
  * is about.
@@ -45,7 +45,7 @@ const LEGAL: Record<string, unknown> = {
   depot_name: 'North depot', depot_address: 'Unit 9\nCanal Road', depot_town: 'Bradford', depot_region: 'West Yorkshire', depot_postal_code: 'BD1 4SJ', depot_country: 'GB', depot_lat: 53.79, depot_lng: -1.75,
   depot_place: { lat: 53.79, lng: -1.75 }, distance_unit: 'miles', loan_days: 10, aftercare_days: 21, complaint_answer_days: 2, snag_days: 4, lead_cold_days: 10, certificate_warn_days: 30,
   display_tired_months: 8, claim_red_days: 14, inspection_warn_days: 21, delivery_emails: false, office_phone: '0113 496 0199',
-  // The showroom's (P19): its hours, its address and its e-mails' switch, the CRM admin's alone.
+  // The showroom's: its hours, its address and its e-mails' switch, the CRM admin's alone.
   showroom_emails: false, showroom_opens: '10:00', showroom_closes: '18:00', showroom_address: 'Unit 2, Aire Works, Leeds',
   // The brochure a website form's enquirer asks for: its link, the CRM admin's alone.
   brochure_link: 'https://meridian-workplace.com/brochure.pdf',

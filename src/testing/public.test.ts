@@ -1,6 +1,6 @@
 /**
  * What the app opens to somebody with no account: one quote by its own link,
- * and nothing of the business's side of it (F16).
+ * and nothing of the business's side of it.
  */
 import { describe, expect, it } from "vitest";
 

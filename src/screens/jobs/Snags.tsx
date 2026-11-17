@@ -1,7 +1,7 @@
 /**
  * THE JOB SNAG LIST (ledger screen 48): what is not right after the crew has
  * gone, open ones first. Logged here by the office, on the sign-off by the
- * office, and on the crew's phone (P22).
+ * office, and on the crew's phone.
  *
  * Every count is the server's (`readSnagFigures`). A snag is put right with a
  * line of what was done (the move asks for it, at the server), and may wait

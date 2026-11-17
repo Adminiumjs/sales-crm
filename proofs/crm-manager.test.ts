@@ -1,5 +1,5 @@
 /**
- * Plan 67, P11: what the manager's screens ask of the server, against the whole server on SQLite,
+ * What the manager's screens ask of the server, against the whole server on SQLite,
  * Postgres and MySQL, with the app's own manifest and its sample, at the ledger's moment, SIGNED
  * IN AS THE PEOPLE THE SCREENS ARE FOR AND AS THE ONES THEY ARE NOT FOR.
  *
@@ -401,12 +401,12 @@ for (const [dialect, reachable] of LEGS) {
       const steps = [{ column: 'owner_id', op: 'eq', value: s.id['dana'] }, { column: 'kind', op: 'eq', value: 'step' }, { column: 'done', op: 'eq', value: false }];
       expect((await list('ivy', 'follow_ups', { and: steps })).total).toBe(7);
       expect((await list('ivy', 'follow_ups', { and: [...steps, { column: 'due_at', op: 'lt', value: LEDGER_NOW }] })).total).toBe(3);
-      // The account manager (ruling R6): no open deal and no lost one, by a list or by a figure.
+      // The account manager: no open deal and no lost one, by a list or by a figure.
       expect([await count('hugo', 'deals', [OPEN]), await count('hugo', 'deals', [{ column: 'state', op: 'eq', value: 'lost' }]), await count('hugo', 'deals', [{ column: 'state', op: 'eq', value: 'won' }])]).toEqual([0, 0, 8]);
       expect((await list('hugo', 'deals', { column: 'state', op: 'in', value: ['open', 'lost'] })).total).toBe(0);
     });
 
-    it('T04 (S5): a coaching area\'s live number is a figure the server answers over the rep\'s own work, the same to her and her manager', async () => {
+    it('a coaching area\'s live number is a figure the server answers over the rep\'s own work, the same to her and her manager', async () => {
       const dana = s.id['dana']!;
       // The sample measures Dana's two areas by her late follow-ups and her days from open to won; Sam's first by Discovery.
       const measures = (await s.rows(`SELECT a.title, a.measure FROM ${s.real('coaching_areas')} a WHERE a.rep_id = '${dana}' ORDER BY a.position`)).map((row) => row['measure']);
@@ -450,7 +450,7 @@ for (const [dialect, reachable] of LEGS) {
       };
       for (const person of ['lena', 'corin']) for (const table of TABLES) await tried(person, table);
       await tried('hugo', 'nudge_snoozes');
-      // The account manager reads the notes and history of a deal he is on (R6, T37), and he is on none: nothing, by a list and by a figure.
+      // The account manager reads the notes and history of a deal he is on, and he is on none: nothing, by a list and by a figure.
       for (const table of ['activities', 'deal_stage_changes', 'deal_amount_changes']) {
         const read = await get('hugo', url(table, '?limit=1'));
         const fig = await asked('hugo', table, { shape: 'single-metric', aggregations: [{ fn: 'count', alias: 'n' }] });

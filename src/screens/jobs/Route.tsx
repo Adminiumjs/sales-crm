@@ -11,7 +11,7 @@
  * between two places known only as the same town is "unknown", never 0
  * (T25's rule). The whole way is given only when every leg has a length.
  *
- * A stop sits where its JOB is (B15), not on the customer's pin; dragging it
+ * A stop sits where its JOB is, not on the customer's pin; dragging it
  * puts the job's place on the street, for whoever may change a job (the
  * operations manager, the CRM admin). The depot is the CRM admin's to move,
  * in Settings → Places, and here too.
@@ -193,7 +193,7 @@ function Way({ day, crewId, visits, jobs, crews, onSaved }: { day: string; crewI
     [session, day, crewId, visits.map((visit) => `${visit.id}:${String(visit.hours)}`).join(",")],
   );
   const onSite = figures.state === "ready" ? figures.data.hours : null;
-  // The crew's vehicle that day (plan 68 S14): the head names it, from the day's own row.
+  // The crew's vehicle that day: the head names it, from the day's own row.
   const { load: vanLoad, reload: reloadVan } = useLoad(() => (hasVanDays(session) ? readVanDays(session, day, day) : Promise.resolve([])), [session, day]);
   useLive(hasVanDays(session) ? ["van_days"] : [], reloadVan);
   const vanDay = vanLoad.state === "ready" ? rowOf(vanLoad.data, crewId, day) : undefined;

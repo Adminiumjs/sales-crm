@@ -1,5 +1,5 @@
 /**
- * VEHICLES AND CREW, part A (P25): what the office's four screens and the
+ * VEHICLES AND CREW, part A: what the office's four screens and the
  * crew's "My vehicle" read, and how they save.
  *
  * WHO COUNTS. The server. Every count and sum on these screens is a figure
@@ -7,7 +7,7 @@
  * roles reach: a crew member's figures are his own van's. The browser
  * divides two of them (a cost per unit of distance, litres per hundred) and
  * subtracts a day from the server's own today (days over, days to go), and
- * nothing else (§1). A fill's distance is the server's own formula (the
+ * nothing else. A fill's distance is the server's own formula (the
  * fill's reading less the van's reading before it, copied onto the fill when
  * it is made), so "the distance measured" is a sum, not a sum of
  * differences worked out here.
@@ -37,7 +37,7 @@ export interface Vehicle extends Row {
   service_due: string | null;
   tax_to: string | null;
   hired: boolean | number;
-  /** A hired vehicle's days (plan 68 S14); empty for our own. Not read by the crew (the office's columns). */
+  /** A hired vehicle's days; empty for our own. Not read by the crew (the office's columns). */
   hired_from?: string | null;
   hired_to?: string | null;
 }
@@ -292,7 +292,7 @@ export async function readFuelFigures(session: StaffSession, today: string, mont
   };
 }
 
-/** A share of two server figures, or null when the second is nothing (the browser may divide two figures, §1). */
+/** A share of two server figures, or null when the second is nothing (the browser may divide two figures). */
 export const per = (part: number, whole: number): number | null => (whole <= 0 ? null : part / whole);
 
 /** What a fill is saved with, from the phone. */
@@ -473,5 +473,5 @@ export const incidentValues = (draft: IncidentDraft): Row => ({
   paid: draft.paid,
 });
 
-/** Whole days from a day key to the server's today (a time subtracted from the server's now, §1). */
+/** Whole days from a day key to the server's today (a time subtracted from the server's now). */
 export const daysSince = (f: Pick<Formatters, "dayDiff">, day: string, today: string): number => f.dayDiff(noonOf(day), noonOf(today));

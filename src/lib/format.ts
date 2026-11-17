@@ -176,7 +176,7 @@ export function monthOf(dayKey: string): [string, string] {
 
 /** The days of the week, from Monday, as Settings names them (`settings.week_starts`). */
 const WEEK_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-/** The business's first day of the week (plan 68 S9), as an offset from Monday: read once when the app opens, and when Settings changes it. */
+/** The business's first day of the week, as an offset from Monday: read once when the app opens, and when Settings changes it. */
 let weekStart = 0;
 
 /** Say which day the business's week starts on (`mon` … `sun`); anything else is Monday. */

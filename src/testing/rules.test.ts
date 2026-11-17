@@ -74,13 +74,13 @@ describe("the rules the app ships", () => {
   const TELLS = ["nudge-quiet", "nudge-stuck", "nudge-soon", "follow-up-due", "quote-runs-out", "deal-handed-over", "approval-given", "week-rep", "week-manager"];
   // Jobs on site tells a crew at once that today's or tomorrow's sheet changed (e-mail 10). It arrives with its part, which an
   // update brings switched off; the rule is on, so the day the owner switches the part on the crew is told.
-  // A crew the visit LEFT is told too (plan 68 D17): two rules note it for that crew, one tells them.
+  // A crew the visit LEFT is told too: two rules note it for that crew, one tells them.
   const CREW = ["day-sheet-changed", "day-sheet-crew", "day-sheet-moved", "day-sheet-left-waiting", "day-sheet-left-removed", "day-sheet-left-told"];
   // After the job books the aftercare call a signed-off job is owed (rule 16): on, as its part brings it.
   const AFTER = ["aftercare-call"];
-  // A sign-off refused on arrival tells the operations manager (plan 68 S19): on, as its part brings it.
+  // A sign-off refused on arrival tells the operations manager: on, as its part brings it.
   const OFFICE = ["sign-off-refused"];
-  // A customer's yes on a lost deal tells its owner (plan 68 R1a): it tells people, and ships on (D2).
+  // A customer's yes on a lost deal tells its owner: it tells people, and ships on.
   const YES = ["quote-yes-on-lost"];
   // The brochure a website form's enquirer asks for, and the call two days on: it writes to a stranger, so it ships off.
   const BROCHURE = ["brochure-asked"];
@@ -108,7 +108,7 @@ describe("the rules the app ships", () => {
   const notYet = (key: string) => ({ left: { count: { table: "deal_stage_changes", matchColumn: "move_key", equalsField: key } }, op: "is", right: 0 });
   const historyOf = (key: string) => walked(key).filter((node) => node.id !== "t" && node.id !== "mark").map((node) => [node.id, node.kind, node.action ?? node.condition]);
 
-  it("a customer's yes on a lost deal tells the deal's owner, in the bell, and nobody else (R1a)", () => {
+  it("a customer's yes on a lost deal tells the deal's owner, in the bell, and nobody else", () => {
     expect(rule("quote-yes-on-lost").trigger).toEqual({
       kind: "record",
       event: "updated",
@@ -194,7 +194,7 @@ describe("the rules the app ships", () => {
     // The order is the mechanism: a stamp reads the row as the stamps BEFORE it left it, so each copy sits before its source.
     const at = (ref: string) => deals.findIndex((one) => one.ref === ref);
     for (const [copy, source] of [["prev_from_stage_id", "stage_from_id"], ["prev_by_id", "stage_by_id"], ["prev_at", "entered_stage_at"], ["stage_from_id", "stage_kept_id"]] as const) expect(at(copy), `${copy} before ${source}`).toBeLessThan(at(source));
-    // Nobody types any of them, the CRM admin included (plan 68 X6): every role that changes a deal says what it writes.
+    // Nobody types any of them, the CRM admin included: every role that changes a deal says what it writes.
     const roles = (manifest as unknown as { roles: { key: string; permissions: string[]; limits?: Record<string, { writable?: string[] }> }[] }).roles;
     for (const role of roles.filter((one) => one.permissions.includes("table:@deals:update"))) expect(role.limits?.["deals"]?.writable, role.key).toBeDefined();
     for (const role of roles.filter((one) => one.limits?.["deals"]?.writable !== undefined)) for (const ref of [...Object.keys(kept), "first_stage_id", "opened_by_id", "opened_at", "was_move_key", "was_from_stage"]) expect(role.limits!["deals"]!.writable, `${role.key} ${ref}`).not.toContain(ref);
@@ -285,7 +285,7 @@ describe("the rules the app ships", () => {
     expect(rule("quote-runs-out").trigger.forEach).toMatchObject({ table: "quotes", once: "per-spell" });
     expect(to("deal-handed-over")).toEqual({ column: "owner_id" });
     expect(rule("deal-handed-over").trigger).toEqual({ kind: "record", event: "updated", table: "deals", changedColumn: "owner_id" });
-    // Given or refused, one rule (the 24-rule cap, plan 68 §10.10): decided only, the asker told which.
+    // Given or refused, one rule (the 24-rule cap): decided only, the asker told which.
     expect(rule("approval-given").trigger).toEqual({
       kind: "record",
       event: "updated",
@@ -417,7 +417,7 @@ describe("the e-mails the app ships", () => {
         expect(block.data.text, `${key} ${locale}`).toContain(`{{${name}}}`);
       }
     }
-    // A showroom booking (P19): day, time, space, how many; what they come to see and where the showroom is, each only when it is known.
+    // A showroom booking: day, time, space, how many; what they come to see and where the showroom is, each only when it is known.
     expect(shape("crm-showroom-confirmed")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text", "email.text"]);
     expect(shape("crm-showroom-moved")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
     expect(shape("crm-showroom-cancelled")).toEqual(["email.heading", "email.text", "email.tax-breakdown", "email.text"]);
@@ -460,7 +460,7 @@ describe("the e-mails the app ships", () => {
     expect(staffSide.records).toEqual({ deals: "/deals/{id}", quotes: "/quotes/{id}", companies: "/companies/{id}", contacts: "/contacts/{id}", site_visits: "/visits/notes/{id}", refused_sign_offs: "/sign-off/refused/{id}" });
     // Every rule that tells people is about one of them, about a follow-up (which has no screen of its own), or about a
     // visit to a job, told to its crew (whose phone screens arrive with the crew's part of stage 2, P22), or about a sign-off
-    // refused on arrival, which opens the office's Sign-off at its job (plan 68 S19).
+    // refused on arrival, which opens the office's Sign-off at its job.
     const told = new Set(m.automations.filter((one) => steps(one.key).some((step) => step.kind === "notification")).map((one) => one.trigger.table ?? one.trigger.forEach?.table));
     expect([...told].sort()).toEqual(["deals", "follow_ups", "job_visits", "quotes", "refused_sign_offs"]);
   });

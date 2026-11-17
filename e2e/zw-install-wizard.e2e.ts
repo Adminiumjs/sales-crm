@@ -3,7 +3,7 @@
  * staged and nothing is installed (`CRM_STAND_INSTALL=0`). One install per stand run: the first test only looks at the
  * check step, the second installs (the file's order, one worker):
  *
- *  1. Plan 67 gate G2, "Parts at install and after", the install half: the check step shows a tick for each part that
+ *  1. "Parts at install and after", the install half: the check step shows a tick for each part that
  *     can be switched (Selling, Accounts and The team always on), Quotes and Supply under the add-on each is built on,
  *     Quotes greyed and waiting once Invoices is unticked (Supply, whose tables are the app's own, stays ticked under a
  *     group that says it waits for Inventory); the maps question; the sample offered.

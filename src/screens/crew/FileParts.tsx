@@ -12,7 +12,7 @@
  * `round` going up mounts the part afresh, empty: after a refused sign-off
  * whose files were thrown away, the pad must not keep showing one.
  *
- * FILES STAY ON THE PHONE (plan 68 S19). The parts are given the offline
+ * FILES STAY ON THE PHONE. The parts are given the offline
  * queue's `fetch`: what they "send" is kept on the phone under a `phone_…` id,
  * and the queue sends it, first, when the save naming it goes. A part's own
  * "take it out" throws the phone's copy away.

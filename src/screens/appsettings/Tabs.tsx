@@ -126,7 +126,7 @@ export function WorkingTime({ session, f, rights }: { session: StaffSession; f: 
                   </div>
                 </Card>
               )}
-              {/* The showroom's spaces, hours, address and e-mails: once Showroom and samples is on (P19). */}
+              {/* The showroom's spaces, hours, address and e-mails: once Showroom and samples is on. */}
               {session.config.modules?.["showroom"] === true && <ShowroomSettings session={session} can={can} />}
               {session.config.modules?.["showroom"] === true && (
                 <SettingNumbers
@@ -431,7 +431,7 @@ export function Parts({ session, f }: { session: StaffSession; f: Formatters }) 
   // The parts this install has: the ones its config names. A later stage's parts arrive with that stage, and are not listed before.
   const shown = useMemo(() => PARTS.filter((part) => known === null || known[part.id] !== undefined), [known]);
   const on = shown.filter((part) => session.part(part.id)).length;
-  // No sample top-up after an update (plan 68 R6): the person who can do it is told how to see the new parts with sample rows.
+  // No sample top-up after an update: the person who can do it is told how to see the new parts with sample rows.
   const afterSample = useAfterSample(session, owner, shown);
   return (
     <div role="tabpanel" aria-label={t("aset.tab.parts")} className="crm-ast-panel" data-panel="parts">

@@ -1,7 +1,7 @@
 /**
  * THE ACCOUNT MANAGER'S HOME: what needs him now, soonest first.
  *
- * At this stage he reads a deal only once it is won (ruling R6), so nothing
+ * At this stage he reads a deal only once it is won, so nothing
  * here speaks of an open deal: renewal ideas whose day has come or is coming,
  * introductions nobody has thanked for, and how many reorders are expected.
  * Aftercare calls, complaints and customers' answers join this page with

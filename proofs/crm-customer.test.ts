@@ -1,5 +1,5 @@
 /**
- * Plan 67, F16: the customer's door. Somebody with no account opens ONE quote by the code of its
+ * The customer's door. Somebody with no account opens ONE quote by the code of its
  * own link, reads the quote's own figures and nothing of the business's side, and answers it once:
  * Accept (with a name) or Decline, while it is still in date. Against the whole server, on SQLite,
  * Postgres and MySQL, with the app installed through its routes and its sample in.
@@ -317,7 +317,7 @@ for (const [dialect, reachable] of LEGS) {
       refs = { quotes: named(s.real('quotes')), lines: named(s.real('quote_lines')) };
       item = made(await post('ivy', 'price_list', { name: 'Stacking chair', list_rate: 100 }));
       deal = Number((await one(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id`))['id']);
-      // A contact of the deal's own company, with an address: a quote names nobody else (S6).
+      // A contact of the deal's own company, with an address: a quote names nobody else.
       contact = Number((await one(`SELECT c.id FROM ${s.real('contacts')} c JOIN ${s.real('deals')} d ON d.company_id = c.company_id WHERE d.id = ${String(deal)} AND c.email IS NOT NULL ORDER BY c.id`))['id']);
     }, 600_000);
     afterAll(async () => {

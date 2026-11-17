@@ -1,5 +1,5 @@
 /**
- * Walk "Deliveries by keyboard alone, and by touch at 390 wide" (P24), the
+ * Walk "Deliveries by keyboard alone, and by touch at 390 wide", the
  * script's half: at 390 wide the week's days scroll inside their own strip
  * (the page does not), and the keyboard alone reaches it: Tab comes to the
  * strip, its focus ring is drawn (the computed outline, not a guess), and the

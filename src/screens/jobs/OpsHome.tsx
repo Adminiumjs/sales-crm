@@ -1,5 +1,5 @@
 /**
- * THE OPERATIONS MANAGER'S HOME (the design's role home, D2 §5.4): the week
+ * THE OPERATIONS MANAGER'S HOME (the design's role home): the week
  * ahead, crew by crew; the visits with no day; the snags that stop a
  * sign-off; and the won deals that still need their job. Every figure is the
  * server's; a row opens the page it belongs to.

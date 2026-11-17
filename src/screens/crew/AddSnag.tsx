@@ -4,7 +4,7 @@
  * with a retry key, on the visit, so the server finds its job and its crew.
  *
  * With no signal it is kept on the phone, photo and all, and sent when the
- * signal is back (plan 68 S19); the visit lists it meanwhile as new.
+ * signal is back; the visit lists it meanwhile as new.
  */
 import { useCallback, useState } from "react";
 

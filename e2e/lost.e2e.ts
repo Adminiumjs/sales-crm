@@ -1,5 +1,5 @@
 /**
- * P11, Why we lose and One reason (ledger §31, §32): 18 lost deals for
+ * Why we lose and One reason: 18 lost deals for
  * 294,400 in twelve months, 10 for 135,100 in six, 5 for 95,500 in three.
  *
  * Reached from the menu as the sales manager, the CRM admin and Read-only.

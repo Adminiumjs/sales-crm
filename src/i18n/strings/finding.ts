@@ -1,5 +1,5 @@
 /**
- * Area bundle: **finding things** (P08): Jump, the keyboard shortcuts and
+ * Area bundle: **finding things**: Jump, the keyboard shortcuts and
  * their dialog, the bell. Written a key at a time: see `table.ts`.
  */
 import { tables } from "./table.ts";

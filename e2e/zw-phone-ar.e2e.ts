@@ -1,5 +1,5 @@
 /**
- * Walks "My hours on a phone" and "My certificates on a phone" (P26), at 390
+ * Walks "My hours on a phone" and "My certificates on a phone", at 390
  * wide in Arabic, right to left, by touch. `hours-week.e2e.ts` and
  * `hours-training.e2e.ts` prove the two screens whole in English (the week
  * written, sent, sent back, signed off, live on both sides; the server's

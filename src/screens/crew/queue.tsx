@@ -1,5 +1,5 @@
 /**
- * THE CREW'S OFFLINE QUEUE in this app (plan 68 S19): the shared queue
+ * THE CREW'S OFFLINE QUEUE in this app: the shared queue
  * (`offlineQueue.ts`) opened for whoever is signed in, and what the CRM's
  * phone screens put in it.
  *

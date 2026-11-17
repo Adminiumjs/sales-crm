@@ -1,7 +1,7 @@
 /**
- * P13, a person's own: the Weekly digest with "Send me a test" (ledger §16),
- * how I am told (§20), my details (§23), saved views (§19) and searches
- * (§38), my profile (§22).
+ * A person's own: the Weekly digest with "Send me a test",
+ * how I am told, my details, saved views and searches,
+ * my profile.
  *
  * Mostly as Sam, Leo, Ivy and Lena; Dana only where the ledger's figures are
  * hers (her profile, her views, her searches). Everything a spec makes is
@@ -43,7 +43,7 @@ test("my profile as Dana: the ledger's figures, each the server's for her", asyn
   await page.goto(`${STAFF}me`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dana Whitlock");
   await expect(page.getByTestId("me-role")).toHaveText("Sales rep");
-  // §22: weighted open 95,740 · 6 deals; win rate 38 % (3 of 8); average cycle 46 d; in my queue 7.
+  // Weighted open 95,740 · 6 deals; win rate 38 % (3 of 8); average cycle 46 d; in my queue 7.
   await expect(stat(page, "weighted").locator(".crm-leads-value")).toHaveText("£95,740");
   await expect(stat(page, "weighted").locator(".crm-leads-note")).toHaveText("6 open deals");
   await expect(stat(page, "rate").locator(".crm-leads-value")).toHaveText("38%");
@@ -83,7 +83,7 @@ test("a rep's saved views count her own deals, and a view that is not hers reads
   const context = await as("dana");
   const page = await context.newPage();
   await page.goto(`${STAFF}saved-views`);
-  // §19: Dana sees her own one of the six: saved views are private (plan 68 D9), so nobody shares one.
+  // Dana sees her own one of the six: saved views are private, so nobody shares one.
   await expect(views(page)).toHaveCount(1);
   // v1, her own: 2 deals · weighted 55,800.
   const mine = viewNamed(page, "My negotiation deals");
@@ -122,7 +122,7 @@ test("saved searches: a live count from the server, private to their owner", asy
     await expect(page).toHaveURL(/\/saved-searches$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("My saved searches");
     const cards = page.locator(".crm-view[data-search]");
-    // §38: her five, the newest run first.
+    // Her five, the newest run first.
     await expect(cards).toHaveCount(5);
     await expect(cards.locator(".crm-view-name")).toHaveText(["Acoustic work", "Leeds", "Lockers and storage", "Bea at Low Orbit", "Showroom refits"]);
     const acoustic = cards.first();
@@ -167,7 +167,7 @@ test("saved searches: a live count from the server, private to their owner", asy
       expect((await rows(direct, data, "saved_searches")).length, person).toBe(0);
       expect((await direct.get(data("saved_searches", `/${String(one.id)}`))).status(), person).toBe(404);
     }
-    // Whoever runs the install included: saved searches are private (plan 68 D9).
+    // Whoever runs the install included: saved searches are private.
     expect((await rows(await api("owner"), data, "saved_searches")).length).toBe(0);
   } finally {
     await clear();
@@ -495,9 +495,9 @@ test("saved views: the ledger's six, whose they are, and each count the reader's
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Saved views" }).click();
   await expect(page).toHaveURL(/\/saved-views$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Saved views");
-  // Ivy reads her five: saved views are private (plan 68 D9), so the three she used to share are hers alone. Dana's is not hers.
+  // Ivy reads her five: saved views are private, so the three she used to share are hers alone. Dana's is not hers.
   await expect(views(page)).toHaveCount(5);
-  // §19, as the manager reads the team's deals.
+  // Her saved views, as the manager reads the team's deals.
   for (const [name, count, weighted, owner] of [
     ["Everything over 20,000", "7", "£124,890", "Board · Yours · private"],
     ["Sitting 14 days and up", "5", "£77,487.50", "Board · Yours · private"],
@@ -572,7 +572,7 @@ test("saved views: the ledger's six, whose they are, and each count the reader's
     await clear();
   }
 
-  // WHOSE THEY ARE, by direct calls. Saved views are private (plan 68 D9): each answers its owner and nobody else, the CRM
+  // WHOSE THEY ARE, by direct calls. Saved views are private: each answers its owner and nobody else, the CRM
   // admin and whoever runs the install included.
   const dana = await api("dana");
   const hers = await rows<{ id: number; name: string; owner_id: string | null }>(dana, data, "saved_views");

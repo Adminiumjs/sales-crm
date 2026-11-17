@@ -1,5 +1,5 @@
 /**
- * Plan 67, P16: SUPPLY ON THE INVENTORY ADD-ON, against a real install of the
+ * SUPPLY ON THE INVENTORY ADD-ON, against a real install of the
  * released stage 1 with Invoices and Inventory as they are built, on SQLite,
  * Postgres and MySQL.
  *
@@ -17,7 +17,7 @@
  *  4. Installed without Inventory: Supply is off and waits for the add-on
  *     (its own table is made all the same: it is built on no shape of the
  *     add-on's), and the grants are written nowhere.
- *  5. The supplier scorecard (plan 68 S12), on the whole server with the
+ *  5. The supplier scorecard, on the whole server with the
  *     whole app and its sample, SIGNED IN as each role Supply is for and as a
  *     rep: Inventory's receipts read through the grant, six columns; each
  *     supplier's deliveries of the last 90 days by its orders, the late ones
@@ -98,7 +98,7 @@ const READ: Record<string, string[]> = {
   inventory_stock_points: ['id', 'item_id', 'place_id', 'on_hand', 'available', 'on_order', 'reorder_level', 'low', 'item_active'],
   inventory_purchase_orders: ['id', 'number', 'supplier_id', 'supplier_name', 'status', 'sent_on', 'expected_on', 'lead_days', 'received_at'],
   inventory_po_lines: ['id', 'po_id', 'item_id', 'item_name', 'qty', 'open_qty', 'order_status'],
-  // The scorecard (plan 68 S12): whose order a delivery was on, posted or not, the day it came, whether and how late.
+  // The scorecard: whose order a delivery was on, posted or not, the day it came, whether and how late.
   inventory_receipts: ['id', 'po_id', 'status', 'received_on', 'late', 'days_late'],
 };
 const SUPPLY_ROLES = ['admin', 'ops-manager', 'read-only'];
@@ -160,7 +160,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('keeps a need\'s deal state with the deal, and keeps it out of the rep\'s and the operations manager\'s writes', async () => {
       const needs = await h.rows('select d.deal_state as s, x.state as t from crm_deal_stock_needs d join crm_deals x on x.id = d.deal_id');
-      // Sixteen of open deals, and J-07's won deal's cable trays for its return visit (plan 68 M3 BN-20).
+      // Sixteen of open deals, and J-07's won deal's cable trays for its return visit.
       expect(needs).toHaveLength(17);
       expect(needs.every((row) => row['s'] === row['t'])).toBe(true);
       expect(needs.filter((row) => row['s'] !== 'open').map((row) => row['s'])).toEqual(['won']);
@@ -215,7 +215,7 @@ for (const [dialect, reachable] of LEGS) {
   });
 }
 
-/* ─── 5. The supplier scorecard, signed in as each role (plan 68 S12) ─────────────────────────────────────────────── */
+/* ─── 5. The supplier scorecard, signed in as each role ─────────────────────────────────────────────── */
 
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;

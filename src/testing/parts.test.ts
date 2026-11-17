@@ -184,7 +184,7 @@ describe("the shipped rules and e-mails are in the part they work for", () => {
       ["signed-copy-to", "jobs"],
       // A subcontractor's certificate asked for goes with Vehicles and crew (P25, e-mail 11).
       ["certificate-asked", "fleet"],
-      // A hand-over's introduction to the customer goes with Selling (S1).
+      // A hand-over's introduction to the customer goes with Selling.
       ["handover-intro", "selling"],
     ]);
   });

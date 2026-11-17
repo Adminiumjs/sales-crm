@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, P19 with F17's and F20's showroom parts and F22's showroom mails:
- * SHOWROOM AND SAMPLES, against the whole server on SQLite, Postgres and
+ * SHOWROOM AND SAMPLES, with the showroom's settings and mails, against the whole server on SQLite, Postgres and
  * MySQL, with the app's own manifest, each try made signed in as the person
  * it is about.
  *

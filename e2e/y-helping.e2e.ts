@@ -1,5 +1,5 @@
 /**
- * Helping on a colleague's deal (ruling 1d, owner 2026-10-25): a rep listed on
+ * Helping on a colleague's deal: a rep listed on
  * a deal she does not own ("Also on this deal") reads the deal and everything
  * on it, and comments. Its owner makes the changes, and so does whoever
  * covers for the owner. The screens draw a helper no control that changes the

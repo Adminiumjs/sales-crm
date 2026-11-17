@@ -1,9 +1,9 @@
 /**
- * P16, Supply, on the Inventory add-on: Stock and lead times (ledger §42) and
- * the Supplier scorecard (§60), with the stand's real Inventory (its sample
+ * Supply, on the Inventory add-on: Stock and lead times and
+ * the Supplier scorecard, with the stand's real Inventory (its sample
  * goes in by Inventory's own saves: an opening receipt and four orders sent).
  *
- * The scorecard (plan 68 S12) reads Inventory's receipts: on time over the
+ * The scorecard reads Inventory's receipts: on time over the
  * last 90 days, late deliveries, claims of the year (from stage 2, with After
  * the job), score and band, each compared with the server's own figures.
  *

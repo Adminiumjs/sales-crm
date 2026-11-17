@@ -1,5 +1,5 @@
 /**
- * Area bundle: **what was removed, and why** (plan 68 R4d, S3, S16): a removed
+ * Area bundle: **what was removed, and why**: a removed
  * message's line and its button, a deal's "added by" and "taken off by"
  * lines, and the cancelled visits and bookings read through their deal, job
  * or space. A key at a time (see `table.ts`).

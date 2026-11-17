@@ -1,6 +1,6 @@
 /**
- * P20 and P15, Jobs on site at the office (stage 2): the operations manager's
- * home, Deliveries (ledger §33) with its booking dialog in its third use, and
+ * Jobs on site at the office (stage 2): the operations manager's
+ * home, Deliveries with its booking dialog in its third use, and
  * the jobs still to make. Run on a stand of stage 2 (`CRM_STAND_STAGE=2`).
  *
  * Who: the operations manager (Ada) books, moves, calls off and adds visits
@@ -24,7 +24,7 @@ import { csrf, inArabic, removeDeals, rows, STAFF, unfoldMenu, watch, type Data 
 import { readState, STAND_DIR, type StandState } from "./stand.mjs";
 import { restoreVanDays } from "./vandays-helpers.ts";
 
-/** The sample's visits still to come, by id (the ledger's "Deliveries"). J-07's return visit (tandem) is booked for Blue on Wed 5 Aug (plan 68 M3 BN-19). */
+/** The sample's visits still to come, by id (the ledger's "Deliveries"). J-07's return visit (tandem) is booked for Blue on Wed 5 Aug. */
 const V = { cobaltReturn: 12, nordwind: 13, fernway: 14, veldt: 15, tandem: 16, juno: 17, cobaltTopUp: 18, harbor: 19 } as const;
 const BLUE = 1;
 const RED = 2;
@@ -373,7 +373,7 @@ test("a visit added to a job whose reply is lost is made once; booked, then call
     await expect(toBook(page)).toHaveCount(4);
     expect(await rows(context.request, data, "job_visits", { column: "what", op: "eq", value: what })).toEqual([]);
     expect((await messagesOfJob(data, 2)).map((one) => one.kind)).toEqual(["delivery-booked", "delivery-cancelled"]);
-    // Its why is kept with the removed visit, read through its job (plan 68 S16).
+    // Its why is kept with the removed visit, read through its job.
     await page.getByRole("button", { name: "Show called-off visits" }).click();
     const gone = page.getByTestId("jb-removed").locator(".crm-removed-line", { hasText: "Spec: the bays are not needed" });
     await expect(gone).toContainText(what);

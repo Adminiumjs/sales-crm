@@ -1,5 +1,5 @@
 /**
- * P03, the Pipeline board (ledger §2), on Adminium's own board part.
+ * The Pipeline board, on Adminium's own board part.
  *
  * Dana's board: 6 deals, 143,400 at full value, 95,740 weighted; columns
  * 320 / 0 / 24,500 / 55,800 / 15,120. The team's: 14 · 286,300 · 156,562.50.

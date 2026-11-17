@@ -1,7 +1,7 @@
 /**
  * THE MAILS, READ IN A MAILBOX (the stand's mail catcher, `mailbox()`): the
- * walks "The visit e-mails name the rep" (P18), "The quote's e-mail in a real
- * mailbox" (session 10) and "The signed-copy e-mail in a real mailbox" (P24).
+ * walks "The visit e-mails name the rep", "The quote's e-mail in a real
+ * mailbox" and "The signed-copy e-mail in a real mailbox".
  *
  * They need a stand that keeps its mail, and are skipped on any other:
  *   CRM_STAND_MAIL=1 CRM_STAND_MAIL_PORT=<port> CRM_STAND_STAGE=3 … npx playwright test e2e/zw-mail.e2e.ts

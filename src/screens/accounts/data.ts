@@ -79,7 +79,7 @@ export interface CompanyList {
   marks: Record<string, number> | null;
   /** The reader's open deals that have sat in their stage past the "stale" setting, by company. */
   stale: Record<string, number>;
-  /** The companies the reader may change (plan 68 X3: hers, her team's, or nobody's; the server holds every write). */
+  /** The companies the reader may change (hers, her team's, or nobody's; the server holds every write). */
   changeable: ReadonlySet<number>;
 }
 
@@ -275,7 +275,7 @@ export interface Profile {
   /** The job a won deal became, where the reader has Jobs on site: its code by the deal's number. */
   jobs: Record<number, string>;
   names: Record<string, string>;
-  /** Whether the reader may change the company (plan 68 X3). */
+  /** Whether the reader may change the company. */
   changeable: boolean;
 }
 
@@ -297,7 +297,7 @@ const DEAL_LOOKUPS = ["stage:stage_id.label", "reason:lost_reason_id.label"];
 /**
  * "Customer since" is the day the first deal here was won; with none won,
  * "in conversation since" the day the first was opened. Both are the
- * server's: the earliest of a date (plan 68 S17, E9), asked as one figure
+ * server's: the earliest of a date, asked as one figure
  * each over the deals the reader reaches; nothing here sorts rows.
  *
  * It is a fact about the WHOLE company, so the day is said only to a reader

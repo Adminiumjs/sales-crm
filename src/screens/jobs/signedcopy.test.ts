@@ -1,5 +1,5 @@
 /**
- * The office Sign-off's file row (plan 68 S13): drawn through the app's own door, shown only when the door gives a
+ * The office Sign-off's file row: drawn through the app's own door, shown only when the door gives a
  * copy, with the file's own name and size from its headers, never a guess.
  */
 import { describe, expect, it } from "vitest";

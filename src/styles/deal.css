@@ -998,7 +998,7 @@ button.crm-room-step:disabled {
   }
 }
 
-/* The hand-over's "Tell the new owner" line (plan 68 S1): what the rule that tells them does, said quietly. */
+/* The hand-over's "Tell the new owner" line: what the rule that tells them does, said quietly. */
 .crm-hand-tell {
   display: flex;
   align-items: flex-start;

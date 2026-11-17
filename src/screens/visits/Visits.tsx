@@ -259,7 +259,7 @@ function VisitList({ book, rest }: { book: number | null; rest: string[] }) {
                   title={t("rm.visits.title")}
                   testId="visits-removed"
                   f={f}
-                  // A cancelled visit is read through its deal, by whoever reads the deal now (plan 68 S16).
+                  // A cancelled visit is read through its deal, by whoever reads the deal now.
                   read={async () => {
                     const deals = (await session.list<{ id: number; name: string }>("deals", { select: ["id", "name"], order: ["id.desc"], limit: 100 })).rows;
                     return readRemovedUnder(session, deals.map((deal) => ({ ref: "deals", id: deal.id, label: deal.name })), "site_visits");

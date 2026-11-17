@@ -1,5 +1,5 @@
 /**
- * Area bundle: **The signed copy** (plan 68 S13): the office Sign-off's file
+ * Area bundle: **The signed copy**: the office Sign-off's file
  * row under "Who signed": the signed copy Invoices & Receipts draws from the
  * sign-off, as a PDF, or as the print page where its words cannot be set in a
  * PDF (Arabic). A key at a time (see `table.ts`).

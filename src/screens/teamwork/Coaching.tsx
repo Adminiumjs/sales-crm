@@ -11,7 +11,7 @@
  * "2 of 5 done" is two counts the server answers. The screen puts each step
  * under its area.
  *
- * AN AREA (T04) says why it matters and what good looks like, and may be
+ * AN AREA says why it matters and what good looks like, and may be
  * measured by a live number the server answers over the rep's own work
  * (`coaching.ts`). The manager who wrote the plan adds an area and renames one;
  * the rep reads them, and the server refuses her either.

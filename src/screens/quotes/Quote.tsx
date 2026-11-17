@@ -16,7 +16,7 @@
  * start a new version (a copy of the newest, which that one then replaces).
  * Sending a version withdraws the one it replaces in the same save.
  *
- * A rep HELPING on the deal (ruling 1d, `selling/helping.ts`) reads every
+ * A rep HELPING on the deal (`selling/helping.ts`) reads every
  * version and changes, sends and asks nothing: the deal's owner does, and
  * the page says so.
  */
@@ -162,7 +162,7 @@ export function QuotePage({ id }: { id: string }) {
           const linesOk = data.lines.length > 0 && data.lines.every((line) => (line.description ?? "").trim() !== "" && num(line.qty) > 0) && num(quote.total) > 0;
           const maySend = num(quote.may_send) === 1;
           const over = num(quote.needs_approval) === 1;
-          // A closed deal takes no new quote, and a draft of it is not sent (plan 68 R1a; the server refuses both).
+          // A closed deal takes no new quote, and a draft of it is not sent (the server refuses both).
           const dealOpen = quote.deal_state === null || quote.deal_state === undefined || quote.deal_state === "open";
 
           const save = async (work: () => Promise<unknown>): Promise<void> => {

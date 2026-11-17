@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, stage 3 (P25, part B): TIME SHEETS AND CERTIFICATES, against the
+ * Stage 3, Vehicles and crew part B: TIME SHEETS AND CERTIFICATES, against the
  * whole server on SQLite, Postgres and MySQL, with the app's own manifest and
  * Vehicles and crew switched on, each try made signed in as the person it is
  * about.

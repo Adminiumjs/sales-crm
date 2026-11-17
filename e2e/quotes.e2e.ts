@@ -1,5 +1,5 @@
 /**
- * P05, Quotes and Approvals (ledger §9 and §27).
+ * Quotes and Approvals.
  *
  * Nine documents in five families. Q-1002 (d1): version 1 sent at 52,800,
  * valid until Thu 30 Jul; version 2 (Q-1009) at 48,000, 9.1 % under list,
@@ -276,7 +276,7 @@ test("what Quotes shows and does is the server's to refuse: Read-only, another r
   const danaHeaders = await csrf(dana);
   expect((await dana.post(data("quotes", `/${String(draft.id)}/actions/approve`), { data: { from: "draft", values: { decision_note: "mine" } }, headers: danaHeaders })).status()).toBe(403);
   expect((await dana.patch(data("quotes", `/${String(draft.id)}`), { data: { values: { approval: "approved" } }, headers: danaHeaders })).status()).toBe(403);
-  // No new quote on a closed deal (plan 68 R1a): the server refuses Dana's direct create on her won deal, lines and all.
+  // No new quote on a closed deal: the server refuses Dana's direct create on her won deal, lines and all.
   const wonDeal = (await rows<{ id: number }>(dana, data, "deals", { column: "state", op: "eq", value: "won" }))[0]!;
   const onWon = await dana.post(data("quotes"), { data: { values: { deal_id: wonDeal.id }, children: { quote_lines: [{ values: { description: "Late", qty: 1, rate: 1 } }] } }, headers: danaHeaders });
   expect(onWon.status()).toBe(409);
@@ -286,7 +286,7 @@ test("what Quotes shows and does is the server's to refuse: Read-only, another r
   await danaPage.goto(`${STAFF}approvals`);
   await expect(danaPage.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Approvals" })).toHaveCount(0);
 
-  // The marketer reads no quote at all; the account manager only the quotes of a deal he is on (P23), and on the sample he
+  // The marketer reads no quote at all; the account manager only the quotes of a deal he is on, and on the sample he
   // is on none: the server answers him none. Neither has Quotes.
   expect((await (await api("lena")).get(data("quotes", "?limit=5"))).status(), "lena").toBe(403);
   expect(await rows(await api("hugo"), data, "quotes"), "hugo").toEqual([]);
@@ -368,7 +368,7 @@ test("Approvals: the four requests, a decline with its line, a question that lan
   const now = (await rows<Record<string, unknown>>(ivy, data, "quotes", { column: "id", op: "eq", value: quoteId }))[0]!;
   expect([now["approval"], now["decision_note"], now["status"]]).toEqual(["refused", "No list price, no sale.", "draft"]);
 
-  // "REOPEN IT" (plan 68 S2). Ivy's own request, declined: not hers to reopen (she asked it, and the deal is hers), as the
+  // "REOPEN IT". Ivy's own request, declined: not hers to reopen (she asked it, and the deal is hers), as the
   // server holds; another rep's declined draft (Q-1007, on Dana's Quiet-room pods) is offered to her.
   await page.reload();
   await filters.nth(1).click();

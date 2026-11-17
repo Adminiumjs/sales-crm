@@ -8,7 +8,7 @@
  * narrowed to now as a new view.
  *
  * Whose views a person may open is the server's: her own (the table is
- * private, plan 68 D9). A view that is not hers reads as not there.
+ * private). A view that is not hers reads as not there.
  */
 import { useMemo, useRef, useState } from "react";
 

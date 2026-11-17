@@ -14,7 +14,7 @@
  * only by a booked visit's day or start changing afterwards, never by its
  * booking (`whole/manifest.json`, the outbox's delivery producers).
  *
- * CALLED OFF IS REMOVED (F17). The why is written to the visit a moment
+ * CALLED OFF IS REMOVED. The why is written to the visit a moment
  * before it is removed, so the removal's own entry in Adminium's audit log
  * holds it; a visit that was made (done) is refused by the server and stays.
  */
@@ -124,7 +124,7 @@ export interface JobSettings extends Row {
 export const VISIT_LOOKUPS = ["code:job_id.code", "title:job_id.title"];
 const SETTINGS_COLUMNS = ["id", "working_day_hours", "distance_unit", "depot_name", "depot_address", "depot_town", "depot_lat", "depot_lng", "depot_place", "office_phone", "delivery_emails", "snag_days", ...DAYS.map((day) => `work_${day}`)];
 
-/** The four ticks of a visit, in the crew's order. The fourth reads "Done on site" (D6 Q8). */
+/** The four ticks of a visit, in the crew's order. The fourth reads "Done on site". */
 export const TICKS = ["tick_loaded", "tick_arrived", "tick_done", "tick_cleared"] as const;
 export type Tick = (typeof TICKS)[number];
 
@@ -392,7 +392,7 @@ export interface NewVisit {
 export const addVisit = (session: StaffSession, made: NewVisit, key: string): Promise<Saved<Visit>> =>
   session.create<Visit>("job_visits", { job_id: made.jobId, kind: made.kind, what: made.what.trim(), hours: made.hours, crew_size: made.size, stock_ready_on: made.stock, note: made.note.trim() === "" ? null : made.note.trim() }, key);
 
-/** Call a visit off: one removal with the why, kept with the removed visit (plan 68 S16). A second press after a lost reply finds nothing to remove twice. */
+/** Call a visit off: one removal with the why, kept with the removed visit. A second press after a lost reply finds nothing to remove twice. */
 export async function cancelVisit(session: StaffSession, visit: Pick<Visit, "id" | "state">, why: string): Promise<Saved> {
   const done = await session.remove("job_visits", visit.id, { reason: why });
   if (done.state === "refused" && done.error.status === 404 && (await session.get("job_visits", visit.id)) === null) return { state: "saved", row: {}, replayed: true, readBack: true };
@@ -408,7 +408,7 @@ export interface Moved {
   at: Date;
 }
 
-/** The last time a booked visit's day, start or crew changed: what it was, who and when, read from the record's own history (F17). */
+/** The last time a booked visit's day, start or crew changed: what it was, who and when, read from the record's own history. */
 export async function lastMove(session: StaffSession, id: number): Promise<Moved | null> {
   const { entries } = await session.history("job_visits", id, { limit: 50 });
   for (const entry of entries as (Omit<HistoryEntry, "createdAt"> & { createdAt: string | number })[]) {
@@ -417,7 +417,7 @@ export async function lastMove(session: StaffSession, id: number): Promise<Moved
     if (before === undefined || before === null) continue;
     // A booking writes the day onto a visit that had none: that is not a move.
     if (!("day" in before || "start_time" in before || "crew_id" in before)) continue;
-    // Nor is a write that changed none of the three (a rule keeping what the visit had, plan 68 D17): an entry may hold the whole row.
+    // Nor is a write that changed none of the three (a rule keeping what the visit had): an entry may hold the whole row.
     const after = changes?.after;
     if (after !== undefined && after !== null && ["day", "start_time", "crew_id"].every((column) => !(column in after) || String(dayKeyOf(before[column]) ?? before[column] ?? "") === String(dayKeyOf(after[column]) ?? after[column] ?? ""))) continue;
     const was = dayKeyOf(before["day"]);
@@ -444,7 +444,7 @@ export interface WonDeal extends Row {
 }
 
 /**
- * "JOBS STILL TO MAKE" (P15): won deals with no job, won before Jobs on site
+ * "JOBS STILL TO MAKE": won deals with no job, won before Jobs on site
  * was switched on (a deal won after makes its job by the app's rule). The
  * server says which (a deal keeps how many jobs it has) and how many.
  */
@@ -758,7 +758,7 @@ export async function readWasteFigures(session: StaffSession, today: string): Pr
 /** One decimal place, the way the reader's language writes it: tonnes, hours. */
 export const oneDecimal = (f: Pick<Formatters, "number">, value: number): string => f.number(Math.round(value * 10) / 10);
 
-/** A share between 0 and 1 of two server figures (the browser may divide two figures the server gave, §1). */
+/** A share between 0 and 1 of two server figures (the browser may divide two figures the server gave). */
 export const shareOf = (part: number, whole: number): number | null => (whole <= 0 ? null : part / whole);
 
 /** The hour and minute of a start as the server keeps it (`08:00`), or null. */

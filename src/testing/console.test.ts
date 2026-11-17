@@ -1,6 +1,6 @@
 /**
- * P17, THE CONSOLE'S "SALES CRM" SECTION, as the manifest says it (design D10; ruling Q4 of the
- * plan's §0.16: "twelve items as drawn; a manifest option keeps a page off the rail. Rules = the
+ * THE CONSOLE'S "SALES CRM" SECTION, as the manifest says it (as drawn:
+ * "twelve items as drawn; a manifest option keeps a page off the rail. Rules = the
  * console's Automations for this app; Emails = the app's templates; Approvals = Quotes waiting;
  * Sample data = a link into the app's page in Installed Apps").
  *
@@ -91,7 +91,7 @@ describe("the console's Sales CRM section", () => {
   it("keeps every other page off the rail, each still a page with its address", () => {
     const off = whole.pages.filter((one) => one.nav.offRail === true);
     expect(off.length).toBe(whole.pages.length - 9);
-    // The outbox is no longer "Emails" on the rail: Emails is the app's templates (ruling Q4).
+    // The outbox is no longer "Emails" on the rail: Emails is the app's templates.
     expect(page(whole, "crm-outbox").nav.offRail).toBe(true);
     expect(page(whole, "crm-stages").nav.offRail).toBe(true);
   });
@@ -105,7 +105,7 @@ describe("the console's Sales CRM section", () => {
   });
 });
 
-describe("the Overview (D10)", () => {
+describe("the Overview", () => {
   const overview = page(whole, "crm-overview");
   const cards = overview.config!.layout!.items;
   const byKey = Object.fromEntries(cards.map((card) => [card.i, card]));
@@ -182,7 +182,7 @@ describe("the Overview (D10)", () => {
   });
 });
 
-describe("Approvals (ruling Q4: Quotes waiting)", () => {
+describe("Approvals (Quotes waiting)", () => {
   const approvals = page(whole, "crm-approvals");
 
   it("is a page of the Quotes part, gone with it, for the CRM admin, the sales manager and Read-only", () => {

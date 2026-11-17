@@ -86,7 +86,7 @@ for (const [dialect, reachable] of LEGS) {
       // More than 5 % under list and not approved: the send is refused, on the write itself.
       await expect(w.update('quotes', v2['id'], { status: 'sent' })).rejects.toThrow();
       expect((await one('quotes', 'status', v2['id']))['status']).toBe('draft');
-      // Dana asks (the deal is hers); whoever decides is somebody else (plan 68 S2: never the asker nor the deal's owner).
+      // Dana asks (the deal is hers); whoever decides is somebody else (never the asker nor the deal's owner).
       const asDana = { ...w.desk, actor: { kind: 'user' as const, id: dana.id, label: 'Dana' } };
       await w.update('quotes', v2['id'], { approval: 'asked', ask_reason: 'Another supplier on the desks' }, asDana);
       await expect(w.update('quotes', v2['id'], { status: 'sent' })).rejects.toThrow();
@@ -252,7 +252,7 @@ for (const [dialect, reachable] of LEGS) {
       const inside = { space_id: space['id'], party: 2, starts_at: '2026-07-29T10:30:00Z', minutes: 30 };
       await expect(w.create('showroom_bookings', inside)).rejects.toMatchObject({ code: 'BOOKING_TAKEN' });
       await w.create('showroom_bookings', { ...inside, starts_at: '2026-07-29T11:00:00Z' });
-      // A cancel removes a booking (P19): there is no cancelled state to move to.
+      // A cancel removes a booking: there is no cancelled state to move to.
       await expect(w.update('showroom_bookings', booking['id'], { state: 'cancelled', cancel_reason: 'They moved the day' })).rejects.toThrow();
       // Been in, it takes nothing: the half hour is free again.
       await w.update('showroom_bookings', booking['id'], { state: 'done' });
@@ -407,7 +407,7 @@ for (const [dialect, reachable] of LEGS) {
       await w.update('deals', other['id'], { state: 'lost', lost_reason_id: reason['id'] });
       expect(Number((await read('deals', 'target_value', other['id']))['target_value'])).toBe(0);
       // a visit, its note, an agreed line three links from the deal
-      // A visit is never booked to start in the past (plan 68 X7): this one is the day after tomorrow.
+      // A visit is never booked to start in the past: this one is the day after tomorrow.
       const visit = await w.create('site_visits', { deal_id: deal['id'], rep_id: dana.id, starts_at: new Date(Date.now() + 2 * 86_400_000).toISOString(), minutes: 90, purpose: 'Walk the floor' });
       const note = await w.create('visit_notes', { visit_id: visit['id'], saw: 'x'.repeat(1500) });
       const agreed = await w.create('visit_agreed', { visit_note_id: note['id'], text: 'Layout by Friday', position: 0 });

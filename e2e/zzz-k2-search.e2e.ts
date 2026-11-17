@@ -1,9 +1,9 @@
 /**
- * Plan 68 K2: THE "bea" SEARCH. Once, in plan 67 P26's red run, Dana's saved search "bea" (Bea at Low Orbit, the ledger's
+ * THE "bea" SEARCH. Once, in an earlier red run, Dana's saved search "bea" (Bea at Low Orbit, the ledger's
  * one person) counted 15 deals and 9 companies.
  *
  * What a saved search went through, read path by path:
- *  - its row: the list of her searches is hers alone (private, plan 68 D9), so another person's row of the same name, or a
+ *  - its row: the list of her searches is hers alone (private), so another person's row of the same name, or a
  *    row nobody owns, is never one of her cards;
  *  - its word: a card counts `search.query` as saved, and the box counts only once what was asked is what is typed, so a
  *    word cut short ("be") is never shown as the longer one's;

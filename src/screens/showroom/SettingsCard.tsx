@@ -39,7 +39,7 @@ export function ShowroomSettings({ session, can }: { session: StaffSession; can:
     if (rowLoad.state !== "ready" || rowLoad.data === null) return false;
     const row = rowLoad.data;
     setBusy(true);
-    // Opening after closing is refused by the server naming both (plan 68 X4): said in the reader's words.
+    // Opening after closing is refused by the server naming both: said in the reader's words.
     const saved = await toasts.say(withPairWords(session.update("settings", Number(row["id"]), values, { seen: Object.fromEntries(Object.keys(values).map((column) => [column, row[column]])) }), t), () => done);
     setBusy(false);
     again();

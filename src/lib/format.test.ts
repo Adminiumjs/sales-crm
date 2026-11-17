@@ -67,7 +67,7 @@ describe("the month and the week a day is in", () => {
     expect(weekOf("2026-07-27")).toEqual(["2026-07-27", "2026-08-03"]);
   });
 
-  it("starts the week on the business's first day once Settings says one (plan 68 S9), and on Monday for anything else", () => {
+  it("starts the week on the business's first day once Settings says one, and on Monday for anything else", () => {
     try {
       setWeekStart("sun");
       // Tue 28 Jul 2026 is in the week of Sun 26 Jul; Sun 2 Aug starts the next.

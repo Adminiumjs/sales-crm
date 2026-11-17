@@ -1,7 +1,7 @@
 /**
- * Plan 67, F23: THE APP BY STAGE, against a real install.
+ * THE APP BY STAGE, against a real install.
  *
- * The first release ships six parts and nothing of the other four (ruling R5):
+ * The first release ships six parts and nothing of the other four:
  * no table, no page, no rule, no role. Here, with the Invoices and Inventory
  * add-ons as they are built, on SQLite, Postgres and MySQL:
  *
@@ -199,7 +199,7 @@ for (const [dialect, reachable] of LEGS) {
       const three = stage(3);
       const next = { ...three.manifest, version: three.manifest.version.replace(/\d+$/, (patch) => String(Number(patch) + 2)) };
       await h.stageApp(next, packed(three));
-      // The field crew reads Inventory's line names and units with Vehicles and crew (plan 68 S14, what to load): a wider grant
+      // The field crew reads Inventory's line names and units with Vehicles and crew (what to load): a wider grant
       // on an add-on's table, which the owner allows by name, and is refused until then.
       const asked = await h.inject({ method: 'POST', url: '/apps/crm/update', payload: {} });
       expect(asked.statusCode, asked.body).toBe(422);

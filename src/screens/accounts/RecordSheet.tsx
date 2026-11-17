@@ -152,7 +152,7 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
   const texts = useMemo(() => (isCompany ? COMPANY_TEXTS : CONTACT_TEXTS).filter((column) => !data.kept.includes(column)), [isCompany, data.kept]);
   const [draft, setDraft] = useState<Record<string, string>>(() => Object.fromEntries(texts.map((column) => [column, shown(row?.[column])])));
   const [companyId, setCompanyId] = useState<number | null>(() => (rec.kind !== "contact" ? null : row !== null ? Number(row["company_id"]) : (rec.mode === "add" ? rec.companyId : undefined) ?? null));
-  // A new contact starts at "may not be emailed": somebody ticks it once she has said yes (plan 68 R8).
+  // A new contact starts at "may not be emailed": somebody ticks it once she has said yes.
   const [mayEmail, setMayEmail] = useState<boolean>(() => (row === null ? false : row["may_email"] === true));
   // "They said no" at the line under the address: kept until the save, then the saved row's address goes on the do-not-email list.
   const [refused, setRefused] = useState(false);

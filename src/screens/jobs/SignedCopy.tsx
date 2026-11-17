@@ -1,6 +1,6 @@
 /**
  * THE SIGNED COPY'S FILE ROW, on the office's Sign-off under "Who signed"
- * (plan 68 S13; the design's M2 note 1).
+ * (as the design notes it).
  *
  * Invoices & Receipts draws the copy from the sign-off (the app's `documents`
  * entry, kind `signed-copy`). The row asks the app's own door for it

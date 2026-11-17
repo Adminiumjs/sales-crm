@@ -1,5 +1,5 @@
 /**
- * P07, Contacts (ledger §4c) and a contact's record sheet.
+ * Contacts and a contact's record sheet.
  *
  * Thirteen contacts. Main contact on two open deals: Marta Kovac and Ruth
  * Adeyemi; on one: ten of them; on none: Kit Delaney.
@@ -177,8 +177,8 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   const sheet = page.getByRole("dialog", { name: "Callum Finch" });
   await expect(sheet).toContainText("Partner · Harbor & Finch");
   const facts = sheet.locator(".crm-acc-rec-facts > div");
-  // The company's street is a business's, read by everybody who reads companies (plan 68 R3); whether he may be emailed is said
-  // too, and Callum has not said yes (R8, D14).
+  // The company's street is a business's, read by everybody who reads companies; whether he may be emailed is said
+  // too, and Callum has not said yes.
   await expect(facts).toHaveText(["RolePartner", "CompanyHarbor & Finch", "Emailc.finch@harborfinch.example", "Phone0131 208 6600", "Where19 Albany Court, Edinburgh, United Kingdom", "May be emailedNo"]);
   const links = sheet.locator(".crm-acc-rec-link");
   await expect(links).toHaveCount(2);
@@ -225,7 +225,7 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   await expect(add.locator(".crm-form-error")).toHaveText("Pick the company they work at.");
   await add.getByLabel("Job title").fill("Buyer");
   await add.getByLabel("Email").fill("ada.lowe@example.test");
-  // A new contact may not be emailed until somebody ticks it (R8): the switch starts off, and she has said yes.
+  // A new contact may not be emailed until somebody ticks it: the switch starts off, and she has said yes.
   const may = add.getByRole("switch", { name: "May be emailed" });
   await expect(may).toHaveAttribute("aria-checked", "false");
   await may.click();
@@ -260,7 +260,7 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   await picture(page, "4-sam-contact-added");
 });
 
-test("whether a contact may be emailed says who ticked it and when (R8)", async ({ as }) => {
+test("whether a contact may be emailed says who ticked it and when", async ({ as }) => {
   const page = await (await as("dana")).newPage();
   const problems = watch(page);
   await page.goto(`${STAFF}contacts`);

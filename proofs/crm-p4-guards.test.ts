@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 68, phase 4 (T26c): THE GUARDS THE ENGINE OF 0.3.35 GIVES THE CRM,
+ * THE GUARDS THE ENGINE OF 0.3.35 GIVES THE CRM,
  * against the whole server on SQLite, Postgres and MySQL, with the app's own
  * manifest, each try made signed in as the person it limits.
  *
- *  - R5 (E13): a won or lost deal brought in from a file without its closed
+ *  - a won or lost deal brought in from a file without its closed
  *    moment is named in the preview, by its column, and not brought in; one
  *    that carries it keeps it and its own closed day (the same cell), never
  *    the import's day. A person's own move to won still stamps both.
- *  - R8 (E23): who ticked "may be e-mailed", and when, are the server's: the
+ *  - who ticked "may be e-mailed", and when, are the server's: the
  *    CRM admin's file that carries either is refused, by its column, and so is
  *    a rep's; a value sent beside a tick is not taken. A blank cell is no on a
  *    new contact and leaves a saved contact's answer as it was.
- *  - X4 (E14): Settings' pairs (warm below stale, the warning below the
+ *  - Settings' pairs (warm below stale, the warning below the
  *    quote's validity, the day's start before its end, the showroom's opening
  *    before its closing), each refusal naming both settings; the depot's
  *    country from the built-in list.
- *  - X5 (E14): a cover ends no sooner than it starts and at most 365 days on;
+ *  - a cover ends no sooner than it starts and at most 365 days on;
  *    an empty end is "until further notice".
  *  - X6 (E14's guard): an enquiry's deal is set only while it is claimed, by
  *    whoever claimed it.
- *  - X7 (E14, D18): a visit is never made to start in the past; a file brought
+ *  - a visit is never made to start in the past; a file brought
  *    in by the install's owner (history) is not held to it.
- *  - K1 (E18): a sample job signed off books its aftercare call for the sample
+ *  - a sample job signed off books its aftercare call for the sample
  *    person Settings names (who is not active), and Remove sample data takes it.
  *
  * To run: `npm run proofs -- p4-guards` (copies itself into the engine lane's test folder, runs, removes itself).

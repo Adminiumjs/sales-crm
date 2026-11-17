@@ -1,5 +1,5 @@
 /**
- * Area bundle: **who may do what to a deal and its quotes** (plan 68 phase 4):
+ * Area bundle: **who may do what to a deal and its quotes**:
  * what a hand-over carries to the new owner, "Reopen it" on Approvals and who
  * decides a request, and the rows a manager changes only for others (her own
  * target, her own first-year target, a meeting somebody else runs). A key at a

@@ -1,5 +1,5 @@
 /**
- * The booking dialog's "Vehicle for the day" (plan 68 S14, M3 §7 BN-10, CD-9),
+ * The booking dialog's "Vehicle for the day",
  * in "Who", after the crew:
  *
  *  - the crew already has its day's vehicle: a line says so, with "Change for
@@ -9,7 +9,7 @@
  *  - a vehicle another crew has that day, or one not hired that day, is a
  *    refusal in the dialog's refusal row, with its fix: "Use" the crew's own,
  *    or "Change the hire days" (Vehicles);
- *  - a vehicle past its service is flagged and may still be booked (CD-11).
+ *  - a vehicle past its service is flagged and may still be booked.
  */
 import { useT } from "../../i18n/index.tsx";
 import type { Formatters } from "../../lib/format.ts";

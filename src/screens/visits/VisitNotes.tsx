@@ -88,7 +88,7 @@ function WriteUpPage({ data, names, now, reload }: { data: WriteUp; names: Recor
   const happened = at.getTime() < now.getTime();
   const written = note !== null;
   /*
-   * On a deal she only helps on (ruling 1d): her OWN visit, made before, is hers to write up; a colleague's is not,
+   * On a deal she only helps on: her OWN visit, made before, is hers to write up; a colleague's is not,
    * and she lines no new step up on the deal. Null while that is read: nothing is offered yet.
    */
   const helping = useHelping(visit.deal_owner_id ?? null, f.dayKey(now));

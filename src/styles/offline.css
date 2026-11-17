@@ -1,5 +1,5 @@
 /*
- * The crew's offline queue (plan 68 S19, `Meridian Sales Offline Queue`): the
+ * The crew's offline queue (`Meridian Sales Offline Queue`): the
  * pill in the bar, the chip beside what waits, the row on My day, the list
  * sheet and a line opened, and the office's refused sign-off.
  */
@@ -134,7 +134,7 @@
   border-color: var(--danger);
   background: var(--danger-soft);
 }
-/* A sent line is greyed with a colour that keeps 4.5:1, never by opacity (M1 §6 b 4). */
+/* A sent line is greyed with a colour that keeps 4.5:1, never by opacity. */
 .crm-q-line[data-state="sent"] .crm-q-line-btn {
   background: var(--surface-2);
   color: var(--fg-subtle);

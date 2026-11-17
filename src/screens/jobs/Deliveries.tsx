@@ -148,7 +148,7 @@ export function Deliveries({ rest }: ScreenProps) {
                       onBook={setBooking}
                       onDrop={async (visit, day) => {
                         setOver(null);
-                        // A visit that waits has no crew yet: the dialog opens with the day filled, and asks (B11).
+                        // A visit that waits has no crew yet: the dialog opens with the day filled, and asks.
                         if (visit.state === "waiting") return setBooking({ mode: "book", visit, day });
                         if (dayKeyOf(visit.day) === day) return;
                         const own = visit.crew_id === null ? 0 : (plan.crewDays[String(visit.crew_id)]?.[day] ?? 0);
@@ -162,7 +162,7 @@ export function Deliveries({ rest }: ScreenProps) {
                           return;
                         }
                         const crew = crews.crews.find((one) => one.id === visit.crew_id)?.name ?? "";
-                        // The crew's vehicle that new day (plan 68 S14): its row there, or its own vehicle, unless another crew has it.
+                        // The crew's vehicle that new day: its row there, or its own vehicle, unless another crew has it.
                         const van = await vanDayForMove(session, visit.crew_id, day).catch(() => ({ made: null, facts: null }));
                         if ("refused" in van) {
                           const refused = van.refused;
@@ -191,7 +191,7 @@ export function Deliveries({ rest }: ScreenProps) {
                   title={t("rm.jobs.title")}
                   testId="jb-removed"
                   f={f}
-                  // A called-off visit is read through its job, by whoever reads the job now (plan 68 S16).
+                  // A called-off visit is read through its job, by whoever reads the job now.
                   read={() => readRemovedUnder(session, jobs.map((job) => ({ ref: "jobs", id: job.id, label: [job.code, job.site_name].filter((part) => part !== null && part !== "").join(" · ") })), "job_visits")}
                   what={(item) => {
                     const day = dayKeyOf(item.row.day ?? null);
@@ -226,7 +226,7 @@ function refusalText(t: ReturnType<typeof useT>, f: Parameters<typeof dayWords>[
   return t("jb.bk.refused.nocrew");
 }
 
-/** Won deals that have no job: made by the operations manager or the CRM admin, one press each (P15). */
+/** Won deals that have no job: made by the operations manager or the CRM admin, one press each. */
 function StillToMake({ deals, total, canMake, making, onMake }: { deals: WonDeal[]; total: number; canMake: boolean; making: number | null; onMake: (deal: WonDeal) => void }) {
   const t = useT();
   const { f } = useJobsScreen();

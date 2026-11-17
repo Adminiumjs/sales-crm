@@ -1,7 +1,7 @@
 /**
  * WHAT THE TERRITORY SCREEN READS, as the signed-in person.
  *
- * WHOSE A COMPANY IS. Its own `territory_id` decides (ruling Q8): the drawn
+ * WHOSE A COMPANY IS. Its own `territory_id` decides: the drawn
  * area is a picture of the territory, and a company with no pin, or a pin by
  * town, still has a territory. The geometry in `geometry.ts` only says which
  * pins an outline takes in, so a move can be offered.
@@ -27,7 +27,7 @@ export interface Territory {
   area: AreaGeometry | null;
   /** Its place among the map's eight colours: the territory's order by id, so a colour stays a territory's while others come and go. */
   colour: number;
-  /** Whether the reader may change it: her team's, or nobody's (plan 68 X3; the server holds every write). */
+  /** Whether the reader may change it: her team's, or nobody's (the server holds every write). */
   changeable: boolean;
 }
 
@@ -45,7 +45,7 @@ export interface Company {
   /** The open deals of this company the reader can open, and what they come to; null when the reader reads no deals. */
   open: number | null;
   openValue: number | null;
-  /** Whether the reader may change it (its pin, its territory): hers, her team's, or nobody's (plan 68 X3). */
+  /** Whether the reader may change it (its pin, its territory): hers, her team's, or nobody's. */
   changeable: boolean;
 }
 
@@ -144,7 +144,7 @@ export async function readTerritory(session: StaffSession): Promise<TerritoryDat
     session.can("reps", "read") ? session.list<{ user_id: string }>("reps", { select: ["user_id"], order: ["id"], limit: LISTED }).catch(() => null) : Promise.resolve(null),
   ]);
 
-  // Who "we" are, and whose the open deals at each company are: what the server's rule for a change reads (plan 68 X3).
+  // Who "we" are, and whose the open deals at each company are: what the server's rule for a change reads.
   const [mayTerritories, mayCompanies] = [session.can("territories", "update"), session.can("companies", "update")];
   const us = mayTerritories || mayCompanies ? await readUs(session) : new Set<string>();
   const openOwners = mayCompanies && us !== "anybody" ? await openOwnersAt(session, companyPage.rows.map((row) => row.id)).catch(() => null) : {};

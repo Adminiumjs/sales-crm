@@ -11,7 +11,7 @@
  * Every figure is the server's, cut to the reader's rows: the manager reads
  * the team's five numbers, a rep her own (and the heading says which).
  *
- * WHO TICKS (T04). Whoever runs the meeting (the sales manager, the CRM admin)
+ * WHO TICKS. Whoever runs the meeting (the sales manager, the CRM admin)
  * ticks an item of the running order off as it is covered, and marks a decision
  * still open as done or carried over; "N of 6 covered" is the ticks the server
  * holds. A rep reads both and presses neither: the server refuses her either.
@@ -129,7 +129,7 @@ export function Meeting(_: ScreenProps) {
           const people = [...new Set(data.slots.map((slot) => slot.who_id).filter((id): id is string => id !== null && id !== ""))];
           const covered = data.slots.filter((slot) => truthy(slot.covered)).length;
           const n = data.numbers;
-          // A meeting's decisions are marked by who runs it (plan 68 X2); the CRM admin is not held.
+          // A meeting's decisions are marked by who runs it; the CRM admin is not held.
           const runner = data.meeting.run_by_id ?? null;
           const marks = canDecide && (!heldFromOwn(session) || runner === me);
           let clock = at.getTime();

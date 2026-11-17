@@ -1,7 +1,7 @@
 /**
- * P17, the console's "Sales CRM" section (design D10; ruling Q4 of the plan's §0.16), in Adminium's own
- * dashboard served by the stand: the section's rail, the Overview with the ledger's figures (§2, §5,
- * §14, §28), the Pipeline page's headings, cards and note, Approvals (§27, §9), each figure the
+ * The console's "Sales CRM" section (the twelve entries as drawn), in Adminium's own
+ * dashboard served by the stand: the section's rail, the Overview with the ledger's figures,
+ * the Pipeline page's headings, cards and note, Approvals, each figure the
  * reader's own or left out, and the roles it is not for refused by the server.
  *
  * It reads and writes nothing of the sample: no figure another spec reads moves.
@@ -57,24 +57,24 @@ test("the owner's console: the section's entries as drawn, and the Overview with
     await expect(card(page, "jobs-this-week")).toContainText("Job visits this week");
     await expect(card(page, "jobs-this-week")).toContainText(String(visits));
   }
-  // The reps (§14), each with the year's cover.
+  // The reps, each with the year's cover.
   for (const [rep, cover] of [["Dana", "89"], ["Priya", "24"], ["Sam", "55"], ["Leo", "24"]] as const) await expect(card(page, "reps").getByRole("row").filter({ hasText: rep })).toContainText(cover);
   await expect(card(page, "reps")).toContainText("£140,000");
-  // Sitting longest: d12 34 days, then d5 32 (§2, §5).
+  // Sitting longest: d12 34 days, then d5 32.
   // (A short list's line is a button that opens the deal.)
   const sitting = card(page, "sitting").getByRole("button").filter({ hasText: /\d$/ });
   await expect(sitting.nth(0)).toContainText("Depot supervisor stations");
   await expect(sitting.nth(0)).toContainText("34");
   await expect(sitting.nth(1)).toContainText("Showroom refit, phase one");
   await expect(sitting.nth(1)).toContainText("32");
-  // Each chart's figures as a table: Show data on Pipeline by stage gives the five stages, value and weighted (§2), in the
+  // Each chart's figures as a table: Show data on Pipeline by stage gives the five stages, value and weighted, in the
   // install's currency: the value is an amount by its name, the weighted value is money because the app says so.
   await card(page, "by-stage").getByRole("button", { name: /show data/i }).click();
   for (const [stage, value, weighted] of [["Discovery", "£36,350", "£3,635"], ["Qualified", "£32,950", ""], ["Proposal", "£87,000", ""], ["Negotiation", "£105,400", "£79,050"], ["Verbal", "£24,600", ""]] as const) {
     await expect(card(page, "by-stage").getByRole("row").filter({ hasText: stage })).toContainText(value);
     if (weighted !== "") await expect(card(page, "by-stage").getByRole("row").filter({ hasText: stage })).toContainText(weighted);
   }
-  // The forecast, July to October (§5): weighted value, so money too.
+  // The forecast, July to October: weighted value, so money too.
   await card(page, "forecast").getByRole("button", { name: /show data/i }).click();
   await expect(card(page, "forecast")).toContainText("£87,670");
   await expect(card(page, "forecast")).toContainText("£2,340");
@@ -98,16 +98,16 @@ test("the console's Pipeline: odds, count and both totals on each heading, the c
   await expect(discovery.locator('[data-part="column-total"]')).toContainText("£3,635");
   await expect(column(page, "Verbal").locator('[data-part="column-badge"]')).toHaveText("90%");
   await expect(column(page, "Negotiation").locator('[data-part="column-total"]')).toContainText("£79,050");
-  // d12, 34 days in Qualified (§2): its company, its owner by name, its amount and its days, first in its column.
+  // d12, 34 days in Qualified: its company, its owner by name, its amount and its days, first in its column.
   const depot = column(page, "Qualified").locator('[role="button"]').filter({ hasText: "Depot supervisor stations" });
   await expect(depot).toContainText("34 days");
   await expect(depot).toContainText("£14,250");
   // Leo, by his initials (the board draws a person as a tile named after them).
   await expect(depot).toContainText("LV");
-  // Plan 68 S8 (E16): the days say what they are, and a second money line is the weighted value (25% of £14,250).
+  // The days say what they are, and a second money line is the weighted value (25% of £14,250).
   await expect(depot).toContainText("34 days in stage");
   await expect(depot).toContainText("w £3,562.50");
-  // The toolbar: the server's count and amount over every card the reader reaches (§2: 14 open deals, £286,300), and a
+  // The toolbar: the server's count and amount over every card the reader reaches (14 open deals, £286,300), and a
   // person filter that narrows the board and the total to one person's cards (Dana: 6, £143,400).
   const total = page.getByTestId("board-total");
   await expect(total).toContainText("14");
@@ -159,12 +159,12 @@ test("the sales manager: her figures are her team's, the whole team's two say so
 
   await section(page).getByRole("link", { name: "Approvals", exact: true }).click();
   await expect(page).toHaveURL(/\/p\/crm-approvals$/);
-  // §27: one waiting, Q-1001 v2 (d5, Sam), 10.5 % off list.
+  // One waiting, Q-1001 v2 (d5, Sam), 10.5 % off list.
   const quotes = (key: string) => card(page, key).getByRole("button").filter({ hasText: /Q-\d{4}/ });
   await expect(quotes("waiting")).toHaveCount(1);
   await expect(quotes("waiting")).toContainText("Q-1001");
   await expect(quotes("waiting")).toContainText("Showroom refit, phase one");
-  // §9: sent, running out first: Q-1001 ran out on 26 July, Q-1002 runs out on 30 July.
+  // Sent, running out first: Q-1001 ran out on 26 July, Q-1002 runs out on 30 July.
   await expect(quotes("running-out").nth(0)).toContainText("Q-1001");
   await expect(quotes("running-out").nth(1)).toContainText("Q-1002");
   await picture(page, "p17-ivy-approvals");

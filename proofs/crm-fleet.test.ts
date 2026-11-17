@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, stage 3: VEHICLES AND CREW, part A (P25-A): vehicles, their checks,
+ * Stage 3: VEHICLES AND CREW, part A: vehicles, their checks,
  * faults and fuel, subcontractors and insurance claims, against the whole
  * server on SQLite, Postgres and MySQL, with the app's own manifest and Jobs
  * on site and Vehicles and crew switched on, each try made signed in as the
@@ -205,7 +205,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(await ids('yusuf', 'vehicles')).toEqual([van['Blue van']]);
     });
 
-    it("puts one vehicle on a crew's day (S14, D16): one crew a vehicle a day, a hired one only inside its hire days, and each crew reads its own days only", async () => {
+    it("puts one vehicle on a crew's day: one crew a vehicle a day, a hired one only inside its hire days, and each crew reads its own days only", async () => {
       const on = '2026-08-05';
       const days: number[] = [];
       const day = async (who: string, crewName: string, vehicle: string, when: string): Promise<Reply> => {

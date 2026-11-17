@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Plan 68, phase 4 (S12, Q3 = A): the supplier scorecard, whole, on Inventory's
+ * The supplier scorecard, whole, on Inventory's
  * receipt lateness (`receipts.expected_on`, `received_on`, `late`, `days_late`).
  *
  * Changes `whole/manifest.json` and the Inventory part of the sample

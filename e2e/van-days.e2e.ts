@@ -1,6 +1,6 @@
 /**
- * Plan 68 S14, stage 3: A CREW'S VEHICLE FOR THE DAY, A HIRED VEHICLE, AND WHAT
- * TO LOAD, against `designs/plan-68/Meridian Sales Vehicle Days` (M3). Run on a
+ * Stage 3: A CREW'S VEHICLE FOR THE DAY, A HIRED VEHICLE, AND WHAT
+ * TO LOAD, against the design for vehicle days. Run on a
  * stand of stage 3 (`CRM_STAND_STAGE=3`); skipped where Vehicles and crew is
  * not in the stand's stage.
  *

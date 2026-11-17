@@ -69,9 +69,9 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   const canRemove = session.can(table, "delete");
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  // Every row is read; fifty are shown, then fifty more a press (plan 68 X4).
+  // Every row is read; fifty are shown, then fifty more a press.
   const [shown, setShown] = useState(LIST_PAGE);
-  // The stage whose "worth asking" questions are open (S11).
+  // The stage whose "worth asking" questions are open.
   const [asking, setAsking] = useState<Listed | null>(null);
   /**
    * What was last sent for a field, until the list has been read again: Enter
@@ -264,7 +264,7 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   );
 }
 
-/** A stage's "worth asking" questions, five lines at most: what Call notes offers for a deal at this stage (plan 68 S11, Q4 = A). */
+/** A stage's "worth asking" questions, five lines at most: what Call notes offers for a deal at this stage. */
 function AskingDialog({ stage, busy, onClose, onSave }: { stage: Listed; busy: boolean; onClose: () => void; onSave: (text: string | null) => Promise<void> }) {
   const t = useT();
   const kept = askingOf(stage.worth_asking as string | null | undefined);

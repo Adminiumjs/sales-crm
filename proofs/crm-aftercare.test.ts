@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, P23: AFTER THE JOB, against the whole server on SQLite, Postgres
+ * AFTER THE JOB, against the whole server on SQLite, Postgres
  * and MySQL, with the app's own manifest (every part; Jobs on site and After
  * the job switched on), each try made signed in as the person it is about.
  *

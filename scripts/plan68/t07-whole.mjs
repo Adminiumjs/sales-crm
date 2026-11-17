@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Plan 68, T07 (S19, the crew's offline queue): what the whole app and its sample gain.
+// The crew's offline queue: what the whole app and its sample gain.
 //
 //  - `snags.raised_at`: the moment a snag is raised (stamped on create), so a sign-off refused on
 //    arrival can say when the snag that stopped it was raised. Empty on a snag from before 0.2.2.
