@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.61 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.62 or newer.
 
 ## What installs
 
@@ -95,8 +95,8 @@ asks.
 - **The office** sees a Payments block on the quote, under the totals: what was asked, each
   payment (online, with the service, or one recorded by hand in Adminium's payment panel),
   each refund (with who asked for it, why and their note, for those who may see payments or
-  refund them; Adminium 0.3.62 and later), and what is still to pay when the work is done; "Copy pay link" while something
-  is due; "Refund" for the two roles that may. The deal room's Quote card says what was paid.
+  refund them), and what is still to pay when the work is done; "Copy pay link" while
+  something is due; "Refund" for the two roles that may. The deal room's Quote card says what was paid.
 - **Paying moves nothing.** The quote stays accepted, and the deal stays where it is until
   somebody closes it, won or lost. A refunded deposit is due again: the customer's page offers
   "Pay now" again, and the business withdraws the quote if the work is off.
@@ -213,9 +213,9 @@ The tests check the manifest against Adminium's own validator, a copy of which i
 
 ## Updating to 0.2.6
 
-0.2.6 needs Adminium 0.3.61, the release that lets an app's customers pay online and tells them
-how a payment stands. The add-ons stay as they are. Every row is kept as it was, and nothing is
-switched on for you:
+0.2.6 needs Adminium 0.3.62: customers pay online and are told how a payment stands, and the
+quote's Payments block says who asked for each refund and why. The add-ons stay as they are.
+Every row is kept as it was, and nothing is switched on for you:
 
 - **The update asks you to allow two things:** the customer's quote link shows, of their own
   quote only, what is asked on acceptance, what was paid and given back, and what is left

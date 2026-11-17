@@ -47,7 +47,7 @@ for (const [name, raw] of [
     it("still passes the validator, at an Adminium that reads a form's table by its stored name and judges a survey on its person", () => {
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.61");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.62");
     });
 
     it("opens Enquiries to forms by one entry, of the Inbox part, that only adds a row", () => {

@@ -68,7 +68,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at; the app's floor is the release that takes payments in an app.
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.61' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;

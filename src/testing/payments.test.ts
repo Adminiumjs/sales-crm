@@ -55,7 +55,7 @@ for (const [name, raw] of [
     it("passes the validator, at an Adminium that takes payments in an app", () => {
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.61");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.62");
     });
 
     it("is one payable: the quote, paid into its own payments, while it is accepted on a deal that is not lost and something is asked", () => {
