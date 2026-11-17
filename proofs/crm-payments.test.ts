@@ -9,7 +9,8 @@
  *  - a payment lands once in the quote's payments, written by Adminium with its reference, service and currency, and
  *    moves neither the quote nor the deal; money for a quote not accepted, or accepted on a deal that was lost, is
  *    never written into the app (a person decides);
- *  - a refund writes what stands refunded, and the deposit is due again;
+ *  - a refund writes what stands refunded, and the deposit is due again; the panel says who asked for it and why to
+ *    the sales manager, and to a rep neither;
  *  - every role that reads quotes reads their payments, nobody writes one, and the CRM admin and the sales manager
  *    may refund (the staff config says so to the screens);
  *  - the "quote accepted" e-mail reads as before while nothing can be paid online;
@@ -571,12 +572,23 @@ for (const [dialect, reachable] of LEGS) {
       expect(await record(attemptId)).toMatchObject({ state: 'recorded' });
       expect(money((await quoteRow(id))['pay_due'])).toBe('0.00');
       const deps = { meta: s.meta, sources, providerFor: async () => ({ ok: true as const, key: PROVIDER, mode: 'live' as const, provider: service(PROVIDER), redirectHosts: [] }) };
-      const refunded = await requestRefund(deps as never, { attemptId, amount: due, reason: 'requested_by_customer', note: null, key: `rk-${dialect}-quote-refund-0001`, requestedBy: null });
+      const note = 'The customer moved the work to next year.';
+      const refunded = await requestRefund(deps as never, { attemptId, amount: due, reason: 'requested_by_customer', note, key: `rk-${dialect}-quote-refund-0001`, requestedBy: s.id['ivy']! });
       expect(refunded).toMatchObject({ ok: true, refund: { state: 'succeeded' } });
       const [row] = await paymentsOf(id);
       expect(money(row!['refunded'])).toBe(due);
       const after = await quoteRow(id);
       expect([after['status'], money(after['pay_paid']), money(after['pay_refunded']), money(after['pay_due']), Number(after['pay_open'])]).toEqual(['accepted', '0.00', due, due, 1]);
+      // The quote's Payments block reads who asked for the refund and why from the payment panel, as the person reading it.
+      const panelAs = (person: string) => s.app.inject({ method: 'POST', url: '/api/v1/payments/panel', headers: { cookie: who(person) }, payload: { connectionId: s.connectionId, table: s.t('quotes'), recordId: String(id) } });
+      const refundsOf = (res: Reply) => ((res.json() as { data: { payments: { attemptId: string | null; refunds: Record<string, unknown>[] }[] } }).data.payments.find((one) => one.attemptId === attemptId)?.refunds ?? []);
+      const told = await panelAs('ivy');
+      expect(told.statusCode, told.body).toBe(200);
+      expect(refundsOf(told)).toEqual([expect.objectContaining({ amount: expect.any(String), state: 'succeeded', by: 'Ivy Sandoval', reason: 'requested_by_customer', note })]);
+      // A rep reads the quote's payments but may neither see nor refund the service's side: no names, no reasons.
+      const rep = await panelAs('dana');
+      if (rep.statusCode === 200) for (const refund of refundsOf(rep)) expect([refund['by'] ?? null, refund['reason'] ?? null, refund['note'] ?? null]).toEqual([null, null, null]);
+      else expect(rep.statusCode, rep.body).toBeGreaterThanOrEqual(400);
     });
 
     it('lets every role that reads quotes read their payments, nobody write one, and the CRM admin and the sales manager refund', async () => {
