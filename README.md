@@ -94,7 +94,8 @@ asks.
   work the business has written off.
 - **The office** sees a Payments block on the quote, under the totals: what was asked, each
   payment (online, with the service, or one recorded by hand in Adminium's payment panel),
-  each refund, and what is still to pay when the work is done; "Copy pay link" while something
+  each refund (with who asked for it, why and their note, for those who may see payments or
+  refund them; Adminium 0.3.62 and later), and what is still to pay when the work is done; "Copy pay link" while something
   is due; "Refund" for the two roles that may. The deal room's Quote card says what was paid.
 - **Paying moves nothing.** The quote stays accepted, and the deal stays where it is until
   somebody closes it, won or lost. A refunded deposit is due again: the customer's page offers

@@ -55,6 +55,17 @@ describe("the Payments block's lines", () => {
     expect(paymentLines(quote(), [online({ refunded: "7600.00" })], null).map((line) => line.kind)).toEqual(["paid", "refund"]);
   });
 
+  it("says who asked for a refund and why when the panel tells this reader, and nothing it does not", () => {
+    const at = Date.parse("2026-07-25T08:40:00Z");
+    const told = paymentLines(quote(), [online({ refunded: "7600.00" })], panel("0", [{ id: "rf_1", amount: "7600.00", state: "succeeded", createdAt: at, by: "Ivy Sandoval", reason: "requested_by_customer", note: "The customer moved the work to next year." }]));
+    expect(told[1]).toMatchObject({ kind: "refund", by: "Ivy Sandoval", reason: "requested_by_customer", note: "The customer moved the work to next year." });
+    // A reader the panel tells nothing, a refund made in the service's own dashboard, an unknown reason, a blank note.
+    const quiet = paymentLines(quote(), [online({ refunded: "7600.00" })], panel("0", [{ id: "rf_1", amount: "7600.00", state: "succeeded", createdAt: at }]));
+    expect(quiet[1]).toMatchObject({ kind: "refund", by: null, reason: null, note: null });
+    const odd = paymentLines(quote(), [online({ refunded: "7600.00" })], panel("0", [{ id: "rf_1", amount: "7600.00", state: "succeeded", createdAt: at, by: " ", reason: "changed_mind", note: "  " }]));
+    expect(odd[1]).toMatchObject({ by: null, reason: null, note: null });
+  });
+
   it("asks the whole amount, and leaves nothing for later", () => {
     expect(paymentLines(quote({ pay_ask: "whole", pay_amount: "38000.00", pay_due: "38000.00" }), [], null)[0]).toMatchObject({ kind: "asked", amount: 38000 });
     expect(paymentLines(quote({ pay_ask: "whole", pay_amount: "38000.00", pay_paid: "38000.00", pay_due: "0.00" }), [online({ amount: "38000.00" })], panel()).map((line) => line.kind)).toEqual(["paid"]);

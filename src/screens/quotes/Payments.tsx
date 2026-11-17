@@ -6,7 +6,8 @@
  * Every figure is the server's: what the quote asks and has left are its own
  * columns, each payment is a row Adminium wrote into the quote's payments.
  * A refund's state is Adminium's own (the payment panel's read of the quote,
- * through the person's own grants).
+ * through the person's own grants), and so is who asked for it and why, told
+ * to those who may see it.
  *
  * WHAT CAN BE DONE, each with Adminium's own part and words, never the app's:
  * "Copy pay link" (the record's current link, made only when there is none),
@@ -49,7 +50,26 @@ export interface Panel {
   mayChange: boolean;
   mayRefund: boolean;
   links: { on: boolean; reason: string | null };
-  payments: { attemptId: string | null; refundable: string; refunds: { id: string; amount: string; state: string; createdAt: number }[] }[];
+  payments: { attemptId: string | null; refundable: string; refunds: PanelRefund[] }[];
+}
+
+/** The reasons Adminium's refund dialog offers. */
+export const REFUND_REASONS = ["requested_by_customer", "duplicate", "fraudulent", "other"] as const;
+export type RefundReason = (typeof REFUND_REASONS)[number];
+
+/**
+ * One refund as the panel says it. Who asked for it, why and the note come
+ * only to someone who may see payments or refund them (Adminium 0.3.62), and
+ * only for a refund asked in Adminium: absent or null otherwise.
+ */
+export interface PanelRefund {
+  id: string;
+  amount: string;
+  state: string;
+  createdAt: number;
+  by?: string | null;
+  reason?: string | null;
+  note?: string | null;
 }
 
 /** A quote's payments and its panel. Nothing from a server that does not say whether the app takes payments. */
@@ -89,7 +109,14 @@ export interface PaymentLine {
   done?: boolean;
   attemptId?: string | null;
   refundable?: number;
+  /** A refund: who asked for it, the reason picked and the note written, when the panel tells this reader. */
+  by?: string | null;
+  reason?: RefundReason | null;
+  note?: string | null;
 }
+
+const reasonOf = (value: string | null | undefined): RefundReason | null => ((REFUND_REASONS as readonly string[]).includes(value ?? "") ? (value as RefundReason) : null);
+const plain = (value: string | null | undefined): string | null => (typeof value === "string" && value.trim() !== "" ? value.trim() : null);
 
 export function paymentLines(quote: Quote, rows: readonly QuotePayment[], panel: Panel | null): PaymentLine[] {
   const out: PaymentLine[] = [];
@@ -101,7 +128,7 @@ export function paymentLines(quote: Quote, rows: readonly QuotePayment[], panel:
     out.push({ key: `p${String(row.id)}`, kind: "paid", amount: num(row.amount), at: row.paid_at, service: online ? serviceName(row.provider) : null, way: online ? undefined : row.method, attemptId: online ? row.payment_ref : null, refundable: held === undefined ? 0 : num(held.refundable) });
     const refunds = held?.refunds.filter((refund) => refund.state !== "failed" && refund.state !== "cancelled") ?? [];
     if (refunds.length > 0) {
-      for (const refund of refunds) out.push({ key: `r${refund.id}`, kind: "refund", amount: num(refund.amount), at: new Date(refund.createdAt).toISOString(), done: refund.state === "succeeded" });
+      for (const refund of refunds) out.push({ key: `r${refund.id}`, kind: "refund", amount: num(refund.amount), at: new Date(refund.createdAt).toISOString(), done: refund.state === "succeeded", by: plain(refund.by), reason: reasonOf(refund.reason), note: plain(refund.note) });
     } else if (num(row.refunded) > 0) {
       out.push({ key: `r${String(row.id)}`, kind: "refund", amount: num(row.refunded), at: null, done: true });
     }
@@ -141,7 +168,10 @@ export function QuotePayments({ session, quote, rows, panel, f, when, after }: {
     if (line.kind === "asked") return t("quotes.pay.askedOn", { day: when(line.at) });
     if (line.kind === "rest") return t("quotes.pay.whenDone");
     if (line.kind === "paid") return line.at === null ? "" : t("quotes.pay.paidOn", { day: when(line.at) });
-    return line.at === null ? "" : when(line.at);
+    // A refund: when, who asked for it and why, as far as the panel tells this reader.
+    const by = line.by === null || line.by === undefined ? null : t("quotes.pay.refundBy", { person: line.by });
+    const why = line.reason === null || line.reason === undefined ? null : t(`quotes.pay.reason.${line.reason}` as MessageKey);
+    return [line.at === null ? null : when(line.at), by, why].filter((part): part is string => part !== null).join(" · ");
   };
   return (
     <section className="crm-quote-pay" aria-labelledby="crm-quote-pay-h" data-testid="quote-payments">
@@ -169,6 +199,11 @@ export function QuotePayments({ session, quote, rows, panel, f, when, after }: {
               <span className="crm-pill crm-quote-pay-chip" data-tone="neutral">
                 <Icon name="undo-2" size={12} />
                 {t(line.done === true ? "quotes.pay.refunded" : "quotes.pay.requested")}
+              </span>
+            ) : null}
+            {line.kind === "refund" && line.note !== null && line.note !== undefined ? (
+              <span className="crm-quote-pay-why" data-testid="quote-refund-note">
+                {t("quotes.pay.refundNote", { note: line.note })}
               </span>
             ) : null}
             {line.kind === "paid" && mayRefund && line.attemptId !== null && line.attemptId !== undefined && (line.refundable ?? 0) > 0 ? (

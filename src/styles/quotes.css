@@ -568,6 +568,14 @@ a.crm-quote-row:focus-visible {
   font-size: 12.5px;
   color: var(--fg-muted);
 }
+/* A refund's note, as its person wrote it, on a line of its own under the refund. */
+.crm-quote-pay-why {
+  flex-basis: 100%;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
 .crm-quote-pay-chip {
   display: inline-flex;
   align-items: center;
