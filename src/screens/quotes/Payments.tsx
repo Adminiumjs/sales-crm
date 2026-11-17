@@ -72,15 +72,23 @@ export interface PanelRefund {
   note?: string | null;
 }
 
-/** A quote's payments and its panel. Nothing from a server that does not say whether the app takes payments. */
-export async function readPayments(session: StaffSession, quoteId: number): Promise<{ rows: QuotePayment[]; panel: Panel | null }> {
-  if (session.config.payments === null || session.config.payments === undefined) return { rows: [], panel: null };
+/**
+ * A quote's payments and its panel. Nothing from a server that does not say
+ * whether the app takes payments, and nothing asked of a quote that is not
+ * accepted: only an accepted quote is ever paid (a draft or a sent one is
+ * read and saved many times over, and each read costs nothing more). The
+ * panel is asked only while the app takes payments, or of a quote that was
+ * paid: with payments off and nothing paid there is nothing to show.
+ */
+export async function readPayments(session: StaffSession, quote: { id: number; status: string }): Promise<{ rows: QuotePayment[]; panel: Panel | null }> {
+  if (session.config.payments === null || session.config.payments === undefined || quote.status !== "accepted") return { rows: [], panel: null };
   const rows = session.can("quote_payments", "read")
-    ? (await session.list<QuotePayment>("quote_payments", { select: PAYMENT_COLUMNS, where: { column: "quote_id", op: "eq", value: quoteId }, order: ["paid_at", "id"], limit: 50 })).rows
+    ? (await session.list<QuotePayment>("quote_payments", { select: PAYMENT_COLUMNS, where: { column: "quote_id", op: "eq", value: quote.id }, order: ["paid_at", "id"], limit: 50 })).rows
     : [];
+  if (session.config.payments.on !== true && rows.length === 0) return { rows, panel: null };
   let panel: Panel | null = null;
   try {
-    const said = await session.call<{ data?: Panel | null }>("POST", "/payments/panel", { connectionId: session.connectionId, table: session.tableId("quotes"), recordId: String(quoteId) });
+    const said = await session.call<{ data?: Panel | null }>("POST", "/payments/panel", { connectionId: session.connectionId, table: session.tableId("quotes"), recordId: String(quote.id) });
     panel = said?.data ?? null;
   } catch (error) {
     // No panel for this person or this server: the rows still say what was paid, and nothing is offered.

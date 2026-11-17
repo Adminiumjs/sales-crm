@@ -79,7 +79,7 @@ async function read(session: StaffSession, id: number, fixed: Promise<{ prices: 
     session.list<Line>("quote_lines", { select: LINE_COLUMNS, where: { column: "document_id", op: "eq", value: id }, order: ["position", "id"], limit: 200 }),
     session.get<DealFacts>("deals", one.deal_id, { lookup: ["contact:contact_id.name"] }),
     fixed,
-    readPayments(session, id),
+    readPayments(session, one),
   ]);
   // The quote read by itself carries what its reader's role shows of it; the list asks for fewer columns. Where the link went comes from the first.
   const family = all.filter((quote) => (quote.family_no ?? quote.number) === (one.family_no ?? one.number)).sort((a, b) => a.version - b.version).map((quote) => (quote.id === id ? { ...quote, sent_to_email: one.sent_to_email ?? null, to_email: one.to_email ?? null } : quote));

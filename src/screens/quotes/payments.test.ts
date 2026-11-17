@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import type { StaffSession } from "../../staffSession.ts";
 import type { Quote } from "./data.ts";
-import { paymentLines, serviceName, showsPayments, type Panel, type QuotePayment } from "./Payments.tsx";
+import { paymentLines, readPayments, serviceName, showsPayments, type Panel, type QuotePayment } from "./Payments.tsx";
 import { example } from "../appsettings/Payments.tsx";
 
 const quote = (more: Partial<Quote> = {}): Quote =>
@@ -92,5 +92,44 @@ describe("words", () => {
   it("works the Settings example on a round quote", () => {
     expect(example(20)).toEqual({ deposit: 200, rest: 800 });
     expect(example(33)).toEqual({ deposit: 330, rest: 670 });
+  });
+});
+
+describe("what the quote screen asks the server of its payments", () => {
+  const asking = (payments: { on: boolean } | null, rows: QuotePayment[] = []) => {
+    const asked: string[] = [];
+    const stand = {
+      config: { payments: payments === null ? null : { online: payments.on, test: false, refund: false, ...payments }, csrfToken: "" },
+      connectionId: "c1",
+      can: () => true,
+      tableId: (ref: string) => `crm_${ref}`,
+      list: async (ref: string) => (asked.push(`list ${ref}`), { rows }),
+      call: async (method: string, path: string) => (asked.push(`${method} ${path}`), { data: null }),
+    } as unknown as StaffSession;
+    return { stand, asked };
+  };
+
+  it("asks nothing of a quote that is not accepted: it is never paid, and is read and saved many times over", async () => {
+    for (const status of ["draft", "sent", "declined", "withdrawn"]) {
+      const { stand, asked } = asking({ on: true });
+      expect(await readPayments(stand, { id: 7, status })).toEqual({ rows: [], panel: null });
+      expect(asked, status).toEqual([]);
+    }
+  });
+
+  it("asks an accepted quote's payments, and the panel only while the app takes payments or something was paid", async () => {
+    const off = asking({ on: false });
+    await readPayments(off.stand, { id: 7, status: "accepted" });
+    expect(off.asked).toEqual(["list quote_payments"]);
+    const paid = asking({ on: false }, [online()]);
+    await readPayments(paid.stand, { id: 7, status: "accepted" });
+    expect(paid.asked).toEqual(["list quote_payments", "POST /payments/panel"]);
+    const on = asking({ on: true });
+    await readPayments(on.stand, { id: 7, status: "accepted" });
+    expect(on.asked).toEqual(["list quote_payments", "POST /payments/panel"]);
+    // A server that says nothing of payments: nothing is asked.
+    const none = asking(null);
+    await readPayments(none.stand, { id: 7, status: "accepted" });
+    expect(none.asked).toEqual([]);
   });
 });
