@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 
 import { companyProblem } from "../../selling/newDeal.ts";
 import type { StaffSession } from "../../staffSession.ts";
-import { CHAT_ADD_ON, chatReadable, hasCompany, type Enquiry } from "./data.ts";
+import { CHAT_ADD_ON, CHAT_LINES, chatReadable, hasCompany, type Enquiry } from "./data.ts";
 import { dealFrom } from "./Inbox.tsx";
 import { companyText, firstStepOf, namedOf, subjectOf } from "./parts.tsx";
 import { authorOf, CHAT_EVENTS, eventText } from "./ReadChat.tsx";
@@ -37,6 +37,10 @@ describe('"Read the chat"', () => {
     expect(chatReadable(reader(true, []))).toBe(false);
     expect(chatReadable(reader(true, [both[0]!]))).toBe(false);
     expect(chatReadable(reader(true, [both[1]!]))).toBe(false);
+  });
+
+  it("asks for no more lines than one read of the server's gives (200), else the read is refused", () => {
+    expect(CHAT_LINES).toBeLessThanOrEqual(200);
   });
 
   it("words the chat's own lines in the reader's language, and shows one it does not know as the add-on wrote it", () => {

@@ -231,8 +231,8 @@ export async function readMarketerHome(session: StaffSession, month: [string, st
 export const CHAT_ADD_ON = "live-chat";
 /** How the chat names one of this app's enquiries on its conversation: the app's key and the table's own short name. */
 export const ENQUIRIES_REF = "crm:enquiries";
-/** The most lines a transcript shows: a chat longer than that says it was cut. */
-export const CHAT_LINES = 500;
+/** The most lines a transcript shows, which is the most one read of the server's gives (200): a chat longer than that says it was cut. */
+export const CHAT_LINES = 200;
 
 export type ChatLineKind = "visitor" | "staff" | "automatic" | "system";
 export interface ChatLine {
