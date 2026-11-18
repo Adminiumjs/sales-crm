@@ -76,6 +76,8 @@ describe("the app is made of eleven parts", () => {
       ["inventory", true],
       ["offers", false],
       ["forms", true],
+      // A chat window on the website is the owner's to choose: offered, not ticked.
+      ["live-chat", false],
     ]);
   });
 });

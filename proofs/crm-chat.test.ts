@@ -102,6 +102,9 @@ describe.each(LEGS)(`the CRM's website chat, with ${CHAT === null ? 'no built ad
     return { token, id };
   };
   const enquiry = async (id: string | number): Promise<Doc> => (await rows(`SELECT * FROM ${table('crm:enquiries')} WHERE id = ${String(id)}`))[0]!;
+  /** The enquiry the question left outside hours became, and its conversation. */
+  const left: { enquiry?: string; conversation?: string; question?: string } = {};
+  const where = (condition: unknown) => `where=${encodeURIComponent(JSON.stringify(condition))}`;
 
   beforeAll(async () => {
     if (!available) return;
@@ -206,6 +209,9 @@ describe.each(LEGS)(`the CRM's website chat, with ${CHAT === null ? 'no built ad
       deal_id: null,
     });
     expect(row['received_at']).not.toBeNull();
+    left.enquiry = String(conversation['became_key']);
+    left.conversation = String(conversation['id']);
+    left.question = String(row['text']);
   });
 
   it.skipIf(!available)('in hours, "Make an enquiry" is the person’s own create: a rep who answers the chat makes it; one who may not add enquiries, and Read-only, are refused', async () => {
@@ -234,5 +240,35 @@ describe.each(LEGS)(`the CRM's website chat, with ${CHAT === null ? 'no built ad
     const listed = await as('dana', 'GET', data('crm:enquiries', `/${String(became.key)}`));
     expect(listed.statusCode, listed.body).toBe(200);
     expect((listed.json() as Doc).data.company_name).toBe('');
+  });
+
+  it.skipIf(!available)('"Read the chat": the Team inbox roles read the conversation an enquiry came from and its lines, and only the columns the screen shows; the others read neither', async () => {
+    expect(left.enquiry).toBeDefined();
+    const found = { and: [{ column: 'became_table', op: 'eq', value: 'crm:enquiries' }, { column: 'became_key', op: 'eq', value: left.enquiry }] };
+    const lines = { column: 'conversation_id', op: 'eq', value: Number(left.conversation) };
+    for (const who of ['corin', 'lena']) {
+      const conversations = await as(who, 'GET', data(`${KEY}:conversations`, `?${where(found)}&select=id,started_at,outside_hours,became_table,became_key&limit=1`));
+      expect(conversations.statusCode, `${who}: ${conversations.body}`).toBe(200);
+      const [conversation] = (conversations.json() as Doc).data as Doc[];
+      expect(String(conversation!['id']), who).toBe(left.conversation);
+      expect([true, 1].includes(conversation!['outside_hours'] as never), who).toBe(true);
+      // The visitor's name and address stay the enquiry's: the conversation's own are not read.
+      const whole = await as(who, 'GET', data(`${KEY}:conversations`, `?${where(found)}&limit=1`));
+      expect(whole.statusCode, whole.body).toBe(200);
+      const keys = Object.keys(((whole.json() as Doc).data as Doc[])[0]!).filter((key) => !key.startsWith('_'));
+      expect(keys.filter((key) => ['name', 'email', 'came_from', 'taken_by'].includes(key)), who).toEqual([]);
+      const messages = await as(who, 'GET', data(`${KEY}:messages`, `?${where(lines)}&select=id,kind,body,event,author_id,sent_at&order=id`));
+      expect(messages.statusCode, `${who}: ${messages.body}`).toBe(200);
+      const read = (messages.json() as Doc).data as Doc[];
+      // The question reads in clear (the body is personal: the grant reads it), and nothing of it is masked.
+      expect(read.filter((one) => one['kind'] === 'visitor').map((one) => one['body']), who).toEqual([left.question]);
+      // Nobody of the inbox writes a line: Adminium alone does.
+      const wrote = await as(who, 'POST', data(`${KEY}:messages`), { values: { conversation_id: Number(left.conversation), kind: 'staff', body: 'Hello', sent_at: new Date().toISOString() } });
+      expect(wrote.statusCode, who).toBe(403);
+    }
+    for (const who of ['grace', 'ada']) {
+      expect((await as(who, 'GET', data(`${KEY}:conversations`, `?${where(found)}&limit=1`))).statusCode, who).toBe(403);
+      expect((await as(who, 'GET', data(`${KEY}:messages`, `?${where(lines)}`))).statusCode, who).toBe(403);
+    }
   });
 });
