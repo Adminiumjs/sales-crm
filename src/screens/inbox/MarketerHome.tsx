@@ -5,7 +5,9 @@
  *
  * Every figure is the server's for her: this month's enquiries by where they
  * came from (and how many of each were scanned on a stand), the deals they
- * led to, and the trade-show leads nobody has rung, the keenest first.
+ * led to, and the trade-show leads nobody has rung, the keenest first. Below
+ * them, this month's campaigns, form answers, funnels and website chats, each
+ * only where its add-on is here and she may read it (`MarketingGroups.tsx`).
  */
 import { useCallback, useMemo, useState } from "react";
 
@@ -19,6 +21,8 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { firstName } from "../../ui/people.ts";
 import { readNames } from "../visits/data.ts";
 import { hasCompany, leadAge, readMarketerHome } from "./data.ts";
+import { readMarketing } from "./marketing.ts";
+import { MarketingGroups, MarketingTiles } from "./MarketingGroups.tsx";
 import { companyText, SOURCE_ICON, sourceLabel, warmLabel, WARM_TONE } from "./parts.tsx";
 
 export function MarketerHome(_props: ScreenProps) {
@@ -30,13 +34,15 @@ export function MarketerHome(_props: ScreenProps) {
   const [now, setNow] = useState(() => session.now());
   const today = f.dayKey(now);
   const { load, reload } = useLoad(() => readMarketerHome(session, monthOf(today), f), [session, today, f]);
+  const { load: marketing, reload: reloadMarketing } = useLoad(() => readMarketing(session, monthOf(today), f), [session, today, f]);
   const { load: people } = useLoad(() => readNames(session), [session]);
   const names = people.state === "ready" ? people.data : {};
   const again = useCoalesced(
     useCallback(() => {
       setNow(session.now());
       reload();
-    }, [session, reload]),
+      reloadMarketing();
+    }, [session, reload, reloadMarketing]),
   );
   useLive(["enquiries"], again);
   const month = f.monthLong(now);
@@ -160,6 +166,15 @@ export function MarketerHome(_props: ScreenProps) {
                 </ul>
               )}
             </section>
+          </>
+        )}
+      </Loaded>
+
+      <Loaded load={marketing} reload={reloadMarketing} skeleton={<Skeleton rows={2} height={110} />}>
+        {(groups) => (
+          <>
+            <MarketingTiles data={groups} month={month} t={t} f={f} />
+            <MarketingGroups data={groups} month={month} monthDays={monthOf(today)} t={t} f={f} />
           </>
         )}
       </Loaded>

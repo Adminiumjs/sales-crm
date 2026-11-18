@@ -384,6 +384,43 @@
 .crm-mk-figure[data-late="1"] {
   color: var(--danger);
 }
+/* A funnel: its name, then its steps in order, each with its views and the share that went on. */
+.crm-mk-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 4px;
+}
+.crm-mk-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.crm-mk-step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.crm-mk-step[data-gone="1"] .crm-mk-step-title {
+  color: var(--fg-subtle);
+  font-style: italic;
+}
+.crm-mk-step-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.crm-mk-share {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
 
 /* A show's pasted list */
 .crm-paste-show {
