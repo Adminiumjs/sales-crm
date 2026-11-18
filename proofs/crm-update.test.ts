@@ -1,13 +1,19 @@
 /**
- * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3, 0.2.4, 0.2.5 and 0.2.6, holding
- * the sample and rows typed since by the people who type them, updated to 0.2.7 (the whole app), on SQLite, Postgres and
- * MySQL.
+ * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3, 0.2.4, 0.2.5, 0.2.6 and 0.2.7,
+ * holding the sample and rows typed since by the people who type them, updated to 0.2.8 (the whole app), on SQLite,
+ * Postgres and MySQL.
  *
- * Each release is read from its git tag (`v0.2.0` … `v0.2.6`): the manifest and the `seeds/` the package shipped, as
+ * Each release is read from its git tag (`v0.2.0` … `v0.2.7`): the manifest and the `seeds/` the package shipped, as
  * the release put them in its file. Before a release is tagged, `CRM_RELEASE_REFS` names the commit that holds it
  * (`0.2.6=<commit>`). The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
  * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
  * when it still says the one installed), Forms among them, installed after the CRM's update.
+ *
+ * Landing pages (0.2.8, on Adminium 0.3.65): the marketer's home shows the campaigns, the forms' answers, the funnels'
+ * views and the chats, so the marketer reads Forms' forms and answers and Pages' pages and funnels, read only. No table,
+ * column, part or rule changes. The update from every release asks the owner for those reads, though no install has
+ * Pages yet; once it is installed after the update, the marketer reads its pages and funnels and the operations manager
+ * does not.
  *
  * The website chat (0.2.7, on Adminium 0.3.64): a question left outside hours makes an enquiry through the chat entry,
  * and the Team inbox's five roles read the chat an enquiry came from (Live chat's conversations and messages). No table,
@@ -89,7 +95,7 @@ import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.64' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.65' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 type Row = Record<string, unknown>;
@@ -97,8 +103,8 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.7';
-const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6'] as const;
+const NEXT = '0.2.8';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7'] as const;
 /** A release not tagged yet, read from the commit that holds it: `CRM_RELEASE_REFS=0.2.6=<commit>`. */
 const REFS: Record<string, string> = Object.fromEntries((process.env.CRM_RELEASE_REFS ?? '').split(',').filter((pair) => pair.includes('=')).map((pair) => pair.split('=', 2) as [string, string]));
 const refOf = (version: string): string => REFS[version] ?? `v${version}`;
@@ -175,7 +181,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.7: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.8: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -231,7 +237,18 @@ const CHAT_READS = ['admin', 'front-desk', 'marketer', 'rep', 'sales-manager'].f
   { role, addOn: 'live-chat', table: 'conversations', actions: ['read'], columns: ['id', 'started_at', 'outside_hours', 'became_table', 'became_key'] },
   { role, addOn: 'live-chat', table: 'messages', actions: ['read', 'read_pii'], columns: ['id', 'conversation_id', 'kind', 'body', 'event', 'author_id', 'sent_at'] },
 ]);
-const haveAddOns = ADD_ONS.every((key) => before[key] !== null && after[key] !== null) && formsNext !== null && chatNext !== null;
+/** Pages, which no install had before: installed after the CRM's update, numbered as its first release will be (the app suggests 1.0.31 or newer). */
+const pagesBuilt = addOnAt(AFTER_REPO, 'pages');
+const pagesNext: AddOn | null = pagesBuilt === null ? null : { ...pagesBuilt, version: '1.0.31', manifest: { ...pagesBuilt.manifest, version: '1.0.31' } };
+/** What every release before 0.2.8 is asked for the marketer's home: Forms' forms and answers, Pages' pages and funnels, read only. */
+const MARKETER_READS = [
+  { role: 'marketer', addOn: 'forms', table: 'answers', actions: ['read'], columns: ['id', 'form_id', 'submitted_at'] },
+  { role: 'marketer', addOn: 'forms', table: 'forms', actions: ['read'], columns: ['id', 'name', 'kind', 'state'] },
+  { role: 'marketer', addOn: 'pages', table: 'funnels', actions: ['read'], columns: ['id', 'name', 'steps'] },
+  { role: 'marketer', addOn: 'pages', table: 'pages', actions: ['read'], columns: ['id', 'name', 'slug', 'state', 'language', 'published_at'] },
+];
+const isMarketerRead = (grant: { role: string; addOn: string; table: string }): boolean => MARKETER_READS.some((one) => one.role === grant.role && one.addOn === grant.addOn && one.table === grant.table);
+const haveAddOns = ADD_ONS.every((key) => before[key] !== null && after[key] !== null) && formsNext !== null && chatNext !== null && pagesNext !== null;
 /** Whether an Inventory copies an order's expected day onto each delivery (from 1.0.14). */
 const copiesExpectedDay = (addOn: AddOn | null): boolean => ((addOn?.manifest['requiredSchema'] as { tables?: Table[] } | undefined)?.tables ?? []).some((table) => table.ref === 'receipts' && table.columns.some((column) => column.ref === 'expected_on'));
 
@@ -534,7 +551,7 @@ function lostOrChanged(was: Map<string, Map<string, Row>>, now: Map<string, Map<
 describe.skipIf(haveAddOns && RELEASES.every(tagged))('the CRM updated from its releases', () => {
   it('needs both releases tagged, and the add-ons as released and as next, built', () => {
     throw new Error(
-      `tags ${RELEASES.filter((one) => !tagged(one)).join(', ') || 'present'}; CRM_ADD_ONS_BEFORE ${BEFORE_REPO ?? 'unset'}, ADD_ONS_REPO ${AFTER_REPO ?? 'unset'}: each needs Invoices and Inventory built, the next one Forms and Live chat too`,
+      `tags ${RELEASES.filter((one) => !tagged(one)).join(', ') || 'present'}; CRM_ADD_ONS_BEFORE ${BEFORE_REPO ?? 'unset'}, ADD_ONS_REPO ${AFTER_REPO ?? 'unset'}: each needs Invoices and Inventory built, the next one Forms, Live chat and Pages too`,
     );
   });
 });
@@ -557,9 +574,11 @@ for (const [dialect, reachable] of LEGS) {
       /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 and later already have the mark of the line and the count of won deals; 0.2.4 already has website forms and surveys. */
       const has22 = from !== '0.2.0' && from !== '0.2.1';
       const has23 = has22 && from !== '0.2.2';
-      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6';
-      /** 0.2.6 already takes a quote's payments online: the update asks nothing of them. */
-      const has26 = from === '0.2.6';
+      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6' || from === '0.2.7';
+      /** 0.2.6 and later already take a quote's payments online: the update asks nothing of them. */
+      const has26 = from === '0.2.6' || from === '0.2.7';
+      /** 0.2.7 already lets the Team inbox's roles read the chat an enquiry came from. */
+      const has27 = from === '0.2.7';
       const installedAddOns = before;
       const nextAddOns = after;
 
@@ -645,7 +664,7 @@ for (const [dialect, reachable] of LEGS) {
           await s.meta.db.updateTable('adminium_users').set({ status: 'active', passwordHash: s.hash, email: `${person.key}@crm.test` }).where('id', '=', user.id).execute();
           id[person.key] = user.id;
         }
-        for (const key of ['dana', 'priya', 'ada', 'tessa', ...(has21 ? ['f_yusuf'] : [])]) cookie[key] = await signIn(s.app, `${key}@crm.test`);
+        for (const key of ['dana', 'priya', 'ada', 'tessa', 'lena', ...(has21 ? ['f_yusuf'] : [])]) cookie[key] = await signIn(s.app, `${key}@crm.test`);
       }, 900_000);
 
       it('takes rows typed since, each by the person who types it', async () => {
@@ -747,17 +766,19 @@ for (const [dialect, reachable] of LEGS) {
         expect(receipts.filter((row) => plainValue(row['got']) !== plainValue(row['want'])).map((row) => `${String(row['id'])}: ${String(plainValue(row['got']))}, the order says ${String(plainValue(row['want']))}`).slice(0, 10)).toEqual([]);
       }, 600_000);
 
-      it(`the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table (the inbox's reads of Live chat${has24 ? '' : ', and older ones'}), and goes when the owner allows them${has26 ? '' : ', lets the customer\'s link show more and two roles refund'}`, async () => {
+      it(`the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table (the marketer's reads of Forms and Pages${has27 ? '' : ', the inbox\'s reads of Live chat'}${has24 ? '' : ', and older ones'}), and goes when the owner allows them${has26 ? '' : ', lets the customer\'s link show more and two roles refund'}`, async () => {
         await s.jobs();
         rowsBefore = await everyRow(s);
         partsBefore = await parts();
         rulesBefore = await rules();
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
         const want = widerGrants(was.manifest, now.manifest);
-        // From every release: the Team inbox's roles read the chat an enquiry came from, though no install has Live chat yet.
+        // From every release: the marketer reads what her home shows of Forms and Pages, though no install has Pages yet.
+        expect(want.filter(isMarketerRead)).toEqual(MARKETER_READS);
+        // From every release before 0.2.7: the Team inbox's roles read the chat an enquiry came from.
         const chatWant = want.filter((grant) => grant.addOn === 'live-chat');
-        expect(chatWant).toEqual([...CHAT_READS].sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`)));
-        const older = want.filter((grant) => grant.addOn !== 'live-chat');
+        expect(chatWant).toEqual(has27 ? [] : [...CHAT_READS].sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`)));
+        const older = want.filter((grant) => grant.addOn !== 'live-chat' && !isMarketerRead(grant));
         // Each refusal names what it asks, before anything moves; the owner allows each in turn.
         // Nothing is allowed up front: the quote link's own key carries the app's public access through the update.
         const allowed: Record<string, boolean> = {};
@@ -785,11 +806,11 @@ for (const [dialect, reachable] of LEGS) {
         }
         // From every release: the customer's link shows what a quote asks, and what was paid and is left; the CRM admin
         // and the sales manager may refund the CRM's online payments.
-        // 0.2.6 asks neither: it holds both already. The chat's own entry asks nothing more of the app's public access.
+        // 0.2.6 and 0.2.7 ask neither: they hold both already. The chat's own entry asks nothing more of the app's public access.
         expect(reasons.filter((one) => one !== 'roleTables').sort()).toEqual(has26 ? [] : ['PUBLIC_WIDER', 'ROLE_GRANTS_ADDED']);
         expect(reasons).toContain('roleTables');
         if (has24) {
-          // 0.2.4 already holds every other grant of an add-on's table 0.2.7 does.
+          // 0.2.4 already holds every other grant of an add-on's table 0.2.8 does.
           expect(older).toEqual([]);
         } else {
           // From every release before 0.2.4: the five roles that read the aftercare calls read when a job's survey went
@@ -955,7 +976,7 @@ for (const [dialect, reachable] of LEGS) {
         // and the two settings, at what they start at (nothing asked, a deposit of 20 %).
         const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
         const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
-        // 0.2.7's: none.
+        // 0.2.7's and 0.2.8's: none.
         if (has26) expect(ids).toEqual([]);
         else if (has24) expect(ids).toEqual(PAY_PLAIN);
         else if (has23) expect(ids).toEqual([...ours, ...PAY_PLAIN].sort());
@@ -1094,6 +1115,26 @@ for (const [dialect, reachable] of LEGS) {
           expect(read.statusCode, `${table}: ${read.body}`).toBe(200);
           expect((await as('ada', 'GET', path)).statusCode, table).toBe(403);
         }
+        // What the update kept is still kept.
+        expect(Number((await one('select count(*) as c from crm_enquiries'))['c'])).toBeGreaterThan(0);
+      }, 600_000);
+
+      it('Pages installed after the update: the marketer reads its pages and funnels, and Forms\' forms and answers; the operations manager none of them', async () => {
+        await upload('/api/v1/add-ons/upload', addOnTarball(pagesNext!));
+        const added = await as('owner', 'POST', '/api/v1/add-ons', { key: 'pages', version: pagesNext!.version, attachTo: ['crm'] });
+        expect(added.statusCode, added.body).toBe(200);
+        await s.jobs();
+        await s.reread();
+        // The grants the owner allowed on the update, written now each add-on is there (Forms came in above).
+        for (const table of ['pages_pages', 'pages_funnels', 'forms_forms', 'forms_answers']) {
+          const path = `/api/v1/data/${s.connectionId}/${s.t(table)}?limit=1`;
+          const read = await as('lena', 'GET', path);
+          expect(read.statusCode, `${table}: ${read.body}`).toBe(200);
+          expect((await as('ada', 'GET', path)).statusCode, table).toBe(403);
+        }
+        // She writes none of them: an admin builds a page and a funnel.
+        const write = await as('lena', 'POST', `/api/v1/data/${s.connectionId}/${s.t('pages_funnels')}`, { values: { name: 'Mine', steps: [] } });
+        expect(write.statusCode, write.body).toBe(403);
         // What the update kept is still kept.
         expect(Number((await one('select count(*) as c from crm_enquiries'))['c'])).toBeGreaterThan(0);
       }, 600_000);
