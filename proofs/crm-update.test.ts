@@ -18,7 +18,7 @@
  * acceptance and what was paid of it, and two settings. The update from every release asks the owner to let the
  * customer's link show more of a quote (what is asked, paid and left) and to let the CRM admin and the sales manager
  * refund online payments; the quote's payable arrives switched off. The releases are installed on the engine under test
- * (0.3.62): each says an older floor, which it still meets. The customer's link is the app's only public door (a quote
+ * (0.3.64): each says an older floor, which it still meets. The customer's link is the app's only public door (a quote
  * opened by its code, no guest key): its access follows the version as a guest key's does, so the update asks nothing
  * more of it than the wider entry.
  *

@@ -68,7 +68,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at; the app's floor is the release that takes payments in an app.
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.64' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
@@ -699,7 +699,9 @@ for (const [dialect, reachable] of LEGS) {
         else allowed['roleTables'] = true;
       }
       // The customer's link shows what is asked and paid of their own quote; the CRM admin and the sales manager may refund.
-      expect(refusals.map((one) => one.split(' ')[0]).sort()).toEqual(['PUBLIC_WIDER', 'ROLE_GRANTS_ADDED']);
+      expect(refusals.map((one) => one.split(' ')[0]).filter((one) => one === 'PUBLIC_WIDER' || one === 'ROLE_GRANTS_ADDED').sort()).toEqual(['PUBLIC_WIDER', 'ROLE_GRANTS_ADDED']);
+      // And one more since 0.2.7: the Team inbox's read of Live chat's tables (`crm-update.test.ts` holds which).
+      expect(refusals.filter((one) => !one.startsWith('PUBLIC_WIDER') && !one.startsWith('ROLE_GRANTS_ADDED'))).toHaveLength(1);
       expect(refusals.find((one) => one.startsWith('ROLE_GRANTS_ADDED'))).toMatch(/admin/);
       expect(updated?.statusCode, updated?.body).toBe(200);
       await s.reread();
