@@ -1,0 +1,497 @@
+{
+ "format": "adminium.sample/1",
+ "app": "crm",
+ "addOn": "pages",
+ "weekAnchor": "tue",
+ "tables": [
+  {
+   "ref": "pages",
+   "rows": [
+    {
+     "@label": "page:booths",
+     "name": {
+      "@t": {
+       "en-US": "Acoustic booths",
+       "de-DE": "Akustikkabinen",
+       "fr-FR": "Cabines acoustiques",
+       "da-DK": "Akustiske kabiner",
+       "cs-CZ": "Akustické kabiny",
+       "ar-EG": "الكبائن العازلة للصوت",
+       "zh-CN": "隔音舱",
+       "zh-TW": "隔音艙"
+      }
+     },
+     "slug": "acoustic-booths",
+     "state": "live",
+     "language": "en-US",
+     "draft": {
+      "v": 1,
+      "title": "Acoustic booths for open offices",
+      "description": "Booths that cut the noise of a busy floor by half. Each one seats two and is in place in a day.",
+      "blocks": [
+       {
+        "id": "hero",
+        "kind": "hero",
+        "heading": "Acoustic booths for open offices",
+        "text": "Our booths cut the noise of a busy floor by half. Each one seats two, fits through a standard door, and is in place in a day."
+       },
+       {
+        "id": "sizes",
+        "kind": "columns",
+        "columns": [
+         {
+          "heading": "What fits where",
+          "text": "Single booths for calls, double booths for two people, and a meeting pod for four."
+         },
+         {
+          "heading": "In place in a day",
+          "text": "We bring each booth in through a standard door and set it up while you work."
+         }
+        ]
+       },
+       {
+        "id": "inside",
+        "kind": "features",
+        "items": [
+         {
+          "icon": "volume-x",
+          "heading": "Quiet inside",
+          "text": "Talk at a normal voice."
+         },
+         {
+          "icon": "wind",
+          "heading": "Air that moves",
+          "text": "A silent fan changes the air every two minutes."
+         },
+         {
+          "icon": "move",
+          "heading": "Moves with you",
+          "text": "Lift it onto wheels and roll it to a new spot."
+         }
+        ]
+       },
+       {
+        "id": "questions",
+        "kind": "questions",
+        "title": "Questions and answers",
+        "items": [
+         {
+          "question": "How long does fitting take?",
+          "answer": "One day for up to four booths."
+         },
+         {
+          "question": "Do the booths need power?",
+          "answer": "One standard socket runs the fan and the light."
+         },
+         {
+          "question": "Can we try one first?",
+          "answer": "Yes. Come to our open day in Leeds and sit in one."
+         }
+        ]
+       }
+      ]
+     },
+     "published": {
+      "v": 1,
+      "title": "Acoustic booths for open offices",
+      "description": "Booths that cut the noise of a busy floor by half. Each one seats two and is in place in a day.",
+      "blocks": [
+       {
+        "id": "hero",
+        "kind": "hero",
+        "heading": "Acoustic booths for open offices",
+        "text": "Our booths cut the noise of a busy floor by half. Each one seats two, fits through a standard door, and is in place in a day."
+       },
+       {
+        "id": "sizes",
+        "kind": "columns",
+        "columns": [
+         {
+          "heading": "What fits where",
+          "text": "Single booths for calls, double booths for two people, and a meeting pod for four."
+         },
+         {
+          "heading": "In place in a day",
+          "text": "We bring each booth in through a standard door and set it up while you work."
+         }
+        ]
+       },
+       {
+        "id": "inside",
+        "kind": "features",
+        "items": [
+         {
+          "icon": "volume-x",
+          "heading": "Quiet inside",
+          "text": "Talk at a normal voice."
+         },
+         {
+          "icon": "wind",
+          "heading": "Air that moves",
+          "text": "A silent fan changes the air every two minutes."
+         },
+         {
+          "icon": "move",
+          "heading": "Moves with you",
+          "text": "Lift it onto wheels and roll it to a new spot."
+         }
+        ]
+       },
+       {
+        "id": "questions",
+        "kind": "questions",
+        "title": "Questions and answers",
+        "items": [
+         {
+          "question": "How long does fitting take?",
+          "answer": "One day for up to four booths."
+         },
+         {
+          "question": "Do the booths need power?",
+          "answer": "One standard socket runs the fan and the light."
+         },
+         {
+          "question": "Can we try one first?",
+          "answer": "Yes. Come to our open day in Leeds and sit in one."
+         }
+        ]
+       }
+      ]
+     },
+     "published_at": {
+      "@ago": "P40D"
+     }
+    },
+    {
+     "@label": "page:open-day",
+     "name": {
+      "@t": {
+       "en-US": "Showroom open day",
+       "de-DE": "Tag der offenen Tür im Showroom",
+       "fr-FR": "Journée portes ouvertes du showroom",
+       "da-DK": "Åbent hus i showroomet",
+       "cs-CZ": "Den otevřených dveří v showroomu",
+       "ar-EG": "يوم مفتوح في صالة العرض",
+       "zh-CN": "展厅开放日",
+       "zh-TW": "展示廳開放日"
+      }
+     },
+     "slug": "showroom-open-day",
+     "state": "live",
+     "language": "en-US",
+     "draft": {
+      "v": 1,
+      "title": "Showroom open day",
+      "description": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+      "blocks": [
+       {
+        "id": "hero",
+        "kind": "hero",
+        "heading": "Open day at our Leeds showroom",
+        "text": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+        "button": {
+         "label": "See the booths",
+         "link": {
+          "kind": "page",
+          "key": {
+           "@ref": "page:booths"
+          }
+         }
+        }
+       },
+       {
+        "id": "day",
+        "kind": "features",
+        "items": [
+         {
+          "icon": "calendar",
+          "heading": "One day only",
+          "text": "Come at any time between 10:00 and 19:00."
+         },
+         {
+          "icon": "users",
+          "heading": "Bring your team",
+          "text": "Up to eight people, and your floor drawings."
+         },
+         {
+          "icon": "map-pin",
+          "heading": "Parking behind the showroom",
+          "text": "Twenty spaces, kept for the day."
+         }
+        ]
+       },
+       {
+        "id": "book",
+        "kind": "form",
+        "form": "b398a577-930b-4293-a64d-4f9372bc4841",
+        "addOn": "forms"
+       },
+       {
+        "id": "questions",
+        "kind": "questions",
+        "title": "Questions and answers",
+        "items": [
+         {
+          "question": "Is there parking?",
+          "answer": "Yes, twenty spaces behind the showroom."
+         },
+         {
+          "question": "Can I bring my team?",
+          "answer": "Yes, up to eight people."
+         }
+        ]
+       }
+      ]
+     },
+     "published": {
+      "v": 1,
+      "title": "Showroom open day",
+      "description": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+      "blocks": [
+       {
+        "id": "hero",
+        "kind": "hero",
+        "heading": "Open day at our Leeds showroom",
+        "text": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+        "button": {
+         "label": "See the booths",
+         "link": {
+          "kind": "page",
+          "key": {
+           "@ref": "page:booths"
+          }
+         }
+        }
+       },
+       {
+        "id": "day",
+        "kind": "features",
+        "items": [
+         {
+          "icon": "calendar",
+          "heading": "One day only",
+          "text": "Come at any time between 10:00 and 19:00."
+         },
+         {
+          "icon": "users",
+          "heading": "Bring your team",
+          "text": "Up to eight people, and your floor drawings."
+         },
+         {
+          "icon": "map-pin",
+          "heading": "Parking behind the showroom",
+          "text": "Twenty spaces, kept for the day."
+         }
+        ]
+       },
+       {
+        "id": "book",
+        "kind": "form",
+        "form": "b398a577-930b-4293-a64d-4f9372bc4841",
+        "addOn": "forms"
+       },
+       {
+        "id": "questions",
+        "kind": "questions",
+        "title": "Questions and answers",
+        "items": [
+         {
+          "question": "Is there parking?",
+          "answer": "Yes, twenty spaces behind the showroom."
+         },
+         {
+          "question": "Can I bring my team?",
+          "answer": "Yes, up to eight people."
+         }
+        ]
+       }
+      ]
+     },
+     "published_at": {
+      "@ago": "P12D"
+     }
+    },
+    {
+     "@label": "page:thanks",
+     "name": {
+      "@t": {
+       "en-US": "Thanks, see you there",
+       "de-DE": "Danke, bis bald",
+       "fr-FR": "Merci, à bientôt",
+       "da-DK": "Tak, vi ses",
+       "cs-CZ": "Děkujeme, uvidíme se",
+       "ar-EG": "شكرًا، نراك هناك",
+       "zh-CN": "谢谢，到时见",
+       "zh-TW": "謝謝，到時見"
+      }
+     },
+     "slug": "thanks-open-day",
+     "state": "live",
+     "language": "en-US",
+     "draft": {
+      "v": 1,
+      "title": "Thanks, see you there",
+      "description": "We have your booking for the showroom open day.",
+      "blocks": [
+       {
+        "id": "heading",
+        "kind": "heading",
+        "text": "Thanks, see you there"
+       },
+       {
+        "id": "text",
+        "kind": "text",
+        "text": "We have your booking for Thursday 18 September. We'll confirm your time within one working day."
+       },
+       {
+        "id": "booths",
+        "kind": "button",
+        "label": "See the booths",
+        "link": {
+         "kind": "page",
+         "key": {
+          "@ref": "page:booths"
+         }
+        }
+       }
+      ]
+     },
+     "published": {
+      "v": 1,
+      "title": "Thanks, see you there",
+      "description": "We have your booking for the showroom open day.",
+      "blocks": [
+       {
+        "id": "heading",
+        "kind": "heading",
+        "text": "Thanks, see you there"
+       },
+       {
+        "id": "text",
+        "kind": "text",
+        "text": "We have your booking for Thursday 18 September. We'll confirm your time within one working day."
+       },
+       {
+        "id": "booths",
+        "kind": "button",
+        "label": "See the booths",
+        "link": {
+         "kind": "page",
+         "key": {
+          "@ref": "page:booths"
+         }
+        }
+       }
+      ]
+     },
+     "published_at": {
+      "@ago": "P12D"
+     }
+    },
+    {
+     "@label": "page:open-day-de",
+     "name": {
+      "@t": {
+       "en-US": "Showroom open day, in German",
+       "de-DE": "Tag der offenen Tür im Showroom, auf Deutsch",
+       "fr-FR": "Journée portes ouvertes du showroom, en allemand",
+       "da-DK": "Åbent hus i showroomet, på tysk",
+       "cs-CZ": "Den otevřených dveří v showroomu, německy",
+       "ar-EG": "يوم مفتوح في صالة العرض، بالألمانية",
+       "zh-CN": "展厅开放日（德语版）",
+       "zh-TW": "展示廳開放日（德文版）"
+      }
+     },
+     "slug": "tag-der-offenen-tuer",
+     "state": "draft",
+     "language": "de-DE",
+     "draft": {
+      "v": 1,
+      "title": "Tag der offenen Tür im Showroom",
+      "description": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Probieren Sie die neuen Kabinen und Tische aus.",
+      "blocks": [
+       {
+        "id": "hero",
+        "kind": "hero",
+        "heading": "Tag der offenen Tür in unserem Showroom in Leeds",
+        "text": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Setzen Sie sich in die neuen Kabinen und probieren Sie die Tische aus.",
+        "button": {
+         "label": "Zu den Kabinen",
+         "link": {
+          "kind": "page",
+          "key": {
+           "@ref": "page:booths"
+          }
+         }
+        }
+       },
+       {
+        "id": "day",
+        "kind": "features",
+        "items": [
+         {
+          "icon": "calendar",
+          "heading": "Nur ein Tag",
+          "text": "Kommen Sie zwischen 10:00 und 19:00 Uhr, wann es Ihnen passt."
+         },
+         {
+          "icon": "users",
+          "heading": "Mit Ihrem Team",
+          "text": "Bis zu acht Personen, gern mit Ihren Grundrissen."
+         },
+         {
+          "icon": "map-pin",
+          "heading": "Parken hinter dem Showroom",
+          "text": "Zwanzig Plätze, für den Tag freigehalten."
+         }
+        ]
+       }
+      ]
+     },
+     "published": null,
+     "published_at": null
+    }
+   ]
+  },
+  {
+   "ref": "funnels",
+   "rows": [
+    {
+     "@label": "funnel:open-day",
+     "name": {
+      "@t": {
+       "en-US": "Open day",
+       "de-DE": "Tag der offenen Tür",
+       "fr-FR": "Journée portes ouvertes",
+       "da-DK": "Åbent hus",
+       "cs-CZ": "Den otevřených dveří",
+       "ar-EG": "اليوم المفتوح",
+       "zh-CN": "开放日",
+       "zh-TW": "開放日"
+      }
+     },
+     "steps": [
+      {
+       "kind": "page",
+       "key": {
+        "@ref": "page:open-day"
+       }
+      },
+      {
+       "kind": "form",
+       "key": "b398a577-930b-4293-a64d-4f9372bc4841",
+       "addOn": "forms"
+      },
+      {
+       "kind": "page",
+       "key": {
+        "@ref": "page:thanks"
+       }
+      }
+     ],
+     "rule_id": null
+    }
+   ]
+  }
+ ]
+}

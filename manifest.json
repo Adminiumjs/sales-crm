@@ -28437,6 +28437,9 @@
       },
       "live-chat": {
         "file": "seeds/meridian.live-chat.json"
+      },
+      "pages": {
+        "file": "seeds/meridian.pages.json"
       }
     },
     "people": [
