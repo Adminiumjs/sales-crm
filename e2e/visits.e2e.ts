@@ -1,5 +1,5 @@
 /**
- * P10, site visits: the list, the booking dialog (book, move, cancel) and the
+ * Site visits: the list, the booking dialog (book, move, cancel) and the
  * write-up, on the sample, on the ledger's Tuesday 28 July 2026 at 09:35.
  *
  * Every visit a spec makes has a purpose that starts "Spec: " and is taken
@@ -176,7 +176,7 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(dialog.locator(".crm-bk-other")).toContainText("10:30–12:00");
   await expect(dialog.locator(".crm-bk-other")).toContainText("Nordwind Logistics");
   await expect(dialog.locator(".crm-bk-other em")).toHaveText("Overlaps");
-  // A rep's two visits never overlap (plan 68 X7): the dialog says which one is in the way and books nothing over it.
+  // A rep's two visits never overlap: the dialog says which one is in the way and books nothing over it.
   await expect(dialog.locator(".crm-bk-flag")).toHaveText("This overlaps one of Dana’s visits. Pick another time.");
   await expect(book).toBeDisabled();
   // What the customer is told, read from the switch the server holds: an e-mail goes, said with her name.
@@ -237,7 +237,7 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await cardOf.getByRole("button", { name: /^Move the visit to Cobalt Legal/ }).click();
   await expect(moving.getByTestId("bk-history")).toHaveText(/^Moved before: it was Wed, Jul 29, 08:30\. Changed by Dana Whitlock on Tue, Jul 28, \d\d:\d\d\.$/);
   await page.keyboard.press("Escape");
-  // The server's own refusal of two at once (plan 68 X7), asked directly: moved onto her Wednesday visit (10:30–12:00), or a
+  // The server's own refusal of two at once, asked directly: moved onto her Wednesday visit (10:30–12:00), or a
   // new one over it, is refused as taken, and the visit keeps its time.
   const over = { starts_at: "2026-07-29T09:45:00.000Z", minutes: 30 };
   const moved = await dana.patch(data("site_visits", `/${String(held[0]!.id)}`), { data: { values: over }, headers: await csrf(dana) });
@@ -266,7 +266,7 @@ test("Dana books a visit for herself, moves it and cancels it, by keyboard where
   await expect(chip(page, "soon")).toHaveText("5");
   // The row is gone for everybody: there is no cancelled visit to list.
   expect(await named(dana, data, "Spec: check the door swing")).toEqual([]);
-  // Its why is kept with the removed visit, read through the deal (plan 68 S16): under the list, when asked.
+  // Its why is kept with the removed visit, read through the deal: under the list, when asked.
   await page.getByRole("button", { name: "Show cancelled visits" }).click();
   const gone = page.getByTestId("visits-removed").locator(".crm-removed-line", { hasText: "Spec: check the door swing" });
   await expect(gone).toContainText("Why: no: Spec, Ines is away");
@@ -476,7 +476,7 @@ test("Dana writes up the visit that waits on its notes; her manager's open page 
   await page.getByLabel("What they said").fill("Spec: Bea wants six pods by the windows.");
   await page.getByLabel("What happens next").fill("Spec: send Bea the pod layout");
   await page.getByRole("switch", { name: "Put the next step in my queue" }).click();
-  // Two of the five "what to capture" ticks, kept with the write-up (S10).
+  // Two of the five "what to capture" ticks, kept with the write-up.
   await page.getByRole("checkbox", { name: "Access and the lift" }).click();
   await page.getByRole("checkbox", { name: "Power and data" }).click();
   await expect(page.getByText("2 of 5")).toBeVisible();
@@ -624,7 +624,7 @@ test("site visits at 390 wide in the dark, the dialog too; and in Arabic right t
 });
 
 /**
- * Plan 68 X7 (D18): the server refuses a new visit that starts before now. The dialog books nothing in the past itself,
+ * The server refuses a new visit that starts before now. The dialog books nothing in the past itself,
  * so the time is moved into the past on its way: what comes back is the server's refusal, said in the dialog's words.
  * Nothing is made.
  */

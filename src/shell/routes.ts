@@ -41,11 +41,11 @@ export type RouteKey =
   | "aftercare" | "feedback" | "complaints" | "claims"
   /** Showroom and samples (stage 2, P19): the front desk's home and the five screens of the part. */
   | "deskhome" | "showroom" | "showfollow" | "samples" | "returns" | "floor"
-  /** Jobs on site, the office side (P20) and the route (P21); the operations manager's home. */
+  /** Jobs on site, the office side and the route; the operations manager's home. */
   | "ophome" | "deliveries" | "daysheet" | "route" | "signoff" | "dnotes" | "snags" | "waste"
   /** Settings for the operations manager, who keeps the crews and writes no setting: the Settings screen, its Crews tab alone. */
   | "crews"
-  /** The field crew's phone (P22): his day, a job signed off from one of its visits, and his crew's snags. */
+  /** The field crew's phone: his day, a job signed off from one of its visits, and his crew's snags. */
   | "myday" | "crewsign" | "mysnags"
   /** Vehicles and crew (stage 3, P25): the office's six screens; the crew's own vehicle, hours and certificates on his phone. */
   | "vehicles" | "fuel" | "timesheets" | "training" | "subs" | "iclaims" | "myvan" | "myhours" | "mycerts"
@@ -217,7 +217,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     ["team", [it("messages"), it("targets", "teamTargets"), it("meeting")]],
     ["settings", [it("appsettings"), it("nudges", "nudgeRules"), it("import"), it("onboarding"), it("patch")]],
   ],
-  // "Deals I am on" joins this menu with stage 2: until then he reads a deal only once it is won (ruling R6), and an open-deals board would always be empty for him.
+  // "Deals I am on" joins this menu with stage 2: until then he reads a deal only once it is won, and an open-deals board would always be empty for him.
   "account-manager": [
     ["top", [it("amhome", "home")]],
     ["customers", [it("renewals"), it("repeat"), it("referrals")]],
@@ -231,7 +231,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     ["accounts", [it("companies"), it("contacts")]],
   ],
   "front-desk": [["top", [it("deskhome", "home")]], SHOWROOM, ["inbox", [it("inbox")]]],
-  // The design's sixteen, and a Settings line for the crews, their people and their days (P3): a crew is set up there, by her.
+  // The design's sixteen, and a Settings line for the crews, their people and their days: a crew is set up there, by her.
   "ops-manager": [["top", [it("ophome", "home")]], JOBS, SUPPLY, FLEET, ["settings", [it("crews", "appsettings")]]],
   // My day and Snags (Jobs on site); his vehicle, My hours and My certificates (Vehicles and crew, stage 3).
   crew: [["top", [it("myday"), it("mysnags"), it("myvan"), it("myhours"), it("mycerts")]]],
@@ -246,7 +246,7 @@ export const MENUS: Record<RoleKey, readonly MenuGroup[]> = {
     SUPPLY,
     FLEET,
     ["team", [it("targets", "teamTargets"), it("meeting")]],
-    // The design gives Read-only no Settings group. She reads every setting and presses nothing (P15); with no line she had no way to the page.
+    // The design gives Read-only no Settings group. She reads every setting and presses nothing; with no line she had no way to the page.
     ["settings", [it("appsettings")]],
   ],
 };

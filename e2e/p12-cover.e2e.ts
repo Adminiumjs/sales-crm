@@ -1,5 +1,5 @@
 /**
- * P12, Cover (ledger screen 46): the three groups, New cover, Change the
+ * Cover (ledger screen 46): the three groups, New cover, Change the
  * dates, End today, Cancel, and the covering rep's page, on the sample, on
  * the ledger's Tuesday 28 July 2026.
  *
@@ -392,7 +392,7 @@ test("Cover at 390 wide in the dark, its dialog too; and in Arabic right to left
 });
 
 /**
- * Plan 68 X5 (D11): a cover lasts a year at most; longer is "until further notice". The dialog says so before anything is
+ * A cover lasts a year at most; longer is "until further notice". The dialog says so before anything is
  * sent, and the server refuses a longer one whoever asks (proved as each role in `crm-p4-guards`). Nothing is made.
  */
 test("a cover longer than a year: the dialog says to leave the end empty, and the server refuses it", async ({ as, api, data }) => {

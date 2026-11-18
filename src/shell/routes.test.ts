@@ -81,10 +81,10 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
 
   it("keeps the marketer and the front desk to their few lines", () => {
     expect(routesOf(facts(["marketer"]))).toEqual(["mkhome", "leads", "companies", "contacts"]);
-    // With every part on, the front desk has her home and the showroom's five (P19); at the first release, the Inbox alone.
+    // With every part on, the front desk has her home and the showroom's five; at the first release, the Inbox alone.
     expect(routesOf(facts(["front-desk"]))).toEqual(["deskhome", "showroom", "showfollow", "samples", "returns", "floor", "inbox"]);
     expect(routesOf(facts(["front-desk"], { part: (id: PartId) => id !== "showroom" }))).toEqual(["inbox"]);
-    // The field crew: his day and his crew's snags (P22), his vehicle, hours and certificates (P25), and nothing at all while both parts are off (stage 1).
+    // The field crew: his day and his crew's snags, his vehicle, hours and certificates, and nothing at all while both parts are off (stage 1).
     expect(routesOf(facts(["crew"]))).toEqual(["myday", "mysnags", "myvan", "myhours", "mycerts"]);
     expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "fleet" }))).toEqual(["myday", "mysnags"]);
     expect(routesOf(facts(["crew"], { part: (id: PartId) => id !== "jobs" }))).toEqual(["myvan", "myhours", "mycerts"]);
@@ -98,7 +98,7 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     }
   });
 
-  it("gives Time sheets and Training to the operations manager, the CRM admin and Read-only, and to nobody else (P25)", () => {
+  it("gives Time sheets and Training to the operations manager, the CRM admin and Read-only, and to nobody else", () => {
     for (const role of ROLE_ORDER) {
       const office = role === "ops-manager" || role === "admin" || role === "read-only";
       for (const route of ["timesheets", "training"] as const) expect([role, route, inMenu(route, [`crm-${role}`])]).toEqual([role, route, office]);
@@ -108,7 +108,7 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     expect(routesOf(facts(["ops-manager"], { part: (id: PartId) => id !== "fleet" }))).not.toContain("timesheets");
   });
 
-  it("gives the showroom's five to the front desk, the CRM admin and Read-only, and to nobody else (P19)", () => {
+  it("gives the showroom's five to the front desk, the CRM admin and Read-only, and to nobody else", () => {
     const showroom = ["showroom", "showfollow", "samples", "returns", "floor"] as const;
     for (const role of ["front-desk", "admin", "read-only"] as const) {
       const group = menuFor(facts([role])).find((one) => one.group === "showroom");
@@ -119,7 +119,7 @@ describe("a role's menu is the design's, cut to what the role can open", () => {
     expect(menuFor(facts(["admin"])).map((group) => group.group)).toEqual(["top", "selling", "accounts", "inbox", "showroom", "jobs", "aftercare", "supply", "fleet", "team", "settings"]);
   });
 
-  it("gives Vehicles and crew's six to the operations manager, the CRM admin and Read-only, and the crew his own vehicle, hours and certificates (P25)", () => {
+  it("gives Vehicles and crew's six to the operations manager, the CRM admin and Read-only, and the crew his own vehicle, hours and certificates", () => {
     const fleet = ["vehicles", "fuel", "timesheets", "training", "subs", "iclaims"] as const;
     for (const role of ["ops-manager", "admin", "read-only"] as const) {
       const group = menuFor(facts([role])).find((one) => one.group === "fleet");

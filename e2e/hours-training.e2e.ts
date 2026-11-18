@@ -1,9 +1,9 @@
 /**
- * P25, part B: TRAINING (the office) and MY CERTIFICATES (the crew's phone),
+ * Vehicles and crew, part B: TRAINING (the office) and MY CERTIFICATES (the crew's phone),
  * and the part's numbers and line in Settings, on a stand of stage 3
  * (`CRM_STAND_STAGE=3`).
  *
- * - Training as the operations manager on the sample (the ledger's §64): five
+ * - Training as the operations manager on the sample: five
  *   crew members, 23 certificates of 7 kinds, one run out (Sean), two within
  *   42 days (Rina, Mo), Cal's just outside at 46; each figure compared with
  *   what the server answers her.

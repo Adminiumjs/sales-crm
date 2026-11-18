@@ -1,9 +1,9 @@
 /**
- * P20 and P21, Jobs on site at the office (stage 2), the screens after the
- * booking: the Day sheet and its print (ledger §49), the Route (§52, on the
- * kit's map), Sign-off as the office sees it (§1440), the Job snag list
- * (§44), Delivery notes (§48), Recycling and disposal (§63), and the crews in
- * Settings (F20). Run on a stand of stage 2 (`CRM_STAND_STAGE=2`).
+ * Jobs on site at the office (stage 2), the screens after the
+ * booking: the Day sheet and its print, the Route (on the
+ * kit's map), Sign-off as the office sees it, the Job snag list,
+ * Delivery notes, Recycling and disposal, and the crews in
+ * Settings. Run on a stand of stage 2 (`CRM_STAND_STAGE=2`).
  *
  * Every figure on a screen is compared with what the server answers that
  * person, asked directly. Everything a spec writes is put back.
@@ -81,7 +81,7 @@ test("the Day sheet: the next day booked, its crew, the server's hours, the tick
   await expect(page.locator(".crm-toast").last()).toHaveText("Taken back: Done on site.");
   await expect(stop.locator('[data-figure="ticks"]')).toHaveText("0 of 4 ticked");
   expect((await rows<{ tick_done: boolean }>(context.request, data, "job_visits", { column: "id", op: "eq", value: 12 }))[0]!.tick_done).toBe(false);
-  // Wednesday, the same crew: J-07's return visit (plan 68 M3 BN-19); Red's day is over its normal day, as the server adds it up.
+  // Wednesday, the same crew: J-07's return visit; Red's day is over its normal day, as the server adds it up.
   await page.getByRole("group", { name: "Which day" }).locator('[data-day="2026-08-05"]').click();
   await expect(page).toHaveURL(/\/day-sheet\/2026-08-05\/1$/);
   await expect(sheet.locator("li[data-visit='16'] .crm-jb-stop-line")).toHaveText("08:00Tandem Robotics7 h · Cambridge");
@@ -236,7 +236,7 @@ test("Delivery notes: the server's totals and what needs sorting; the office sor
     const lines = await figure(context.request, stand, "delivery_note_lines");
     const sorting = await figure(context.request, stand, "delivery_notes", [{ column: "needs_sorting", op: "eq", value: 1 }]);
     const clean = await figure(context.request, stand, "delivery_notes", [{ column: "needs_sorting", op: "eq", value: 0 }, { column: "sorted", op: "eq", value: false }]);
-    // J-07's note for its return visit of Wed 5 Aug (plan 68 M3 BN-21) is not signed for yet: it needs sorting as any unsigned note does.
+    // J-07's note for its return visit of Wed 5 Aug is not signed for yet: it needs sorting as any unsigned note does.
     expect([all, lines, clean, sorting]).toEqual([6, 17, 2, 4]);
     await expect(stat(page, "notes").locator("[data-value]")).toHaveText(String(all));
     await expect(stat(page, "notes").locator(".crm-kpi-sub")).toHaveText(`${String(lines)} lines on ${String(all)} visits`);

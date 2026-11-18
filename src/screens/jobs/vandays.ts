@@ -1,11 +1,11 @@
 /**
- * A CREW'S VEHICLE FOR THE DAY, AND WHAT TO LOAD (plan 68 S14, D16): what the
+ * A CREW'S VEHICLE FOR THE DAY, AND WHAT TO LOAD: what the
  * booking dialog, the Day sheet, the Route, Vehicles and My day read of it,
  * and how the office writes it.
  *
  * ONE ROW A CREW A DAY. A crew's day with a visit has a stored row naming its
  * vehicle (`van_days`), written with the crew's first visit of that day: its
- * own vehicle unless another is picked (CD-8). Every visit of the crew that
+ * own vehicle unless another is picked. Every visit of the crew that
  * day shares it. The server holds one crew to a vehicle a day (`occupies`) and
  * a hired vehicle to its hire days; a row whose crew has no visit left that
  * day is taken away with its last visit, and one left behind (a visit removed
@@ -70,7 +70,7 @@ export async function readDayVehicles(session: StaffSession): Promise<{ vehicles
 export const dayOfRow = (row: Pick<VanDay, "day">): string | null => dayKeyOf(row.day);
 export const rowOf = (days: readonly VanDay[], crewId: number | null, day: string): VanDay | undefined => days.find((row) => row.crew_id === crewId && dayOfRow(row) === day);
 
-/** How a vehicle stands for one crew's day, as the dialog's list says it (M3 §7 BN-10). */
+/** How a vehicle stands for one crew's day, as the dialog's list says it. */
 export type Standing =
   | { kind: "own" }
   | { kind: "with"; crewId: number }
@@ -132,7 +132,7 @@ export function defaultVehicle(facts: Facts, crewId: number | null, day: string)
   return crewId === null ? null : (facts.own.get(crewId) ?? null);
 }
 
-/** Days past a vehicle's service on the office's today (CD-11), or 0. */
+/** Days past a vehicle's service on the office's today, or 0. */
 export function serviceOver(vehicle: Pick<DayVehicle, "service_due">, today: string): number {
   const due = dayKeyOf(vehicle.service_due);
   if (due === null || due >= today) return 0;
@@ -301,7 +301,7 @@ export const truthyHired = (row: Pick<VanDay, "hired">): boolean => truthy(row.h
 
 /**
  * A booked visit dragged to another day keeps its crew: the crew's row that day stands, or one is made on the
- * crew's own vehicle (CD-8). Answers the refusal when another crew has that vehicle then, with the facts read.
+ * crew's own vehicle. Answers the refusal when another crew has that vehicle then, with the facts read.
  */
 export async function vanDayForMove(session: StaffSession, crewId: number | null, day: string): Promise<{ made: VanDay | null; facts: DayFacts | null } | { refused: DayRefusal; facts: DayFacts }> {
   if (crewId === null || !writesVanDays(session)) return { made: null, facts: null };

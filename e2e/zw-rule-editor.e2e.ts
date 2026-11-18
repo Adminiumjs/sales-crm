@@ -1,5 +1,5 @@
 /**
- * Plan 67 gate G2, "The rule editor's new fields", in Adminium's console (Automations) with the CRM installed, as the
+ * "The rule editor's new fields", in Adminium's console (Automations) with the CRM installed, as the
  * install's owner, on two rules of this spec's own over the CRM's deals (a table with a staff column, Owner, and a link
  * to a company whose Account owner is one too). The CRM's shipped rules are not touched. Both rules are made paused,
  * so neither runs, and both are deleted at the end (the first from its own menu, as a person would).

@@ -123,7 +123,7 @@ export function Territory(_props: ScreenProps) {
       const say = live.current.t;
       const id = Number(pinId);
       const company = live.current.data?.companies.find((one) => one.id === id);
-      // Somebody else's company (plan 68 X3): not sent, and the map says why.
+      // Somebody else's company: not sent, and the map says why.
       if (company !== undefined && !company.changeable) return { refused: say("ui.refused.notYours") };
       const sent = { lat: at.lat, lng: at.lng };
       let saved = await session.update("companies", id, { place: sent });

@@ -8,7 +8,7 @@ const LINES: PreviewLine[] = [
   { row: 3, status: "refused", code: "REFUSED", column: "company_id", message: "company_id: required" },
 ];
 
-describe("past deals on Paste a list (plan 68 R5)", () => {
+describe("past deals on Paste a list", () => {
   it("says a missing closed date in the reader's words, and nothing else", () => {
     const out = reword(LINES, "Needs a closed date.");
     expect(out[0]).toEqual({ row: 1, status: "refused", code: "REFUSED", message: "Needs a closed date.", label: "Old refit" });

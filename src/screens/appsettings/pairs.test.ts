@@ -6,7 +6,7 @@ import { pairWords, PAIRS, withPairWords } from "./pairs.ts";
 
 const refusal = (fields: Record<string, string>) => new StaffError(422, "VALIDATION_FAILED", "Some values were refused.", { fields: Object.fromEntries(Object.entries(fields).map(([column, code]) => [column, { code }])) });
 
-describe("Settings' pairs (plan 68 X4)", () => {
+describe("Settings' pairs", () => {
   it("are the pairs the manifest holds, each kept strictly below its partner", () => {
     const settings = (manifest as unknown as { requiredSchema: { tables: { ref: string; columns: { ref: string; rules?: { notAfter?: unknown } }[] }[] } }).requiredSchema.tables.find((table) => table.ref === "settings")!;
     const held = settings.columns.filter((column) => column.rules?.notAfter !== undefined).map((column) => [column.ref, column.rules!.notAfter]);

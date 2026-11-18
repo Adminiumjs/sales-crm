@@ -1,5 +1,5 @@
 /**
- * Plan 67 gate G2, "Quiet hours": Account → Notifications → the Quiet hours and Summaries cards, as Grace (a sample
+ * "Quiet hours": Account → Notifications → the Quiet hours and Summaries cards, as Grace (a sample
  * person of the CRM), in English and in Arabic (the cards laid out right to left). 18:00 to 08:00 on weekdays, by
  * setting Monday, copying it to every day and taking the weekend off; a day and a time for summaries; a reload keeps it
  * all, as the server does.

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, P23: AFTER THE JOB, against the whole server on SQLite, Postgres
+ * AFTER THE JOB, against the whole server on SQLite, Postgres
  * and MySQL, with the app's own manifest (every part; Jobs on site and After
  * the job switched on), each try made signed in as the person it is about.
  *
@@ -33,7 +33,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;

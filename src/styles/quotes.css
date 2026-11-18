@@ -526,3 +526,81 @@ a.crm-quote-row:focus-visible {
 .crm-approval-box .crm-label {
   margin-block-start: 0;
 }
+/* A quote's payments, under its totals: what was asked, paid and given back, what is left for later. */
+.crm-quote-pay {
+  margin-block-start: 20px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-quote-pay h3.crm-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.crm-quote-pay-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crm-quote-pay-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding-block: 11px;
+  border-block-end: 1px solid var(--border);
+}
+.crm-quote-pay-label {
+  min-inline-size: 96px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.crm-quote-pay-amount {
+  font-size: 14px;
+  font-weight: 700;
+}
+.crm-quote-pay-meta {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+/* A refund's note, as its person wrote it, on a line of its own under the refund. */
+.crm-quote-pay-why {
+  flex-basis: 100%;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+.crm-quote-pay-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.crm-pill[data-tone="neutral"] {
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+.crm-quote-pay-refund {
+  margin-inline-start: auto;
+}
+.crm-quote-pay-link {
+  margin-block-start: 12px;
+}
+.crm-quote-pay-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-subtle);
+}
+.crm-quote-pay-note svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}

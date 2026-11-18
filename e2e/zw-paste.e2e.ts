@@ -47,7 +47,7 @@ const NEW_LINE = "ZW Paste Kestrel Print\tPrinting\tYork\tZWPNEW\t12";
 
 test("Dana pastes tab-separated rows with a header: Match on, the three counts, the lines already here and refused, Show more, run", async ({ as, api, data, stand: state }) => {
   test.setTimeout(240_000);
-  // Two companies with a customer number: one is Dana's, one is Sam's (plan 68 X3 holds a rep to her own for changes).
+  // Two companies with a customer number: one is Dana's, one is Sam's (the server holds a rep to her own for changes).
   const tessa = await api("tessa");
   const headers = await csrf(tessa);
   for (const [name, number, owner] of [["ZW Paste Dana Own", "ZWPDANA", "dana"], ["ZW Paste Sam Own", "ZWPSAM", "sam"]] as const) {

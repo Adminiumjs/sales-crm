@@ -9,7 +9,7 @@
  * WHAT CAN BE DONE is asked of the server every time; this page only leaves a
  * control out when pressing it could not work (the person's role has no such
  * right, or the deal is closed). A rep HELPING on a colleague's deal reads it
- * all and comments, and changes nothing (ruling 1d, `selling/helping.ts`):
+ * all and comments, and changes nothing (`selling/helping.ts`):
  * the page draws her no control that changes the deal, logs on it or makes a
  * quote, and says plainly that the owner makes the changes.
  *
@@ -41,6 +41,7 @@ import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.
 import { firstName, initials } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { createQuote, families, familyNo, held, newest, readNames, stateOf, TONE } from "../quotes/data.ts";
+import { serviceName } from "../quotes/Payments.tsx";
 import { coverPhase, num, readFixed, readRoom, readSide, readTimeline, sittingOf, timelineOf, type Activity, type Deal, type Fixed, type Line, type Member, type RoomData, type Side, type Stage } from "./data.ts";
 
 const KINDS: readonly Activity["kind"][] = ["call", "email", "meeting", "note"];
@@ -242,7 +243,7 @@ export function Room({ id }: { id: string }) {
     const owner = nameOf(deal.owner_id);
     const mine = deal.owner_id !== null && deal.owner_id === me;
     // What was logged and said on a deal: every deal's for the roles that read every deal they open; the account manager's only
-    // on a deal he is on (P23). On a won deal he only reads, neither is his: an empty list must not say "nothing", and the
+    // on a deal he is on. On a won deal he only reads, neither is his: an empty list must not say "nothing", and the
     // comments are not offered.
     const onDeal = mine || members.some((member) => member.user_id === me);
     const readsAll = onDeal || rolesOf((config.access?.roles ?? []).map((role) => role.slug)).some((role) => READS_EVERY_HISTORY.includes(role));
@@ -930,6 +931,20 @@ export function Room({ id }: { id: string }) {
                             ? t("room.quote.has.bare", { n: has.version, amount: f.money(has.total) })
                             : t("room.quote.has", { n: has.version, amount: f.money(has.total), day: f.dayShort(noonOf(has.valid_until.slice(0, 10))) })}
                     </p>
+                    {/* What the customer paid on accepting; paying moves neither the stage nor the deal's won or lost. */}
+                    {has !== null && has.status === "accepted" && num(has.pay_paid) > 0 && (
+                      <div className="crm-room-pay" data-testid="room-quote-paid">
+                        <span className="crm-room-pay-label">{t(has.pay_ask === "whole" ? "quotes.pay.paid" : "quotes.pay.deposit")}</span>
+                        <span className="crm-mono crm-room-pay-amount">{f.money(has.pay_paid)}</span>
+                        {has.pay_paid_at !== null && has.pay_paid_at !== undefined && <span className="crm-room-pay-meta">{t("quotes.pay.paidOn", { day: f.dayShort(new Date(has.pay_paid_at)) })}</span>}
+                        {serviceName(has.pay_provider ?? null) !== null && (
+                          <span className="crm-pill crm-quote-pay-chip" data-tone="info">
+                            <Icon name="globe" size={12} />
+                            {t("quotes.pay.online", { service: serviceName(has.pay_provider ?? null)! })}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <ScreenLink to="quotes" rest={[newestQuote.id]} className="crm-btn crm-btn-ghost crm-btn-38 crm-btn-wide mr-gi">
                       <Icon name="file-text" size={14} />
                       {t("room.quote.open")}

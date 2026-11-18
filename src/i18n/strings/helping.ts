@@ -1,5 +1,5 @@
 /**
- * Area bundle: **helping** on a colleague's deal (ruling 1d): a rep listed on
+ * Area bundle: **helping** on a colleague's deal: a rep listed on
  * a deal she does not own reads it and comments, and its owner makes the
  * changes. Written a key at a time: see `table.ts`.
  *

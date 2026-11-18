@@ -363,7 +363,7 @@ const same = (a: unknown, b: unknown): boolean => {
 type Outcome = { state: "sent"; row: Row } | { state: "refused"; refusal: QueueRefusal } | { state: "offline" };
 
 /**
- * An answer that says "not now" rather than "no" (T09): the session ran out or was signed out elsewhere (401), the
+ * An answer that says "not now" rather than "no": the session ran out or was signed out elsewhere (401), the
  * minute's calls are spent (429, after the session's one wait), the request timed out (408), or the token went stale
  * (403 CSRF_FAILED, after its one renewal). The line waits and keeps what it holds (a customer's signature included);
  * a refusal would have thrown that away.
@@ -709,7 +709,7 @@ export function openQueue(options: QueueOptions): Queue {
       };
     },
 
-    // A hidden line still to send counts too (the record of a refused sign-off): signing out would throw it away (T09).
+    // A hidden line still to send counts too (the record of a refused sign-off): signing out would throw it away.
     busy: () => lines.some((line) => line.state !== "sent" && (!line.quiet || line.state === "waiting" || line.state === "sending")),
 
     async clear() {

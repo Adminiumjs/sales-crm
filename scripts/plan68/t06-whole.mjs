@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Plan 68, T06: who changes which rows (X1, X3, X6's plain parts), a rep's two visits at once (X7's overlap), and the
+ * Who changes which rows (steps, companies, call notes and comments), a rep's two visits at once (their overlap), and the
  * sample rows those need. Changes `whole/manifest.json` and `whole/seeds/meridian.json` and nothing else; run
  * `npm run stage` after it.
  *
@@ -16,7 +16,7 @@
  *    she leads (or herself) as its owner. A territory's places go with it.
  *  - X6: a call note (activities) is changed by its author only, and a comment's words too: the manager and the CRM
  *    admin settle a thread and reword nothing. The CRM admin no longer writes a deal's kept history (`was_move_key`,
- *    `was_from_stage`). Saved views and saved searches are private (D9): their owner's, and nobody else's, the
+ *    `was_from_stage`). Saved views and saved searches are private: their owner's, and nobody else's, the
  *    install's owner included. The sample's three views that had no owner are Ivy's, who made them.
  *  - X7: a site visit takes its rep's time: no two of a rep's visits overlap (`occupies`).
  */

@@ -1,7 +1,7 @@
 import { csrf, rows, unfoldMenu } from "./helpers.ts";
 /**
- * P02, This week: the follow-ups due up to Sunday, a lane a day, with the
- * ledger's figures (§7 of `figures.md`): Mon 27 Jul to Sun 2 Aug, 7 follow-ups,
+ * This week: the follow-ups due up to Sunday, a lane a day, with the
+ * ledger's figures for the week: Mon 27 Jul to Sun 2 Aug, 7 follow-ups,
  * 143,400 riding on them (each deal once), and
  * Before Monday 1 · 52,800; Monday 2 · 30,700; Tuesday 2 · 38,400;
  * Wednesday 1 · 21,500; Thursday 1 · 52,800; Friday to Sunday 0.
@@ -156,7 +156,7 @@ test("This week at 390 wide: the lanes scroll inside themselves, the page does n
   await picture(page, "4-dana-week-390");
 });
 
-test("the week starts on the business's first day, and a narrowed week is kept as a view and opened again (S9, S7)", async ({ as, api, data }) => {
+test("the week starts on the business's first day, and a narrowed week is kept as a view and opened again", async ({ as, api, data }) => {
   const tessa = await api("tessa");
   const settings = (await rows<{ id: number; week_starts: string }>(tessa, data, "settings"))[0]!;
   const startOn = async (day: string): Promise<void> => {

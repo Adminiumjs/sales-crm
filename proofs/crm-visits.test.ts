@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, F17 (stage 1): SITE VISITS AND COVER, against the whole server on
+ * Stage 1: SITE VISITS AND COVER, against the whole server on
  * SQLite, Postgres and MySQL, with the app's own manifest, each try made
  * signed in as the person it is about.
  *
@@ -24,7 +24,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
@@ -84,7 +84,7 @@ for (const [dialect, reachable] of LEGS) {
       const forSam = await book('dana', 'sam', 'danas');
       expect(forSam.statusCode, forSam.body).toBe(403);
       // On a colleague's deal, which she cannot open: refused in the words of "no such deal".
-      // (A day of its own, so the visit she already has that morning is not what refuses it: plan 68 X7.)
+      // (A day of its own, so the visit she already has that morning is not what refuses it.)
       const onSams = await book('dana', 'dana', 'sams', { starts_at: at(4) });
       expect(onSams.statusCode, onSams.body).toBe(409);
       const missing = await s.make('dana', 'site_visits', { deal_id: 999_999, contact_id: contact['petra'], rep_id: s.ids['dana'], starts_at: at(4), minutes: 60, purpose: 'Nowhere' });
@@ -137,7 +137,7 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.change('sam', 'site_visits', danas, { minutes: 30 })).statusCode).toBeGreaterThanOrEqual(403);
       expect((await remove('sam', 'site_visits', danas)).statusCode).toBeGreaterThanOrEqual(403);
       expect(Number((await row('dana', 'site_visits', danas))?.['minutes'])).toBe(60);
-      // A helper books nothing on it himself (ruling 1d, Adminium 0.3.36: he reads and comments). A visit of his booked
+      // A helper books nothing on it himself (Adminium 0.3.36: he reads and comments). A visit of his booked
       // for him there is his: Dana reads that one and does not move it, and he calls it off.
       const refused = await book('sam', 'sam', 'danas');
       expect(refused.statusCode, refused.body).toBe(403);
@@ -188,7 +188,7 @@ for (const [dialect, reachable] of LEGS) {
     });
 
     it('counts a write-up on the visit, and keeps a visit that was written up or made', async () => {
-      // Booked ahead (a visit never starts in the past when it is made: plan 68 X7), then dated two days back, as a visit
+      // Booked ahead (a visit never starts in the past when it is made), then dated two days back, as a visit
       // written up after the day is: a later change is not held to "not before now".
       const id = made(await book('dana', 'dana', 'danas', { starts_at: at(5) }));
       expect(said(await s.change('dana', 'site_visits', id, { starts_at: at(-2) }))).toBe('ok');

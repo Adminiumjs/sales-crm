@@ -156,7 +156,7 @@ export async function lastMove(session: StaffSession, id: number): Promise<Moved
 }
 
 /**
- * Cancel a visit: one removal that carries the why (plan 68 S16). The server
+ * Cancel a visit: one removal that carries the why. The server
  * keeps the why with the removed visit, read through its deal by whoever
  * reads the deal. A reply lost on the way back is read back by the session
  * (`remove` answers saved once the row is no longer there), so a second press

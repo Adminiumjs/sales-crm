@@ -15,11 +15,11 @@
  * LIVE. The screen listens for new messages and marks: a colleague's message
  * appears in the open conversation without a reload.
  *
- * A NEW CONVERSATION (T04) is made with its people in one save: the reader and
+ * A NEW CONVERSATION is made with its people in one save: the reader and
  * whoever she picks, written by the server as the conversation's own rows (a
  * member row is otherwise written only by somebody already in it). One colleague
- * makes a two-person conversation, which takes nobody else later (D12); two or
- * more a group, which anybody in it may bring a colleague into (D3). Somebody
+ * makes a two-person conversation, which takes nobody else later; two or
+ * more a group, which anybody in it may bring a colleague into. Somebody
  * she already has a two-person conversation with opens that one instead.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -54,7 +54,7 @@ interface Message extends Record<string, unknown> {
   author_id: string;
   text: string;
   at: string;
-  /** `removed` once its author (or the CRM admin) took it away: its words are gone, and who and when are kept (plan 68 R4d). */
+  /** `removed` once its author (or the CRM admin) took it away: its words are gone, and who and when are kept. */
   state?: "live" | "removed";
   removed_by_id?: string | null;
   removed_at?: string | null;
@@ -433,7 +433,7 @@ function Conversation({ row, title, names, everyone, f, me, round, opened, onOpe
   );
 }
 
-/** Bring a colleague into a group conversation. They read it from its start: the dialog says so before anything is saved (D3). */
+/** Bring a colleague into a group conversation. They read it from its start: the dialog says so before anything is saved. */
 function AddColleague({ thread, title, people, names, onClose, onAdded }: { thread: number; title: string; people: { id: string; name: string }[]; names: Names; onClose: () => void; onAdded: () => void }) {
   const t = useT();
   const session = useSession();

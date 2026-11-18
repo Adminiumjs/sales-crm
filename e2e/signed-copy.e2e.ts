@@ -1,5 +1,5 @@
 /**
- * Plan 68 S13, the office's Sign-off (stage 2): the signed copy's file row under "Who signed" (M2 note 1).
+ * The office's Sign-off (stage 2): the signed copy's file row under "Who signed".
  *
  * The row is there only when the job is signed off AND Invoices & Receipts draws the copy: on a stand whose Invoices
  * does not draw the kind yet (1.0.13), the copy waits and the row is left out with no line in its place; on one that

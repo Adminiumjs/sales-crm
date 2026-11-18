@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Plan 68, phase 4, T26c: guards, imports, figures and the board, on the
- * engine words of 0.3.35 (E13, E14, E16, E23).
+ * Guards, imports, figures and the board, on the
+ * engine words of 0.3.35.
  *
  * Changes `whole/manifest.json` only (the sample needs no new row). Finds
  * everything by key or name, asserts what it needs, and is idempotent: run
@@ -11,26 +11,26 @@
  *   node scripts/plan68/t26c-whole.mjs
  *
  * What it does:
- *  - R5 (E13): `deals.closed_at` is required while the deal is won or lost,
+ *  - `deals.closed_at` is required while the deal is won or lost,
  *    so a closed deal brought in from a file without its closed moment is
  *    named and not brought in (a person's own move still stamps it);
  *    `deals.closed_on` too: a person's close still stamps it with the
  *    business's day, and a file's closed deal carries its own day (the paste
  *    page fills it from the same "Closed" cell), never the import day. The
  *    CRM admin may bring a list of deals in (`deals:import`);
- *  - R8 (E23): `contacts.may_email_by_id` and `may_email_at` are strict: the
+ *  - `contacts.may_email_by_id` and `may_email_at` are strict: the
  *    server's on every write, and a file that carries them is refused;
- *  - X4 (E14): Settings' pairs: warm below stale, the quote's warning below
+ *  - Settings' pairs: warm below stale, the quote's warning below
  *    its validity, the working day's start before its end, the showroom's
  *    opening before its closing (each `strict`: never the same); the depot's
  *    country from the built-in list;
- *  - X5 (E14): a cover ends no sooner than it starts and at most 365 days
+ *  - a cover ends no sooner than it starts and at most 365 days
  *    after (an empty end stays "until further notice", D11);
  *  - X6 (E14's guard): an enquiry's deal is set only while the enquiry is
  *    claimed, by whoever claimed it;
- *  - X7 (E14, D18): a site visit never starts before now when it is made (a
+ *  - a site visit never starts before now when it is made (a
  *    file or the sample, which bring history, are not held to it);
- *  - S8 (E16): the console's Pipeline board: the toolbar (the total of every
+ *  - the console's Pipeline board: the toolbar (the total of every
  *    card the reader reaches, and a person filter), a card's second money
  *    line (the weighted value, "w") and "days in stage" with its unit.
  */
@@ -84,7 +84,7 @@ column("deals", "weighted_value");
 
 closedAt.rules.requiredWhen = { column: "state", in: ["won", "lost"] };
 // The day too. A person's close stamps it "today", the business's calendar day (a date worked out from the moment would
-// take the moment's UTC day). A history line is judged as sent (E13): no stamp fills either column, so a file brings both,
+// take the moment's UTC day). A history line is judged as sent: no stamp fills either column, so a file brings both,
 // and the paste page reads the day from the same "Closed" cell (`pasteDeals.ts`).
 closedOn.rules.stamp = { set: "today", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true };
 closedOn.rules.requiredWhen = { column: "state", in: ["won", "lost"] };

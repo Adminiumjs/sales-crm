@@ -5,7 +5,7 @@
  * site, cleared). The office ticks them here too; the crew's own phone is
  * P22's. Print it and the crew takes it with them.
  *
- * Each visit's start is its own (N18): no time is worked out from the one
+ * Each visit's start is its own: no time is worked out from the one
  * before. Addresses: `day-sheet/<day>/<crew>`; with none, the next day that
  * has a visit booked, and the first crew booked that day.
  */
@@ -101,7 +101,7 @@ function Sheet({ day, crewId, visits, crews, onOther, onPrint, onDone, printing,
   const { load: hoursLoad } = useLoad(() => (crewId === null ? Promise.resolve(0) : readDayHours(session, day, crewId)), [session, day, crewId, ids]);
   const hours = hoursLoad.state === "ready" ? hoursLoad.data : null;
   const other = crews.crews.find((one) => one.id !== crewId);
-  // The crew's vehicle that day, and what to load on each visit (plan 68 S14).
+  // The crew's vehicle that day, and what to load on each visit.
   const vans = hasVanDays(session);
   const { load: vanLoad, reload: reloadVan } = useLoad(() => (vans ? readDayFacts(session, day) : Promise.resolve(null)), [session, vans, day, ids]);
   const { load: loadsLoad, reload: reloadLoads } = useLoad(() => (vans ? readLoadLists(session, visits.map((visit) => visit.id)) : Promise.resolve(null)), [session, vans, ids]);

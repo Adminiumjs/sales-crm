@@ -315,7 +315,7 @@
   margin-block-start: 14px;
 }
 
-/* "Worth asking" (plan 68 S11): the design's dashed rows, each starting a line of the notes. */
+/* "Worth asking": the design's dashed rows, each starting a line of the notes. */
 .crm-call-asking {
   display: flex;
   flex-direction: column;

@@ -112,10 +112,24 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "withdrawn_at",
       "deal_state",
       "yes_seen_at",
+      // What is asked when the customer accepts, read from Settings when the quote is made: empty on a quote made before,
+      // which asks nothing. What was paid, refunded and when, and what is left, are the server's.
+      "pay_ask",
+      "pay_pct",
+      "pay_amount",
+      "pay_paid",
+      "pay_refunded",
+      "pay_due",
+      "pay_paid_at",
+      "pay_provider",
+      "pay_open",
     ],
   },
   price_list: { nullable: [] },
   quote_lines: { nullable: ["description", "rate", "discount", "currency", "amount", "price_id", "list_rate"] },
+  // A payment of an accepted quote, written by Adminium: an online one carries its reference, service and currency; one
+  // recorded by hand in Adminium's payment panel may carry a note and no reference.
+  quote_payments: { nullable: ["paid_at", "payment_ref", "provider", "currency", "net_amount", "note"] },
   comments: { nullable: ["at", "parent_id", "settled_by_id", "settled_at"] },
   saved_views: { nullable: ["owner_id"] },
   saved_searches: { nullable: ["owner_id", "last_run_at"] },
@@ -158,12 +172,12 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   reps: { nullable: ["tint", "hours_from", "hours_to", "landing"] },
   targets: { nullable: [] },
   one_to_ones: { nullable: ["next_at"] },
-  // T04 (S5): something else raised and how long it ran, empty on an updated install; the four ticks default to no.
+  // something else raised and how long it ran, empty on an updated install; the four ticks default to no.
   one_to_one_sessions: { nullable: ["notes", "raised", "minutes"] },
   coaching_plans: { nullable: ["review_on", "runs_to"] },
-  // T04 (S5): why, what good looks like and its live number, empty on an updated install.
+  // why, what good looks like and its live number, empty on an updated install.
   coaching_areas: { nullable: ["why", "good_looks_like", "measure"] },
-  // An action keeps the one-to-one session it came from (F19), as well as the pair, the meeting and the coaching area.
+  // An action keeps the one-to-one session it came from, as well as the pair, the meeting and the coaching area.
   actions: { nullable: ["due_on", "done_at", "one_to_one_id", "session_id", "meeting_id", "coaching_area_id"] },
   meetings: { nullable: ["run_by_id"] },
   meeting_slots: { nullable: ["who_id"] },
@@ -240,7 +254,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "note",
       "stock_ready_on",
       "cancel_reason",
-      // What a rule last read of the visit's day, crew and state, and when they last changed (plan 68 D17).
+      // What a rule last read of the visit's day, crew and state, and when they last changed.
       "was_day",
       "was_crew_id",
       "leave_key",
@@ -249,14 +263,14 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "site_phone",
       "access_note",
       "ask_for",
-      // When its day, crew or state last changed (in the change's key, T09); its deal, copied from its job (T09).
+      // When its day, crew or state last changed (in the change's key); its deal, copied from its job.
       "left_at",
       "deal_id",
     ],
   },
-  // A correction names the sign-off it corrects; its version is one more (F19).
+  // A correction names the sign-off it corrects; its version is one more.
   sign_offs: { nullable: ["visit_id", "crew_id", "signature", "photos", "snags_at_signing", "check_words", "copy_sent_to", "corrects_id", "corrects_version", "version"] },
-  // A sign-off refused on arrival, as the crew's phone writes it when the refusal comes back (plan 68 S19): the snag's words,
+  // A sign-off refused on arrival, as the crew's phone writes it when the refusal comes back: the snag's words,
   // who raised it and when are copied from it as the record is written; a snag from before 0.2.2 has no moment.
   refused_sign_offs: { nullable: ["crew_id", "site_name", "snag_text", "snag_by_id", "snag_raised_at", "snag_raised_on"] },
   snags: {
@@ -266,7 +280,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "severity",
       "raised_by_id",
       "raised_by_contact_id",
-      // The moment it was raised (plan 68 S19): empty on a snag from before 0.2.2.
+      // The moment it was raised: empty on a snag from before 0.2.2.
       "raised_at",
       "due_days",
       "put_right_on",
@@ -278,7 +292,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   // What a note comes to (kept from its lines) and whether it needs sorting: short, damaged or unsigned, until the office sorts it.
   delivery_notes: { nullable: ["crew_id", "taken_by_id", "signed_by_contact_id", "signed_name", "note", "short", "sorted_on", "needs_sorting"] },
   delivery_note_lines: { nullable: ["crew_id"] },
-  // A visit that left a crew's today or tomorrow, for that crew (plan 68 D17): written by the rules only.
+  // A visit that left a crew's today or tomorrow, for that crew: written by the rules only.
   left_visits: { nullable: ["visit_id", "site_name", "site_town", "leave_key", "day", "now_day"] },
   waste_removals: { nullable: ["carrier", "note_number"] },
   // After the job
@@ -286,16 +300,16 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
   complaints: { nullable: ["contact_id", "job_id", "owner_id", "text", "answer", "fairness", "answered_at", "settled_at"] },
   warranty_claims: { nullable: ["contact_id", "part", "cover", "cover_years", "supplier_name", "supplier", "paid_by"] },
   // Supply
-  // The visit a need's stock goes on, and that visit's crew (kept by the server): empty until a visit takes it (S14).
+  // The visit a need's stock goes on, and that visit's crew (kept by the server): empty until a visit takes it.
   deal_stock_needs: { nullable: ["qty", "item", "visit_id", "crew_id"] },
   // Vehicles and crew
   vehicles: { nullable: ["plate", "model", "odometer", "inspection_due", "service_due", "tax_to", "hired_from", "hired_to", "last_fill_reading", "reading"] },
-  // A crew's vehicle for a day (S14, D16): the vehicle's plate and name kept on the row.
+  // A crew's vehicle for a day: the vehicle's plate and name kept on the row.
   van_days: { nullable: ["plate", "vehicle_name"] },
   vehicle_checks: { nullable: [] },
   vehicle_faults: { nullable: ["raised_by_id", "fixed_on", "photo"] },
   fuel_fills: { nullable: ["prev_odometer", "distance"] },
-  // When it was sent is stamped on the move (B20); its hours in all are the server's, empty only while a total is.
+  // When it was sent is stamped on the move; its hours in all are the server's, empty only while a total is.
   time_sheets: { nullable: ["signed_by_id", "signed_at", "sent_at", "sent_back_note", "total_hours"] },
   time_sheet_lines: { nullable: ["visit_id", "job_id"] },
   certificates: { nullable: ["course_on"] },
@@ -333,7 +347,7 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
 };
 
 /** How many tables the manifest holds: the 75 of the app's ten parts, the price list, and the weekdays a crew works. */
-const TABLE_COUNT = 78;
+const TABLE_COUNT = 79;
 
 /**
  * The tables only the two people of a row read: a manager and a rep. Each
@@ -484,7 +498,7 @@ describe("the manifest holds the tables listed here, and no other", () => {
     expect(tables.map((table) => table.ref).sort()).toEqual(Object.keys(TABLES).sort());
   });
 
-  it("has seventy-eight of them", () => {
+  it("has seventy-nine of them", () => {
     expect(tables).toHaveLength(TABLE_COUNT);
     expect(Object.keys(TABLES)).toHaveLength(TABLE_COUNT);
   });
@@ -662,7 +676,7 @@ describe("a deal is reached by its owner, by the people on it, and by whoever co
   });
 });
 
-describe("a site visit that is cancelled is removed, never marked (F17)", () => {
+describe("a site visit that is cancelled is removed, never marked", () => {
   const visits = byRef.get("site_visits") as unknown as {
     states: { moves: Record<string, unknown[]>; noDelete?: unknown; actions: { id: string }[] };
     columns: { ref: string; type: string; enum?: string[]; nullable?: boolean; default?: unknown; rules?: { rollup?: unknown } }[];
@@ -695,8 +709,8 @@ describe("a site visit that is cancelled is removed, never marked (F17)", () => 
 describe("the four private tables are reached by their own two people and nothing else", () => {
   it("marks exactly those four private, and the two a person saves for herself", () => {
     expect(tables.filter((table) => table.private === true).map((table) => table.ref).sort()).toEqual([...Object.keys(PRIVATE), "saved_searches", "saved_views"].sort());
-    // A saved view or search is its owner's alone (plan 68 D9): one way, its owner.
-    // Its owner's, and its maker's: a view 0.2.1 shared had no owner, and is its maker's after the update (T09).
+    // A saved view or search is its owner's alone: one way, its owner.
+    // Its owner's, and its maker's: a view 0.2.1 shared had no owner, and is its maker's after the update.
     for (const ref of ["saved_views", "saved_searches"]) expect(byRef.get(ref)?.belongs, ref).toEqual([{ column: "owner_id" }, { column: "made_by_id" }]);
   });
 
@@ -748,7 +762,7 @@ describe("the listings a table is read through are limited by their own person",
     // `anyone`: a member adds a colleague. The four roles change only their own row there, and a writer
     // held to their own rows names nobody but themselves in a column that does not say otherwise. A
     // stranger is kept out by the link: a new row names a conversation its writer reaches. Who is in a
-    // conversation is its members' to read (`via`, plan 68 R4c), and a two-person one takes nobody else (D12).
+    // conversation is its members' to read (`via`), and a two-person one takes nobody else.
     expect(members?.belongs).toEqual([{ column: "user_id", set: "anyone" }, { via: "thread_id" }]);
     expect(members?.capacity).toEqual({ kind: "parent", via: "thread_id", size: 2, countWhere: { column: "kind", values: ["direct"], via: "thread_id" } });
     expect(byRef.get("threads")?.belongs).toEqual([{ through: { table: "thread_members", link: "thread_id", user: "user_id" } }]);
@@ -785,7 +799,7 @@ describe("the moves of this batch's three state columns", () => {
     expect(claimedBy.rules?.stamp).toEqual({ set: "user-id", on: { column: "state", values: ["claimed"] } });
   });
 
-  it("cancels a showroom booking by removing it, never by a mark, and keeps one that has been (F17, P19)", () => {
+  it("cancels a showroom booking by removing it, never by a mark, and keeps one that has been", () => {
     const bookings = byRef.get("showroom_bookings") as Table;
     expect(bookings.states).toMatchObject({ column: "state", initial: "tentative", noDelete: { when: ["done"] } });
     expect(movesFrom(bookings, "tentative").map((move) => move.to)).toEqual(["confirmed", "done"]);
@@ -859,7 +873,7 @@ describe("a crew reaches its own work, and a rep the work on their deals", () =>
     for (const [ref, column] of [["time_sheets", "user_id"], ["certificates", "user_id"]] as const) {
       expect(byRef.get(ref)?.belongs, ref).toEqual([{ column }]);
     }
-    // A check and a fill are their maker's, and also his vehicle's: a crew-mate sees the van was checked today (P25).
+    // A check and a fill are their maker's, and also his vehicle's: a crew-mate sees the van was checked today.
     for (const [ref, column] of [["vehicle_checks", "by_id"], ["fuel_fills", "by_id"]] as const) {
       expect(byRef.get(ref)?.belongs, ref).toEqual([{ column }, { via: "vehicle_id" }]);
     }
@@ -868,14 +882,14 @@ describe("a crew reaches its own work, and a rep the work on their deals", () =>
     }
   });
 
-  it("gives a crew member his crew's vehicle: reached through the crew's people, its faults through it, kept in step with the crew (P25)", () => {
+  it("gives a crew member his crew's vehicle: reached through the crew's people, its faults through it, kept in step with the crew", () => {
     expect(rulesOf("crew_members", "vehicle_id").copy).toEqual(follows("crew_id", "vehicle_id"));
     expect(byRef.get("vehicles")?.belongs).toEqual([{ through: { table: "crew_members", link: "vehicle_id", user: "user_id" } }]);
     expect(byRef.get("vehicle_faults")?.belongs).toEqual([{ via: "vehicle_id" }]);
     expect(byRef.get("crew_members")?.indexes).toContainEqual(["vehicle_id"]);
   });
 
-  it("measures a fill from the vehicle's reading before it: the newer of the typed one and its last fill's (P25)", () => {
+  it("measures a fill from the vehicle's reading before it: the newer of the typed one and its last fill's", () => {
     expect(rulesOf("vehicles", "last_fill_reading").rollup).toEqual({ from: "fuel_fills", via: "vehicle_id", latest: { of: "odometer", by: "odometer" } });
     expect(rulesOf("vehicles", "reading").formula).toEqual({ if: [{ isNull: "last_fill_reading" }, "odometer", { max: ["last_fill_reading", { coalesce: ["odometer", 0] }] }] });
     expect(rulesOf("fuel_fills", "prev_odometer").copy).toEqual({ via: "vehicle_id", from: "reading", mode: "default" });
@@ -963,7 +977,7 @@ describe("what Adminium copies, numbers and stamps on the jobs tables", () => {
     const followUps = byRef.get("follow_ups") as Table;
     expect(followUps.columns.find((c) => c.ref === "job_id")).toMatchObject({ type: "fk", references: "jobs", nullable: true });
     expect(followUps.indexes).toEqual([["owner_id", "done", "due_at"], ["deal_id"], ["job_id"]]);
-    // It is reached by its own person, and through its deal (plan 68 R1d: the sales manager judges it by the deal's owner).
+    // It is reached by its own person, and through its deal (the sales manager judges it by the deal's owner).
     // No way follows the job's link.
     expect(followUps.belongs).toEqual([{ column: "owner_id", set: "team" }, { via: "deal_id" }]);
   });
@@ -973,7 +987,7 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
   /** Every move of each table, from each state, in order. */
   const MOVES: Record<string, { initial: string; moves: Record<string, string[]> }> = {
     jobs: { initial: "open", moves: { open: ["installed", "signed-off"], installed: ["signed-off"] } },
-    // Called off is removed, never kept "cancelled" (F17).
+    // Called off is removed, never kept "cancelled".
     job_visits: { initial: "waiting", moves: { waiting: ["booked"], booked: ["done", "waiting"] } },
     snags: { initial: "open", moves: { open: ["waiting-part", "put-right"], "waiting-part": ["open", "put-right"] } },
     complaints: { initial: "open", moves: { open: ["answered"], answered: ["settled"] } },
@@ -1022,7 +1036,7 @@ describe("the moves of the jobs, aftercare and crew tables", () => {
   it("signs a job off only with a sign-off, and with no open snag that stops it", () => {
     const jobs = byRef.get("jobs") as Table;
     expect(needs("jobs", "installed", "signed-off")).toEqual({ children: { sign_offs: 1 }, where: [{ column: "blocking_snags", eq: 0 }] });
-    // A signed-off job still takes a sign-off: the correction of the one it holds, never a change of it (F19).
+    // A signed-off job still takes a sign-off: the correction of the one it holds, never a change of it.
     expect((jobs.states as unknown as { children?: unknown }).children).toEqual({ sign_offs: { via: "job_id", createIn: ["open", "installed", "signed-off"], moveOnCreate: "signed-off" } });
     // The count Adminium keeps: snags of the job that stop sign-off and are not put right.
     expect(rulesOf("jobs", "blocking_snags").rollup).toEqual({

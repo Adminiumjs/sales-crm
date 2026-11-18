@@ -1,5 +1,5 @@
 /**
- * P11, the Activity feed (ledger §18): 26 activities (8 calls, 7 emails,
+ * The Activity feed: 26 activities (8 calls, 7 emails,
  * 4 meetings, 7 notes) and 40 stage changes on the 14 open deals; 20 to a
  * page.
  *

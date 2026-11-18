@@ -1,5 +1,5 @@
 /*
- * Supply (P16): Stock and lead times, the Supplier scorecard. Built from the
+ * Supply: Stock and lead times, the Supplier scorecard. Built from the
  * design's screens 42 and 60: four tiles, a banner, the filter chips, one card
  * a stock line or a supplier. Logical properties only, so right to left needs
  * nothing of its own; the tokens carry dark.
@@ -277,7 +277,7 @@
 .crm-sup-where > svg {
   flex-shrink: 0;
 }
-/* The scorecard (plan 68 S12): a band on each supplier, its score and a bar, the tones of its facts. */
+/* The scorecard: a band on each supplier, its score and a bar, the tones of its facts. */
 .crm-sup-banner[data-tone="danger"] {
   background: var(--danger-soft);
   color: var(--danger);

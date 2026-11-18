@@ -1,6 +1,6 @@
 /**
- * P02, Today: a rep's own figures and queue, with the ledger's figures (§1 of
- * `figures.md`), on the ledger's clock.
+ * Today: a rep's own figures and queue, with the ledger's figures for
+ * a rep's day, on the ledger's clock.
  *
  * Reached as the rep, from her menu. Not a page of a manager, the CRM admin
  * or Read-only (their menus do not hold it, and its address answers "not

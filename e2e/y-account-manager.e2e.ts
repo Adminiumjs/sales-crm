@@ -1,5 +1,5 @@
 /**
- * The account manager on an open deal (ruling R6, T37; P23's "Hugo on d1"): Hugo reads every won deal, and an open
+ * The account manager on an open deal (the sample's "Hugo on d1"): Hugo reads every won deal, and an open
  * one only while he is listed on it. Listed on Dana's d1, he opens its room, reads its quote and comments on it; taken
  * off, the deal is gone for him again. A won deal he is not on he reads and comments on none of: no box, and the server
  * refuses the write. Every "may not" is also asked of the server directly.

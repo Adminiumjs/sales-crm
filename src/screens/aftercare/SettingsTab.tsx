@@ -1,5 +1,5 @@
 /**
- * AFTER THE JOB, SET UP IN SETTINGS (P24): who makes the aftercare calls a
+ * AFTER THE JOB, SET UP IN SETTINGS: who makes the aftercare calls a
  * signed-off job books (rule 16), and how soon each thing of the part is due.
  * A tab of Settings while the After the job part is on. The CRM admin's to
  * write (the server refuses anybody else), every other reader's to read.

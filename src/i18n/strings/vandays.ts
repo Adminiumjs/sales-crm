@@ -1,6 +1,6 @@
 /**
  * Area bundle: **A crew's vehicle for the day, a hired vehicle, and what to
- * load** (plan 68 S14): the booking dialog's "Vehicle for the day", the Day
+ * load**: the booking dialog's "Vehicle for the day", the Day
  * sheet's vehicle and its "Change", the Route's head, Vehicles' hire days and
  * "Where it goes", the crew's vehicle on My day, and each visit's stock and
  * delivery note. A key at a time (see `table.ts`); a plural is `one|other`

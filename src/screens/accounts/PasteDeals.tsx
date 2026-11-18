@@ -1,5 +1,5 @@
 /**
- * PAST DEALS, on Paste a list: the CRM admin's (plan 68 R5).
+ * PAST DEALS, on Paste a list: the CRM admin's.
  *
  * A business moving to this CRM brings the deals it already won and lost. It
  * is Adminium's own import again, in a wizard of its own (one table, so the

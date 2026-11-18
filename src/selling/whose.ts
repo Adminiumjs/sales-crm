@@ -1,6 +1,6 @@
 /**
  * WHO "WE" ARE, for a change the server holds to a person's own rows or her
- * team's (plan 68 X3): which people's companies and territories a screen
+ * team's: which people's companies and territories a screen
  * offers to change. The server decides every write; this only keeps a screen
  * from offering a button it would refuse.
  *
@@ -64,7 +64,7 @@ export async function openOwnersAt(session: StaffSession, companies: readonly nu
 
 /**
  * Whether the person is the sales manager, whom the server keeps from a row
- * that names her herself (plan 68 X2: her own target, her own first-year
+ * that names her herself (her own target, her own first-year
  * target) and from a meeting she does not run. The CRM admin is not held.
  */
 export function heldFromOwn(session: StaffSession): boolean {

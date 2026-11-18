@@ -39,7 +39,7 @@ export function useBoot(open: () => Promise<StaffSession> = connectStaffSession)
     setBoot({ state: "loading" });
     open().then(
       async (session) => {
-        // The business's first day of the week, before any screen works a week out (plan 68 S9). A reader who may not read
+        // The business's first day of the week, before any screen works a week out. A reader who may not read
         // the settings row keeps Monday.
         if (session.can("settings", "read")) {
           await session

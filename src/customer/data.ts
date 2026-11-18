@@ -19,6 +19,18 @@
  *
  * "Today" is the server's, never the browser's: a customer's clock may be a
  * day or a year off, and the page must not say "ran out" on its word.
+ *
+ * PAYING. Once accepted, a quote may ask for a deposit or the whole amount,
+ * as the business set it when the quote was made. Every figure of it is the
+ * server's (what is asked, paid, given back and left, and whether it can be
+ * paid now: accepted, on a deal that is still on). The page offers "Pay now"
+ * only when Adminium says the business takes payments online right now
+ * (`payments.available`), and then asks Adminium for the quote's pay link
+ * (`payments.start`): the amount is never the page's. Back from the pay page
+ * it asks how the quote's newest online payment stands (`payments.state`):
+ * still open at the service, the bank confirming it, paid, didn't finish, or
+ * the time on that page ran out. With payments off the page reads exactly as
+ * it did before.
  */
 import { formatters, type Formatters } from "../lib/format.ts";
 
@@ -39,6 +51,19 @@ export interface CustomerQuote {
   sentAt: Date | null;
   decidedAt: Date | null;
   acceptedName: string | null;
+  /** What is asked on acceptance: nothing, a deposit, or the whole amount. A quote made before it was asked asks nothing. */
+  payAsk: "off" | "deposit" | "whole";
+  /** The deposit's percentage; null when none is asked. */
+  payPct: number | null;
+  /** What is asked, paid (net of refunds), given back and left: the server's figures. */
+  payAmount: number;
+  payPaid: number;
+  payRefunded: number;
+  payDue: number;
+  /** When the latest payment arrived; null when none did. */
+  payPaidAt: Date | null;
+  /** It can be paid now: accepted, on a deal that is not lost, and something asked. */
+  payOpen: boolean;
 }
 
 export interface CustomerLine {
@@ -65,7 +90,23 @@ export interface QuoteDoor {
   config: () => Promise<{ timezone?: string; refs: Record<string, unknown> }>;
   list: (ref: string, options?: { limit?: number }) => Promise<{ data: Row[] }>;
   update: (ref: string, id: string, values: Row) => Promise<Row>;
+  /** Paying online: whether it is offered, the pay link, and how a payment stands. */
+  payments: {
+    available: () => Promise<{ online: boolean; test?: true }>;
+    start: (ref: string, id: string) => Promise<{ payUrl: string }>;
+    state: (ref: string, id: string) => Promise<{ state: PayState; test?: true }>;
+  };
 }
+
+/**
+ * How the quote's newest online payment stands, as Adminium says it: `none`
+ * (none was started), `open` (a checkout is open and the service has not said
+ * yet), `confirming` (the bank is confirming it; some ways take days),
+ * `paid` (the money arrived; the quote says it once it is written down),
+ * `failed` (it did not finish; nothing was taken) or `expired` (the time to
+ * pay on the service's page ran out; nothing was taken).
+ */
+export type PayState = "none" | "open" | "confirming" | "paid" | "failed" | "expired";
 
 const num = (value: unknown): number => {
   const n = typeof value === "number" ? value : Number(value);
@@ -97,6 +138,14 @@ export function quoteOf(row: Row): CustomerQuote | null {
     sentAt: moment(row["sent_at"]),
     decidedAt: moment(row["decided_at"]),
     acceptedName: text(row["accepted_name"]),
+    payAsk: row["pay_ask"] === "deposit" || row["pay_ask"] === "whole" ? row["pay_ask"] : "off",
+    payPct: row["pay_pct"] === null || row["pay_pct"] === undefined ? null : num(row["pay_pct"]),
+    payAmount: num(row["pay_amount"]),
+    payPaid: num(row["pay_paid"]),
+    payRefunded: num(row["pay_refunded"]),
+    payDue: num(row["pay_due"]),
+    payPaidAt: moment(row["pay_paid_at"]),
+    payOpen: num(row["pay_open"]) === 1,
   };
 }
 
@@ -126,10 +175,49 @@ function refOf(refs: Record<string, unknown>, real: string): string {
   return Object.keys(refs).find((ref) => ref === real || ref.startsWith(`${real}_`)) ?? real;
 }
 
+/** Whether the business takes payments online right now; `test` while somebody who manages payments rehearses on this address. */
+export interface PayOffer {
+  online: boolean;
+  test: boolean;
+}
+
+/** What asking for the pay link came to: the page to go to, the quote as it is now (paid or not payable meanwhile), or no answer. */
+export type Started = { state: "go"; payUrl: string } | { state: "changed" } | { state: "unreachable" };
+
 export interface QuoteLink {
   open: () => Promise<Opened>;
   /** Accept (with the name typed) or decline. Reads the quote back before it says anything. */
   answer: (quote: CustomerQuote, to: "accepted" | "declined", name?: string) => Promise<Answered>;
+  /** The quote as the server has it now, through the link already opened. */
+  refresh: () => Promise<Opened>;
+  /** Whether "Pay now" may be offered at all. Never throws: no answer is "not now". */
+  offer: () => Promise<PayOffer>;
+  /** The quote's pay link, from Adminium: the amount is the quote's own, read again there. */
+  pay: (quote: CustomerQuote) => Promise<Started>;
+  /** How the quote's newest online payment stands; `unknown` when Adminium did not answer. Never throws. */
+  payState: (quote: CustomerQuote) => Promise<PayState | "unknown">;
+}
+
+/**
+ * What the page does with a payment's state when the customer is back from
+ * the pay page, the quote as it now reads beside it:
+ *  - `paid`: the quote says it is paid (or nothing is left to pay): the paid line;
+ *  - `look`: not known yet (a checkout still open, the money arrived but not
+ *    yet written onto the quote, or no answer): look again in a moment;
+ *  - `confirming`, `failed`, `expired`: say so;
+ *  - `ask`: nothing was started: the page as it reads without a payment.
+ */
+export type AfterPaying = "paid" | "look" | "confirming" | "failed" | "expired" | "ask";
+export function afterPaying(state: PayState | "unknown", quote: CustomerQuote): AfterPaying {
+  if (quote.payPaid > 0 && quote.payDue <= 0) return "paid";
+  if (state === "confirming" || state === "failed" || state === "expired") return state;
+  if (state === "none") return "ask";
+  return "look";
+}
+
+/** What the page offers once a quote is accepted: "Pay now" only while the business takes payments and the quote has something left to pay. */
+export function payable(quote: CustomerQuote, offer: PayOffer | null): boolean {
+  return offer !== null && offer.online && quote.status === "accepted" && quote.payOpen && quote.payAsk !== "off" && quote.payDue > 0;
 }
 
 /**
@@ -194,6 +282,47 @@ export function quoteLink(door: QuoteDoor | null, token: string, tables: Record<
       if (now.state === "unreachable") return { ok: false, why: "unreachable" };
       if (now.state === "open" && now.quote.status === "sent") return { ok: false, why: ranOut(now.quote, now.today) || codeOf(refused) === "PUBLIC_TOO_LATE" ? "late" : statusOf(refused) >= 400 && statusOf(refused) < 500 && to === "accepted" ? "name" : "unreachable" };
       return { ok: false, why: "changed" };
+    },
+
+    async refresh() {
+      if (door === null) return { state: "off" };
+      try {
+        return await read();
+      } catch (error) {
+        return refusal(error);
+      }
+    },
+
+    async offer() {
+      if (door === null) return { online: false, test: false };
+      try {
+        const said = await door.payments.available();
+        return { online: said.online === true, test: said.test === true };
+      } catch {
+        return { online: false, test: false };
+      }
+    },
+
+    async pay(quote) {
+      if (door === null || refs === null) return { state: "changed" };
+      try {
+        const { payUrl } = await door.payments.start(refs.quotes, String(quote.id));
+        return { state: "go", payUrl };
+      } catch (error) {
+        // Paid meanwhile, a deal lost, payments switched off: the page as the server now has it says which.
+        if (codeOf(error) === "PUBLIC_PAY_REFUSED" || statusOf(error) === 404 || statusOf(error) === 409) return { state: "changed" };
+        return { state: "unreachable" };
+      }
+    },
+
+    async payState(quote) {
+      if (door === null || refs === null) return "unknown";
+      try {
+        const said = await door.payments.state(refs.quotes, String(quote.id));
+        return said.state;
+      } catch {
+        return "unknown";
+      }
     },
   };
 }

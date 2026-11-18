@@ -102,7 +102,7 @@ export function Week({ rest }: ScreenProps) {
   useLive(["follow_ups", "deals"], again);
 
   const [who, setWho] = useState<string | null>(null);
-  // `week/view/<id>`: narrowed to the person a saved view names (S7).
+  // `week/view/<id>`: narrowed to the person a saved view names.
   const view = useSavedView("week", rest);
   const viewId = view.state === "ready" ? view.view.id : null;
   useEffect(() => {

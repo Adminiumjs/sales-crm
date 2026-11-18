@@ -7,10 +7,10 @@
  * herself, on a deal she opens; a manager for the people she leads; a visit
  * is moved and cancelled by the rep it names or who leads her; a visit that
  * was made or written up is not removed; a rep's two visits never overlap
- * (plan 68 X7: the dialog shows the one in the way and books nothing over
+ * (the dialog shows the one in the way and books nothing over
  * it, and a clash it could not see is the server's refusal, said in words).
  * "That time has passed": the dialog books nothing in the past, and the
- * server refuses a new visit that starts before now (plan 68 X7, D18), said
+ * server refuses a new visit that starts before now, said
  * in words; a visit brought in from a file (history) is not held to it.
  *
  * WHAT IS SAVED. A booking carries a key made when the dialog opened, so a
@@ -53,7 +53,7 @@ interface Person {
   name: string;
 }
 
-/** The open deals a visit may be booked for: not one the reader only helps on (ruling 1d), whose owner books its visits. */
+/** The open deals a visit may be booked for: not one the reader only helps on, whose owner books its visits. */
 async function readChoices(session: StaffSession, picksRep: boolean, today: string): Promise<{ deals: DealChoice[]; reps: Person[]; helping: number }> {
   const [deals, reps, people, lent] = await Promise.all([
     session.list<DealChoice>("deals", { select: ["id", "name", "company_id", "contact_id", "owner_id"], where: { column: "state", op: "eq", value: "open" }, lookup: ["company:company_id.name"], order: ["name"], limit: 200 }),

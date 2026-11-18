@@ -1,5 +1,5 @@
 /**
- * Finding things (P08), the parts that decide: which screens Jump offers to
+ * Finding things, the parts that decide: which screens Jump offers to
  * whom, how records are asked for and what that costs, which keys work for
  * whom, where a notice's record opens, and the bell's live line.
  */

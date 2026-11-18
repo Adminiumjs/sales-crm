@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, stage 2: JOBS ON SITE, THE OFFICE SIDE (P20, P21; F17, F19, F20,
- * F22), against the whole server on SQLite, Postgres and MySQL, with the
+ * Stage 2: JOBS ON SITE, THE OFFICE SIDE, against the whole server on SQLite, Postgres and MySQL, with the
  * app's own manifest and the part switched on, each try made signed in as
  * the person it is about.
  *
@@ -18,7 +17,7 @@
  *    a job and version, one correction a sign-off.
  *  - A sign-off mails its copy (e-mail 17) to the job's contact, or to the
  *    address typed on it, with what is still to put right.
- *  - Its signature and photos are files (F19): a sign-off names only its
+ *  - Its signature and photos are files: a sign-off names only its
  *    writer's own fresh upload, the record then holds them; a correction
  *    names a sign-off of its own job.
  *  - A visit called off is REMOVED, with the why in the removal's audit
@@ -41,7 +40,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { png } from './picture-images.js';
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
@@ -246,7 +245,7 @@ for (const [dialect, reachable] of LEGS) {
       for (const id of [soon, later]) expect(said(await remove('ada', 'job_visits', id))).toBe('ok');
     });
 
-    it('tells the crew a visit of today or tomorrow LEFT, each of the four ways, and nobody else; a later visit tells nobody (D17)', async () => {
+    it('tells the crew a visit of today or tomorrow LEFT, each of the four ways, and nobody else; a later visit tells nobody', async () => {
       const { job } = await wonJob('Ward linen cupboards');
       const titles = async (who: string): Promise<string[]> => (await noticesOf(who)).map((one) => one.title).filter((title) => /Cupboards/.test(title)).sort();
       const before = Object.fromEntries(await Promise.all(['yusuf', 'rina', 'ada', 'tessa', 'dana', 'grace'].map(async (who) => [who, await titles(who)] as const)));
@@ -297,7 +296,7 @@ for (const [dialect, reachable] of LEGS) {
       await settle();
     });
 
-    it('notes a visit that leaves the same way twice, twice; one save that moves the day and the crew at once, once (T09)', async () => {
+    it('notes a visit that leaves the same way twice, twice; one save that moves the day and the crew at once, once', async () => {
       const { job } = await wonJob('Ward store shelving');
       const settle = async (): Promise<void> => {
         await jobs();
@@ -346,7 +345,7 @@ for (const [dialect, reachable] of LEGS) {
       expect((await s.make('dana', 'sign_offs', { job_id: job, signer_name: 'D' })).statusCode).toBe(403);
     });
 
-    it('keeps the signature and photos as files (F19): only the writer\'s own fresh upload, never another\'s; a correction names a sign-off of its own job', async () => {
+    it('keeps the signature and photos as files: only the writer\'s own fresh upload, never another\'s; a correction names a sign-off of its own job', async () => {
       const { job } = await wonJob('Files sign-off');
       const { job: other } = await wonJob('Another job');
       const upload = async (who: string, column: 'signature' | 'photos'): Promise<string> => {
@@ -392,7 +391,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(mails.map((mail) => mail.to)).toEqual([ANA, ANA, 'reception@fernway-clinics.com']);
       for (const mail of mails) {
         expect(mail.subject).toBe('Your signed copy: Clinic reception desk');
-        // The day it was signed, and what is still to put right (plan 68 S13: no facts table, no job code).
+        // The day it was signed, and what is still to put right (no facts table, no job code).
         expect(mail.text).toContain('thank you for signing off Clinic reception desk on ');
         expect(mail.text).toContain('Edge trim lifting on the small table');
         expect(mail.text).toContain(OFFICE);

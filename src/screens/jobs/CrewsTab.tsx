@@ -293,7 +293,7 @@ function NewCrew({ onDone }: { onDone: () => void }) {
   );
 }
 
-/** How long a snag has to be put right (P24): the CRM admin's to set, read by the snag list's due days. */
+/** How long a snag has to be put right: the CRM admin's to set, read by the snag list's due days. */
 function SnagDays() {
   const t = useT();
   const { session, f } = useJobsScreen();

@@ -1,7 +1,7 @@
 /**
- * P25-A, Vehicles and crew at the office (stage 3): Vehicles (ledger §57),
- * Fuel (§65), Subcontractors (§68) with "Chase the certificate" (e-mail 11),
- * and Insurance claims (§67). Run on a stand of stage 3 (`CRM_STAND_STAGE=3`).
+ * Vehicles and crew at the office (stage 3): Vehicles,
+ * Fuel, Subcontractors with "Chase the certificate" (e-mail 11),
+ * and Insurance claims. Run on a stand of stage 3 (`CRM_STAND_STAGE=3`).
  *
  * Who: the operations manager (Ada) and the CRM admin (Tessa) read and write
  * them; Read-only (Grace) reads them and presses nothing; a rep (Dana) and
@@ -59,7 +59,7 @@ test("Vehicles, as the operations manager: the ledger's figures, each the server
     await menu.getByRole("link", { name: "Vehicles", exact: true }).click();
     await expect(page).toHaveURL(/\/vehicles$/);
 
-    // §57: 3 vans (2 ours, 1 hired); service overdue 1 (YK20 HTC, 8 days over); inspection within 30 days 1 (YK20 HTC in 11 days).
+    // 3 vans (2 ours, 1 hired); service overdue 1 (YK20 HTC, 8 days over); inspection within 30 days 1 (YK20 HTC in 11 days).
     const served = {
       all: await figure(ada, stand, "vehicles"),
       ours: await figure(ada, stand, "vehicles", undefined, [{ column: "hired", op: "eq", value: false }]),
@@ -150,7 +150,7 @@ test("Fuel, as the operations manager: the ledger's distance, litres and money f
   const problems = watch(page);
   const ada = context.request;
   await page.goto(`${STAFF}fuel`);
-  // §65: 7 fills, 279.3 litres, 407.77; 1,430 measured over the 6 fills with a distance, 343.53 of fuel: 0.240 a km.
+  // 7 fills, 279.3 litres, 407.77; 1,430 measured over the 6 fills with a distance, 343.53 of fuel: 0.240 a km.
   const measured = [{ column: "distance", op: "gt", value: 0 }];
   const served = {
     fills: await figure(ada, stand, "fuel_fills"),
@@ -201,7 +201,7 @@ test("Subcontractors: the ledger's figures; \"Chase the certificate\" sends e-ma
   const headers = await csrf(ada);
   try {
     await page.goto(`${STAFF}subcontractors`);
-    // §68: 5 on the books, covered 4; 53 days bought, 17,800; one cannot go out (Marek Sowa, 28 days ago); 5 visits with no day.
+    // 5 on the books, covered 4; 53 days bought, 17,800; one cannot go out (Marek Sowa, 28 days ago); 5 visits with no day.
     const served = {
       all: await figure(ada, stand, "subcontractors"),
       covered: await figure(ada, stand, "subcontractors", undefined, [{ column: "insurance_until", op: "gte", value: "2026-07-28" }]),
@@ -263,7 +263,7 @@ test("Insurance claims: the ledger's figures; an incident added, settled by its 
   const ada = context.request;
   try {
     await page.goto(`${STAFF}insurance-claims`);
-    // §67: 5 incidents, open 2 (oldest 26 days); claimed 5,870; excess on the settled 750; paid out 2,160; still claimed 2,960.
+    // 5 incidents, open 2 (oldest 26 days); claimed 5,870; excess on the settled 750; paid out 2,160; still claimed 2,960.
     const open = [{ column: "state", op: "eq", value: "open" }];
     const settled = [{ column: "state", op: "eq", value: "settled" }];
     const served = {

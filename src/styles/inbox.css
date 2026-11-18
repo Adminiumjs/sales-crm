@@ -436,7 +436,7 @@
   color: var(--fg-muted);
 }
 
-/* A customer said yes to a lost deal (plan 68 R1a): above the enquiries, in the enquiries' own cards. */
+/* A customer said yes to a lost deal: above the enquiries, in the enquiries' own cards. */
 .crm-inbox-yes {
   margin-block-end: 18px;
 }

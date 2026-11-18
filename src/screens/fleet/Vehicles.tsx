@@ -47,7 +47,7 @@ export function Vehicles({ rest }: ScreenProps) {
       readVehicleFigures(session, today, addDays(today, settings.inspectionWarnDays)),
       readOpenFaults(session),
       crews ? session.list<Crewed>("crews", { select: ["id", "name", "vehicle_id"], limit: 50 }).then((page) => page.rows) : Promise.resolve([] as Crewed[]),
-      // Where a hired vehicle goes, and the days a hire may not leave out (plan 68 S14).
+      // Where a hired vehicle goes, and the days a hire may not leave out.
       readHireFacts(session, today).catch(() => null),
     ]);
     const checks = await readLastChecks(session, vehicles);

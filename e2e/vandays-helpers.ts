@@ -1,5 +1,5 @@
 /**
- * The crews' vehicles for their days as the sample has them (plan 68 S14, M3 BN-18): Blue crew on its own vehicle on
+ * The crews' vehicles for their days as the sample has them: Blue crew on its own vehicle on
  * Tue 4, Wed 5 and Thu 6 August, Red crew on the hired one on Wed 5 August. A spec that books or moves a visit makes
  * and takes away rows as the screens do; this puts the sample's back, and nothing else, afterwards. A stand of a
  * stage without Vehicles and crew has no such rows: nothing is done.

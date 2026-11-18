@@ -29,7 +29,7 @@
  * TEST_POSTGRES_URL / TEST_MYSQL_URL for the other two engines, and
  * CRM_STAND_SAMPLE_PERSON=<key> to leave ONE sample person as the product leaves
  * them all (status `sample`, no password: `hugo`, whom the sample's Settings
- * names for aftercare calls; plan 68 K1, `e2e/k1-sample-person.e2e.ts`),
+ * names for aftercare calls; `e2e/k1-sample-person.e2e.ts`),
  * CRM_STAND_MAIL=1 to keep the mail it sends (`e2e/mail-catcher.mjs`: SMTP on
  * CRM_STAND_MAIL_PORT, else the stand's port + 100, the mails one port above;
  * `mailbox()` reads them),
@@ -55,6 +55,8 @@ export const STAND_DIR = join(here, ".stand");
 export const STATE_FILE = join(STAND_DIR, "state.json");
 /** One password for the owner and one for everybody else: test values, of this stand only. */
 const OWNER = { email: "owner@crm.test", name: "Ava Reyes", password: "stand-owner-password-1" };
+/** The one-time token Adminium asks for before the first account (from 0.3.54): the stand gives its own, and sends it. */
+const SETUP_TOKEN = "crm-stand-setup-token-0001";
 export const STAFF_PASSWORD = "stand-staff-password-2";
 /** The moment every figure of the ledger is true at: 09:35 on Tuesday 28 July 2026, where the sample's business is. */
 export const LEDGER_NOW = "2026-07-28T09:35:00+01:00";
@@ -401,6 +403,7 @@ export async function standUp() {
     ADMINIUM_ADD_ON_DEV_TRUST: "invoices,inventory,forms",
     // The customer's quote page is served by this same server and calls its public API: "self" is that page's origin.
     ADMINIUM_PUBLIC_API_ORIGINS: "self",
+    ADMINIUM_SETUP_TOKEN: SETUP_TOKEN,
     ...(standIn === "" ? {} : { CRM_STAND_VERSION: standIn }),
     ...(startAt === null ? {} : { CRM_STAND_NOW: String(startAt), CRM_STAND_CLOCK_FILE: clockFile }),
     TZ: timeZone,
@@ -472,7 +475,7 @@ export async function standUp() {
     const data = (doc) => doc?.data ?? doc;
 
     // The owner's writes carry the token their session was given (Node's fetch says how it was sent, so the server asks for it).
-    csrf = data(await call("the owner", "POST", "/api/v1/setup/super-admin", OWNER, [201])).csrfToken ?? "";
+    csrf = data(await call("the owner", "POST", "/api/v1/setup/super-admin", { ...OWNER, setupToken: SETUP_TOKEN }, [201])).csrfToken ?? "";
     if (state.mail) {
       for (const deadline = Date.now() + 20_000; ; await sleep(200)) {
         if (!alive(state.mail.pid)) throw new Error(`the mail catcher stopped:\n${readFileSync(join(STAND_DIR, "mail.log"), "utf8").slice(-2000)}`);
@@ -552,7 +555,7 @@ export async function standUp() {
     }
 
     // The sample's people: ordinary staff with a password, each under an address the specs know.
-    // One sample person may be left as the product leaves every one (K1): not active, no password, nobody signs in as them.
+    // One sample person may be left as the product leaves every one: not active, no password, nobody signs in as them.
     const keptSample = process.env.CRM_STAND_SAMPLE_PERSON ?? "";
     if (keptSample !== "" && !manifest.sampleData.people.some((person) => person.key === keptSample)) throw new Error(`CRM_STAND_SAMPLE_PERSON names no sample person: ${keptSample}`);
     state.samplePerson = keptSample === "" ? null : keptSample;

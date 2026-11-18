@@ -4,7 +4,7 @@
  * person reads, the weighted value too, prints euros: Show data on "Pipeline by stage", and the column totals of the
  * console's Pipeline board. (`console-section.e2e.ts` proves English and pounds.)
  *
- * The ledger's figures (§2), written the German way. The language and the currency are put back, whatever happens.
+ * The ledger's figures, written the German way. The language and the currency are put back, whatever happens.
  */
 import type { Locator, Page } from "@playwright/test";
 

@@ -61,7 +61,7 @@ export function Call({ id }: { id: string }) {
     }, [session, call.reload]),
   );
   useLive(["deals", "activities", "follow_ups"].filter((table) => session.can(table, "read")), again);
-  // A rep helping on a colleague's deal logs nothing on it: its owner does (ruling 1d). Null while that is read.
+  // A rep helping on a colleague's deal logs nothing on it: its owner does. Null while that is read.
   const ownerId = call.load.state === "ready" && call.load.data !== null && call.load.data.deal.id === key ? call.load.data.deal.owner_id : undefined;
   const helping = useHelping(ownerId, today);
   const owner = useLoad(() => (helping === true && typeof ownerId === "string" ? readNames(session, [ownerId]).then((names) => names[ownerId] ?? "") : Promise.resolve("")), [session, helping, ownerId]);
@@ -206,7 +206,7 @@ export function Call({ id }: { id: string }) {
               )}
             </section>
             {askingOf(data.deal.asking).length > 0 && (
-              // What the sales manager wrote for this stage (S11): pressed, it starts a line of the notes.
+              // What the sales manager wrote for this stage: pressed, it starts a line of the notes.
               <section className="crm-side-card" aria-labelledby="crm-call-asking" data-testid="call-asking">
                 <h2 id="crm-call-asking">{t("call.asking")}</h2>
                 <div className="crm-call-asking">

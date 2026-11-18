@@ -23,7 +23,7 @@
     "stage:check": "node scripts/stage-manifest.mjs --check"
   },
   "dependencies": {
-    "@adminiumjs/public-client": "^0.3.4",
+    "@adminiumjs/public-client": "^0.3.61",
     "lucide-react": "^0.462.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

@@ -1,8 +1,8 @@
 /*
- * A crew's vehicle for the day, a hired vehicle's days, and what to load
- * (plan 68 S14): the booking dialog's listbox, the Day sheet's vehicle row and
+ * A crew's vehicle for the day, a hired vehicle's days, and what to load:
+ * the booking dialog's listbox, the Day sheet's vehicle row and
  * its two lists per visit, Vehicles' hire line, and My day's vehicle card.
- * Tokens only; the print layout stays black on white in both themes (CD-12).
+ * Tokens only; the print layout stays black on white in both themes.
  */
 
 /* ── "Vehicle for the day" ────────────────────────────────────────────────── */

@@ -6,7 +6,7 @@
  *
  * `quotes/<id>` is one quote open on that version (`Quote.tsx`).
  *
- * A deal the reader only helps on (ruling 1d) is listed, and its owner starts
+ * A deal the reader only helps on is listed, and its owner starts
  * its quote: no "Start a quote" is drawn for it.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";

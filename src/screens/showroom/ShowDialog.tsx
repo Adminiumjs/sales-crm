@@ -1,12 +1,12 @@
 /**
  * THE BOOKING DIALOG, in its second use: the showroom. Book a visitor, move a
- * booking, cancel one. The pattern of the site visits' dialog (P10): one
+ * booking, cancel one. The pattern of the site visits' dialog: one
  * dialog, three modes, the time it had struck through on a move.
  *
  * A CLASH IS REFUSED BY THE SERVER (one booking per space at a time). This
  * dialog says it first, in its own words: it reads that space's live bookings
  * for the day and three weeks on, names the booking in the way and offers the
- * next clear time (B8). The server stays the last word for a race between two
+ * next clear time. The server stays the last word for a race between two
  * desks, said as a plain line. The showroom's hours and a time already past
  * are this dialog's checks (the ruling of D4 Q1).
  *

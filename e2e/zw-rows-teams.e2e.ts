@@ -1,5 +1,5 @@
 /**
- * Plan 67 gate G1, "Rows and Teams in a running dashboard", in English and in Arabic: Adminium's console with the CRM
+ * "Rows and Teams in a running dashboard", in English and in Arabic: Adminium's console with the CRM
  * installed, as the install's owner.
  *
  *  1. Settings → Roles & permissions → Rows on a role: the CRM's Sales rep reaches its own deals, said in words, and

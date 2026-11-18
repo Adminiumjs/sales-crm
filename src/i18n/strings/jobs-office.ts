@@ -1,5 +1,5 @@
 /**
- * Area bundle, first half: **Jobs on site, the office side** (P20): the menu,
+ * Area bundle, first half: **Jobs on site, the office side**: the menu,
  * Deliveries and its booking dialog, the day sheet, "jobs still to make", the
  * operations manager's home. The second half is `jobs-more.ts`; `jobs.ts`
  * puts the two together. Written a key at a time: see `table.ts`.

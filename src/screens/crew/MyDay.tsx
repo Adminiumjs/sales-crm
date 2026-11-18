@@ -1,5 +1,5 @@
 /**
- * MY DAY, the field crew's home on his phone (P22): one day of his crew's
+ * MY DAY, the field crew's home on his phone: one day of his crew's
  * visits, in the order they start, each with everything he needs on site
  * (`VisitCard.tsx`). Any day can be reached with the arrows and the week's
  * strip; it opens on today, by the server's clock.
@@ -36,7 +36,7 @@ interface DayData {
   cards: VisitFacts[];
   /** The next day from tomorrow on with a visit of his, when the shown day has none. */
   next: string | null;
-  /** His crew's vehicle that day, as the office put it on (plan 68 S14). */
+  /** His crew's vehicle that day, as the office put it on. */
   vans: Awaited<ReturnType<typeof readVanDays>>;
 }
 
@@ -62,7 +62,7 @@ export function MyDay({ rest }: ScreenProps) {
     const [snags, signed, loads, moves, after, vans] = await Promise.all([
       readSnags(session, jobs),
       readSignOffs(session, jobs),
-      // What to load, the stock and the note (plan 68 S14) where Vehicles and crew is on; the note's lines alone before it.
+      // What to load, the stock and the note where Vehicles and crew is on; the note's lines alone before it.
       session.part("fleet") ? readLoadLists(session, shown.map((visit) => visit.id)) : readLoads(session, shown.map((visit) => visit.id)),
       readMoves(session, shown),
       shown.length > 0
@@ -87,8 +87,8 @@ export function MyDay({ rest }: ScreenProps) {
   // A read that did not arrive is said as no connection; the last day read stays on screen meanwhile.
   const failed = load.state === "failed" || factsLoad.state === "failed";
   const [busyTick, setBusyTick] = useState<string | null>(null);
-  // A tick is kept on the phone with no signal and sent when it is back (plan 68 S19). Taking back a tick that only waits
-  // on the phone takes its line off the phone, and asks first (CD-3).
+  // A tick is kept on the phone with no signal and sent when it is back. Taking back a tick that only waits
+  // on the phone takes its line off the phone, and asks first.
   const press = useCallback(
     async (visit: CrewVisit, which: Tick, on: boolean): Promise<void> => {
       const waiting = latest(queue.lines(), (line) => line.kind === "tick" && line.meta["visit"] === visit.id && line.meta["tick"] === which, ["waiting"]);
@@ -171,7 +171,7 @@ export function MyDay({ rest }: ScreenProps) {
       </div>
       {load.state === "ready" && facts !== null && <DayVehicle vans={load.data.vans} facts={facts} mine={mine} />}
       {session.part("fleet") && session.can("vehicles", "read") && (
-        // Vehicles and crew (P25): his vehicle's check before the day, a fault and a fuel fill, one press away.
+        // Vehicles and crew: his vehicle's check before the day, a fault and a fuel fill, one press away.
         <ScreenLink to="myvan" className="crm-cw-back crm-fl-myday mr-gi">
           <Icon name="truck" size={15} />
           {t("fl.myday.link")}

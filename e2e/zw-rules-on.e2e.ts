@@ -1,5 +1,5 @@
 /**
- * Plan 67 gate G2, "The CRM's rules, switched on": on the console's rules page (Automations, narrowed to the CRM) the
+ * "The CRM's rules, switched on": on the console's rules page (Automations, narrowed to the CRM) the
  * install's owner switches on "A deal has gone quiet: its owner is told" and "Each week: every sales rep's … own week by
  * email", and presses Test (a dry run: nothing is written, nothing is sent). Then the mornings come, on the stand's own
  * clock: at 08:00 each deal that has gone quiet tells its owner, once (the next morning tells nobody again about it); at

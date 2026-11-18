@@ -1,5 +1,5 @@
 /**
- * Area bundle: **the field crew's phone** (P22): My day, a visit, signing a
+ * Area bundle: **the field crew's phone**: My day, a visit, signing a
  * job off, the crew's snags and "put right", his own profile, and "no
  * connection". A key at a time (see `table.ts`).
  */

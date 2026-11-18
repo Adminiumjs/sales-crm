@@ -1,5 +1,5 @@
 /**
- * Plan 67 gate G2, "A role's name in the reader's language": with the console in German, the CRM's sales manager role
+ * "A role's name in the reader's language": with the console in German, the CRM's sales manager role
  * is "Vertriebsleitung" (the name the app gives it in German) on Settings → Roles and in a person's Roles dialog (as the
  * install's owner). Two places still name it otherwise, each pinned by a test of its own that is expected to fail until the
  * engine is fixed: the People list's Roles column, and Ivy's own Account page. The language is put back.

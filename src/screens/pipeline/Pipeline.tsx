@@ -6,8 +6,8 @@
  * are counted for their owners, never for her). The manager, the CRM admin
  * and Read-only see the team's, with a filter by person.
  *
- * A deal she HELPS on is read and commented on, never worked (ruling 1d,
- * `selling/helping.ts`): its card does not move and has no menu but "Open",
+ * A deal she HELPS on is read and commented on, never worked
+ * (`selling/helping.ts`): its card does not move and has no menu but "Open",
  * and the board says so. A deal she covers is worked as her own.
  *
  * The board itself is Adminium's own (the kit's `board`): cards are moved by

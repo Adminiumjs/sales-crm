@@ -1,5 +1,5 @@
 /**
- * Plan 67, F09 (the Inventory file) on top of Part 1's T13g: THE CRM'S OWN GOODS, STOCKED BY INVENTORY.
+ * THE CRM'S OWN GOODS, STOCKED BY INVENTORY.
  *
  * The real app, its real sample (both files), and the Invoices and Inventory add-ons AS THEY ARE BUILT in the
  * add-ons repository at 1.0.12, on SQLite, Postgres and MySQL. "Add sample data" brings Meridian's ten stock
@@ -107,7 +107,7 @@ for (const [dialect, reachable] of LEGS) {
         'Acoustic rooms, four-person need 2, have 0, short 2',
         'Task seating, mesh back need 68, have 60, short 8',
       ]);
-      // Every need names an item of Inventory's, and a deal that is open, but one: J-07's won deal, whose return visit takes two cable trays (plan 68 M3 BN-20).
+      // Every need names an item of Inventory's, and a deal that is open, but one: J-07's won deal, whose return visit takes two cable trays.
       expect(await count('crm_deal_stock_needs', 'item is null')).toBe(0);
       expect(n((await w.h.rows(`select count(*) as c from crm_deal_stock_needs d join crm_deals x on x.id = d.deal_id where x.state <> 'open'`))[0]!['c'])).toBe(1);
     });

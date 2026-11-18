@@ -1,11 +1,11 @@
 /**
- * Plan 68 K1: A SAMPLE SIGN-OFF BOOKS ITS AFTERCARE CALL, on a stand that
+ * A SAMPLE SIGN-OFF BOOKS ITS AFTERCARE CALL, on a stand that
  * leaves one sample person as the product leaves every one of them: Hugo, not
  * active and with no password (`CRM_STAND_SAMPLE_PERSON=hugo`), whom the
  * sample's Settings names for aftercare calls. Every other spec signs in as
  * the sample's people, so the stand makes them all active; on such a stand the
  * rule's call for a person who is not active went to nobody, and the write
- * failed (the call's owner is required). Engine 0.3.35 (E18) lets a rule run
+ * failed (the call's owner is required). Engine 0.3.35 lets a rule run
  * from a sample row name a sample person, and lists what it made with the
  * sample.
  *

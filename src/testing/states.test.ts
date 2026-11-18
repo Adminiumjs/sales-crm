@@ -19,7 +19,7 @@ interface States {
   initial: string;
   moves: Record<string, Move[]>;
   lock?: { when: string[]; except?: string[] };
-  children?: Record<string, { via: string; lock?: boolean; createIn?: string[] }>;
+  children?: Record<string, { via: string; lock?: boolean; createIn?: string[]; parentIn?: string[] }>;
   actions?: { id: string; move?: { to: string }; set?: Record<string, unknown>; in?: string[]; ask?: string[]; handOver?: boolean; label: Record<string, string> }[];
 }
 interface Table {
@@ -52,15 +52,15 @@ const moves = (ref: string): string[] =>
 const EXPECTED: Record<string, { column: string; initial: string; moves: string[] }> = {
   deals: { column: "state", initial: "open", moves: ["open → won", "open → lost: lost_reason_id filled", "won → open: back", "lost → open: back; empties lost_reason_id"] },
   quotes: { column: "status", initial: "draft", moves: ["draft → sent: total over 0; may_send = 1; replaces_ok = 1; to_email filled; deal_state = open; 1 quote_lines", "sent → accepted", "sent → declined", "sent → withdrawn"] },
-  // A cancelled visit is removed, never marked (F17): the only move left is "it was made".
+  // A cancelled visit is removed, never marked: the only move left is "it was made".
   site_visits: { column: "state", initial: "booked", moves: ["booked → done"] },
   renewals: { column: "state", initial: "open", moves: ["open → done", "open → dropped"] },
   meeting_decisions: { column: "state", initial: "open", moves: ["open → done", "open → carried"] },
   enquiries: { column: "state", initial: "open", moves: ["open → claimed", "open → passed: passed_to_id filled", "open → dropped", "passed → claimed", "passed → dropped"] },
-  // A cancelled showroom booking is removed, never marked (F17, P19); one somebody came in for without a confirmation is still "been in".
+  // A cancelled showroom booking is removed, never marked; one somebody came in for without a confirmation is still "been in".
   showroom_bookings: { column: "state", initial: "tentative", moves: ["tentative → confirmed", "tentative → done", "confirmed → done"] },
   jobs: { column: "state", initial: "open", moves: ["open → installed", "open → signed-off: blocking_snags = 0; 1 sign_offs", "installed → signed-off: blocking_snags = 0; 1 sign_offs"] },
-  // A visit to a job that is called off is removed (F17), its why sent with the removal and kept on the removed list (plan 68 S16): no "cancelled" state.
+  // A visit to a job that is called off is removed, its why sent with the removal and kept on the removed list: no "cancelled" state.
   job_visits: { column: "state", initial: "waiting", moves: ["waiting → booked: day filled; crew_id filled", "booked → done", "booked → waiting"] },
   snags: { column: "state", initial: "open", moves: ["open → waiting-part", "open → put-right: put_right_note filled", "waiting-part → open", "waiting-part → put-right: put_right_note filled"] },
   complaints: { column: "state", initial: "open", moves: ["open → answered", "answered → settled"] },
@@ -69,10 +69,10 @@ const EXPECTED: Record<string, { column: string; initial: string; moves: string[
     initial: "to-raise",
     moves: ["to-raise → with-supplier", "to-raise → turned-down", "with-supplier → parts-coming", "with-supplier → turned-down", "parts-coming → sorted", "parts-coming → turned-down", "sorted → turned-down"],
   },
-  // A week is sent with a day in it at least; the operations manager or the CRM admin answers it (P25).
+  // A week is sent with a day in it at least; the operations manager or the CRM admin answers it.
   time_sheets: { column: "state", initial: "open", moves: ["open → sent: 1 time_sheet_lines", "sent → signed-off: only ops-manager, admin", "sent → sent-back: sent_back_note filled; only ops-manager, admin", "sent-back → sent: 1 time_sheet_lines"] },
   insurance_incidents: { column: "state", initial: "open", moves: ["open → settled"] },
-  // A message is removed by its button, which empties its words in the same write; the move waits for them to be empty (plan 68 R4d).
+  // A message is removed by its button, which empties its words in the same write; the move waits for them to be empty.
   messages: { column: "state", initial: "live", moves: ["live → removed: text = "] },
 };
 
@@ -114,7 +114,7 @@ describe("a deal", () => {
     const closedAt = table("deals").columns.find((one) => one.ref === "closed_at")!;
     expect(closedAt.nullable).toBe(true);
     expect(closedAt.rules?.stamp).toEqual({ set: "now", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
-    // A closed deal carries its closed moment: a file's line without one is named and not brought in (plan 68 R5, E13).
+    // A closed deal carries its closed moment: a file's line without one is named and not brought in.
     expect((closedAt.rules as { requiredWhen?: unknown } | undefined)?.requiredWhen).toEqual({ column: "state", in: ["won", "lost"] });
     expect(table("deals").columns.find((one) => one.ref === "lost_reason_id")!.nullable).toBe(true);
   });
@@ -123,7 +123,7 @@ describe("a deal", () => {
     // "Average cycle" is the server's average of a stored figure: whole days from the day it opened to the day it closed.
     const closedOn = table("deals").columns.find((one) => one.ref === "closed_on")!;
     expect([closedOn.type, closedOn.nullable]).toEqual(["date", true]);
-    // A person's close stamps the business's day; a deal brought in closed carries its own (plan 68 R5), never the import's.
+    // A person's close stamps the business's day; a deal brought in closed carries its own, never the import's.
     expect(closedOn.rules?.stamp).toEqual({ set: "today", on: { column: "state", values: ["won", "lost"] }, clearOnBack: true });
     expect((closedOn.rules as { requiredWhen?: unknown } | undefined)?.requiredWhen).toEqual({ column: "state", in: ["won", "lost"] });
     const cycle = table("deals").columns.find((one) => one.ref === "cycle_days")!;
@@ -160,12 +160,12 @@ describe("a deal", () => {
       ["mark-won", "won", ["close_note"], false],
       ["mark-lost", "lost", ["lost_reason_id", "close_note"], false],
       ["reopen", "open", [], false],
-      // It also takes the sheet's "Introduce … to the customer by email" (S1).
+      // It also takes the sheet's "Introduce … to the customer by email".
       ["hand-over", null, ["owner_id", "introduce"], true],
     ]);
     // A deal is handed over while it is open; a closed one is locked, owner and all.
     expect(deal.actions!.find((one) => one.id === "hand-over")).toMatchObject({ set: {}, in: ["open"] });
-    // Plan 68 R1c: in the same write, the old owner's open follow-ups go to the new owner, and her visits not yet made
+    // In the same write, the old owner's open follow-ups go to the new owner, and her visits not yet made
     // once the engine carries a row that holds a time slot (0.3.35 refuses it); the sheet says what the manifest does.
     expect((deal.actions!.find((one) => one.id === "hand-over") as { carries?: unknown }).carries).toEqual([
       ...(HAND_OVER_CARRIES_VISITS ? [{ table: "site_visits", via: "deal_id", column: "rep_id", where: [{ column: "state", eq: "booked" }] }] : []),
@@ -178,10 +178,10 @@ describe("what a state locks", () => {
   it("a sent quote and its lines; a sent or signed-off time sheet and its lines; a closed deal", () => {
     const locks = Object.fromEntries(tables.filter((one) => one.states?.lock !== undefined).map((one) => [one.ref, one.states!.lock!.when]));
     expect(locks).toEqual({ deals: ["won", "lost"], quotes: ["sent", "accepted", "declined", "withdrawn"], time_sheets: ["sent", "signed-off"] });
-    const children = Object.fromEntries(tables.filter((one) => one.states?.children !== undefined).map((one) => [one.ref, Object.entries(one.states!.children!).map(([child, rule]) => `${child}${rule.lock === true ? " locked" : ""}${rule.createIn === undefined ? "" : ` made in ${rule.createIn.join(", ")}`}`)]));
+    const children = Object.fromEntries(tables.filter((one) => one.states?.children !== undefined).map((one) => [one.ref, Object.entries(one.states!.children!).map(([child, rule]) => `${child}${rule.lock === true ? " locked" : ""}${rule.createIn === undefined ? "" : ` made in ${rule.createIn.join(", ")}`}${rule.parentIn === undefined ? "" : ` written in ${rule.parentIn.join(", ")}`}`)]));
     // On a closed deal nobody is added or taken off.
-    // A signed-off job still takes a sign-off: the correction of the one it holds (F19), never a change of it.
-    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked"], jobs: ["sign_offs made in open, installed, signed-off"], time_sheets: ["time_sheet_lines locked"] });
+    // A signed-off job still takes a sign-off: the correction of the one it holds, never a change of it.
+    expect(children).toEqual({ deals: ["deal_members locked"], quotes: ["quote_lines locked", "quote_payments written in accepted"], jobs: ["sign_offs made in open, installed, signed-off"], time_sheets: ["time_sheet_lines locked"] });
   });
 });
 
@@ -206,8 +206,8 @@ describe("every button", () => {
   });
 
   it("there are thirty-five", () => {
-    // The showroom's "Cancel" went with its state (P19), and a job visit's (P20): calling off removes the row.
-    // Plan 68 adds a message's "Remove" (R4d) and a quote's "Reopen it" (S2).
+    // The showroom's "Cancel" went with its state, and a job visit's: calling off removes the row.
+    // A message's "Remove" and a quote's "Reopen it" came later.
     expect(buttons).toHaveLength(35);
   });
 });

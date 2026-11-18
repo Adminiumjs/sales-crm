@@ -1,5 +1,5 @@
 /**
- * The crew's phone (P22), what is worked out in the browser: which crews are
+ * The crew's phone, what is worked out in the browser: which crews are
  * his, the week, the links a phone hands to its own apps, what a visit
  * offers, and what each save is as a line of the phone's offline queue: a
  * sign-off one create with a key, a put-right a change naming what it saw.
@@ -43,7 +43,7 @@ describe("what the crew's day is made of", () => {
     expect(ticksOpen({ day: "2026-07-28", state: "done" }, "2026-07-28")).toBe(false);
   });
 
-  it("offers 'Sign off the job' on a fitting or a return visit of an unsigned job, on its day or after, never on a drop or a signed job (B19)", () => {
+  it("offers 'Sign off the job' on a fitting or a return visit of an unsigned job, on its day or after, never on a drop or a signed job", () => {
     expect(offersSignOff({ kind: "install", day: "2026-07-21" }, false, "2026-07-28")).toBe(true);
     expect(offersSignOff({ kind: "return", day: "2026-07-28" }, false, "2026-07-28")).toBe(true);
     expect(offersSignOff({ kind: "return", day: "2026-08-04" }, false, "2026-07-28")).toBe(false);
@@ -83,7 +83,7 @@ describe("links a phone hands to its own apps", () => {
     expect(addressLines({ site_address: null, site_town: null })).toEqual([]);
   });
 
-  it("opens Apple's maps on an Apple phone, geo: on any other phone, and OpenStreetMap in a new tab on a desk (B16)", () => {
+  it("opens Apple's maps on an Apple phone, geo: on any other phone, and OpenStreetMap in a new tab on a desk", () => {
     const q = encodeURIComponent("Unit 6, Fen Road Park, Cambridge");
     expect(mapsHref(where, "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)", true)).toEqual({ href: `https://maps.apple.com/?q=${q}`, newTab: false });
     expect(mapsHref(where, "Mozilla/5.0 (Linux; Android 14; Pixel 8) Mobile", true)).toEqual({ href: `geo:0,0?q=${q}`, newTab: false });
@@ -98,7 +98,7 @@ describe("links a phone hands to its own apps", () => {
   });
 });
 
-describe("a save of the phone's: a line of the offline queue (plan 68 S19)", () => {
+describe("a save of the phone's: a line of the offline queue", () => {
   const SIG = "file_01SIGNATURE0000000000000A";
   const PHOTO = "file_01PHOTO000000000000000000B";
   const HELD_SIG = "phone_SIGNATURE000000000000000000A";

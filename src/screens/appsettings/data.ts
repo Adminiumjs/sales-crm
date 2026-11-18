@@ -4,7 +4,7 @@
  * The settings are ONE row. Who may write which of its columns is the
  * server's to say (the manifest's `limits.settings.writable` for the sales
  * manager; every column for the CRM admin). The app's config says only that a
- * person may update the table, not which columns, so the manager's eight are
+ * person may update the table, not which columns, so the manager's ten are
  * listed here too, and a test holds this list to the manifest's.
  *
  * WHO ADDS UP. Counts and sums come from the server. What is worked out here
@@ -19,7 +19,7 @@ export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 export type Day = (typeof DAYS)[number];
 
 /** The columns that say how the team sells: the only ones a sales manager writes. Held to the manifest by `data.test.ts`. */
-export const MANAGER_WRITES: readonly string[] = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days"];
+export const MANAGER_WRITES: readonly string[] = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days", "pay_ask", "pay_deposit_pct"];
 
 /** The least and the most each number takes, as the server holds them (the manifest's `validation`). Held to the manifest by `data.test.ts`. */
 export const BOUNDS: Record<string, readonly [number, number]> = {
@@ -31,16 +31,18 @@ export const BOUNDS: Record<string, readonly [number, number]> = {
   nudge_quiet_days: [3, 21],
   nudge_stuck_days: [7, 45],
   nudge_soon_days: [3, 30],
+  // What a customer pays when accepting a quote, when a deposit is asked: a whole percentage of the quote.
+  pay_deposit_pct: [1, 99],
   working_day_hours: [4, 12],
   lead_cold_days: [1, 365],
-  // Stage 2's (P24): a sample's loan, a tired display piece, a snag, an aftercare call, a complaint's answer, a claim gone red.
+  // Stage 2's: a sample's loan, a tired display piece, a snag, an aftercare call, a complaint's answer, a claim gone red.
   loan_days: [1, 90],
   display_tired_months: [1, 60],
   snag_days: [1, 90],
   aftercare_days: [1, 365],
   complaint_answer_days: [1, 30],
   claim_red_days: [1, 180],
-  // Stage 3's (P25): when a certificate runs out soon, when a vehicle's inspection is due soon.
+  // Stage 3's: when a certificate runs out soon, when a vehicle's inspection is due soon.
   certificate_warn_days: [1, 180],
   inspection_warn_days: [1, 90],
 };
@@ -58,6 +60,9 @@ export interface SettingsRow extends Record<string, unknown> {
   work_from: string;
   work_to: string;
   distance_unit: "km" | "miles";
+  /** What is asked when a customer accepts a quote. Empty from a server that does not have it yet. */
+  pay_ask?: "off" | "deposit" | "whole" | null;
+  pay_deposit_pct?: number | string | null;
   depot_name: string | null;
   depot_address: string | null;
   depot_town: string | null;
@@ -173,7 +178,7 @@ export interface StageRow extends Record<string, unknown> {
   label: string;
   odds: number | string;
   position: number;
-  /** Up to five questions, one a line, that Call notes offers for a deal at this stage (plan 68 S11). */
+  /** Up to five questions, one a line, that Call notes offers for a deal at this stage. */
   worth_asking?: string | null;
 }
 
@@ -209,7 +214,7 @@ const OPEN: Condition = { column: "state", op: "eq", value: "open" };
 
 /** The most stages or lost reasons Settings reads (and counts deals for): far more than any business keeps. */
 export const LIST_MOST = 1000;
-/** How many of a list Settings shows before "Show more" (plan 68 X4). */
+/** How many of a list Settings shows before "Show more". */
 export const LIST_PAGE = 50;
 
 /** Every row of a short list, read a page of 200 at a time (a list answers 200 at most), up to {@link LIST_MOST}. */
@@ -251,7 +256,7 @@ export async function readSelling(session: StaffSession, f: Formatters): Promise
   const today = f.dayKey(session.now());
   const [settings, stages, reasons] = await Promise.all([
     readSettings(session),
-    // Every stage and every reason, however many (plan 68 X4): the screen shows them fifty at a time.
+    // Every stage and every reason, however many: the screen shows them fifty at a time.
     everyRow<StageRow>(session, "stages", { select: ["id", "label", "odds", "position", "worth_asking"], order: ["position", "id"] }),
     everyRow<ReasonRow>(session, "lost_reasons", { select: ["id", "label", "position"], order: ["position", "id"] }),
   ]);

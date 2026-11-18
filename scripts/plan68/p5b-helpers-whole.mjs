@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// HELPERS READ AND COMMENT ONLY (ruling 1d, owner 2026-10-25: "a rep helping on another team's deal gives that rep read
+// HELPERS READ AND COMMENT ONLY ("a rep helping on another team's deal gives that rep read
 // and comment"; built before G3 as the manifest review's major 2).
 //
 // Today a rep listed on a colleague's deal ("Also on this deal", `deal_members`) reaches it for every write the owner
@@ -13,7 +13,7 @@
 // The rep's (and the account manager's) update and delete reaches of the deal and of every table through it gain it;
 // their READ reaches do not, so a helper reads all of it as today, and `comments` keep the listing, so she comments.
 // Unchanged: the owner's way (`owner_id`), the cover's (`covers`), a row's own staff column (her own follow-up or visit
-// made before: she still finishes, moves or calls it off), the sales manager's `via … by owner_id` reaches (R1d), the
+// made before: she still finishes, moves or calls it off), the sales manager's `via … by owner_id` reaches, the
 // CRM admin.
 //
 // NOT APPLIED YET: the word is not in the engine at 448a50684 (Adminium's validator refuses an unknown key of a reach),

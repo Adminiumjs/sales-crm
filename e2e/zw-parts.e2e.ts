@@ -1,5 +1,5 @@
 /**
- * Plan 67 gate G2, "Parts at install and after", the half after the install: the app's page in Studio → its Parts card.
+ * "Parts at install and after", the half after the install: the app's page in Studio → its Parts card.
  * The install's owner switches Inbox off: the dialog lists what is open in it (as the server counts it), its menu goes
  * (the console's Enquiries entry; the Inbox heading of the CRM admin's menu on the staff side), and its pages opened by
  * their address say the part is switched off, in the console and on the staff side. Switched on again, it is all back.

@@ -8,7 +8,7 @@
  * right (`proofs/crm-crew.test.ts`).
  *
  * With no signal a put-right is kept on the phone, photo and all, and sent
- * when the signal is back (plan 68 S19): the snag reads "Put right" with
+ * when the signal is back: the snag reads "Put right" with
  * "Waiting to send" meanwhile, and keeps its place. One refused on arrival
  * (somebody put it right first) says who and when. A snag raised on the phone
  * and not yet sent is listed first, as new.

@@ -396,7 +396,7 @@ test("the three action lists are one list: ticked in One-to-one notes, it is tic
   await priyaPage.goto(`${STAFF}today`);
   await go(priyaPage, "My coaching");
   await expect(priyaPage.getByRole("heading", { level: 1 })).toHaveText("My coaching");
-  // Her manager counts four steps on this plan (the ledger's "1 of 4"), and so does Priya now (plan 68 R4b): every step of
+  // Her manager counts four steps on this plan (the ledger's "1 of 4"), and so does Priya now: every step of
   // her own plan, her manager's own ("Ivy sits in on one first meeting") included, which is not hers to tick.
   const hers = await rows<ActionRow>(priyaContext.request, data, "actions", { column: "source", op: "eq", value: "coaching" });
   expect(hers.length + (await rows<ActionRow>(priyaContext.request, data, "actions", { and: [{ column: "source", op: "neq", value: "coaching" }, { column: "coaching_area_id", op: "not_null" }] })).length).toBe(4);
@@ -567,7 +567,7 @@ test("Coaching: the ledger's plans for the manager; a rep adds a step to her own
   await expect(samPage.locator(".crm-toast")).toHaveText("Added. That is the work.");
   await expect(samPage.getByTestId("co-progress")).toContainText("1 of 4 done");
   await expect(samPage.locator(".crm-co-area").first().locator(".crm-tw-action", { hasText: "Spec: ask for the visit before the price" })).toHaveCount(1);
-  // His manager reads the step he set in her plan for him (plan 68 R4a), and does not tick it: it is his.
+  // His manager reads the step he set in her plan for him, and does not tick it: it is his.
   await page.reload();
   await page.locator(".crm-tw-people").getByRole("button", { name: "Sam" }).click();
   await expect(page.getByTestId("co-progress")).toContainText("1 of 4 done");
@@ -723,7 +723,7 @@ test("Messages: the ledger's four conversations and three unread; read, answered
   }
 });
 
-test("Messages: the author removes her own message and a line says so, live; nobody else removes it, and its words leave every staff door (R4d)", async ({ as, api, data }) => {
+test("Messages: the author removes her own message and a line says so, live; nobody else removes it, and its words leave every staff door", async ({ as, api, data }) => {
   await putMarksBack(api, data);
   try {
     const context = await as("dana");
@@ -788,7 +788,7 @@ test("Messages: the author removes her own message and a line says so, live; nob
 
 /* ─── The new starter ─────────────────────────────────────────────────────── */
 
-test("Messages: a member brings a colleague into a group conversation, who reads it from its start; a two-person one offers nobody (R4c, D3, D12)", async ({ as, api, data }) => {
+test("Messages: a member brings a colleague into a group conversation, who reads it from its start; a two-person one offers nobody", async ({ as, api, data }) => {
   const owner = await api("owner");
   const ownerHeaders = await csrf(owner);
   const ivyId = await me(await api("ivy"));
@@ -894,7 +894,7 @@ test("New starter: the ledger's three of twelve; a step ticked and put back; the
   expect((await dana.patch(data("starter_steps", `/${String(step.id)}`), { data: { values: { text: "Spec: no" } }, headers })).status()).toBe(403);
   expect((await dana.patch(data("starter_steps", `/${String(step.id)}`), { data: { values: { done: true } }, headers })).status()).toBe(200);
   expect((await dana.patch(data("starter_steps", `/${String(step.id)}`), { data: { values: { done: false } }, headers })).status()).toBe(200);
-  // …her own step only (plan 68 X1): Leo's "Walk the catalogue" is shown to her, not offered, and refused by the server.
+  // …her own step only: Leo's "Walk the catalogue" is shown to her, not offered, and refused by the server.
   const leos = (await rows<{ id: number }>(dana, data, "starter_steps", { column: "text", op: "eq", value: "Walk the catalogue" }))[0]!;
   expect([403, 404]).toContain((await dana.patch(data("starter_steps", `/${String(leos.id)}`), { data: { values: { done: true } }, headers })).status());
   const danaPage = await danaContext.newPage();

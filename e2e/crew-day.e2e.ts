@@ -1,5 +1,5 @@
 /**
- * P22, the field crew's phone (stage 2): My day, a visit and its ticks, the
+ * The field crew's phone (stage 2): My day, a visit and its ticks, the
  * crew's Snags, his own profile and his Jump, a tick kept on the phone when nothing gets through, and a live
  * change from the office. Signed in as Yusuf Adeyemi (Blue crew, with Cal
  * Brennan), on a phone 390 wide. Run on a stand of stage 2 (`CRM_STAND_STAGE=2`).
@@ -55,7 +55,7 @@ test("My day: he lands on today, his crew and its people; a day with a visit has
   await page.getByTestId("cw-next").click();
   await expect(page).toHaveURL(/\/my-day\/2026-08-04$/);
 
-  // Tue 4 Aug (ledger §49): one visit, Cobalt Legal, 08:00, 6 h, 12 Sovereign Street, Leeds, Tomas Reidy, four ticks with none done.
+  // Tue 4 Aug: one visit, Cobalt Legal, 08:00, 6 h, 12 Sovereign Street, Leeds, Tomas Reidy, four ticks with none done.
   const visits = await figure(context.request, stand, "job_visits", [{ column: "state", op: "in", value: ["booked", "done"] }, { column: "day", op: "eq", value: "2026-08-04" }], { fn: "count", alias: "n" });
   const hours = await figure(context.request, stand, "job_visits", [{ column: "state", op: "in", value: ["booked", "done"] }, { column: "day", op: "eq", value: "2026-08-04" }], { fn: "sum", column: "hours", alias: "h" });
   expect([visits, hours]).toEqual([1, 6]);
@@ -71,11 +71,11 @@ test("My day: he lands on today, his crew and its people; a day with a visit has
   await expect(card).toContainText("Loading bay off Sovereign Street. Ask at the desk for Tomas.");
   await expect(card.getByTestId("cw-ticked")).toHaveText("0 of 4 ticked");
   await expect(card.getByTestId("cw-load")).toContainText("Nothing listed yet.");
-  // A return visit to J-01, signed off on Tue 18 Nov 2025 by Tomas Reidy: the sign-off read, the four ticks, "Add a snag" (B19).
+  // A return visit to J-01, signed off on Tue 18 Nov 2025 by Tomas Reidy: the sign-off read, the four ticks, "Add a snag".
   await expect(card.getByTestId("cw-signed")).toContainText("Signed off Nov 18, 2025 by Tomas Reidy");
   await expect(card.getByRole("link", { name: "Sign off the job" })).toHaveCount(0);
   await expect(card.getByTestId("cw-add-snag")).toBeVisible();
-  // The week's strip marks his three booked days, Tue 4, Wed 5 (J-07's return visit, plan 68 M3 BN-19) and Thu 6 Aug.
+  // The week's strip marks his three booked days, Tue 4, Wed 5 (J-07's return visit) and Thu 6 Aug.
   await expect(page.locator('.crm-cw-weekday-dot[data-on="1"]')).toHaveCount(3);
   // No amount anywhere on his day.
   expect(await page.locator("#crm-page").innerText()).not.toMatch(/£/);
@@ -145,7 +145,7 @@ test("live, two people: the office moves his visit while his day is open, and hi
   }
 });
 
-test("Nothing gets through: a tick is kept on the phone and said so, nothing is saved, and it goes by itself once a request gets through (plan 68 S19)", async ({ as, data }) => {
+test("Nothing gets through: a tick is kept on the phone and said so, nothing is saved, and it goes by itself once a request gets through", async ({ as, data }) => {
   const context = await as("f_yusuf", PHONE);
   const page = await context.newPage();
   try {
@@ -212,13 +212,13 @@ test("his own: My profile holds his name, crew, phone, language and alerts and n
   // The three rules that tell his crew of a change, each with its real state (switched on in the sample install).
   await expect(page.getByTestId("me-alerts").locator("li")).toHaveCount(3);
   await expect(page.getByTestId("me-alerts").locator('li[data-state="on"]')).toHaveCount(3);
-  // No pipeline, no target, no amount (N2).
+  // No pipeline, no target, no amount.
   for (const gone of ["me-target", "me-companies"]) await expect(page.getByTestId(gone)).toHaveCount(0);
   expect(await page.locator("#crm-page").innerText()).not.toMatch(/£|pipeline|target/i);
   // Notifications lists what can reach him: a change to a visit of his.
   await page.goto(`${STAFF}notifications`);
   await expect(page.getByTestId("told-reasons")).toContainText("A visit of mine today or tomorrow is changed");
-  // Jump (N1): his two screens (from stage 3, his five), and nothing else: no action, and no record whatever he types.
+  // Jump: his two screens (from stage 3, his five), and nothing else: no action, and no record whatever he types.
   await page.goto(`${STAFF}my-day`);
   await expect(page.getByTestId("cw-day")).toBeVisible();
   await page.keyboard.press("Control+k");

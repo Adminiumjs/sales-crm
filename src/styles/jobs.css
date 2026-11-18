@@ -1,5 +1,5 @@
 /*
- * Jobs on site, the office side and the route (P20, P21). Every class is
+ * Jobs on site, the office side and the route. Every class is
  * `crm-jb-…`; the shared pieces (a screen, a pill, a chip, a card, the
  * booking dialog's parts) are the app's own. Logical properties only: the
  * page mirrors in Arabic. Colours are the tokens: dark follows by itself.
@@ -719,7 +719,7 @@ button.crm-jb-tick {
   .crm-jb-route {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* On a phone the list comes first, the map under it (D5). */
+  /* On a phone the list comes first, the map under it. */
   .crm-jb-route-side {
     order: -1;
   }
@@ -1338,7 +1338,7 @@ button.crm-jb-tick {
   align-self: flex-start;
 }
 
-/* ─── The signed copy's file row, under "Who signed" (plan 68 S13; M2 note 1) ─── */
+/* ─── The signed copy's file row, under "Who signed" ─── */
 .crm-sc-file {
   display: flex;
   align-items: center;

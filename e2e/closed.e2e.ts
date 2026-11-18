@@ -1,5 +1,5 @@
 /**
- * P02, Closed (ledger §8): one list of 26 closed deals, 8 won for 130,000 and
+ * Closed: one list of 26 closed deals, 8 won for 130,000 and
  * 18 lost for 294,400; in 2026, 5 for 81,600 and 12 for 188,600.
  *
  * Reached from the menu as a rep (her own), the sales manager, the CRM admin

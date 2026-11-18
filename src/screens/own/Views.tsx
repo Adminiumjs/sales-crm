@@ -3,7 +3,7 @@
  * back to, with a live count.
  *
  * The list is what the server answers her: her own views, and nobody else's
- * (the table is private, plan 68 D9: not even the install's owner reads
+ * (the table is private: not even the install's owner reads
  * them). A view's count, and for a cut of the board its weighted value, are
  * the server's FOR HER. "Open it" goes to the screen the view was saved
  * from, narrowed. She pins and removes her own.

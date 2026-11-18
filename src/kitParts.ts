@@ -26,7 +26,7 @@ import type { StaffConfig } from "./staffConnection.ts";
 /** The contract this file was written for. */
 export const KIT_CONTRACT = 1;
 
-export type KitPartName = "mentions" | "board" | "map" | "import" | "signature" | "photos";
+export type KitPartName = "mentions" | "board" | "map" | "import" | "signature" | "photos" | "refund" | "pay-link";
 
 export interface KitMounted<Props> {
   /** Changes the props named; the others stay as they were. */

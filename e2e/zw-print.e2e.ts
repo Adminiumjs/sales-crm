@@ -1,5 +1,5 @@
 /**
- * Walk "The Day sheet printed on paper" (P24): the sheet as Chromium prints
+ * Walk "The Day sheet printed on paper": the sheet as Chromium prints
  * it (`page.pdf`, print media) on A4 and on US Letter, in English and in
  * Arabic, as the operations manager. A day sheet is one crew's day: every
  * crew's sheet of a busy day is printed, and each must be ONE page, with

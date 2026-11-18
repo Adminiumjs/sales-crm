@@ -1,5 +1,5 @@
 /**
- * Plan 68 S19, THE CREW'S OFFLINE QUEUE (stage 3), as Yusuf Adeyemi of Blue
+ * THE CREW'S OFFLINE QUEUE (stage 3), as Yusuf Adeyemi of Blue
  * crew on a phone 390 wide. On each phone screen the signal goes mid-save
  * (`context.setOffline(true)`): the save is kept on the phone (with its retry
  * key and its files), the screen says so and shows it with "Waiting to send",

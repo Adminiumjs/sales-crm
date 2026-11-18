@@ -4,7 +4,7 @@
  * PRIVATE TO ITS TWO PEOPLE, as `notes.ts` says: a plan and its areas are read
  * by the rep and the manager they name, and written by the manager.
  *
- * THE LIVE NUMBER (T04). An area may say which number it is measured by
+ * THE LIVE NUMBER. An area may say which number it is measured by
  * (`coaching_areas.measure`). The number is a figure the server answers over
  * the rep's own deals and queue (`owner_id` is the rep), so the rep and her
  * manager read the same number: nothing is added up here, and an average or a

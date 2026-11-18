@@ -1,5 +1,5 @@
 /**
- * THE BOOKING DIALOG, in its third use: a visit to a job (D4 §3.4). Book a
+ * THE BOOKING DIALOG, in its third use: a visit to a job. Book a
  * visit that waits, move a booked one, call one off, or add a visit to a job.
  *
  * WHAT IS CHECKED HERE, AND WHAT THE SERVER HOLDS. The server refuses a day
@@ -104,7 +104,7 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
 
   useEffect(() => setError(null), [day, crewId, start, hours]);
 
-  // The crew's vehicle for the day (plan 68 S14): its row that day, else the one picked for this crew, else its own (CD-9).
+  // The crew's vehicle for the day: its row that day, else the one picked for this crew, else its own.
   const vans = writesVanDays(session);
   const { load: dayLoad } = useLoad(() => (vans && validDay ? readDayFacts(session, day) : Promise.resolve(null)), [session, vans, validDay, day]);
   // The facts of the day picked, never those of the day before while the new day is read.
@@ -166,7 +166,7 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
       const done = await cancelVisit(session, visit, why.trim());
       end();
       if (!said(done)) return;
-      // Its crew's vehicle that day goes with the crew's last visit then (CD-8).
+      // Its crew's vehicle that day goes with the crew's last visit then.
       if (visit.state === "booked") await dropIfEmpty(session, visit.crew_id, wasDay).catch(() => undefined);
       toasts.show(t("jb.toast.cancelled", { site: visit.site_name, job: visit.code ?? "" }), "plain");
       onDone();
@@ -206,7 +206,7 @@ export function VisitDialog({ booking, session, f, facts, plan, jobs, today, onC
     const saved = target.state === "booked" ? await moveVisit(session, target, draft) : await bookVisit(session, target, draft);
     end();
     if (saved.state === "refused" && made !== null) await session.remove("van_days", made.id).catch(() => undefined);
-    // A visit that left its crew's day takes that day's vehicle with it when it was the last one (CD-8).
+    // A visit that left its crew's day takes that day's vehicle with it when it was the last one.
     if (saved.state === "saved" && target.state === "booked" && (target.crew_id !== crewId || dayKeyOf(target.day) !== day)) await dropIfEmpty(session, target.crew_id, dayKeyOf(target.day)).catch(() => undefined);
     if (!said(saved)) {
       // An added visit that could not be booked is there, waiting: say so, and the list shows it.

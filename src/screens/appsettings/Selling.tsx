@@ -31,6 +31,25 @@ import { peopleOf } from "../team/data.ts";
 import { Dialog } from "../../ui/dialog.tsx";
 import { ASKING_LENGTH, ASKING_MAX, askingOf, num, readSelling, type PriceRow, type ReasonRow, type RepRow, type SellingData, type StageRow, LIST_PAGE } from "./data.ts";
 import { AskLine, Card, NumField, useSaveSettings, type Rights } from "./parts.tsx";
+import { PaymentsCard } from "./Payments.tsx";
+
+/**
+ * What was typed, once the list has been read again (after a save of this
+ * person's, or anybody's change arriving): a field keeps its words while they
+ * were not sent and the server still holds what the field held when the
+ * typing began. Sent words, or a field somebody changed meanwhile, show the
+ * server's value. `now` is what the server holds for a field now; undefined
+ * when its row is gone.
+ */
+export function keptDrafts(drafts: Readonly<Record<string, string>>, began: Readonly<Record<string, string>>, sent: Readonly<Record<string, string>>, now: (key: string) => string | undefined): Record<string, string> {
+  const kept: Record<string, string> = {};
+  for (const [key, typed] of Object.entries(drafts)) {
+    if (sent[key] !== undefined) continue;
+    const held = now(key);
+    if (held !== undefined && held === began[key]) kept[key] = typed;
+  }
+  return kept;
+}
 
 type ListTable = "stages" | "lost_reasons";
 type Listed = (StageRow | ReasonRow) & { odds?: number | string };
@@ -68,9 +87,9 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   const canRemove = session.can(table, "delete");
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  // Every row is read; fifty are shown, then fifty more a press (plan 68 X4).
+  // Every row is read; fifty are shown, then fifty more a press.
   const [shown, setShown] = useState(LIST_PAGE);
-  // The stage whose "worth asking" questions are open (S11).
+  // The stage whose "worth asking" questions are open.
   const [asking, setAsking] = useState<Listed | null>(null);
   /**
    * What was last sent for a field, until the list has been read again: Enter
@@ -90,9 +109,28 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
       focusOn.current = null;
     }
   }, [rows]);
-  // What was typed is dropped once the server's own value has come back.
+  // What each field held when the typing in it began: a list read again in the meantime keeps the words (`keptDrafts`).
+  const began = useRef<Record<string, string>>({});
+  const held = (key: string): string | undefined => {
+    const [field, id] = key.split(":");
+    const row = rows.find((one) => String(one.id) === id);
+    if (row === undefined) return undefined;
+    return field === "name" ? row.label : String(Math.round(num(row.odds) * 100));
+  };
+  const typing = (key: string, value: string): void => {
+    if (began.current[key] === undefined) {
+      const was = held(key);
+      if (was !== undefined) began.current[key] = was;
+    }
+    setDrafts((was) => ({ ...was, [key]: value }));
+  };
+  // What was typed is dropped once the server's own value for it has come back.
   useEffect(() => {
-    setDrafts({});
+    setDrafts((was) => {
+      const kept = keptDrafts(was, began.current, sent.current, held);
+      began.current = Object.fromEntries(Object.entries(began.current).filter(([key]) => key in kept));
+      return kept;
+    });
     sent.current = {};
   }, [rows]);
 
@@ -179,7 +217,7 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
                   maxLength={80}
                   aria-label={t(k("name"), { n: f.number(at + 1) })}
                   aria-invalid={name.trim() === ""}
-                  onChange={(event) => setDrafts((was) => ({ ...was, [`name:${String(row.id)}`]: event.target.value }))}
+                  onChange={(event) => typing(`name:${String(row.id)}`, event.target.value)}
                   onBlur={() => rename(row)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") rename(row);
@@ -197,7 +235,7 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
                       value={odds}
                       aria-label={t("aset.stages.odds", { name: row.label })}
                       aria-invalid={badOdds}
-                      onChange={(event) => setDrafts((was) => ({ ...was, [`odds:${String(row.id)}`]: event.target.value }))}
+                      onChange={(event) => typing(`odds:${String(row.id)}`, event.target.value)}
                       onBlur={() => reodds(row)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") reodds(row);
@@ -263,7 +301,7 @@ function Ordered({ table, rows, session, f, after, counts, removable }: { table:
   );
 }
 
-/** A stage's "worth asking" questions, five lines at most: what Call notes offers for a deal at this stage (plan 68 S11, Q4 = A). */
+/** A stage's "worth asking" questions, five lines at most: what Call notes offers for a deal at this stage. */
 function AskingDialog({ stage, busy, onClose, onSave }: { stage: Listed; busy: boolean; onClose: () => void; onSave: (text: string | null) => Promise<void> }) {
   const t = useT();
   const kept = askingOf(stage.worth_asking as string | null | undefined);
@@ -321,8 +359,27 @@ function PriceList({ session, f, round }: { session: StaffSession; f: Formatters
     sent.current[key] = value;
     return true;
   };
+  // As in the lists above: what was typed survives a read that did not change its field.
+  const began = useRef<Record<string, string>>({});
+  const held = (key: string): string | undefined => {
+    const [field, id] = key.split(":");
+    const row = rows?.find((one) => String(one.id) === id);
+    if (row === undefined) return undefined;
+    return field === "name" ? row.name : String(num(row.list_rate));
+  };
+  const typing = (key: string, value: string): void => {
+    if (began.current[key] === undefined) {
+      const was = held(key);
+      if (was !== undefined) began.current[key] = was;
+    }
+    setDrafts((was) => ({ ...was, [key]: value }));
+  };
   useEffect(() => {
-    setDrafts({});
+    setDrafts((was) => {
+      const kept = keptDrafts(was, began.current, sent.current, held);
+      began.current = Object.fromEntries(Object.entries(began.current).filter(([key]) => key in kept));
+      return kept;
+    });
     sent.current = {};
   }, [rows]);
   const run = async <R,>(save: Promise<Saved<R>>, done: string): Promise<boolean> => {
@@ -370,7 +427,7 @@ function PriceList({ session, f, round }: { session: StaffSession; f: Formatters
                       value={drafts[`name:${String(row.id)}`] ?? row.name}
                       maxLength={160}
                       aria-label={t("aset.prices.name", { name: row.name })}
-                      onChange={(event) => setDrafts((was) => ({ ...was, [`name:${String(row.id)}`]: event.target.value }))}
+                      onChange={(event) => typing(`name:${String(row.id)}`, event.target.value)}
                       onBlur={() => rename(row)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") rename(row);
@@ -386,7 +443,7 @@ function PriceList({ session, f, round }: { session: StaffSession; f: Formatters
                       value={drafts[`rate:${String(row.id)}`] ?? f.number(num(row.list_rate))}
                       aria-label={t("aset.prices.rate", { name: row.name })}
                       aria-invalid={drafts[`rate:${String(row.id)}`] !== undefined && drafts[`rate:${String(row.id)}`]!.trim() !== "0" && f.readAmount(drafts[`rate:${String(row.id)}`]!) === null}
-                      onChange={(event) => setDrafts((was) => ({ ...was, [`rate:${String(row.id)}`]: event.target.value }))}
+                      onChange={(event) => typing(`rate:${String(row.id)}`, event.target.value)}
                       onBlur={() => reprice(row)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") reprice(row);
@@ -641,6 +698,7 @@ export function Selling({ session, f, rights }: { session: StaffSession; f: Form
                     <AskLine>{t(linkState === "set" ? "aset.links.set" : linkState === "unset" ? "aset.links.unset" : "aset.links.unknown")}</AskLine>
                   </Card>
                 )}
+                <PaymentsCard session={session} row={data.settings} f={f} rights={rights} save={save} />
                 <Card name="sitting" title={t("aset.sitting.title")} sub={t("aset.sitting.sub")}>
                   <div className="crm-ast-fields">
                     {field("sitting_warm_days", "aset.sitting.warm", days(num(value("sitting_warm_days"))), t("aset.sitting.warm.now", { count: f.number(data.warm) }, data.warm), { max: num(value("sitting_stale_days")) - 1 })}

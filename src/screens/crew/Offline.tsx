@@ -1,5 +1,5 @@
 /**
- * NO SIGNAL on the crew's phone (plan 68 S19, the design's "Offline queue"):
+ * NO SIGNAL on the crew's phone (the design's "Offline queue"):
  * what the phone shows of the saves it keeps (`queue.tsx`).
  *
  *  - the SIGNAL LINE above every crew screen while there is none: what is

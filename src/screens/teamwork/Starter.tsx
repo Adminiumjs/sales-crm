@@ -3,7 +3,7 @@
  * happen before the first day, in the first week and in the first month.
  *
  * The steps are ticked by who may change them: a rep her own steps, the
- * manager her team's starters' and steps, the CRM admin any (plan 68 X1; a
+ * manager her team's starters' and steps, the CRM admin any (a
  * rep ticks a step and changes nothing else of it: the server holds each).
  * "3 of 12 done" and each group's count are totals the server answers; the
  * share done is those two divided.
@@ -12,7 +12,7 @@
  * Until then the screen offers half the average full target, worked out from
  * the server's average of this year's targets.
  *
- * A NEW STARTER (T04) is made here by the sales manager or the CRM admin: a
+ * A NEW STARTER is made here by the sales manager or the CRM admin: a
  * name, the first day and the patch she takes on, and, in the same save, the
  * steps of the starter before her, none ticked (the server makes all or none).
  * "Her patch" is the server's count of the companies in that territory.
@@ -43,7 +43,7 @@ interface StarterRow extends Record<string, unknown> {
   manager_id: string;
   first_year_target?: number | string | null;
   user_id: string | null;
-  /** The territory she takes on (T04), its name and whose it is now; empty when none is said. */
+  /** The territory she takes on, its name and whose it is now; empty when none is said. */
   patch?: number | null;
   patch_name?: string | null;
   patch_owner?: string | null;
@@ -189,7 +189,7 @@ function One({ starter, who, f, now, round, onChanged }: { starter: StarterRow; 
   const ours = (person: string | null): boolean => usLoad.state === "ready" && (usLoad.data === "anybody" || (person !== null && usLoad.data.has(person)));
   const canTick = session.can("starter_steps", "update");
   const mayTick = (step: StepRow): boolean => canTick && (ours(step.owner_id) || ours(starter.manager_id));
-  // Her own starter row is never hers to change (plan 68 X2): its first-year target is set by the CRM admin.
+  // Her own starter row is never hers to change: its first-year target is set by the CRM admin.
   const ownRow = heldFromOwn(session) && starter.user_id !== null && starter.user_id === session.config.user?.id;
   const canSet = session.can("starters", "update") && ours(starter.manager_id) && !ownRow;
 

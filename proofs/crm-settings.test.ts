@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 67, F18 and F20 (their stage-1 part): SETTINGS, PLACES AND THE ROWS A
+ * Stage 1: SETTINGS, PLACES AND THE ROWS A
  * BUSINESS SETS UP FIRST, against the whole server on SQLite, Postgres and
  * MySQL, with the app's own manifest, each try made signed in as the person it
  * is about.
@@ -29,21 +29,23 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LEGS, said, wholeServer, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 
 /** The eight columns that say how the team sells: the sales manager's. */
-const MANAGERS = ['approval_threshold_pct', 'quote_valid_days', 'quote_warn_days', 'sitting_warm_days', 'sitting_stale_days', 'nudge_quiet_days', 'nudge_stuck_days', 'nudge_soon_days'];
+// What a customer pays on accepting a quote is on the Selling tab too.
+const MANAGERS = ['approval_threshold_pct', 'quote_valid_days', 'quote_warn_days', 'sitting_warm_days', 'sitting_stale_days', 'nudge_quiet_days', 'nudge_stuck_days', 'nudge_soon_days', 'pay_ask', 'pay_deposit_pct'];
 /** A value each setting takes, other than the one it starts with. */
 const LEGAL: Record<string, unknown> = {
+  pay_ask: 'deposit', pay_deposit_pct: 25,
   visit_emails: false, approval_threshold_pct: 7.5, quote_valid_days: 45, quote_warn_days: 5, sitting_warm_days: 10, sitting_stale_days: 40, nudge_quiet_days: 9, nudge_stuck_days: 25, nudge_soon_days: 10,
   working_day_hours: 7.5, week_starts: 'sun', work_mon: false, work_tue: false, work_wed: false, work_thu: false, work_fri: false, work_sat: true, work_sun: true, work_from: '09:00', work_to: '18:00',
   depot_name: 'North depot', depot_address: 'Unit 9\nCanal Road', depot_town: 'Bradford', depot_region: 'West Yorkshire', depot_postal_code: 'BD1 4SJ', depot_country: 'GB', depot_lat: 53.79, depot_lng: -1.75,
   depot_place: { lat: 53.79, lng: -1.75 }, distance_unit: 'miles', loan_days: 10, aftercare_days: 21, complaint_answer_days: 2, snag_days: 4, lead_cold_days: 10, certificate_warn_days: 30,
   display_tired_months: 8, claim_red_days: 14, inspection_warn_days: 21, delivery_emails: false, office_phone: '0113 496 0199',
-  // The showroom's (P19): its hours, its address and its e-mails' switch, the CRM admin's alone.
+  // The showroom's: its hours, its address and its e-mails' switch, the CRM admin's alone.
   showroom_emails: false, showroom_opens: '10:00', showroom_closes: '18:00', showroom_address: 'Unit 2, Aire Works, Leeds',
   // The brochure a website form's enquirer asks for: its link, the CRM admin's alone.
   brochure_link: 'https://meridian-workplace.com/brochure.pdf',
@@ -104,7 +106,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(await row('ada', 'settings', settings)).toBeNull();
     });
 
-    it('lets the sales manager write her eight settings and refuses her every other one', async () => {
+    it('lets the sales manager write her ten settings and refuses her every other one', async () => {
       // The list this test walks is the manifest's own: a column added tomorrow is tried too.
       const every = columns();
       expect(every.filter((ref) => !(ref in LEGAL) && !PEOPLE.includes(ref))).toEqual([]);

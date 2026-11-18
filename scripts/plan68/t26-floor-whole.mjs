@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Plan 68, phase 4 (T26): the CRM asks for the engine that carries the new words (E1–E28 floor 0.3.35; the helpers' word, 0.3.36).
-// The release that carries the add-ons pin may be later (G2b); then this moves again at G3.
+// The CRM asks for the engine that carries the new words (the floor is 0.3.35; the helpers' word, 0.3.36).
+// The release that carries the add-ons pin may be later; then this moves again.
 //
 // Run: node scripts/plan68/t26-floor-whole.mjs  (idempotent)
 import { readFileSync, writeFileSync } from "node:fs";

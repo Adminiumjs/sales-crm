@@ -63,14 +63,14 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["stages", "lost_reasons"], "RCUD", "RCU", "R", "R", "-", "-", "-", "-", "R"],
   // The operations manager reads a won deal (five columns: its name, state, close day and how many jobs it has) to make
   // the job of one won before Jobs on site was switched on ("jobs still to make", P15); nothing of an open deal.
-  // The account manager reads every won deal, and an open one only while he is listed on it (R6, T37): its quote, its
+  // The account manager reads every won deal, and an open one only while he is listed on it: its quote, its
   // notes and its history, and he comments on it.
-  // The CRM admin also brings a list of past deals in (plan 68 R5): a closed one carries its closed date.
+  // The CRM admin also brings a list of past deals in: a closed one carries its closed date.
   [["deals"], "RCUDXI", "RCUX:team-owned", "RCU;r=own;u=own-not-helper", "R:won+own", "-", "-", "R:won", "-", "RX"],
   [["deal_stage_changes"], "R", "R:deal", "R:own", "R:own", "-", "-", "-", "-", "R"],
   [["deal_amount_changes"], "R", "R:deal", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // Everybody on a deal reads its notes and comments; a note or a comment is reworded by whoever wrote it, of the deals they
-  // are on (plan 68 X6: a manager no longer rewords her rep's). The manager and the CRM admin reword none: they change no
+  // are on (a manager no longer rewords her rep's). The manager and the CRM admin reword none: they change no
   // call note, and of a comment only `settled_at` (the manager her team's threads, the CRM admin any).
   [["activities"], "RCD", "RC:deal", "RCU:own;u=own-written-not-helper", "R:own", "-", "-", "-", "-", "R"],
   [["comments"], "RCUD", "RCU:deal", "RCU:own;u=own-written", "RCU:own;u=own-written", "-", "-", "-", "-", "R"],
@@ -78,9 +78,11 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["quotes"], "RCUDX", "RCU:deal", "RCU;r=own;u=own-not-helper", "R:own", "-", "-", "-", "-", "RX"],
   // A line of a draft is taken out by whoever works the quote; once the quote is sent the server keeps every line.
   [["quote_lines"], "RCUDX", "RCUD:deal-quote", "RCUD;r=own;u=own-not-helper;d=own-not-helper", "R:own", "-", "-", "-", "-", "RX"],
+  // A quote's payments are written by Adminium alone, when money arrives or is given back: read wherever the quote is.
+  [["quote_payments"], "R", "R:deal-pay", "R:own", "R:own", "-", "-", "-", "-", "R"],
   // The price list: a rep reads what a thing costs at list and writes none of it.
   [["price_list"], "RCUD", "RCU", "R", "-", "-", "-", "-", "-", "R"],
-  // Private (plan 68 D9): each person's own, and nobody else's, the install's owner included. A view nobody owns is nobody's.
+  // Private: each person's own, and nobody else's, the install's owner included. A view nobody owns is nobody's.
   [["saved_views", "saved_searches"], "RCUD:own", "RCUD:own", "RCUD:own", "RCUD:own", "-", "-", "-", "-", "R:own"],
   [["nudge_snoozes"], "RCD:own", "RCD:own", "RCD:own", "-", "-", "-", "-", "-", "-"],
   // Who is on a deal is read by whoever is on it, and written by its owner (or who leads her): `owner's` below.
@@ -93,30 +95,30 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["visit_notes"], "RCUD", "RCU:deal-visit", "RCU;r=own;u=own-not-helper", "-", "-", "-", "-", "-", "R"],
   [["visit_agreed"], "RCUD", "RCU:deal-visit", "RCUD;r=own;u=own-not-helper;d=own-not-helper", "-", "-", "-", "-", "-", "R"],
   // Everybody reads every company. A rep (and the account manager) changes one she is the account owner of, has an open
-  // deal at, or that nobody owns; the manager her team's and nobody's; the CRM admin any (plan 68 X3, Q5 = B).
+  // deal at, or that nobody owns; the manager her team's and nobody's; the CRM admin any.
   [["companies"], "RCUDXI", "RCUXI;u=team+free", "RCUI;u=own+free", "RCU;u=own+free", "R", "R", "-", "-", "RX"],
   [["contacts"], "RCUDXI", "RCUXI", "RCUI", "RCU", "R", "RC", "-", "-", "RX"],
-  // The sales manager changes and removes the territories her team owns, and the ones nobody does (plan 68 X3).
+  // The sales manager changes and removes the territories her team owns, and the ones nobody does.
   [["territories", "territory_places"], "RCUD", "RCUD;u=team+free;d=team+free", "R", "R", "R", "-", "-", "-", "R"],
   // A rep reads what came after a sale and writes none of it: no screen of hers does, and a thank-you mails a contact (the review).
   [["renewals", "referrals"], "RCUD", "R", "R", "RCUD", "-", "-", "-", "-", "R"],
   [["reps"], "RCUD", "RU;u=own", "RU;u=own", "RU;u=own", "-", "-", "-", "-", "R"],
   [["targets"], "RCUD", "RCU;r=team;u=team-not-own", "R:own", "-", "-", "-", "-", "-", "R"],
   [["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"], ...PAIR],
-  // A step is also the rep's and the manager's of the coaching area it hangs on, and the manager's of its one-to-one
-  // (plan 68 R4a/R4b, E27); each changes only the ones she owns or set.
+  // A step is also the rep's and the manager's of the coaching area it hangs on, and the manager's of its one-to-one;
+  // each changes only the ones she owns or set.
   [["actions"], "R:own", "RCUD;r=own+reps-meeting;u=own-or-set;d=own-or-set", "RCU;r=own;u=own-or-set", "-", "-", "-", "-", "-", "-"],
   [["meetings"], "RCUD", "RCUD", "R", "-", "-", "-", "-", "-", "R"],
-  // A meeting's decisions are changed by who runs the meeting (plan 68 X2), whom the server stamps on it.
+  // A meeting's decisions are changed by who runs the meeting, whom the server stamps on it.
   [["meeting_decisions"], "RCUD", "RCUD;u=runs;d=runs", "R", "-", "-", "-", "-", "-", "R"],
-  // An agenda item is its speaker's: the manager changes her team's, and the ones that name nobody (plan 68 X1).
+  // An agenda item is its speaker's: the manager changes her team's, and the ones that name nobody.
   [["meeting_slots"], "RCUD", "RCUD;u=team+free;d=team+free", "R", "-", "-", "-", "-", "-", "R"],
   [["threads"], ...talk("RC:own")],
-  // Who is in a conversation is read by its members and the CRM admin (plan 68 R4c); each moves only her own mark.
+  // Who is in a conversation is read by its members and the CRM admin; each moves only her own mark.
   [["thread_members"], "RCU;u=own-self", ...talk("RCU;r=own;u=own-self").slice(1)],
-  // A message is removed by its author, and by the CRM admin in a conversation she is in (plan 68 R4d).
+  // A message is removed by its author, and by the CRM admin in a conversation she is in.
   [["messages"], "RCU:own", ...talk("RCU;r=own;u=own-written").slice(1)],
-  // A starter is her manager's; a step its owner's and its starter's manager's: a rep ticks her own (plan 68 X1).
+  // A starter is her manager's; a step its owner's and its starter's manager's: a rep ticks her own.
   [["starters"], "RCUD", "RCUD;u=team-not-starter;d=team", "R", "-", "-", "-", "-", "-", "R"],
   [["starter_steps"], "RCUD", "RCUD;u=team+free;d=team+free", "RU;u=own", "-", "-", "-", "-", "-", "R"],
   // NARROWER THAN "EVERY COVER": a sales manager does not hold every cover. A cover opens
@@ -136,26 +138,26 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
   [["job_visits"], "RCUD", "R:deal-job", "R:own", "R", "-", "-", "RCUD", "RU:own", "R"],
   // A sign-off is never changed or removed once made, by anybody: a correction is a new row that names the one it corrects.
   [["sign_offs"], "RC", "R:deal-job", "R:own", "R", "-", "-", "RC", "RC:own", "R"],
-  // A sign-off refused on arrival (plan 68 S19): written by the crew's phone alone, for its own crew's visit, and read as far
+  // A sign-off refused on arrival: written by the crew's phone alone, for its own crew's visit, and read as far
   // as each reads sign-offs. Nobody changes or removes one.
-  // The CRM admin removes one, so the snag it names can go (T09).
+  // The CRM admin removes one, so the snag it names can go.
   [["refused_sign_offs"], "RD", "R:deal-job", "R:own", "R", "-", "-", "R", "RC:own", "R"],
   [["snags"], "RCUD", "R:deal-job", "R:own", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["delivery_notes", "delivery_note_lines"], "RCUD", "-", "-", "R", "-", "-", "RCUD", "RCU:own", "R"],
   [["waste_removals"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "-", "R"],
-  // A visit that left a crew's today or tomorrow is the rules' to write (plan 68 D17); the crew it left reads its own.
+  // A visit that left a crew's today or tomorrow is the rules' to write; the crew it left reads its own.
   [["left_visits"], "RD", "-", "-", "-", "-", "-", "R", "R:own", "R"],
   [["feedback"], "RCUD", "R:deal-job", "R:own", "RCUD", "-", "-", "R", "-", "R"],
   [["complaints"], "RCUD", "R:team", "RU:own", "RCUD", "-", "-", "R", "-", "R"],
   [["warranty_claims"], "RCUD", "R:deal-job", "R:own", "RCUD", "-", "-", "RCU", "-", "R"],
   // …and for the same reason she changes and removes a deal's stock need, and a rep (who reads the deal) makes it.
-  // The crew reads the needs of its own visits, what to load (S14): a need names the visit its stock goes on.
+  // The crew reads the needs of its own visits, what to load: a need names the visit its stock goes on.
   [["deal_stock_needs"], "RCUD", "R:deal", "RCU;r=own;u=own-not-helper", "-", "-", "-", "RUD", "R:own", "R"],
-  // A crew member is given his crew's vehicle (P25): he reads that one, and its faults, and makes a check, a fault and a
+  // A crew member is given his crew's vehicle: he reads that one, and its faults, and makes a check, a fault and a
   // fill only for it (a link to a vehicle out of his reach is refused as one that is not there).
   [["vehicles"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
   [["vehicle_faults"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
-  // A crew's vehicle for a day (S14, D16): the office puts it on; the crew reads its own days.
+  // A crew's vehicle for a day: the office puts it on; the crew reads its own days.
   [["van_days"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "R:own", "R"],
   [["vehicle_checks", "fuel_fills"], "RCUD", "-", "-", "-", "-", "-", "RCUD", "RC:own", "R"],
   // The sign-off and the send-back are the sheet's: a line has no state, so the manager (and the CRM admin, P25) reads the lines.
@@ -169,7 +171,7 @@ const MATRIX: readonly (readonly [readonly string[], ...string[]])[] = [
 
 /** The four tables read by the two people of a row, on the screen, and by nothing else. */
 const PRIVATE = ["one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas"] as const;
-/** Private too: what a person saves for herself (plan 68 D9). */
+/** Private too: what a person saves for herself. */
 const SAVED_TABLES: readonly string[] = ["saved_views", "saved_searches"];
 /** The only roles that hold anything on them. */
 const PRIVATE_ROLES: readonly RoleKey[] = ["sales-manager", "rep"];
@@ -204,7 +206,7 @@ const PERSONAL: Record<string, readonly RoleKey[]> = {
 };
 
 /** The settings the sales manager may change: the Selling keys. */
-const SELLING_KEYS = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days"];
+const SELLING_KEYS = ["approval_threshold_pct", "quote_valid_days", "quote_warn_days", "sitting_warm_days", "sitting_stale_days", "nudge_quiet_days", "nudge_stuck_days", "nudge_soon_days", "pay_ask", "pay_deposit_pct"];
 
 /** Each button that hands a row to a colleague, and the roles that press it. */
 const HAND_OVERS: Record<string, readonly RoleKey[]> = {
@@ -215,7 +217,7 @@ const HAND_OVERS: Record<string, readonly RoleKey[]> = {
 
 /** The nine parts, each a heading of the menu, and the last heading for the app's own two tables. */
 const PARTS: readonly (readonly [string, readonly string[]])[] = [
-  ["selling", ["stages", "deals", "deal_stage_changes", "follow_ups", "activities", "lost_reasons", "quotes", "quote_lines", "comments", "saved_views", "saved_searches", "nudge_snoozes", "deal_members", "deal_marks", "site_visits", "visit_notes", "visit_agreed", "price_list", "deal_amount_changes"]],
+  ["selling", ["stages", "deals", "deal_stage_changes", "follow_ups", "activities", "lost_reasons", "quotes", "quote_lines", "quote_payments", "comments", "saved_views", "saved_searches", "nudge_snoozes", "deal_members", "deal_marks", "site_visits", "visit_notes", "visit_agreed", "price_list", "deal_amount_changes"]],
   ["accounts", ["companies", "contacts", "territories", "territory_places", "renewals", "referrals"]],
   ["team", ["reps", "targets", "one_to_ones", "one_to_one_sessions", "coaching_plans", "coaching_areas", "actions", "meetings", "meeting_slots", "meeting_decisions", "threads", "thread_members", "messages", "starters", "starter_steps", "covers", "cover_notes"]],
   ["inbox", ["enquiries", "shows"]],
@@ -271,23 +273,24 @@ const REACHES: Record<string, Reach> = {
   "team-away": { reach: "team", by: "owner_id" },
   // Of the people of the conversations they are in, only their own row.
   "own-self": { reach: "own", by: "user_id" },
-  // Of the actions they reach, only the ones they own or set (plan 68 R4a/R4b: a rep reads every step of her plan).
+  // Of the actions they reach, only the ones they own or set (a rep reads every step of her plan).
   "own-or-set": [{ reach: "own", by: "owner_id" }, { reach: "own", by: "set_by_id" }] as unknown as Reach,
-  // Her own, and the meeting actions her reps set; never another manager's one-to-one or coaching (plan 68 R4a).
+  // Her own, and the meeting actions her reps set; never another manager's one-to-one or coaching.
   "own+reps-meeting": [{ reach: "own" }, { reach: "team", by: "set_by_id", while: { column: "source", in: ["meeting"] } }] as unknown as Reach,
-  // Plan 68 R1d: a deal is the sales manager's only when somebody she leads OWNS it (never through a helper or a cover)…
+  // A deal is the sales manager's only when somebody she leads OWNS it (never through a helper or a cover)…
   "team-owned": { reach: "team", by: "owner_id" },
-  // …and a row of a deal is judged by that deal's owner, also where the row names a helper (E11).
+  // …and a row of a deal is judged by that deal's owner, also where the row names a helper.
   deal: { reach: "team", via: "deal_id", by: "owner_id" },
   // Two links down, by the parent's copy of the deal's owner: a quote's lines, a visit's notes, a job's rows.
   "deal-quote": { reach: "team", via: "document_id", by: "deal_owner_id" },
+  "deal-pay": { reach: "team", via: "quote_id", by: "deal_owner_id" },
   "deal-visit": { reach: "team", via: "visit_id", by: "deal_owner_id" },
   "deal-job": { reach: "team", via: "job_id", by: "deal_owner_id" },
   // A follow-up on a deal by its deal's owner; one on no deal (a job's call) by its own owner.
   "deal+free-standing": [{ reach: "team", via: "deal_id", by: "owner_id" }, { reach: "team", by: "owner_id", while: { column: "on_deal", in: [0] } }] as unknown as Reach,
   // A follow-up is its owner's, whatever deal it is on.
   "own-owned": { reach: "own", by: "owner_id" },
-  // Plan 68 X2: never the row that names the manager herself (her own target, her own first-year target).
+  // Never the row that names the manager herself (her own target, her own first-year target).
   "team-not-own": { reach: "team", notBy: "rep_id" },
   "team-not-starter": { reach: "team", notBy: "user_id" },
   // Only the decisions of a meeting the person runs.
@@ -416,7 +419,7 @@ const tableOf = new Map(tables.map((table) => [table.ref, table]));
 const everyPage = doc.pages;
 const pages = everyPage.filter((page) => page.template === "page-crud");
 const boards = everyPage.filter((page) => page.template === "page-board");
-/** The console's overviews (P17): pages of cards, each card reading a table of its own. */
+/** The console's overviews: pages of cards, each card reading a table of its own. */
 const dashboards = everyPage.filter((page) => page.template === "page-dashboard");
 /** Every table a dashboard's cards read: a card's own, a team figure's targets. */
 const tablesOfDashboard = (page: (typeof everyPage)[number]): string[] => {
@@ -488,12 +491,12 @@ describe("the app brings nine roles", () => {
       stock_points: ["id", "item_id", "place_id", "on_hand", "available", "on_order", "reorder_level", "low", "item_active"],
       purchase_orders: ["id", "number", "supplier_id", "supplier_name", "status", "sent_on", "expected_on", "lead_days", "received_at"],
       po_lines: ["id", "po_id", "item_id", "item_name", "qty", "open_qty", "order_status"],
-      // The scorecard (S12): whose order a delivery was on, posted or not, the day it came, and whether and how late.
+      // The scorecard: whose order a delivery was on, posted or not, the day it came, and whether and how late.
       receipts: ["id", "po_id", "status", "received_on", "late", "days_late"],
     };
     for (const r of roles) {
       const tables = (r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables?.filter((entry) => entry.addOn === "inventory");
-      // The crew reads a line's name and unit, to load the van (S14): nothing else of Inventory, and nothing it costs.
+      // The crew reads a line's name and unit, to load the van: nothing else of Inventory, and nothing it costs.
       if (r.key === "crew") {
         expect(tables, r.key).toEqual([{ addOn: "inventory", table: "items", actions: ["read"], limit: { readable: ["id", "name", "unit"] } }]);
         continue;
@@ -536,10 +539,15 @@ describe("the app brings nine roles", () => {
   it("grants only a table right, a page to view, and the app's staff screens", () => {
     const known = /^(table:@[a-z_]+:(read|create|update|delete|export|import|read_pii)|page:@[a-z][a-z0-9-]*:view|app:@:staff)$/;
     for (const r of roles) {
-      expect(r.permissions.filter((grant) => !known.test(grant)), r.key).toEqual([]);
+      expect(r.permissions.filter((grant) => !known.test(grant) && grant !== "payments:@:refund"), r.key).toEqual([]);
       expect(r.permissions.length, `${r.key} repeats a grant`).toBe(new Set(r.permissions).size);
       expect(r.permissions, r.key).toContain("app:@:staff");
     }
+  });
+
+  it("lets the CRM admin and the sales manager give back what was paid online for a quote, and nobody else", () => {
+    const refunders = roles.filter((r) => r.permissions.includes("payments:@:refund")).map((r) => r.key);
+    expect(refunders).toEqual(["admin", "sales-manager"]);
   });
 
   it("names only tables and pages the manifest declares", () => {
@@ -559,13 +567,13 @@ describe("the matrix covers every table, and every table's every role", () => {
   it("lists each of the manifest's tables once", () => {
     expect(MATRIX_TABLES.length).toBe(new Set(MATRIX_TABLES).size);
     expect([...MATRIX_TABLES].sort()).toEqual(tables.map((table) => table.ref).sort());
-    expect(MATRIX_TABLES).toHaveLength(78);
+    expect(MATRIX_TABLES).toHaveLength(79);
   });
 
-  it("has nine roles by seventy-eight tables: 702 cells", () => {
+  it("has nine roles by seventy-nine tables: 711 cells", () => {
     let cells = 0;
     for (const key of ROLES) cells += EXPECTED.get(key)?.size ?? 0;
-    expect(cells).toBe(702);
+    expect(cells).toBe(711);
   });
 });
 
@@ -633,7 +641,7 @@ describe("the four private tables are their two people's", () => {
     expect(tables.filter((table) => SAVED_TABLES.includes(table.ref)).map((table) => table.private)).toEqual([true, true]);
   });
 
-  it("holds every right on a saved view or search to the person's own (plan 68 D9: the install's owner reads none of them)", () => {
+  it("holds every right on a saved view or search to the person's own (the install's owner reads none of them)", () => {
     for (const r of roles) {
       for (const ref of SAVED_TABLES) {
         for (const action of ROW_ACTIONS) {
@@ -695,7 +703,7 @@ describe("a file out of a table is three roles' to take", () => {
 
   it("brings a list in only where a role already types the rows one by one", () => {
     // Companies and contacts by the three who keep the book; enquiries (a trade show's leads) by the marketer and the CRM
-    // admin; past deals by the CRM admin (plan 68 R5).
+    // admin; past deals by the CRM admin.
     const of = (key: RoleKey) => role(key).permissions.filter((grant) => grant.endsWith(":import")).map((grant) => grant.split(":")[1]?.slice(1));
     expect(of("admin")).toEqual(["companies", "contacts", "enquiries", "deals"]);
     expect(of("sales-manager")).toEqual(["companies", "contacts"]);
@@ -797,7 +805,7 @@ describe("one records page per table, under the heading of its part", () => {
 
   it("counts each role's menu", () => {
     const menu = Object.fromEntries(ROLES.map((key) => [key, role(key).permissions.filter((grant) => grant.startsWith("page:@")).length]));
-    expect(menu).toEqual({ admin: 77, "sales-manager": 63, rep: 61, "account-manager": 37, marketer: 8, "front-desk": 11, "ops-manager": 28, crew: 20, "read-only": 71 });
+    expect(menu).toEqual({ admin: 78, "sales-manager": 64, rep: 62, "account-manager": 38, marketer: 8, "front-desk": 11, "ops-manager": 28, crew: 20, "read-only": 72 });
   });
 });
 
@@ -820,8 +828,8 @@ describe("the pipeline is a board whose columns are the stages people keep", () 
         ],
         only: { state: "open" },
         // A card: the company, whose it is, the amount, days in its stage (amber from 14, red from 30, as the screens'
-        // sitting defaults: a card cannot read the settings), and when it is expected to close (D10).
-        // Plan 68 S8 (E16): a second money line, the weighted value ("w"), and the days' unit ("in stage").
+        // sitting defaults: a card cannot read the settings), and when it is expected to close.
+        // A second money line, the weighted value ("w"), and the days' unit ("in stage").
         card: {
           link: "company_id.name",
           person: "owner_id",
@@ -864,7 +872,7 @@ describe("the pipeline is a board whose columns are the stages people keep", () 
 
   it("sits beside the deals list, named in eight languages", () => {
     const deals = pages.find((page) => page.ref === "crm-deals")!;
-    // The section's first run: Overview, Pipeline, Deals (D10).
+    // The section's first run: Overview, Pipeline, Deals.
     expect([board.nav.group, board.nav.order]).toEqual([deals.nav.group, deals.nav.order - 1]);
     const titles: Record<string, string> = { "en-US": board.title.fallback, ...(board.titles ?? {}) };
     expect(Object.keys(titles).sort()).toEqual([...LOCALES].sort());

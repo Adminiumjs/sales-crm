@@ -1,5 +1,5 @@
 /**
- * A CUSTOMER SAID YES TO A LOST DEAL (plan 68 R1a). A quote already sent stays
+ * A CUSTOMER SAID YES TO A LOST DEAL. A quote already sent stays
  * acceptable after its deal is lost; when the customer then accepts it, the
  * deal's owner decides: reopen the deal (its own button), or leave it closed
  * (the quote is stamped as seen, and leaves this list).
@@ -31,7 +31,7 @@ export interface LateYes {
 
 /**
  * The accepted quotes, not yet looked at, of the lost deals the reader reaches; empty for somebody who reads no quote.
- * Not a deal she only helps on (ruling 1d): whether to reopen it is its owner's call, and the owner is told.
+ * Not a deal she only helps on: whether to reopen it is its owner's call, and the owner is told.
  */
 export async function readLateYes(session: StaffSession, today: string): Promise<LateYes[]> {
   if (!session.part("quotes") || !session.can("quotes", "read") || !session.can("deals", "read")) return [];

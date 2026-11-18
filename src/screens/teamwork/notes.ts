@@ -22,7 +22,7 @@ export interface OneToOne extends Record<string, unknown> {
   rep_id: string;
   next_at: string | null;
 }
-/** The drawn "what to cover" lines a session keeps a tick for (T04): each a yes/no column, no by default. */
+/** The drawn "what to cover" lines a session keeps a tick for: each a yes/no column, no by default. */
 export const TOPICS = ["sitting", "biggest", "target", "late"] as const;
 export type Topic = (typeof TOPICS)[number];
 export const topicColumn = (topic: Topic): string => `cover_${topic}`;

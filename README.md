@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.42 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.62 or newer.
 
 ## What installs
 
@@ -15,7 +15,7 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | --- | --- |
 | Key | `crm` (tables are named `crm_…`) |
 | Parts | 11: Selling, Accounts and The team always; Inbox on; Quotes on with Invoices & Receipts; Supply on with Inventory; Surveys on with Forms; Showroom and samples, Jobs on site, After the job and Vehicles and crew off until switched on |
-| Tables | 78 |
+| Tables | 79 |
 | Screens | The app's own screens (below), a customer's quote page, and a "Sales CRM" section in Adminium's own console |
 | Roles | 9 |
 | Shipped rules | 26: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, the brochure an enquirer asks for and the survey after a sign-off, switched off |
@@ -72,6 +72,42 @@ install's owner, who holds none, gets the CRM admin's menu.
 
 Every "may not" is the server's: a screen without a button is never the only thing in the way.
 
+The CRM admin and the sales manager may also give back money a customer paid online for a quote
+(the install asks the owner to allow it, as Adminium's "may refund online payments").
+
+### Paying for an accepted quote
+
+A customer can pay online once they accept a quote: a deposit (a whole percentage of the quote,
+tax included) or the whole amount, as Settings → Selling → **Payments** says. Nothing is asked
+at install, and the card shows only once someone who manages payments has switched the CRM on in
+Adminium's **Studio → Payments** (it arrives switched off). The CRM admin and the sales manager
+set it. A quote takes the setting when it is made, so a change never moves what a quote already
+asks.
+
+- **The customer** sees "Pay {amount} now" on their quote page after they accept, and a button
+  in the "quote accepted" e-mail. They pay on the Stripe or PayPal page, through Adminium's pay
+  page, and come back to the quote, which then says what was paid, or how the payment stands:
+  the bank still confirming it (some ways take days; the page says not to pay again, and the
+  quote says so each time it is opened until then), didn't finish, or the time on that page ran
+  out (nothing was taken, and "Pay now" is there again). They can always wait for a call
+  instead. A quote accepted on a deal that was lost reads as before: nothing is taken for
+  work the business has written off.
+- **The office** sees a Payments block on the quote, under the totals: what was asked, each
+  payment (online, with the service, or one recorded by hand in Adminium's payment panel),
+  each refund (with who asked for it, why and their note, for those who may see payments or
+  refund them), and what is still to pay when the work is done; "Copy pay link" while
+  something is due; "Refund" for the two roles that may. The deal room's Quote card says what was paid.
+- **Paying moves nothing.** The quote stays accepted, and the deal stays where it is until
+  somebody closes it, won or lost. A refunded deposit is due again: the customer's page offers
+  "Pay now" again, and the business withdraws the quote if the work is off.
+- **Who keeps the money.** Adminium is never a party to a payment: the business's own Stripe
+  or PayPal account takes it, and Adminium writes each payment once into the quote's payments
+  (`quote_payments`), with its reference, its service and its currency. Nobody types one there.
+- **Payments off** (no service connected, a server customers cannot reach, the desktop app, or
+  the CRM not switched on): every screen and e-mail reads exactly as before.
+- **Trying it first.** While someone who manages payments rehearses in Adminium, the quote page
+  they open shows a test band and takes test payments only, on sample quotes.
+
 ### What Adminium keeps for you
 
 - **A deal's amount** is its newest sent quote's total before tax, else the figure typed on it.
@@ -105,7 +141,7 @@ time, or switches it off.
 
 ### The e-mails
 
-A quote sent (with the button that opens the customer's page) and accepted; a site visit confirmed,
+A quote sent (with the button that opens the customer's page) and accepted (with what is to pay and a pay button, only while the quote can be paid online); a site visit confirmed,
 moved and cancelled, naming the rep who comes; an introduction thanked; the handover introduction;
 approval asked; the two weekly e-mails; a showroom booking and a delivery confirmed, moved and
 cancelled; the customer's signed copy of a sign-off, with what is still to put right; a
@@ -174,6 +210,25 @@ mail mode the people are `<name>@crm.stand` and the sample's addresses end `.sta
 The tests check the manifest against Adminium's own validator, a copy of which is in
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
+
+## Updating to 0.2.6
+
+0.2.6 needs Adminium 0.3.62: customers pay online and are told how a payment stands, and the
+quote's Payments block says who asked for each refund and why. The add-ons stay as they are.
+Every row is kept as it was, and nothing is switched on for you:
+
+- **The update asks you to allow two things:** the customer's quote link shows, of their own
+  quote only, what is asked on acceptance, what was paid and given back, and what is left
+  (a wider public entry: allow it as someone who may manage API keys); and the CRM admin and
+  the sales manager may refund the CRM's online payments. Allow both and the update goes; refuse
+  and nothing changes.
+- **Payments arrive switched off.** The quote is payable through Adminium only once someone who
+  manages payments switches the CRM on in Studio → Payments, and the Settings card asks nothing
+  until somebody chooses a deposit or the whole amount.
+- **New:** the table `quote_payments`; on quotes, what is asked and how it stands (`pay_ask`,
+  `pay_pct`, `pay_amount`, `pay_paid`, `pay_refunded`, `pay_due`, `pay_paid_at`,
+  `pay_provider`, `pay_open`); in Settings, `pay_ask` (off) and `pay_deposit_pct` (20). A quote
+  made before the update asks nothing.
 
 ## Updating to 0.2.4
 

@@ -1,5 +1,5 @@
 /**
- * MY VEHICLE, on the field crew's phone (P25): the vehicle his crew is given,
+ * MY VEHICLE, on the field crew's phone: the vehicle his crew is given,
  * its walk-round before the day, a fault reported with a photo, and a fuel
  * fill. Reached from My day and from his menu while Vehicles and crew is on.
  *
@@ -8,7 +8,7 @@
  * there (`proofs/crm-fleet.test.ts`). Each is ONE create with a retry key:
  * a lost reply is sent again with the same key, and the server answers the
  * row the first one made. With no signal it is kept on the phone, photo and
- * all, and sent when the signal is back (plan 68 S19, `vanLines.ts`); the
+ * all, and sent when the signal is back (`vanLines.ts`); the
  * screen shows it meanwhile with "Waiting to send".
  *
  * A fill's distance is the server's (the fill's reading less the vehicle's

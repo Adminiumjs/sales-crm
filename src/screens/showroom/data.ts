@@ -1,5 +1,5 @@
 /**
- * SHOWROOM AND SAMPLES (P19): what the five screens and the front desk's home
+ * SHOWROOM AND SAMPLES: what the five screens and the front desk's home
  * read, and what is written from them.
  *
  * WHO COUNTS. The server: every count is the total it answers for a list of
@@ -9,7 +9,7 @@
  * that, and a loan past the shelf is refused). A screen puts a row under its
  * day and subtracts a day from the server's clock (how late, how long away).
  *
- * A CANCEL REMOVES THE BOOKING (F17). The why is written to it a moment before
+ * A CANCEL REMOVES THE BOOKING. The why is written to it a moment before
  * it goes, so the removal's own audit entry holds it. A piece of display stock
  * promised to the booking lets go of it first: the database would refuse to
  * remove a booking a piece still names. A booking somebody came in for is
@@ -311,7 +311,7 @@ export const moveBooking = (session: StaffSession, booking: Pick<Booking, "id" |
 
 /**
  * Cancel a booking: each piece of display stock promised to it lets go, then
- * the row is removed with the why (plan 68 S16), which the server keeps with
+ * the row is removed with the why, which the server keeps with
  * the removed booking. A reply lost on the way back is read back (`remove`
  * answers saved once the row is no longer there), so a second press never
  * finds a booking to cancel twice; one already gone is cancelled.

@@ -121,7 +121,7 @@ test("a rep reads her own deals' value, places and moves pins, and may not chang
   await expect(row.getByTestId("terr-other")).toHaveText("You can open 3 of 5. The value is theirs.");
 
   // She may place and move the pin of a company that is hers (she has an open deal at Low Orbit), not of a colleague's
-  // (Tandem is Sam's, with Priya's deal: plan 68 X3); she is offered no way to change an area.
+  // (Tandem is Sam's, with Priya's deal); she is offered no way to change an area.
   await expect(page.getByTestId("terr-edit")).toHaveCount(0);
   await expect(unplacedRow(page, "Low Orbit").getByRole("button", { name: "Place it" })).toBeVisible();
   await expect(unplacedRow(page, "Tandem Robotics")).toBeVisible();
@@ -262,7 +262,7 @@ test("maps switched off for the install: the list and one line, and nothing is a
 });
 
 test("a company with no place is put on the map by a rep; a lost reply is read back; a refusal is said; a colleague's open page follows", async ({ as, api, data }) => {
-  // Priya: Low Orbit is her account and she has an open deal at Tandem, so both are hers to place (plan 68 X3).
+  // Priya: Low Orbit is her account and she has an open deal at Tandem, so both are hers to place.
   const tessa = await api("tessa");
   const was = await snapshot(tessa, data);
   const lowOrbit = was.companies.find((company) => company.name === "Low Orbit")!;
@@ -341,7 +341,7 @@ test("a pin is moved by keyboard and the new spot is the company's", async ({ as
   const cobalt = was.companies.find((company) => company.name === "Cobalt Legal")!;
   const before = placeOf(cobalt.place)!;
   try {
-    // Dana: Cobalt is her account (plan 68 X3: a colleague's pin is not hers to move).
+    // Dana: Cobalt is her account (a colleague's pin is not hers to move).
     const page = await (await as("dana")).newPage();
     await mapServer(page);
     await openTerritory(page);

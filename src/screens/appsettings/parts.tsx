@@ -55,7 +55,7 @@ export function useSaveSettings(session: StaffSession, row: SettingsRow | null, 
     if (row === null) return false;
     setBusy(true);
     const saw = Object.fromEntries(Object.keys(values).map((column) => [column, row[column]]));
-    // A pair the server keeps apart (warm below stale, the day's start before its end: plan 68 X4) is refused naming both.
+    // A pair the server keeps apart (warm below stale, the day's start before its end) is refused naming both.
     const saved = await toasts.say(withPairWords(session.update("settings", row.id, values, seen ? { seen: saw } : {}) as Promise<Saved<SettingsRow>>, t), () => done);
     setBusy(false);
     after();

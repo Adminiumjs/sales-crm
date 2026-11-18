@@ -132,7 +132,7 @@ export function Approvals(_props: ScreenProps) {
                   const decider = quote.decided_by_id === null ? "" : (data.names[quote.decided_by_id] ?? t("closed.someone"));
                   const isWaiting = quote.status === "draft" && quote.approval === "asked";
                   const mine = quote.asked_by_id !== null && quote.asked_by_id === me;
-                  // The server never takes a decision from the deal's owner either (E1): her own deal is decided by whoever leads her.
+                  // The server never takes a decision from the deal's owner either: her own deal is decided by whoever leads her.
                   const ownDeal = quote.owner_id !== null && quote.owner_id === me;
                   const held = mine || ownDeal;
                   const reopened = isWaiting && quote.approval_decided_at !== null;

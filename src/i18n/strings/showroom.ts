@@ -1,5 +1,5 @@
 /**
- * Area bundle: **Showroom and samples** (P19): Showroom bookings, the booking
+ * Area bundle: **Showroom and samples**: Showroom bookings, the booking
  * dialog's showroom use, Showroom follow-ups, the Sample library, Sample
  * returns, Display stock, the front desk's home, and the showroom's card in
  * Settings. The menu's words for the part are here too (`nav.group.showroom`,

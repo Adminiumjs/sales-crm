@@ -16,10 +16,12 @@ import { CircleOff, Frown, MessageSquareOff, PackageX, PhoneCall, PhoneOff, Shie
 import { Camera, CircleX, Hourglass, Navigation, RefreshCw, WifiOff } from "lucide-react";
 // Time sheets and training; Vehicles and crew, part A.
 import { BadgeCheck, Fuel, Shield, ShieldX } from "lucide-react";
-// A crew's vehicle for the day (plan 68 S14).
+// A crew's vehicle for the day.
 import { Ban, ChevronsUpDown, Info } from "lucide-react";
-// The signed copy (plan 68 S13).
+// The signed copy.
 import { Download } from "lucide-react";
+// A quote's payments.
+import { Undo2 } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   activity: Activity, "alarm-clock": AlarmClock, "calendar-plus": CalendarPlus, "calendar-sync": CalendarSync, "calendar-x": CalendarX, "clock-alert": ClockAlert, "calendar-arrow-up": CalendarArrowUp, "calendar-days": CalendarDays, check: Check, "check-check": CheckCheck,
@@ -40,6 +42,8 @@ const ICONS: Record<string, LucideIcon> = {
   ban: Ban, "chevrons-up-down": ChevronsUpDown, info: Info,
   // The signed copy.
   download: Download,
+  // A quote's payments.
+  "undo-2": Undo2,
   "notebook-tabs": NotebookTabs, route: Route, "clipboard-check": ClipboardCheck, recycle: Recycle, printer: Printer, "file-check": FileCheck, "file-x": FileX, "file-warning": FileWarning, "pen-line": PenLine, "hard-hat": HardHat,
 };
 

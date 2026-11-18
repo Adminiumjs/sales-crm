@@ -2,7 +2,7 @@
  * TARGETS: what the screen reads.
  *
  * WHO READS WHAT. The server: a rep reads her own target and no other (so
- * she is shown no team target, ruling F5); the sales manager reads the
+ * she is shown no team target); the sales manager reads the
  * targets of the people she leads; the CRM admin and Read-only read all.
  *
  * WHO COUNTS. The server, every figure:

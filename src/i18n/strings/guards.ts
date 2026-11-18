@@ -1,5 +1,5 @@
 /**
- * Area bundle: **the server's guards, said on the screens** (plan 68 phase 4):
+ * Area bundle: **the server's guards, said on the screens**:
  * past deals on Paste a list and the closed date they need, who ticked "may
  * be emailed", Settings' pairs and the depot's country, a cover's year, an
  * enquiry tied only once claimed, a visit never in the past, Stage health's
@@ -8,7 +8,7 @@
 import { tables } from "./table.ts";
 
 export const guards = /*#__PURE__*/ tables({
-  // ── Paste a list: past deals (R5) ──────────────────────────────────────
+  // ── Paste a list: past deals ──────────────────────────────────────
   "guards.paste.deals.title": ["Past deals", "Frühere Deals", "Affaires passées", "Tidligere handler", "Dřívější obchody", "以往商机", "以往案件", "صفقات سابقة"],
   "guards.paste.deals.sub": [
     "Deals won or lost before this CRM, brought in with the day each one closed. Nothing is saved until you have looked at what each line would do.",
@@ -68,7 +68,7 @@ export const guards = /*#__PURE__*/ tables({
   ],
   "guards.paste.done": ["Brought in {created}, left {skipped} as they were.", "{created} übernommen, {skipped} unverändert gelassen.", "{created} reprise(s), {skipped} laissée(s) telles quelles.", "Hentet {created} ind, lod {skipped} være.", "Převzato {created}, ponecháno beze změny {skipped}.", "已导入 {created} 条，{skipped} 条保持不变。", "已匯入 {created} 筆，{skipped} 筆保持不變。", "استُورد {created}، وتُرك {skipped} كما هو."],
 
-  // ── Paste a list: who ticked "may be emailed" (R8) ─────────────────────
+  // ── Paste a list: who ticked "may be emailed" ─────────────────────
   "guards.paste.contacts.stamps": [
     "Who ticked “may be emailed”, and when, are kept by the CRM itself: a list that carries either is refused. A blank “may be emailed” is no for a new contact, and leaves a saved contact’s answer as it is.",
     "Wer „Darf E-Mails erhalten“ angehakt hat und wann, hält das CRM selbst fest: Eine Liste, die eines davon mitbringt, wird abgelehnt. Ein leeres „Darf E-Mails erhalten“ heißt bei einem neuen Kontakt nein und lässt die Antwort eines gespeicherten Kontakts unverändert.",
@@ -80,7 +80,7 @@ export const guards = /*#__PURE__*/ tables({
     "من أشّر على «يُسمح بمراسلته» ومتى، يحفظه النظام نفسه: تُرفض القائمة التي تحمل أيًّا منهما. وخانة «يُسمح بمراسلته» الفارغة تعني لا لجهة اتصال جديدة، وتترك جواب جهة الاتصال المحفوظة كما هو.",
   ],
 
-  // ── Settings: the pairs and the depot's country (X4) ───────────────────
+  // ── Settings: the pairs and the depot's country ───────────────────
   "guards.pair.sitting": [
     "“Warm from” must be fewer days than “Stale from”. Change one of the two.",
     "„Warm ab“ muss weniger Tage sein als „Veraltet ab“. Ändern Sie einen der beiden Werte.",
@@ -134,7 +134,7 @@ export const guards = /*#__PURE__*/ tables({
   "guards.settings.more": ["Show {count} more", "{count} weitere zeigen", "Afficher {count} de plus", "Vis {count} mere", "Zobrazit dalších {count}", "再显示 {count} 项", "再顯示 {count} 項", "اعرض {count} أخرى"],
   "guards.settings.shown": ["{shown} of {total}", "{shown} von {total}", "{shown} sur {total}", "{shown} af {total}", "{shown} z {total}", "{shown} / {total}", "{shown} / {total}", "{shown} من {total}"],
 
-  // ── A cover's year (X5), an enquiry's claim (X6), a visit's time (X7) ──
+  // ── A cover's year, an enquiry's claim, a visit's time ──
   "guards.cover.year": [
     "A cover lasts a year at most. For longer, leave the last day empty: until further notice.",
     "Eine Vertretung dauert höchstens ein Jahr. Für länger lassen Sie den letzten Tag leer: bis auf Weiteres.",
@@ -176,6 +176,6 @@ export const guards = /*#__PURE__*/ tables({
     "لا يمكن أن تبدأ الزيارة في الماضي. اختر وقتًا من الآن فصاعدًا.",
   ],
 
-  // ── Stage health's typical age (S15) ───────────────────────────────────
+  // ── Stage health's typical age ───────────────────────────────────
   "guards.health.typical": ["Typical age", "Typisches Alter", "Âge typique", "Typisk alder", "Typické stáří", "典型停留", "典型停留", "العمر المعتاد"],
 });

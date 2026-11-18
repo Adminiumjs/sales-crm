@@ -3,8 +3,8 @@
  *
  * A REP sees her own year: her target, what is booked, what is open at its
  * odds, how much is still to find, where an even pace would put her today,
- * and her biggest open deal. She is shown no team target and nobody else's
- * (ruling F5): the server answers her one target row, her own.
+ * and her biggest open deal. She is shown no team target and nobody else's:
+ * the server answers her one target row, her own.
  *
  * WHOEVER READS THE TEAM (the sales manager, the CRM admin, Read-only) sees
  * the whole team's year and a row a rep. Whoever may change a target (the
@@ -160,7 +160,7 @@ function Team({ data, who, f, monthsLeft, canSet, onSaved }: { data: TargetsData
   const cover = coverOf(team.toward, total);
   // A row a rep: the people with a rep's profile, then anybody else who has a target.
   const people = [...who.reps, ...data.targets.map((target) => target.rep_id).filter((id) => !who.reps.includes(id))].filter((id, at, list) => list.indexOf(id) === at);
-  // Her own target is never hers to set (plan 68 X2): the server answers it as a row out of reach.
+  // Her own target is never hers to set: the server answers it as a row out of reach.
   const me = session.config.user?.id ?? "";
   const ownShown = canSet && people.includes(me) && heldFromOwn(session);
   return (

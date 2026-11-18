@@ -149,7 +149,7 @@ function Brand({ small }: { small?: boolean }) {
   );
 }
 
-/** The frame, inside the phone's offline queue (plan 68 S19): its pill in the bar, its list, and a sign-out that asks first. */
+/** The frame, inside the phone's offline queue: its pill in the bar, its list, and a sign-out that asks first. */
 export function Shell() {
   return (
     <QueueProvider app="crm">
@@ -237,7 +237,7 @@ function Frame() {
 
   const listed = groups.flatMap((group) => group.items.map((item) => item.route));
   const current = here === null ? null : listed.includes(here.route) ? here.route : ((LIT_BY[here.route] ?? []).find((route) => listed.includes(route)) ?? here.route);
-  // Saves still on the phone are thrown away by a sign-out: it asks first (plan 68 S19, CD-3).
+  // Saves still on the phone are thrown away by a sign-out: it asks first.
   const guarded = useGuardedSignOut(signOut);
   const leave = guarded.leave;
   return (

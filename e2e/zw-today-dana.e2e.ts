@@ -1,6 +1,6 @@
 /**
  * Today, as Dana, the walk end to end: the app's address lands on Today with the ledger's three figures and seven
- * follow-ups in three groups (§1 of the ledger, on the ledger's clock); she ticks one and pushes it a week, and the line
+ * follow-ups in three groups (on the ledger's clock); she ticks one and pushes it a week, and the line
  * at the foot of the page says where it went; Ivy, her manager, in a browser of her own, opens the CONSOLE's Follow-ups
  * page and marks one of Dana's done, and Dana's open screen drops it by itself; then, with Dana's network cut, "Done"
  * says it is checking, then that it could not confirm the save, and never "not saved".

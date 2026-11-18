@@ -7,7 +7,7 @@
  * their signature. "Sign off" says beside it what is still needed; while a
  * snag that stops the sign-off is open it names that snag and nothing else.
  *
- * ONE REQUEST, KEPT ON THE PHONE WITH NO SIGNAL (plan 68 S19). The signature
+ * ONE REQUEST, KEPT ON THE PHONE WITH NO SIGNAL. The signature
  * pad and the photo field keep their files on the phone; "Sign off" makes ONE
  * sign-off with a retry key, its files sent first (`data.ts`, `signOffLine`;
  * `offlineQueue.ts`). With no signal it waits on the phone, and this page
@@ -45,7 +45,7 @@ import { PhotoField, SignaturePad } from "./FileParts.tsx";
 import { RefusedBox, SignalLine, useReadAgainOnSignal, useSave, WaitChip } from "./Offline.tsx";
 import { useHeldSrc, useQueue, useQueueLines } from "./queue.tsx";
 
-/** The five checks' words: the office's own (P20), in the order the columns are. */
+/** The five checks' words: the office's own, in the order the columns are. */
 const CHECK_WORDS: readonly MessageKey[] = ["jb.check.count", "jb.check.damage", "jb.check.keys", "jb.check.clean", "jb.check.show"];
 
 interface JobData {

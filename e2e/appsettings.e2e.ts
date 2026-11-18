@@ -1,5 +1,5 @@
 /**
- * P15, Settings (on F18 and F20): Selling with the price list and the reps,
+ * Settings: Selling with the price list and the reps,
  * Working time, Places, Maps and Parts.
  *
  * WHO OPENS IT: the CRM admin and the install's owner (five tabs), the sales
@@ -126,7 +126,7 @@ test("the CRM admin reaches every tab of her stage from her menu, with the ledge
   for (const [column, value] of [["approval_threshold_pct", "5"], ["quote_valid_days", "30"], ["quote_warn_days", "3"], ["sitting_warm_days", "14"], ["sitting_stale_days", "30"], ["nudge_quiet_days", "7"], ["nudge_stuck_days", "21"], ["nudge_soon_days", "7"], ["lead_cold_days", "14"]] as const) {
     await expect(setting(page, column).locator("input"), column).toHaveValue(value);
   }
-  // Ledger §2: warm d1, d2, d8; stale d5, d12. §17: quiet 2, stuck 2, soon 1. Each rule's real state: the install ships them off.
+  // Warm d1, d2, d8; stale d5, d12. Nudges: quiet 2, stuck 2, soon 1. Each rule's real state: the install ships them off.
   await expect(setting(page, "sitting_warm_days")).toContainText("3 open deals warm now");
   await expect(setting(page, "sitting_stale_days")).toContainText("2 open deals stale now");
   const told = ((await (await direct.get("/api/v1/apps/crm/rules")).json()) as { rules: { key: string; on: boolean }[] }).rules;
@@ -215,7 +215,7 @@ test("the sales manager has Selling and nothing else: she writes her eight setti
     await expect(page.locator('[data-panel="selling"]')).toBeVisible();
     await expect(page.locator('[data-panel="work"]')).toHaveCount(0);
     await expect(card(page, "stages").locator('[data-figure="open"]')).toHaveText("14 open deals");
-    // WORTH ASKING (S11): Proposal and Negotiation hold the sample's four questions, Discovery none. She writes Discovery's,
+    // WORTH ASKING: Proposal and Negotiation hold the sample's four questions, Discovery none. She writes Discovery's,
     // the server keeps them, and she takes them off again.
     const asking = (stage: string) => card(page, "stages").getByRole("button", { name: `Worth asking at ${stage}` });
     await expect(asking("Negotiation")).toHaveText("4");
@@ -242,7 +242,7 @@ test("the sales manager has Selling and nothing else: she writes her eight setti
     await expect(toast(page)).toHaveText("A quote is valid for: saved.");
     expect((await settingsRow(direct, data))["quote_valid_days"]).toBe(45);
     // Outside its bounds: not sent, and the field says what it takes (more days than the warning before it runs out, which
-    // is 3: plan 68 X4 keeps the warning below the validity).
+    // is 3: the server keeps the warning below the validity).
     await type(page, "quote_valid_days", "400");
     await expect(setting(page, "quote_valid_days").getByRole("alert")).toHaveText("From 4 to 365.");
     // Warm stays under stale.
@@ -570,7 +570,7 @@ test("a rep, the account manager, the marketer and the front desk have no Settin
     expect((await direct.post(data("price_list"), { data: { values: { name: `Spec by ${person}`, list_rate: 1 }, clientKey: `p15${person}makesnopriceAAAAAAAAAAAAAAAA`.slice(0, 32) }, headers })).status(), person).toBe(403);
     expect((await direct.post(data("reps"), { data: { values: { user_id: "nobody" }, clientKey: `p15${person}makesnorepAAAAAAAAAAAAAAAAAA`.slice(0, 32) }, headers })).status(), person).toBe(403);
   }
-  // A rep changes her own profile and nobody else's (F20): the server's rule, by a direct call.
+  // A rep changes her own profile and nobody else's: the server's rule, by a direct call.
   const dana = await api("dana");
   const headers = await csrf(dana);
   const me = ((await (await dana.get(`${STAFF}surface-config.json`)).json()) as { user: { id: string } }).user.id;
@@ -629,7 +629,7 @@ test("Settings at 390 wide in the dark, and in Arabic from the right", async ({ 
 });
 
 /**
- * Plan 68 X4: a pair the server keeps apart is refused naming both settings. The screen bounds each field by the other
+ * A pair the server keeps apart is refused naming both settings. The screen bounds each field by the other
  * as it last read them, so the save is made to cross its partner on its way (the request's value changed in flight):
  * what comes back is the server's own refusal, said on the page in the reader's words.
  */
@@ -655,7 +655,7 @@ test("a setting saved past its partner is refused by the server, and the page na
   }
 });
 
-/** Plan 68 X4: Settings shows every lost reason, fifty at a time. The 46 it adds are "Spec reason …", removed at the end. */
+/** Settings shows every lost reason, fifty at a time. The 46 it adds are "Spec reason …", removed at the end. */
 test("Settings shows every lost reason, fifty and then the rest", async ({ as, api, data }) => {
   const admin = await api("tessa");
   const headers = await csrf(admin);

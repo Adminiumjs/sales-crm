@@ -100,7 +100,7 @@ const readWindow = (text: string | undefined): Months => (WINDOWS.find((months) 
 
 export function Lost(props: ScreenProps) {
   const reason = props.rest[0];
-  // `why-we-lose/view/<id>` is a saved view of the whole screen (S7), not a reason.
+  // `why-we-lose/view/<id>` is a saved view of the whole screen, not a reason.
   return reason === undefined || reason === "view" ? <LostView rest={props.rest} /> : <OneReason reason={reason} months={readWindow(props.rest[1])} />;
 }
 

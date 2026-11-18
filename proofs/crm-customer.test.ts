@@ -1,5 +1,5 @@
 /**
- * Plan 67, F16: the customer's door. Somebody with no account opens ONE quote by the code of its
+ * The customer's door. Somebody with no account opens ONE quote by the code of its
  * own link, reads the quote's own figures and nothing of the business's side, and answers it once:
  * Accept (with a name) or Decline, while it is still in date. Against the whole server, on SQLite,
  * Postgres and MySQL, with the app installed through its routes and its sample in.
@@ -35,7 +35,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at (0.3.26 until the release); the app's floor is the release to come.
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
@@ -249,7 +249,11 @@ const said = (res: Reply): string => {
 };
 
 /** Everything a customer may ever read of a quote and of a line (F16's list, and the keys that tie a line to its quote). */
-const QUOTE = ['id', 'number', 'version', 'status', 'valid_until', 'currency', 'tax_name', 'tax_rate', 'subtotal', 'tax', 'total', 'notes', 'sent_at', 'decided_at', 'accepted_name'];
+const QUOTE = [
+  ...['id', 'number', 'version', 'status', 'valid_until', 'currency', 'tax_name', 'tax_rate', 'subtotal', 'tax', 'total', 'notes', 'sent_at', 'decided_at', 'accepted_name'],
+  // What the quote asks on acceptance, what was paid, given back and is left, and whether it can be paid now: of its own quote only.
+  ...['pay_ask', 'pay_pct', 'pay_amount', 'pay_paid', 'pay_refunded', 'pay_due', 'pay_paid_at', 'pay_open'],
+];
 const LINE = ['id', 'document_id', 'position', 'description', 'qty', 'rate', 'discount_kind', 'discount', 'currency', 'amount'];
 
 for (const [dialect, reachable] of LEGS) {
@@ -313,7 +317,7 @@ for (const [dialect, reachable] of LEGS) {
       refs = { quotes: named(s.real('quotes')), lines: named(s.real('quote_lines')) };
       item = made(await post('ivy', 'price_list', { name: 'Stacking chair', list_rate: 100 }));
       deal = Number((await one(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id`))['id']);
-      // A contact of the deal's own company, with an address: a quote names nobody else (S6).
+      // A contact of the deal's own company, with an address: a quote names nobody else.
       contact = Number((await one(`SELECT c.id FROM ${s.real('contacts')} c JOIN ${s.real('deals')} d ON d.company_id = c.company_id WHERE d.id = ${String(deal)} AND c.email IS NOT NULL ORDER BY c.id`))['id']);
     }, 600_000);
     afterAll(async () => {

@@ -1,5 +1,5 @@
 /**
- * SUPPLY (P16): what the two screens read, and from where.
+ * SUPPLY: what the two screens read, and from where.
  *
  * Stock is the Inventory add-on's, not the app's. Its tables are read as the
  * signed-in person through the grants the CRM gives its CRM admin, its
@@ -16,7 +16,7 @@
  * its first-choice supplier) and compares two figures of one line. "Short" is
  * need minus have: one subtraction of two server figures, as the ledger prints.
  *
- * THE SCORECARD (plan 68 S12) reads Inventory's receipts: each delivery
+ * THE SCORECARD reads Inventory's receipts: each delivery
  * posted against an order keeps the day it was due, the day it came, and
  * whether (and by how many days) it was late. The server counts them, per
  * supplier and for all, over the last 90 days of the business's calendar (a

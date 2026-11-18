@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Plan 68, phase 4 (T27, S13): e-mail 17's signed copy as a PDF, and its ticks. What the whole app and its sample gain.
+// E-mail 17's signed copy as a PDF, and its ticks. What the whole app and its sample gain.
 //
 //  - `sign_offs.snags_at_signing` (text, empty on a sign-off made before 0.2.2, which prints no list) and
 //    `sign_offs.check_words` (text, empty before 0.2.2): written by the crew's phone WITH the sign-off, from what the
@@ -9,9 +9,9 @@
 //    the phone held). Create only: the crew and the operations manager may name them on a new sign-off and nobody they
 //    hold changes one after (no update grant). The server cannot check the phone's list against the snags.
 //  - `documents`: the signed copy, kind `signed-copy`, drawn by Invoices & Receipts from the sign-off (the job by its
-//    title, never its code). An Invoices that does not draw the kind yet leaves it waiting (E22).
+//    title, never its code). An Invoices that does not draw the kind yet leaves it waiting.
 //  - `crm-signed-copy` (e-mail 17) carries it, `optional`: no job code, the signed day, "Your signed copy is attached."
-//    only with the attachment, the five checks as Yes/No (E15), and what is still to put right.
+//    only with the attachment, the five checks as Yes/No, and what is still to put right.
 //  - The sample's sign-offs: their check words and the snags open when each was signed.
 //
 // Run: node scripts/plan68/t27-signed-whole.mjs  (idempotent; finds everything by key)
@@ -165,7 +165,7 @@ for (const tag of LOCALES) {
       // Only with the signed copy: an install whose Invoices does not draw it yet, or none, sends the mail without both.
       { block: "email.text", data: { text: attached, withAttachment: true } },
       { block: "email.heading", data: { text: signedHead } },
-      // Each answer as the reader says yes or no (E15).
+      // Each answer as the reader says yes or no.
       { block: "email.tax-breakdown", data: { lines: CHECKS.map((ref, i) => ({ label: CHECK_WORDS[i][tag], amount: `{{sign_off.${ref}}}` })) } },
       { block: "email.heading", data: { text: snagsHead } },
       {

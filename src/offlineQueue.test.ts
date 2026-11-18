@@ -292,7 +292,7 @@ describe("the offline queue", () => {
     expect(await store.fileIds()).toEqual([]);
   });
 
-  it("a session gone (401), a full minute (429) or a stale token is not a refusal: the line waits and keeps the signature (T09)", async () => {
+  it("a session gone (401), a full minute (429) or a stale token is not a refusal: the line waits and keeps the signature", async () => {
     const { server, store, queue } = setUp();
     const signature = await queue.hold(new Blob(["png"], { type: "image/png" }), { table: "crm_sign_offs", column: "signature", name: "signature.png" });
     server.state.notNow.push(new StaffError(401, "UNAUTHENTICATED", "signed out"), new StaffError(429, "RATE_LIMITED", "slow down"), new StaffError(403, "CSRF_FAILED", "stale"));
@@ -316,7 +316,7 @@ describe("the offline queue", () => {
     expect([notYet(new StaffError(403, "FORBIDDEN", "x")), notYet(new StaffError(409, "ROW_CHANGED", "x")), notYet(new StaffError(422, "VALIDATION", "x"))]).toEqual([false, false, false]);
   });
 
-  it("counts a hidden line still to send as busy: signing out would throw away a refused sign-off's record (T09)", async () => {
+  it("counts a hidden line still to send as busy: signing out would throw away a refused sign-off's record", async () => {
     const { server, queue } = setUp();
     server.state.signal = false;
     await queue.add({ kind: "refused-record", quiet: true, op: { type: "create", table: "refused_sign_offs", values: { visit_id: 7 }, key: "RecordKey00000000000000000000009" } });

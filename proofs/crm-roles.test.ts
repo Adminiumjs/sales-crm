@@ -1,5 +1,5 @@
 /**
- * Plan 67, F08: the nine roles of the Sales CRM, each tried SIGNED IN AS A PERSON WHO HOLDS IT,
+ * The nine roles of the Sales CRM, each tried SIGNED IN AS A PERSON WHO HOLDS IT,
  * against the whole server, on SQLite, Postgres and MySQL.
  *
  * The app is installed through its routes with the sample in; the sample's sixteen people are
@@ -40,7 +40,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at (0.3.26 until the release); the app's floor is the release to come.
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
@@ -297,9 +297,9 @@ for (const [dialect, reachable] of LEGS) {
         counts[role] = seen.size;
       }
       // A records page per table the role reads, the Pipeline board for the five roles that open the deals list, and the
-      // console's Overview and Approvals for the CRM admin, the sales manager and Read-only (P17). A page kept off the
+      // console's Overview and Approvals for the CRM admin, the sales manager and Read-only. A page kept off the
       // rail is still one of the role's pages: it is listed with the section, and only not drawn.
-      expect(counts).toEqual({ admin: 77, 'sales-manager': 63, rep: 61, 'account-manager': 37, marketer: 8, 'front-desk': 11, 'ops-manager': 28, crew: 20, 'read-only': 71 });
+      expect(counts).toEqual({ admin: 78, 'sales-manager': 64, rep: 62, 'account-manager': 38, marketer: 8, 'front-desk': 11, 'ops-manager': 28, crew: 20, 'read-only': 72 });
     });
 
     it('nobody reads a private table but the two people of a row: not the CRM admin, not Read-only, not the Super Admin', async () => {
@@ -332,14 +332,14 @@ for (const [dialect, reachable] of LEGS) {
         ['stages lost_reasons', 'all all all all - - - - all'],
         ['price_list', 'all all all - - - - - all'],
         // The operations manager reads the won deals, to make the jobs still to make (P15; stage 2).
-        // The account manager also reads an open deal he is listed on, its notes, history and quotes (R6, T37).
-        // Plan 68 R1d: the sales manager reads a deal only when somebody she leads OWNS it (`owned`), never through a helper
+        // The account manager also reads an open deal he is listed on, its notes, history and quotes.
+        // The sales manager reads a deal only when somebody she leads OWNS it (`owned`), never through a helper
         // or a cover, and every row of a deal by that deal's owner (`deal`), whoever else the row names.
         ['deals', 'all owned own won+own - - won - all'],
-        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines', 'all deal own own - - - - all'],
+        ['deal_stage_changes deal_amount_changes activities comments quotes quote_lines quote_payments', 'all deal own own - - - - all'],
         // A follow-up on a deal is judged by the deal's owner for the manager; one on no deal by its own; a rep's are those she owns.
         ['follow_ups', 'all deal mine mine - - - - all'],
-        // Private (plan 68 D9): each person's own, and a view nobody owns is read by nobody.
+        // Private: each person's own, and a view nobody owns is read by nobody.
         ['saved_views saved_searches', 'own own own own - - - - own'],
         ['nudge_snoozes', 'own own own - - - - - -'],
         // F14: who is on a deal is read by whoever is on it (and by who leads its owner).
@@ -353,7 +353,7 @@ for (const [dialect, reachable] of LEGS) {
         ['targets', 'all team own - - - - - all'],
         ['cover_notes', 'all deal own - - - - - all'],
         ['one_to_ones one_to_one_sessions coaching_plans coaching_areas', '- own own - - - - - -'],
-        // Plan 68 R4a: the manager also reads the meeting actions her reps set.
+        // The manager also reads the meeting actions her reps set.
         ['actions', 'own own+meeting own - - - - - -'],
         ['meetings meeting_slots meeting_decisions starters starter_steps', 'all all all - - - - - all'],
         ['threads messages', 'own own own own - - - - -'],
@@ -368,12 +368,12 @@ for (const [dialect, reachable] of LEGS) {
         ['crews crew_members crew_days', 'all - - - - - all all all'],
         // P25: a crew member reads the vehicle his crew is given, and its faults; a check and a fill also through that vehicle.
         ['vehicles vehicle_faults', 'all - - - - - all own all'],
-        // Plan 68 S14 and D17: a crew's vehicle for the day, and a visit that left a crew's day, are read by that crew.
+        // A crew's vehicle for the day, and a visit that left a crew's day, are read by that crew.
         ['van_days left_visits', 'all - - - - - all own all'],
         ['waste_removals subcontractors insurance_incidents', 'all - - - - - all - all'],
         // Supply is on only with Inventory, which is not here: its own roles (CRM admin, Operations manager, Read-only) hold
         // nothing on its table, and the sales roles, of other parts, go on reading it.
-        // The crew, of no Supply role, reads the needs of its own visits (plan 68 S14).
+        // The crew, of no Supply role, reads the needs of its own visits.
         ['deal_stock_needs', '- deal own - - - - own -'],
         ['vehicle_checks fuel_fills time_sheets time_sheet_lines certificates', 'all - - - - - all own all'],
         ['outbox', 'all - - - - - - - -'],
@@ -395,7 +395,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(Object.keys(reads).sort(), 'the matrix names every table of the app, and no other').toEqual(tables.map((table) => table.ref).sort());
       // The typed matrix opens as many tables to each role as the role's menu holds pages (the test above).
       const opened = Object.fromEntries(ROLES.map((role) => [role, Object.values(reads).filter((row) => row[role] !== '-').length]));
-      expect(opened).toEqual({ admin: 73, 'sales-manager': 60, rep: 60, 'account-manager': 36, marketer: 8, 'front-desk': 11, 'ops-manager': 27, crew: 20, 'read-only': 67 });
+      expect(opened).toEqual({ admin: 74, 'sales-manager': 61, rep: 61, 'account-manager': 37, marketer: 8, 'front-desk': 11, 'ops-manager': 27, crew: 20, 'read-only': 68 });
 
       // Every row of every table, read as nobody (SQL).
       const raw: Record<string, Record<string, unknown>[]> = {};
@@ -414,7 +414,7 @@ for (const [dialect, reachable] of LEGS) {
         if (table.belongs === undefined) return true;
         expect(depth, `${ref}: a row is reached through at most two links`).toBeLessThan(3);
         return table.belongs.some((way) => {
-          // Through a private row, by one of its own people (plan 68 E27): the reader herself, never whoever she leads.
+          // Through a private row, by one of its own people: the reader herself, never whoever she leads.
           if (way.column !== undefined && way.person !== undefined) {
             const parent = table.columns.find((column) => column.ref === way.column)!.references!;
             const above = raw[parent]!.find((one) => String(one['id']) === String(row[way.column!]));
@@ -591,7 +591,7 @@ for (const [dialect, reachable] of LEGS) {
       if (otherJob !== undefined) await gone('dana', 'jobs', otherJob);
       const starter = (await get('dana', 'starters', '?limit=1')).json() as { data: Record<string, unknown>[] };
       t('25 a rep reads a starter\'s name, day and patch, nothing else', Object.keys(starter.data[0] ?? {}).filter((column) => !column.startsWith('_')).sort(), ['id', 'manager_id', 'name', 'patch', 'starts_on', 'user_id']);
-      // Her own step (plan 68 X1: a step is its owner's, and its starter's manager's).
+      // Her own step (a step is its owner's, and its starter's manager's).
       const step = (await ids(`SELECT id FROM ${s.real('starter_steps')} WHERE owner_id = '${s.id['dana']!}'`))[0]!;
       t('26 a rep ticks her own step of a starter and does not reword it', [said(await patch('dana', 'starter_steps', step, { done: true })), refused(await patch('dana', 'starter_steps', step, { text: 'Skip this' }))], ['ok', '403']);
       t('27 a rep does not change a setting', refused(await patch('dana', 'settings', 1, { approval_threshold_pct: 90 })), '403');
@@ -827,7 +827,7 @@ for (const [dialect, reachable] of LEGS) {
       // The same for cover: whoever covers reads deals.
       const badCover = await post('tessa', 'covers', { owner_id: s.id['sam'], cover_id: s.id['corin'], starts_on: '2027-02-01', ends_on: '2027-02-05' });
       t('5 the front desk covers for nobody', [refused(badCover), (reason(badCover) as { fields?: Record<string, { code?: unknown }> }).fields?.['cover_id']?.code], ['422', 'cannot-open']);
-      // The account manager reads the won deals, and an open one while he is listed on it (R6, T37): it, its notes and its
+      // The account manager reads the won deals, and an open one while he is listed on it: it, its notes and its
       // comments, and he comments on it; taken off, it is gone for him again.
       const hugo = await post('dana', 'deal_members', { deal_id: danas, user_id: s.id['hugo'] });
       t('6 the account manager may be listed', said(hugo), 'ok');
@@ -863,7 +863,7 @@ for (const [dialect, reachable] of LEGS) {
       const quote = await one(`SELECT q.id, q.share_code FROM ${s.real('quotes')} q JOIN ${s.real('deals')} d ON d.id = q.deal_id WHERE d.owner_id = '${s.id['dana']!}' ORDER BY q.id`);
       const quoteRow = async (person: string) => ((await get(person, 'quotes', `/${String(quote['id'])}`)).json() as { data: Record<string, unknown> }).data;
       t('9 the sample quote has a code', String(quote['share_code']).length >= 16, true);
-      // The code is the customer's own link (F16): nobody on the staff reads it, the rep who owns the quote and the install's owner included.
+      // The code is the customer's own link: nobody on the staff reads it, the rep who owns the quote and the install's owner included.
       for (const person of ['dana', 'ivy', 'tessa', 'owner']) t(`9 ${person} reads the quote and not its code`, ['number' in (await quoteRow(person)), 'share_code' in (await quoteRow(person))], [true, false]);
       const graces = await quoteRow('grace');
       t('9 Read-only reads the quote and not its code', ['number' in graces, 'share_code' in graces], [true, false]);
@@ -1292,7 +1292,7 @@ for (const [dialect, reachable] of LEGS) {
       });
 
       it('E2, CLOSED: a helper reads a deal and comments, changes none of it nor takes it, and a note is its writer\'s to change', async () => {
-        // Dana adds Priya as a helper on one of her deals. Priya reads it, and since Adminium 0.3.36 (ruling 1d: a helper
+        // Dana adds Priya as a helper on one of her deals. Priya reads it, and since Adminium 0.3.36 (a helper
         // reads and comments, `notThrough`) changes nothing of it: not its scope, and not its owner (she cannot make
         // herself its owner either).
         const deal = (await ids(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['dana']!}' AND state = 'open' ORDER BY id DESC`))[0]!;
@@ -1315,7 +1315,7 @@ for (const [dialect, reachable] of LEGS) {
         expect(helping.body).toContain('parent-not-theirs');
         expect(said(await patch('dana', 'activities', noted['id'], { text: String(noted['text']) }))).toBe('ok');
         // On a deal of his own Sam writes a note and rewords it; Dana, a helper there, does not reword it, and their manager,
-        // who leads them both, rewords neither (plan 68 X6: a note is its author's to change).
+        // who leads them both, rewords neither (a note is its author's to change).
         const samsDeal = (await ids(`SELECT id FROM ${s.real('deals')} WHERE owner_id = '${s.id['sam']!}' AND state = 'open' ORDER BY id DESC`))[0]!;
         expect(said(await post('sam', 'deal_members', { deal_id: samsDeal, user_id: s.id['dana'] }))).toBe('ok');
         const his = await post('sam', 'activities', { deal_id: samsDeal, kind: 'note', text: 'Sam looked at the floor plan' });
@@ -1337,7 +1337,7 @@ for (const [dialect, reachable] of LEGS) {
         const hers = await post('dana', 'saved_views', { name: 'Dana\'s board', filters: {}, owner_id: s.id['dana'] });
         expect(said(hers), hers.body).toBe('ok');
         expect(said(await del('dana', 'saved_views', made(hers)))).toBe('ok');
-        // Saved views are private (plan 68 D9): none is nobody's, every one its owner's or its maker's.
+        // Saved views are private: none is nobody's, every one its owner's or its maker's.
         expect(await ids(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id IS NULL AND made_by_id IS NULL`)).toEqual([]);
         // A deal must name its owner, and a rep may name only themselves.
         const company = (await ids(`SELECT id FROM ${s.real('companies')}`))[0]!;
@@ -1375,7 +1375,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await patch('dana', 'thread_members', priyas, { read_at: new Date().toISOString() }))).toMatch(/^40[34]/);
       // Somebody outside a conversation brings nobody into it, herself included.
       expect(said(await post('hugo', 'thread_members', { thread_id: team, user_id: s.id['hugo'] }))).toMatch(/^4/);
-      // A TWO-PERSON CONVERSATION TAKES NOBODY ELSE (D12): start a new one instead.
+      // A TWO-PERSON CONVERSATION TAKES NOBODY ELSE: start a new one instead.
       const direct = Number((await one(`SELECT t.id FROM ${s.real('threads')} t WHERE t.kind = 'direct' AND EXISTS (SELECT 1 FROM ${s.real('thread_members')} m WHERE m.thread_id = t.id AND m.user_id = '${s.id['ivy']!}')`))['id']);
       const before = await members(direct);
       expect(before).toHaveLength(2);
@@ -1432,7 +1432,7 @@ for (const [dialect, reachable] of LEGS) {
       for (const values of [{ was_move_key: 'made-up' }, { was_from_stage: 'made-up' }]) expect(said(await patch('tessa', 'deals', deal, values)), JSON.stringify(values)).toBe('403 COLUMN_FORBIDDEN');
       expect((await one(`SELECT was_move_key, was_from_stage FROM ${s.real('deals')} WHERE id = ${String(deal)}`))).not.toMatchObject({ was_move_key: 'made-up' });
 
-      // SAVED VIEWS AND SEARCHES ARE PRIVATE (D9): the owner's, and nobody else's: not the CRM admin's, not the install's owner's.
+      // SAVED VIEWS AND SEARCHES ARE PRIVATE: the owner's, and nobody else's: not the CRM admin's, not the install's owner's.
       const danasView = Number((await one(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id = '${s.id['dana']!}' ORDER BY id`))['id']);
       const danasSearch = Number((await one(`SELECT id FROM ${s.real('saved_searches')} WHERE owner_id = '${s.id['dana']!}' ORDER BY id`))['id']);
       for (const person of ['owner', 'tessa', 'ivy', 'grace']) {
@@ -1443,7 +1443,7 @@ for (const [dialect, reachable] of LEGS) {
       // The sample's views all have an owner (Ivy's three that were shared are hers): none is nobody's.
       expect(await ids(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id IS NULL AND made_by_id IS NULL`)).toEqual([]);
       expect(await keys('ivy', 'saved_views')).toHaveLength(5);
-      // A view 0.2.1 shared had no owner: after the update it is its maker's (T09), not nobody's.
+      // A view 0.2.1 shared had no owner: after the update it is its maker's, not nobody's.
       await s.rows(`INSERT INTO ${s.real('saved_views')} (made_by_id, name, filters, pinned) VALUES ('${s.id['ivy']!}', 'Shared before 0.2.2', '{}', false)`);
       const orphan = Number((await one(`SELECT id FROM ${s.real('saved_views')} WHERE owner_id IS NULL`))['id']);
       expect(await keys('ivy', 'saved_views')).toContain(orphan);
@@ -1467,7 +1467,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(at).not.toBeNull();
       expect(String(at)).not.toContain('2001');
       // S10: the five "what to capture" ticks are kept with a visit's write-up, no by default.
-      // Booked ahead (a visit never starts in the past when it is made: plan 68 X7), at 20:00: the sample books Dana
+      // Booked ahead (a visit never starts in the past when it is made), at 20:00: the sample books Dana
       // through the working day (Thursday 13:30 to 14:45 among them), and a visit over one of hers is refused as taken.
       const ahead = new Date(Date.now() + 3 * 86_400_000);
       ahead.setUTCHours(20, 0, 0, 0);
@@ -1488,7 +1488,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(asked.data['worth_asking']).toBe('Who signs?');
     });
 
-    it('T04 (S5): the Team screens\' five writes, each made by whom it is for and refused to whom it is not', async () => {
+    it('the Team screens\' five writes, each made by whom it is for and refused to whom it is not', async () => {
       const remove = (person: string, ref: string, key: unknown) => s.app.inject({ method: 'DELETE', url: url(ref, `/${String(key)}?confirm=true`), headers: { cookie: who(person) } });
       const yesOf = (value: unknown): boolean => [true, 1, '1'].includes(value as never);
       // A NEW CONVERSATION, made with its people in the same save: a member row is otherwise written only from inside it.
@@ -1511,7 +1511,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await post('leo', 'messages', { thread_id: groupId, text: 'T04 spec: in' }))).toBe('ok');
       expect(said(await post('priya', 'messages', { thread_id: groupId, text: 'T04 spec: out' }))).toMatch(/^4/);
       expect(said(await post('priya', 'thread_members', { thread_id: groupId, user_id: s.id['priya'] }))).toMatch(/^4/);
-      // A two-person conversation is made of two (D12): with three it is refused whole, and nothing is left of it.
+      // A two-person conversation is made of two: with three it is refused whole, and nothing is left of it.
       const before = await threads();
       const three = await start('dana', { kind: 'direct' }, ['dana', 'sam', 'leo']);
       expect(three.statusCode, three.body).toBeGreaterThanOrEqual(400);

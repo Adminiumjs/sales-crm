@@ -1,5 +1,5 @@
 /**
- * P07, Paste a list (ledger §21): Adminium's own import, drawn on a screen of
+ * Paste a list: Adminium's own import, drawn on a screen of
  * the app. Its first real place.
  *
  * A rep and the sales manager have it under Accounts, the CRM admin under
@@ -7,7 +7,7 @@
  * the screen offers nothing else (the server would let a rep update; the
  * proof `crm-accounts` shows that it does, and the screen keeps it for the
  * admin). A company is "already here" when its customer number is the same
- * (plan 68 X3 holds a rep and the manager to some companies, and the server
+ * (the server holds a rep and the manager to some companies, and the server
  * matches such a writer's list only on a column no two companies share); for
  * the CRM admin, when its name is.
  *
@@ -70,7 +70,7 @@ test("Dana pastes three companies: looked at, brought in, in the list; pasted ag
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/paste-a-list$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Paste a list");
   // What she is offered, said before she pastes: a line already here is left alone, and a company is matched on its
-  // customer number (plan 68 X3: the server matches her list on no other kind of column).
+  // customer number (the server matches her list on no other kind of column).
   await expect(page.locator('[data-note="modes"]')).toHaveText("A line that is already here is left as it is. Changing what is already here by a list is the CRM admin’s to do.");
   await expect(page.locator('[data-note="companies"]')).toHaveText("A company is already here when its customer number is the same. A line with no customer number is brought in as a new company, so leave out the ones you already have.");
   await expect(wizard(page).getByRole("group", { name: "Paste a list" })).toBeVisible({ timeout: 30_000 });
@@ -145,7 +145,7 @@ test("the CRM admin has it under Settings and may also update; contacts are matc
 });
 
 /**
- * Plan 68 R5: the CRM admin brings past deals in, in a wizard of their own. A won deal with its closed date comes in with
+ * The CRM admin brings past deals in, in a wizard of their own. A won deal with its closed date comes in with
  * that day; one without is named, in the reader's words, and not brought in. R8: the page says who ticked "may be
  * emailed" is never a list's to say. The deals it makes are called "P68 Past …" and taken away at the end.
  */

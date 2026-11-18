@@ -18,7 +18,7 @@ function sessionOf(roles: string[], covers: { owner_id: string }[] = [], parts: 
   return { session, asked };
 }
 
-describe("who only helps on a deal (ruling 1d)", () => {
+describe("who only helps on a deal", () => {
   it("a rep on a colleague's deal she does not cover", () => {
     const { session } = sessionOf(["rep"]);
     expect(helpsOn(session, "usr_dana", new Set())).toBe(true);

@@ -1,5 +1,5 @@
 /**
- * SUPPLIER SCORECARD (ledger screen 60), on Inventory's receipts (plan 68 S12).
+ * SUPPLIER SCORECARD (ledger screen 60), on Inventory's receipts.
  *
  * Each supplier as drawn: its band and score, a bar, on time over the last 90
  * days of the business's calendar, its deliveries, the late ones, its claims

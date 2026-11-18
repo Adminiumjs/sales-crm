@@ -1,5 +1,5 @@
 /**
- * Area bundle: **Vehicles and crew, part A** (P25): Vehicles, Fuel,
+ * Area bundle: **Vehicles and crew, part A**: Vehicles, Fuel,
  * Subcontractors, Insurance claims, and the crew's own vehicle on his phone
  * (its check, a fault, a fuel fill). A key at a time (see `table.ts`).
  */

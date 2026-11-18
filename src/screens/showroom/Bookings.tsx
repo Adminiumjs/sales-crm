@@ -247,7 +247,7 @@ export function Bookings(_props: ScreenProps) {
                 title={t("rm.bookings.title")}
                 testId="sh-removed"
                 f={f}
-                // A cancelled booking is read through its space, by whoever reads the space now (plan 68 S16).
+                // A cancelled booking is read through its space, by whoever reads the space now.
                 read={() => readRemovedUnder(session, data.spaces.map((space) => ({ ref: "showroom_spaces", id: space.id, label: space.name })), "showroom_bookings")}
                 what={(item) => {
                   const at = item.row.starts_at === null || item.row.starts_at === undefined ? null : new Date(item.row.starts_at);

@@ -1,5 +1,5 @@
 /**
- * MY HOURS' saves as lines of the phone's offline queue (plan 68 S19): the
+ * MY HOURS' saves as lines of the phone's offline queue: the
  * week's sheet (made by the first day written, with no screen of its own: a
  * quiet line), a day, a day changed, and the week sent for sign-off. A day
  * written to a week made on this phone names that week's line (`$line`), so

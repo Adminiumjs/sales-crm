@@ -1,5 +1,5 @@
 /**
- * Plan 67, G3: the Sales CRM on the three words of 0.3.28 that came last (a board whose columns
+ * The Sales CRM on the three words of 0.3.28 that came last (a board whose columns
  * are rows, a place and an area in a column, maps as one switch), against the whole server, on
  * SQLite, Postgres and MySQL, with the app's own manifest and its sample, SIGNED IN AS THE PEOPLE
  * IT IS ABOUT.
@@ -15,7 +15,7 @@
  *
  * To run: copy into `~/Work/lanes/p67/apps/server/test/` as `zz-crm-g3.test.ts`, run, remove.
  *
- * THE BOARD AND THE LEDGER. The ledger's board (`figures.md` §2) is the OPEN deals: 14 · 286,300,
+ * THE BOARD AND THE LEDGER. The ledger's board is the OPEN deals: 14 · 286,300,
  * Dana 6 · 143,400. The app says so on its page (`config.board.only: { state: 'open' }`), and the
  * board answers the ledger's own figures, column by column, to the unit: the cards it lists are
  * those deals and no other, and each header's count and total are of those cards. The closed
@@ -49,7 +49,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 
 // The server says the version it was built at (0.3.27 until the release); the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.62' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
@@ -68,7 +68,7 @@ const PEOPLE = manifest()['sampleData'] as { people: { key: string; name: string
 /** The map server an install draws its maps from when nobody set another. */
 const MAP_SERVER = 'https://tiles.openfreemap.org';
 
-/** The ledger's board, the open deals, column by column (`figures.md` §2): the team's, then Dana's. */
+/** The ledger's board, the open deals, column by column: the team's, then Dana's. */
 const STAGES = ['Discovery', 'Qualified', 'Proposal', 'Negotiation', 'Verbal'] as const;
 const LEDGER_TEAM: [number, number][] = [[3, 36_350], [3, 32_950], [3, 87_000], [3, 105_400], [2, 24_600]];
 // The ledger writes Dana's columns weighted (320 · 0 · 24,500 · 55,800 · 15,120 = 95,740); at full value they are these (143,400).
@@ -355,7 +355,7 @@ for (const [dialect, reachable] of LEGS) {
         statusColumn: 'stage_id',
         columnsFrom: { table: s.t('stages'), key: 'id', label: 'label', order: 'position' },
         titleColumn: 'name',
-        // P17: each heading's two totals, the amount and the weighted value (D10), and the stage's odds as its badge.
+        // The console's board: each heading's two totals, the amount and the weighted value, and the stage's odds as its badge.
         totals: [{ column: 'amount', fn: 'sum' }, { column: 'weighted_value', fn: 'sum' }],
         // The pipeline is the open deals: the tests each column's count and total are asked by.
         only: [{ column: 'state', in: ['open'] }],
@@ -443,7 +443,7 @@ for (const [dialect, reachable] of LEGS) {
     it('a stage added as a row is a column of the very next read, empty, with no update of the app', async () => {
       const version = (await manifestsRepo(s.meta, { encrypt: (v) => v, decrypt: (v) => v }).findBySlug('crm', ''))?.row.version;
       expect(version, 'the install at the app\'s own address').toBeDefined();
-      // A rep and an account manager read the stages and may not add one; the CRM admin and the sales manager keep the list (F14).
+      // A rep and an account manager read the stages and may not add one; the CRM admin and the sales manager keep the list.
       expect(said(await post('dana', 'stages', { label: 'Legal review', odds: 0.8, position: 5 }))).toMatch(/^403/);
       expect(said(await post('hugo', 'stages', { label: 'Legal review', odds: 0.8, position: 5 }))).toMatch(/^403/);
       const added = await post('tessa', 'stages', { label: 'Legal review', odds: 0.8, position: 5 });
@@ -492,7 +492,7 @@ for (const [dialect, reachable] of LEGS) {
           table: s.t('companies'),
           mapping: { columns: [{ from: 'Number', to: 'customer_no' }, { from: 'Name', to: 'name' }, { from: 'Town', to: 'town' }, { from: 'Country', to: 'country' }, { from: 'Place', to: 'place' }] },
           // Below the CRM admin a list is matched on the customer number, the column no two companies share: a writer
-          // held to some rows matches on no other kind (plan 68 X3 holds a rep to her own companies).
+          // held to some rows matches on no other kind (the server holds a rep to her own companies).
           options: { mode: 'skip', matchColumn: 'customer_no' },
         });
       // Three companies as a sheet pastes them, tabs between the cells: the first is one of the sample's nine, which the
@@ -501,7 +501,7 @@ for (const [dialect, reachable] of LEGS) {
       expect(said(await patch('tessa', 'companies', cobalt, { customer_no: 'G3-COBALT' }))).toBe('ok');
       const paste = 'Number\tName\tTown\tCountry\tPlace\nG3-COBALT\tCobalt Legal\tSomewhere else\tGB\t\nG3-QUAY\tQuayside Print\tYork\tGB\t53.9590,-1.0815\nG3-ORCH\tOrchard Dental\tDurham\tGB\thttps://www.google.com/maps/@54.7753,-1.5849,15z\n';
 
-      // WHO BRINGS A LIST IN (F14): a rep, the sales manager and the CRM admin, for companies and contacts. Nobody else.
+      // WHO BRINGS A LIST IN: a rep, the sales manager and the CRM admin, for companies and contacts. Nobody else.
       for (const person of ['hugo', 'grace', 'lena']) {
         const up = await upload(person, paste);
         expect(up.statusCode, up.body).toBe(201);
@@ -660,7 +660,7 @@ for (const [dialect, reachable] of LEGS) {
       const same = await send('ada', 'POST', '/api/v1/geo/route', { stops: [bristol, { ...bristol }, stops[0]] });
       expect(same.statusCode, same.body).toBe(200);
       const legs = (same.json() as { data: { legs: Record<string, unknown>[] } }).data.legs;
-      // Since Adminium 0.3.35 the leg also says why (E10): both stops are pinned to the town.
+      // Since Adminium 0.3.35 the leg also says why: both stops are pinned to the town.
       expect(legs[0]).toEqual({ distanceM: null, durationS: null, estimate: true, unknown: true, why: 'same-town' });
       expect(legs[1]).toMatchObject({ durationS: null, estimate: true });
       expect(Number(legs[1]!['distanceM'])).toBeGreaterThan(250_000);

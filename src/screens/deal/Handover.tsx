@@ -48,7 +48,7 @@ interface Offered extends Record<string, unknown> {
   company: string | null;
   stage: string | null;
   contact: string | null;
-  /** The deal contact's address, where the introduction would go (S1). */
+  /** The deal contact's address, where the introduction would go. */
   contact_email?: string | null;
 }
 interface Step extends Record<string, unknown> {
@@ -138,9 +138,9 @@ export function Handover({ rest }: ScreenProps) {
   const brief = useLoad<Brief | null>(() => (dealId === null ? Promise.resolve(null) : readBrief(session, dealId, ownerOf)), [session, dealId, ownerOf]);
   const [to, setTo] = useState<string | null>(null);
   const [note, setNote] = useState("");
-  // "Introduce … to the customer by e-mail" (S1): on when the deal's contact has an address, and the reader's to undo.
+  // "Introduce … to the customer by e-mail": on when the deal's contact has an address, and the reader's to undo.
   const [introduce, setIntroduce] = useState(true);
-  // "Tell the new owner" is the `deal-handed-over` rule: what is said is its real state (plan-67 T10i).
+  // "Tell the new owner" is the `deal-handed-over` rule: what is said is its real state.
   const told = useLoad(() => ruleStates(session).then((states) => (states === null || states["deal-handed-over"] === undefined ? "unknown" : states["deal-handed-over"] ? "on" : "off")), [session]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<Done | null>(null);
@@ -280,7 +280,7 @@ export function Handover({ rest }: ScreenProps) {
               }
               const introducing = introduce && reachable;
               const acted = await session.act("deals", deal.id, "hand-over", "open", { values: { owner_id: to, introduce: introducing } });
-              // A visit that would go with the deal clashes with one of the new owner's own: nothing moved (R1c).
+              // A visit that would go with the deal clashes with one of the new owner's own: nothing moved.
               if (acted.state === "refused" && acted.error.code === "BOOKING_TAKEN") {
                 toasts.show(t("dealrules.carry.clash", { name: firstName(nameOf(to)) }), "danger", true);
                 setBusy(false);

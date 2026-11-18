@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Plan 68, S13: E-MAIL 17'S SIGNED COPY AS A PDF, AND ITS TICKS, against the
+ * E-MAIL 17'S SIGNED COPY AS A PDF, AND ITS TICKS, against the
  * whole server on SQLite, Postgres and MySQL, each try made signed in as the
  * person it is about.
  *
@@ -10,11 +10,11 @@
  *    office changes them after; another crew makes no sign-off of the job;
  *    the list is held to its length.
  *  - E-mail 17 names no job code; says the day it was signed; prints the five
- *    answers as Yes/No (E15); lists what is still to put right, and "Nothing
+ *    answers as Yes/No; lists what is still to put right, and "Nothing
  *    was left to put right." when nothing is. Without the copy (no Invoices
  *    & Receipts) it goes as text, without the line that says it is attached.
  *  - With Invoices & Receipts (`ADD_ONS_REPO`, built): an Invoices that does
- *    not draw the kind yet (1.0.13) leaves the copy WAITING (E22): the app
+ *    not draw the kind yet (1.0.13) leaves the copy WAITING: the app
  *    says so, the mail goes without it, the office's door has none. One that
  *    draws it: the mail carries a PDF named after the work (never the code),
  *    the office downloads it, a reader without the sign-off gets none, and a
@@ -38,7 +38,7 @@ import { builtAddOn } from './add-ons/harness.js';
 import { png } from './picture-images.js';
 import { LEGS, said, wholeServer, type QueuedEmail, type Reply, type WholeServer } from './whole-server.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.49' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.62' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
@@ -210,7 +210,7 @@ for (const [dialect, reachable] of LEGS) {
     });
 
     /*
-     * A sign-off made by its visit, as every crew phone makes one, queues e-mail 17. (Before the engine's fix, plan-68-engine
+     * A sign-off made by its visit, as every crew phone makes one, queues e-mail 17. (Before the engine's fix
      * a44395400, the outbox's producer filled its `visit_id` link, a sales visit, from the sign-off's `visit_id`, a job
      * visit, because the names matched: the insert was refused and the mail dropped without a word.)
      */
@@ -238,7 +238,7 @@ for (const [dialect, reachable] of LEGS) {
 
       it('leaves the signed copy waiting while Invoices does not draw it (1.0.13): said, the mail goes without it, the office has none', async () => {
         if (draws) return;
-        // Invoices is attached and on, and draws no "signed-copy": the copy waits (E22), the app is installed all the same.
+        // Invoices is attached and on, and draws no "signed-copy": the copy waits, the app is installed all the same.
         const kinds = await s.get('owner', '/api/v1/documents/kinds');
         expect(kinds.statusCode, kinds.body).toBe(200);
         const drawnBy = (kinds.json() as { kinds: { addOnKey: string; kind: string }[] }).kinds.filter((one) => one.addOnKey === 'invoices').map((one) => one.kind);

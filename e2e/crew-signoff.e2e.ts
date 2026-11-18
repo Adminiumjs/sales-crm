@@ -8,7 +8,7 @@
  *    only a job no stopping snag holds);
  *  - a job of the spec's own, from its visit: the five checks, the customer's
  *    name, the signature (typed, the keyboard's way) and a photo, each kept on
- *    the phone until the sign-off goes (plan 68 S19). A snag that stops it is
+ *    the phone until the sign-off goes. A snag that stops it is
  *    raised by the office while his page is open and not listening, so his
  *    press reaches the server and is REFUSED: the screen says which snag, the
  *    server's copies of the two files are thrown away (DELETE, gone), the
@@ -98,7 +98,7 @@ async function takeAway(data: Data, tessa: APIRequestContext): Promise<void> {
       const under = async (ref: string): Promise<void> => {
         for (const row of await rows<{ id: number }>(me, data, ref, { column: "job_id", op: "eq", value: job.id })) expect((await me.delete(data(ref, `/${String(row.id)}?confirm=true`), { headers })).status(), ref).toBeLessThan(300);
       };
-      // A refused sign-off's record names its snag (plan 68 S19): it goes first. The mails the job set off name its sign-off
+      // A refused sign-off's record names its snag: it goes first. The mails the job set off name its sign-off
       // (e-mail 17, queued for a crew's sign-off since Adminium 0.3.35) and its visits: they go before them.
       for (const ref of ["outbox", "sign_offs", "refused_sign_offs", "snags", "delivery_notes"]) await under(ref);
       // What the signed job set off or may hold from a later part: the aftercare call its sign-off books (rule 16, once the
@@ -275,7 +275,7 @@ test("a job signed off from its visit as one request: refused with its files thr
     const fixed = (await rows<{ state: string; put_right_note: string; put_right_photo: string | null }>(context.request, data, "snags", { column: "id", op: "eq", value: snagId }))[0]!;
     expect([fixed.state, fixed.put_right_note, fixed.put_right_photo?.startsWith("file_")]).toEqual(["put-right", "Levelled the feet", true]);
 
-    // The office raises one that does not stop it: the customer is shown it as still to put right (plan 68 S13).
+    // The office raises one that does not stop it: the customer is shown it as still to put right.
     const scuff = await ada.post(data("snags"), { data: { values: { visit_id: fitting, text: "Spec crew: a scuff on the end panel", stops_sign_off: false } }, headers: adaHeaders });
     expect(scuff.status(), await scuff.text()).toBe(201);
     const scuffDue = ((await scuff.json()) as { data: { due_on: string } }).data.due_on.slice(0, 10);
@@ -337,7 +337,7 @@ test("a job signed off from its visit as one request: refused with its files thr
     expect((await context.request.patch(data("sign_offs", `/${String(made[0]!.id)}`), { data: { values: { signer_name: "Somebody" } }, headers })).status()).toBeGreaterThanOrEqual(403);
     expect((await context.request.delete(data("sign_offs", `/${String(made[0]!.id)}?confirm=true`), { headers })).status()).toBeGreaterThanOrEqual(403);
 
-    // A return visit to the signed job, tomorrow: the sign-off read only, with its signature and its photo from the files (B19).
+    // A return visit to the signed job, tomorrow: the sign-off read only, with its signature and its photo from the files.
     const back = await visit("return", "Spec crew: canteen benches, one more", "2026-07-29", "09:00");
     await page.goto(`${STAFF}my-day/2026-07-29`);
     const again = page.locator(`[data-visit="${String(back)}"]`);

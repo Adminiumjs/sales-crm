@@ -1,5 +1,5 @@
 /**
- * Walk "Photos straight from the camera" (P24), the script's half: a
+ * Walk "Photos straight from the camera", the script's half: a
  * full-size camera photo on the crew's phone (390 wide, touch), on a sign-off
  * and on a snag, made in the test: a 12-megapixel JPEG of 9 MB (over the
  * columns' 8 MB) and a HEIC, as an iPhone hands one over. What the phone does

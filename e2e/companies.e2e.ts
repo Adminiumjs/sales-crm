@@ -1,6 +1,6 @@
 /**
- * P07, Companies (ledger §4a), a company's profile (§4b) with the record
- * sheet, and its timeline (§12).
+ * Companies, a company's profile with the record
+ * sheet, and its timeline.
  *
  * A company is everybody's; a deal is not. The ledger's figures (Nordwind:
  * 2 open, 67,050, weighted 43,162.50, won 26,400) are the whole team's, which
@@ -72,7 +72,7 @@ test("Dana opens Companies from her menu: the nine, each with what is HERS open 
   // The two deals that have sat past thirty days (d12, d5) are colleagues': no badge on her cards.
   await expect(page.locator(".crm-acc-badge")).toHaveCount(0);
   // A rep adds companies, and changes the ones that are hers: her accounts and where she has an open deal (Veldt is Leo's
-  // account, with her deal), not a colleague's (Fernway is Priya's, Brightloom Sam's: plan 68 X3).
+  // account, with her deal), not a colleague's (Fernway is Priya's, Brightloom Sam's).
   await expect(page.getByRole("button", { name: "New company" })).toBeVisible();
   for (const name of ["Nordwind Logistics", "Veldt Studios", "Low Orbit", "Cobalt Legal", "Juno Analytics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toBeVisible();
   for (const name of ["Fernway Clinics", "Brightloom Foods", "Harbor & Finch", "Tandem Robotics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toHaveCount(0);
@@ -151,7 +151,7 @@ test("every figure on a company's card is what the server answers that person, a
     }
     if (person === "grace") expect(deals.reduce((total, deal) => total + Number(deal.amount), 0)).toBe(286_300);
     // Who is offered a change: Read-only and the marketer none; Dana the five that are hers (her accounts and where she has
-    // an open deal); the account manager none of the nine (no account of the sample is his, and none is nobody's: plan 68 X3).
+    // an open deal); the account manager none of the nine (no account of the sample is his, and none is nobody's).
     await expect(page.getByRole("button", { name: "New company" }), person).toHaveCount(person === "hugo" ? 1 : person === "dana" ? 1 : 0);
     await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "dana" ? 5 : 0);
     await page.close();
@@ -380,7 +380,7 @@ test("a company is added once though its reply is lost, then changed; the sheet 
   await sheet.getByLabel("How many people").fill("40");
   await sheet.getByLabel("Town").fill("York");
   await sheet.getByLabel("Country").fill("gb");
-  // The street and the postal code are a business's (plan 68 R3): offered to whoever adds the company, with no note.
+  // The street and the postal code are a business's: offered to whoever adds the company, with no note.
   await sheet.getByLabel("Address lines").fill("4 Mill Lane");
   await expect(sheet).not.toContainText("The street and the postal code are kept from your role");
 

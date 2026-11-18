@@ -1,6 +1,6 @@
 /**
- * P14, the Inbox: the Team inbox (ledger §28), "Add an enquiry", Trade-show
- * leads (§58) with a pasted list, the marketer's home, and the front desk's
+ * The Inbox: the Team inbox, "Add an enquiry", Trade-show
+ * leads with a pasted list, the marketer's home, and the front desk's
  * first page.
  *
  * Read mostly as Lena (marketer), Corin (front desk), Ivy and Tessa, so
@@ -55,7 +55,7 @@ test("the Team inbox with the ledger's six, as the sales manager, and each count
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Team inbox" }).click();
   await expect(page).toHaveURL(/\/inbox$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Team inbox");
-  // §28: 6 enquiries, 4 unclaimed, 1 passed (to Priya), 1 dropped, none claimed.
+  // 6 enquiries, 4 unclaimed, 1 passed (to Priya), 1 dropped, none claimed.
   await expect(count(page, "open")).toHaveText("4");
   await expect(count(page, "mine")).toHaveText("0");
   await expect(count(page, "all")).toHaveText("6");
@@ -328,7 +328,7 @@ test("Trade-show leads as the marketer: the ledger's figures, each the server's,
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trade show leads");
   await expect(page.locator(".crm-screen-sub")).toContainText("A lead goes cold after 14 days");
   await expect(page.getByTestId("leads-show")).toHaveText("The Leeds Workspace Show · Wed, Jul 15 – Thu, Jul 16");
-  // §58: scanned 11; still to ring 3 (1 keen); spoken to 6; became a deal 0; not for us 2.
+  // Scanned 11; still to ring 3 (1 keen); spoken to 6; became a deal 0; not for us 2.
   await expect(stat(page, "scanned").locator(".crm-leads-value")).toHaveText("11");
   await expect(stat(page, "new").locator(".crm-leads-value")).toHaveText("3");
   await expect(stat(page, "new").locator(".crm-leads-note")).toHaveText("1 of them was keen");

@@ -1,5 +1,5 @@
 /**
- * MY VEHICLE's saves as lines of the phone's offline queue (plan 68 S19): a
+ * MY VEHICLE's saves as lines of the phone's offline queue: a
  * walk-round, a fault with its photo and a fuel fill, each ONE create with a
  * retry key, sent at once with signal and kept on the phone without.
  */

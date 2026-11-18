@@ -1,5 +1,5 @@
 /**
- * Call notes (ledger §25; the piece of P04 decision 96 left unbuilt).
+ * Call notes (the deal room's piece that was left unbuilt at first).
  *
  * d1 "Fourth-floor desk rows" as Dana, from its room: 52,800 · Negotiation
  * 75 % · 14 days in stage · closes Fri 14 Aug; where it was left (the three
@@ -80,7 +80,7 @@ test("Dana opens d1's call notes from its room: the ledger's figures, where it w
   // Nothing typed: nothing to log.
   await expect(page.getByRole("button", { name: "Log the call" })).toBeDisabled();
   await expect(page.getByTestId("call-words")).toHaveText("0 words");
-  // Worth asking at Negotiation, as the sales manager wrote it (S11): pressed, a question starts a line of the notes.
+  // Worth asking at Negotiation, as the sales manager wrote it: pressed, a question starts a line of the notes.
   const asking = page.getByTestId("call-asking");
   await expect(asking.getByRole("button")).toHaveText(["Who signs the order?", "Do the terms work as written?", "Is this the whole job, or is there more after it?", "What would make this close this month?"]);
   await asking.getByRole("button", { name: "Who signs the order?" }).click();
@@ -187,7 +187,7 @@ test("a call logged by keyboard, its reply dropped: one call, one next step; the
       [ivyId, "price the trial set"],
     ]);
 
-    // A HELPER (ruling 1d): Dana adds Priya. Priya reads where the deal was left and logs nothing on it: Dana does. She is
+    // A HELPER: Dana adds Priya. Priya reads where the deal was left and logs nothing on it: Dana does. She is
     // told so where the notes box would be.
     expect((await dana.post(data("deal_members"), { data: { values: { deal_id: dealId, user_id: priyaId } }, headers: await csrf(dana) })).status()).toBe(201);
     const priyaContext = await as("priya");

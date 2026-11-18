@@ -3,11 +3,11 @@
  * ask for, how to get in, the office's note, what is on the vehicle, the four
  * ticks, the job's snags, and the sign-off: "Sign off the job" on the visit
  * that finishes the work, or, on a return to a job already signed, that
- * sign-off read-only and "Add a snag" (B19).
+ * sign-off read-only and "Add a snag".
  *
  * Nothing here is an amount: the crew reads none.
  *
- * What waits on the phone shows here as it will be (plan 68 S19): a tick kept
+ * What waits on the phone shows here as it will be: a tick kept
  * with no signal shows ticked, with "Waiting to send"; a snag raised with no
  * signal shows in the list; a sign-off kept says so, and one refused on
  * arrival says why, with the way to the snag and to sign off again.
@@ -31,7 +31,7 @@ export interface VisitFacts {
   snags: CrewSnag[];
   load: NoteLine[] | undefined;
   moved: Moved | undefined;
-  /** What to load, the stock for the job and the delivery note's lines (plan 68 S14); where read, it is what "On the vehicle" shows. */
+  /** What to load, the stock for the job and the delivery note's lines; where read, it is what "On the vehicle" shows. */
   loads?: Loads | undefined;
 }
 

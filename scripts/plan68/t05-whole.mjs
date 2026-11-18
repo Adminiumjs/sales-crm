@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Plan 68, T05 (S14, D16, D17): vans on the day, a hired van, "What to load",
+ * Vans on the day, a hired van, "What to load",
  * and the old crew told when a visit leaves its today or tomorrow.
  *
  * Changes `whole/manifest.json`, `whole/seeds/meridian.json` and the Inventory
@@ -164,7 +164,7 @@ putTable(
 const needs = table("deal_stock_needs");
 // T09: a visit's deal, copied from its job, so a stock need may name only a visit of its own deal's job (else another
 // customer's crew would read it under "Stock for this job"). Empty on a visit from before 0.2.2 until the engine fills
-// copies on update (E20).
+// copies on update.
 column("job_visits", { ref: "deal_id", type: "int", nullable: true, rules: { copy: { via: "job_id", from: "deal_id", mode: "always" } }, label: L("Deal", "Deal", "Affaire", "Deal", "Obchod", "الصفقة", "商机", "案件") });
 column("deal_stock_needs", { ref: "visit_id", type: "fk", references: "job_visits", nullable: true, rules: { linkable: { same: [{ column: "deal_id", as: "deal_id" }] } }, label: L("Goes on visit", "Kommt mit zum Einsatz", "Part avec l’intervention", "Kommer med på besøget", "Jede s výjezdem", "يُحمَّل مع الزيارة", "随此次上门装车", "隨此次到訪裝車") }, "qty");
 column("deal_stock_needs", { ref: "crew_id", type: "int", nullable: true, rules: { copy: { via: "visit_id", from: "crew_id", mode: "always", follow: true } }, label: L("Crew of that visit", "Team dieses Einsatzes", "Équipe de cette intervention", "Holdet på det besøg", "Četa toho výjezdu", "طاقم تلك الزيارة", "那次上门的班组", "那次到訪的班組") }, "visit_id");
@@ -173,7 +173,7 @@ needs.indexes ??= [];
 addOnce(needs.indexes, ["visit_id"]);
 addOnce(needs.indexes, ["crew_id"]);
 
-/* ─── job_visits: the day and crew a visit had, as a rule last read them (D17) ─── */
+/* ─── job_visits: the day and crew a visit had, as a rule last read them ─── */
 
 column("job_visits", { ref: "was_day", type: "date", nullable: true, label: L("Day before the last change, as a rule last read it", "Tag vor der letzten Änderung, wie eine Regel ihn zuletzt las", "Jour avant la dernière modification, tel qu’une règle l’a lu en dernier", "Dag før den seneste ændring, som en regel sidst læste den", "Den před poslední změnou, jak jej naposledy přečetlo pravidlo", "اليوم قبل آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改前的日期", "規則最近讀到的上次變更前的日期") }, "cancel_reason");
 column("job_visits", { ref: "was_crew_id", type: "int", nullable: true, label: L("Crew before the last change, as a rule last read it", "Team vor der letzten Änderung, wie eine Regel es zuletzt las", "Équipe avant la dernière modification, telle qu’une règle l’a lue en dernier", "Hold før den seneste ændring, som en regel sidst læste det", "Četa před poslední změnou, jak ji naposledy přečetlo pravidlo", "الطاقم قبل آخر تغيير كما قرأته قاعدة آخر مرة", "规则最近读到的上次更改前的班组", "規則最近讀到的上次變更前的班組") }, "was_day");
@@ -185,7 +185,7 @@ column("job_visits", { ref: "leave_key", type: "text", maxLength: 120, nullable:
 // quick moves may share a stamp, but never the one before them.
 column("job_visits", { ref: "left_at", type: "timestamptz", nullable: true, rules: { stamp: { set: "now", on: { columns: ["day", "crew_id", "state"] } } }, label: L("Day, crew or state last changed", "Tag, Team oder Stand zuletzt geändert", "Jour, équipe ou état modifié pour la dernière fois", "Dag, hold eller status sidst ændret", "Den, četa nebo stav naposledy změněny", "آخر تغيير لليوم أو الطاقم أو الحالة", "日期、班组或状态最近一次变更", "日期、班組或狀態最近一次變更") });
 
-/* ─── left_visits: a visit that left a crew's today or tomorrow (D17) ─── */
+/* ─── left_visits: a visit that left a crew's today or tomorrow ─── */
 
 putTable(
   {
@@ -266,8 +266,8 @@ limit("ops-manager", "van_days", { writable: ["crew_id", "day", "vehicle_id"], c
 extendList("ops-manager", "vehicles", "writable", ["hired_from", "hired_to"]);
 extendList("ops-manager", "vehicles", "creatable", ["hired_from", "hired_to"]);
 extendList("ops-manager", "deal_stock_needs", "writable", ["visit_id"]);
-// The day's vehicle is van_days': the visit's own column is no longer written (M3 BN-1). A new visit is made with what
-// she writes, so what a rule keeps on it (D17) is never typed.
+// The day's vehicle is van_days': the visit's own column is no longer written. A new visit is made with what
+// she writes, so what a rule keeps on it is never typed.
 {
   const visits = must(role("ops-manager").limits?.job_visits?.writable, "ops-manager's writes of job_visits");
   role("ops-manager").limits.job_visits.writable = visits.filter((one) => one !== "vehicle_id");
@@ -288,7 +288,7 @@ crew.tables ??= [];
   else crew.tables.push(items);
 }
 
-/* ─── Rules (D17) ─── */
+/* ─── Rules ─── */
 
 // The manifest takes at most 24 rules (MANIFEST_AUTOMATIONS_MAX): D17 adds three. The day sheet's rules on a booked visit's
 // day and crew (which told the crew it is now for) also note the change for the crew it LEFT; one rule hears a visit going
@@ -552,7 +552,7 @@ delete j5.vehicle_id;
   rows[rows.indexOf(j5)] = sorted;
 }
 
-// BN-18: each crew's day with a visit to come is a stored row (CD-8); Red crew on the hired vehicle on Wed 5 Aug.
+// Each crew's day with a visit to come is a stored row; Red crew on the hired vehicle on Wed 5 Aug.
 {
   const at = seed.tables.findIndex((one) => one.ref === "van_days");
   const rows = [
