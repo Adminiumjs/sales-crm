@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.62 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.64 or newer.
 
 ## What installs
 
@@ -20,7 +20,7 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | Roles | 9 |
 | Shipped rules | 26: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, the brochure an enquirer asks for and the survey after a sign-off, switched off |
 | E-mails | 19, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -36,7 +36,7 @@ cards and runs none of its rules; its records stay.
 | Quotes | on, with Invoices & Receipts | Quotes and their versions, Approvals, the customer's quote page |
 | Accounts | always on | Companies, contacts, a company's timeline, Territory (a map), Paste a list, Renewals, Repeat orders, Referrals |
 | The team | always on | Messages, Targets, the Weekly meeting, One-to-one notes, Coaching, New starter, Cover |
-| Inbox | on | The team inbox (an enquiry typed in by whoever takes the call), Trade-show leads with a pasted list |
+| Inbox | on | The team inbox (an enquiry typed in by whoever takes the call, or left in the website chat), Trade-show leads with a pasted list |
 | Supply | on, with Inventory | Stock and lead times, the Supplier scorecard |
 | Showroom and samples | off | Showroom bookings and follow-ups, the Sample library and returns, Display stock; the front desk's home |
 | Jobs on site | off | A won deal's job, Deliveries, the Day sheet, the Route, Sign-off, Snags, Delivery notes, Recycling; the field crew's phone (My day, ticks, signing a job off with the customer's signature and photos, snags) |
@@ -50,7 +50,7 @@ of its documents, so it numbers the quote, works out its tax and prints it. Inst
 the Quotes part is left out (no quote tables, screens or links) and comes in when the add-on is
 connected. **Inventory** (1.0.14 or newer) keeps the stock: without it Supply's menu lines open a
 page that says what Supply waits for and who connects it. **Offers** (a reward for a customer who
-refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback.
+refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback. **Live chat** (1.0.30 or newer) is suggested and not ticked: a question a visitor leaves in the website chat outside hours becomes an enquiry in the Team inbox ("Chat", no company yet: claiming it asks for one), staff answering a chat in hours make one with "Make an enquiry", and the enquiry's card has "Read the chat" for the inbox's roles (the admin, the sales manager, the rep, the marketer and the front desk; Read-only reads no chat). Without Live chat there is no button.
 
 ### The roles
 
@@ -210,6 +210,20 @@ mail mode the people are `<name>@crm.stand` and the sample's addresses end `.sta
 The tests check the manifest against Adminium's own validator, a copy of which is in
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
+
+## Updating to 0.2.7
+
+0.2.7 needs Adminium 0.3.64 and suggests Live chat 1.0.30 (not ticked). No table, column, part or
+rule changes, and every row is kept as it was:
+
+- **The update asks you to allow one thing:** the admin, the sales manager, the rep, the marketer
+  and the front desk read Live chat's conversations (when one started, whether it was left outside
+  hours, and which enquiry it became; never the visitor's name or address) and their lines. Allow
+  it and the update goes; refuse and nothing changes. It is asked even before Live chat is
+  installed.
+- **The website chat.** With Live chat installed, a question left outside hours arrives in the Team
+  inbox as an enquiry from the chat, open, with the visitor's name, address and question and no
+  company yet; claiming it asks for the company's name.
 
 ## Updating to 0.2.6
 
