@@ -41,7 +41,8 @@ for (const [dialect, reachable] of LEGS) {
       // The harness packs text only: the picture's bytes do not matter to this proof, its place in the package does.
       const packed = JSON.parse(readFileSync(`${SEEDS}/meridian.json`, 'utf8')) as { assets?: Record<string, { file: string; sha256: string }> };
       for (const asset of Object.values(packed.assets ?? {})) asset.sha256 = createHash('sha256').update('png').digest('hex');
-      const files: Record<string, string> = { 'seeds/meridian.json': JSON.stringify(packed) };
+      // The chat's file is in the package too: without Live chat it is never read.
+      const files: Record<string, string> = { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/meridian.live-chat.json': readFileSync(`${SEEDS}/meridian.live-chat.json`, 'utf8') };
       h = await installInvoicing(dialect, manifest(), invoices, files, WITH_EVERY_PART);
       service = createSampleDataService({ meta: h.meta, manager: h.manager, store: createAppStore({ dataDir: h.dataDir }), files: memoryFiles });
     }, 240_000);
@@ -225,6 +226,77 @@ for (const [dialect, reachable] of LEGS) {
       expect(removed.kept).toBe(0);
       expect(await held()).toEqual({ forms: 0, invitations: 0, answers: 0 });
       expect([await crmCount('enquiries'), await crmCount('feedback'), await crmCount('jobs')]).toEqual([0, 0, 0]);
+      expect((await usersRepo(h.meta).countByStatus()).sample ?? 0).toBe(0);
+    }, 600_000);
+  });
+}
+
+/**
+ * The sample with Live chat (`sampleData.addOns["live-chat"]`): one website chat that became the sample's enquiry from
+ * Veldt Studios, its lines and two answers, loaded with the rest and leaving with it. Needs the add-ons checkout with
+ * Live chat built (`ADD_ONS_REPO`).
+ */
+const BUILT_CHAT = builtAddOn('live-chat');
+// As the release will number it: the app suggests Live chat 1.0.30 or newer, and a checkout built before the release says 1.0.29.
+const CHAT = BUILT_CHAT === null ? null : { ...BUILT_CHAT, version: '1.0.30', manifest: { ...BUILT_CHAT.manifest, version: '1.0.30' } };
+const chatFile = () => JSON.parse(readFileSync(`${SEEDS}/meridian.live-chat.json`, 'utf8')) as { tables: { ref: string; rows: Record<string, unknown>[] }[] };
+
+describe.skipIf(CHAT !== null)("the CRM's sample with Live chat", () => {
+  it('needs the add-ons checkout with Live chat built (ADD_ONS_REPO)', () => {
+    expect(CHAT).not.toBeNull();
+  });
+});
+
+for (const [dialect, reachable] of LEGS) {
+  describe.skipIf(!reachable || CHAT === null)(`the CRM's sample with Live chat, on ${dialect}`, () => {
+    let h: Harness;
+    const service = () => createSampleDataService(h.sampleData);
+    const app = async () => (await findSampleApp(h.meta, 'crm'))!;
+    const count = async (table: string, where = '1 = 1') => Number((await h.rows(`SELECT COUNT(*) AS n FROM ${table} WHERE ${where}`))[0]!['n']);
+    const held = async () => Object.fromEntries(await Promise.all(chatFile().tables.map(async (table) => [table.ref, await count(`live_chat_${table.ref}`)] as const)));
+
+    beforeAll(async () => {
+      h = await addOnHarness(dialect, { unbuiltWords: {} });
+      await h.stageAddOn(CHAT!.manifest, { bundled: true, files: CHAT!.files });
+      // The harness packs text only: the picture's bytes do not matter to this proof, its place in the package does.
+      const packed = JSON.parse(readFileSync(`${SEEDS}/meridian.json`, 'utf8')) as { assets?: Record<string, { file: string; sha256: string }> };
+      for (const asset of Object.values(packed.assets ?? {})) asset.sha256 = createHash('sha256').update('png').digest('hex');
+      await h.stageApp(manifest(), { 'seeds/meridian.json': JSON.stringify(packed), 'seeds/meridian.inventory.json': readFileSync(`${SEEDS}/meridian.inventory.json`, 'utf8'), 'seeds/meridian.live-chat.json': readFileSync(`${SEEDS}/meridian.live-chat.json`, 'utf8') });
+      const installed = await h.install('crm', String(manifest()['version']), { addOns: [{ key: 'live-chat', version: CHAT!.version }], modules: { inbox: true } });
+      expect(installed.statusCode, installed.body).toBe(200);
+    }, 600_000);
+    afterAll(async () => {
+      await h?.close();
+    });
+
+    it('"Add sample data" brings the chat that became the enquiry from Veldt Studios, its nine lines and two answers', async () => {
+      const added = await service()
+        .add(await app(), { locale: 'de-DE', userId: h.owner.id, userLabel: 'owner@test' })
+        .catch((error: unknown) => {
+          throw new Error(`${String(error)} ${JSON.stringify((error as { details?: unknown }).details ?? null)}`);
+        });
+      expect(added.counts).toMatchObject({ 'live-chat:answers': 2, 'live-chat:conversations': 1, 'live-chat:messages': 9 });
+      expect(await held()).toEqual({ answers: 2, conversations: 1, messages: 9 });
+      // The conversation names the row it became as the engine writes one (`crm:enquiries`), and that row is the chat's.
+      const [conversation] = await h.rows(`SELECT id, became_table, became_key, language, state FROM live_chat_conversations`);
+      expect([conversation!['became_table'], conversation!['language'], conversation!['state']]).toEqual(['crm:enquiries', 'de-DE', 'closed']);
+      const [enquiry] = await h.rows(`SELECT source, company_name, person, text FROM crm_enquiries WHERE id = ${String(conversation!['became_key'])}`);
+      expect([enquiry!['source'], enquiry!['company_name'], enquiry!['person']]).toEqual(['chat', 'Veldt Studios', 'Marta Kovac']);
+      // Written in the adding person's language, as every line of the chat.
+      const lines = await h.rows(`SELECT kind, body, event, answer_ref FROM live_chat_messages WHERE conversation_id = ${String(conversation!['id'])} ORDER BY id`);
+      expect(lines.map((line) => line['kind'])).toEqual(['visitor', 'automatic', 'visitor', 'system', 'system', 'staff', 'visitor', 'system', 'system']);
+      expect(lines.map((line) => line['event'] ?? null)).toEqual([null, null, null, 'asked', 'taken', null, null, 'enquiry', 'closed']);
+      expect(lines[0]!['body']).toBe(enquiry!['text']);
+      expect(String(lines[0]!['body'])).toContain('Akustikboxen');
+      expect(lines[1]!['answer_ref']).toBe('meridian-booth-sizes');
+      expect(await count('live_chat_answers', `ref IN ('meridian-booth-sizes', 'meridian-showroom')`)).toBe(2);
+    }, 600_000);
+
+    it('"Remove sample data" takes all of it away again', async () => {
+      const removed = await service().remove(await app(), { keepChanged: true, userId: h.owner.id, userLabel: 'owner@test' });
+      expect(removed.kept).toBe(0);
+      expect(await held()).toEqual({ answers: 0, conversations: 0, messages: 0 });
+      expect(await count('crm_enquiries')).toBe(0);
       expect((await usersRepo(h.meta).countByStatus()).sample ?? 0).toBe(0);
     }, 600_000);
   });

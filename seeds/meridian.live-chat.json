@@ -1,0 +1,441 @@
+{
+ "format": "adminium.sample/1",
+ "app": "crm",
+ "addOn": "live-chat",
+ "weekAnchor": "tue",
+ "tables": [
+  {
+   "ref": "answers",
+   "rows": [
+    {
+     "ref": "meridian-booth-sizes",
+     "position": 1,
+     "active": true,
+     "versions": {
+      "en-US": {
+       "title": "How big are your acoustic booths?",
+       "text": "A single booth is 1.2 m wide and a double 2.1 m, with 10 cm between booths. Tell us the length of the wall and we work out how many fit.",
+       "examples": [
+        "how many booths fit in my room",
+        "how wide is a booth"
+       ]
+      },
+      "de-DE": {
+       "title": "Wie groß sind Ihre Akustikboxen?",
+       "text": "Eine Einzelbox ist 1,2 m breit, eine Doppelbox 2,1 m, mit 10 cm Abstand dazwischen. Nennen Sie uns die Länge der Wand, und wir rechnen aus, wie viele passen.",
+       "examples": [
+        "wie viele Boxen passen in meinen Raum",
+        "wie breit ist eine Box"
+       ]
+      },
+      "fr-FR": {
+       "title": "Quelle est la taille de vos cabines acoustiques ?",
+       "text": "Une cabine simple mesure 1,2 m de large et une double 2,1 m, avec 10 cm entre deux cabines. Donnez-nous la longueur du mur et nous calculons combien en tiennent.",
+       "examples": [
+        "combien de cabines dans ma pièce",
+        "quelle largeur fait une cabine"
+       ]
+      },
+      "da-DK": {
+       "title": "Hvor store er jeres akustikbokse?",
+       "text": "En enkeltboks er 1,2 m bred og en dobbeltboks 2,1 m, med 10 cm imellem. Fortæl os væggens længde, så regner vi ud, hvor mange der kan være.",
+       "examples": [
+        "hvor mange bokse kan der være i mit rum",
+        "hvor bred er en boks"
+       ]
+      },
+      "cs-CZ": {
+       "title": "Jak velké jsou vaše akustické kabiny?",
+       "text": "Jednomístná kabina je široká 1,2 m a dvoumístná 2,1 m, mezi kabinami je 10 cm. Napište nám délku stěny a spočítáme, kolik se jich vejde.",
+       "examples": [
+        "kolik kabin se vejde do místnosti",
+        "jak široká je kabina"
+       ]
+      },
+      "ar-EG": {
+       "title": "مقاسات كبائن العزل الصوتي قد إيه؟",
+       "text": "الكابينة الفردية عرضها 1.2 متر والمزدوجة 2.1 متر، وبين كل كابينة والتانية 10 سم. قولنا طول الحيطة وإحنا نحسب كام كابينة تتسع.",
+       "examples": [
+        "كام كابينة تتسع في الأوضة",
+        "عرض الكابينة قد إيه"
+       ]
+      },
+      "zh-CN": {
+       "title": "你们的隔音舱有多大？",
+       "text": "单人隔音舱宽 1.2 米，双人的宽 2.1 米，舱与舱之间留 10 厘米。告诉我们墙的长度，我们帮您算能放几个。",
+       "examples": [
+        "房间里能放几个隔音舱",
+        "隔音舱有多宽"
+       ]
+      },
+      "zh-TW": {
+       "title": "你們的隔音間有多大？",
+       "text": "單人隔音間寬 1.2 公尺，雙人的寬 2.1 公尺，間與間之間留 10 公分。告訴我們牆的長度，我們幫您算放得下幾間。",
+       "examples": [
+        "房間裡放得下幾間隔音間",
+        "隔音間有多寬"
+       ]
+      }
+     }
+    },
+    {
+     "ref": "meridian-showroom",
+     "position": 2,
+     "active": true,
+     "versions": {
+      "en-US": {
+       "title": "Can I see the furniture first?",
+       "text": "Yes: our showroom in Leeds is open Monday to Friday, 9:00 to 17:00. Book a visit and we set out the pieces you want to try.",
+       "examples": [
+        "can I visit the showroom",
+        "where can I try the chairs"
+       ]
+      },
+      "de-DE": {
+       "title": "Kann ich die Möbel vorher sehen?",
+       "text": "Ja: Unser Showroom in Leeds ist montags bis freitags von 9:00 bis 17:00 Uhr geöffnet. Buchen Sie einen Besuch, und wir stellen die Stücke bereit, die Sie ausprobieren möchten.",
+       "examples": [
+        "kann ich den Showroom besuchen",
+        "wo kann ich die Stühle ausprobieren"
+       ]
+      },
+      "fr-FR": {
+       "title": "Puis-je voir les meubles avant ?",
+       "text": "Oui : notre showroom de Leeds est ouvert du lundi au vendredi, de 9 h à 17 h. Réservez une visite et nous installons les pièces que vous voulez essayer.",
+       "examples": [
+        "puis-je visiter le showroom",
+        "où essayer les chaises"
+       ]
+      },
+      "da-DK": {
+       "title": "Kan jeg se møblerne først?",
+       "text": "Ja: Vores showroom i Leeds har åbent mandag til fredag kl. 9.00 til 17.00. Book et besøg, så stiller vi de møbler frem, du vil prøve.",
+       "examples": [
+        "kan jeg besøge showroomet",
+        "hvor kan jeg prøve stolene"
+       ]
+      },
+      "cs-CZ": {
+       "title": "Můžu si nábytek nejdřív prohlédnout?",
+       "text": "Ano: náš showroom v Leedsu je otevřený od pondělí do pátku od 9:00 do 17:00. Domluvte si návštěvu a připravíme kusy, které si chcete vyzkoušet.",
+       "examples": [
+        "můžu přijít do showroomu",
+        "kde si vyzkouším židle"
+       ]
+      },
+      "ar-EG": {
+       "title": "ممكن أشوف العفش الأول؟",
+       "text": "أيوه: صالة العرض بتاعتنا في ليدز مفتوحة من الاتنين للجمعة، من 9:00 لـ 17:00. احجز زيارة وإحنا نجهّز القطع اللي عايز تجربها.",
+       "examples": [
+        "ممكن أزور صالة العرض",
+        "أجرّب الكراسي فين"
+       ]
+      },
+      "zh-CN": {
+       "title": "可以先看看家具吗？",
+       "text": "可以：我们在利兹的展厅周一至周五 9:00 至 17:00 开放。预约参观，我们会把您想试的家具摆好。",
+       "examples": [
+        "可以参观展厅吗",
+        "在哪里能试坐椅子"
+       ]
+      },
+      "zh-TW": {
+       "title": "可以先看看家具嗎？",
+       "text": "可以：我們在里茲的展示間週一至週五 9:00 至 17:00 開放。預約參觀，我們會把您想試的家具擺好。",
+       "examples": [
+        "可以參觀展示間嗎",
+        "在哪裡能試坐椅子"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "ref": "conversations",
+   "rows": [
+    {
+     "@label": "chat:marta",
+     "started_at": {
+      "@day": -1,
+      "@time": "10:58",
+      "@week": true
+     },
+     "last_message_at": {
+      "@day": -1,
+      "@time": "11:20",
+      "@week": true
+     },
+     "state": "closed",
+     "language": {
+      "@t": {
+       "en-US": "en-US",
+       "de-DE": "de-DE",
+       "fr-FR": "fr-FR",
+       "da-DK": "da-DK",
+       "cs-CZ": "cs-CZ",
+       "ar-EG": "ar-EG",
+       "zh-CN": "zh-CN",
+       "zh-TW": "zh-TW"
+      }
+     },
+     "name": "Marta Kovac",
+     "email": "marta@veldtstudios.example",
+     "came_from": "https://www.meridian.example/acoustic-booths",
+     "outside_hours": false,
+     "taken_at": {
+      "@day": -1,
+      "@time": "11:01",
+      "@week": true
+     },
+     "last_visitor_at": {
+      "@day": -1,
+      "@time": "11:03",
+      "@week": true
+     },
+     "last_staff_at": {
+      "@day": -1,
+      "@time": "11:02",
+      "@week": true
+     },
+     "closed_at": {
+      "@day": -1,
+      "@time": "11:20",
+      "@week": true
+     },
+     "became_table": "crm:enquiries",
+     "became_key": {
+      "@ref": "enq:marta"
+     },
+     "automatic_count": 1
+    }
+   ]
+  },
+  {
+   "ref": "messages",
+   "rows": [
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "visitor",
+     "body": {
+      "@t": {
+       "en-US": "Hello, we are fitting out a second grading suite. How many of your acoustic booths fit along an eleven-metre wall?",
+       "de-DE": "Hallo, wir richten einen zweiten Grading-Raum ein. Wie viele Ihrer Akustikboxen passen an eine elf Meter lange Wand?",
+       "fr-FR": "Bonjour, nous aménageons une deuxième salle d’étalonnage. Combien de vos cabines acoustiques tiennent le long d’un mur de onze mètres ?",
+       "da-DK": "Hej, vi indretter et andet gradingrum. Hvor mange af jeres akustikbokse kan der være langs en væg på elleve meter?",
+       "cs-CZ": "Dobrý den, zařizujeme druhé koloristické studio. Kolik vašich akustických kabin se vejde podél jedenáctimetrové stěny?",
+       "ar-EG": "أهلًا، بنجهّز غرفة تصحيح ألوان تانية. كام كابينة عزل صوتي من عندكم تتسع على حيطة طولها حداشر متر؟",
+       "zh-CN": "你好，我们正在布置第二间调色室。沿一面十一米长的墙能放几个你们的隔音舱？",
+       "zh-TW": "你好，我們正在布置第二間調色室。沿一面十一公尺長的牆能放幾間你們的隔音間？"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "10:58",
+      "@week": true
+     }
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "automatic",
+     "body": {
+      "@t": {
+       "en-US": "A single booth is 1.2 m wide and a double 2.1 m, with 10 cm between booths. Tell us the length of the wall and we work out how many fit.",
+       "de-DE": "Eine Einzelbox ist 1,2 m breit, eine Doppelbox 2,1 m, mit 10 cm Abstand dazwischen. Nennen Sie uns die Länge der Wand, und wir rechnen aus, wie viele passen.",
+       "fr-FR": "Une cabine simple mesure 1,2 m de large et une double 2,1 m, avec 10 cm entre deux cabines. Donnez-nous la longueur du mur et nous calculons combien en tiennent.",
+       "da-DK": "En enkeltboks er 1,2 m bred og en dobbeltboks 2,1 m, med 10 cm imellem. Fortæl os væggens længde, så regner vi ud, hvor mange der kan være.",
+       "cs-CZ": "Jednomístná kabina je široká 1,2 m a dvoumístná 2,1 m, mezi kabinami je 10 cm. Napište nám délku stěny a spočítáme, kolik se jich vejde.",
+       "ar-EG": "الكابينة الفردية عرضها 1.2 متر والمزدوجة 2.1 متر، وبين كل كابينة والتانية 10 سم. قولنا طول الحيطة وإحنا نحسب كام كابينة تتسع.",
+       "zh-CN": "单人隔音舱宽 1.2 米，双人的宽 2.1 米，舱与舱之间留 10 厘米。告诉我们墙的长度，我们帮您算能放几个。",
+       "zh-TW": "單人隔音間寬 1.2 公尺，雙人的寬 2.1 公尺，間與間之間留 10 公分。告訴我們牆的長度，我們幫您算放得下幾間。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "10:58",
+      "@week": true
+     },
+     "answer_ref": "meridian-booth-sizes"
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "visitor",
+     "body": {
+      "@t": {
+       "en-US": "Thanks. Could I talk to someone? We would like to see one before we order.",
+       "de-DE": "Danke. Kann ich mit jemandem sprechen? Wir würden gern eine sehen, bevor wir bestellen.",
+       "fr-FR": "Merci. Puis-je parler à quelqu’un ? Nous aimerions en voir une avant de commander.",
+       "da-DK": "Tak. Kan jeg tale med nogen? Vi vil gerne se en, før vi bestiller.",
+       "cs-CZ": "Díky. Můžu mluvit s někým z vás? Než objednáme, chtěli bychom jednu vidět.",
+       "ar-EG": "شكرًا. ممكن أكلم حد؟ عايزين نشوف واحدة قبل ما نطلب.",
+       "zh-CN": "谢谢。能和人聊聊吗？我们想在下单前先看一下实物。",
+       "zh-TW": "謝謝。能和真人聊聊嗎？我們想在下單前先看一下實物。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:00",
+      "@week": true
+     }
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "system",
+     "body": {
+      "@t": {
+       "en-US": "The visitor asked for a person.",
+       "de-DE": "Der Besucher wollte mit einer Person sprechen.",
+       "fr-FR": "Le visiteur a demandé à parler à quelqu’un.",
+       "da-DK": "Den besøgende bad om at tale med en person.",
+       "cs-CZ": "Návštěvník chtěl mluvit s člověkem.",
+       "ar-EG": "طلب الزائر التحدث إلى شخص.",
+       "zh-CN": "访客请求真人回复。",
+       "zh-TW": "訪客請求真人回覆。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:00",
+      "@week": true
+     },
+     "event": "asked"
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "system",
+     "body": {
+      "@t": {
+       "en-US": "A person joined the chat.",
+       "de-DE": "Eine Person ist dem Chat beigetreten.",
+       "fr-FR": "Une personne a rejoint la discussion.",
+       "da-DK": "En person kom med i chatten.",
+       "cs-CZ": "Do chatu se připojil člověk.",
+       "ar-EG": "انضم شخص إلى المحادثة.",
+       "zh-CN": "有人加入了聊天。",
+       "zh-TW": "有人加入了聊天。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:01",
+      "@week": true
+     },
+     "event": "taken"
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "staff",
+     "body": {
+      "@t": {
+       "en-US": "Hello Marta, this is Dana at Meridian. Eleven metres takes five single booths or three doubles. Our showroom has both: someone from the team will call you today to book a visit.",
+       "de-DE": "Hallo Marta, hier ist Dana von Meridian. Auf elf Meter passen fünf Einzelboxen oder drei Doppelboxen. Unser Showroom hat beide: Jemand aus dem Team ruft Sie heute an, um einen Besuch zu vereinbaren.",
+       "fr-FR": "Bonjour Marta, ici Dana, de Meridian. Onze mètres, c’est cinq cabines simples ou trois doubles. Notre showroom a les deux : quelqu’un de l’équipe vous appelle aujourd’hui pour réserver une visite.",
+       "da-DK": "Hej Marta, det er Dana fra Meridian. Elleve meter giver plads til fem enkeltbokse eller tre dobbeltbokse. Vores showroom har begge: En fra teamet ringer til dig i dag og aftaler et besøg.",
+       "cs-CZ": "Dobrý den, Marto, tady Dana z Meridianu. Na jedenáct metrů se vejde pět jednomístných kabin nebo tři dvoumístné. V showroomu máme obě: někdo z týmu vám dnes zavolá a domluví návštěvu.",
+       "ar-EG": "أهلًا Marta، معاكي Dana من Meridian. الحداشر متر يكفّوا خمس كبائن فردية أو تلاتة مزدوجة. صالة العرض فيها النوعين، وحد من الفريق هيكلمك النهارده عشان نحجز زيارة.",
+       "zh-CN": "Marta 您好，我是 Meridian 的 Dana。十一米可以放五个单人舱或三个双人舱。展厅里两种都有：团队同事今天会给您打电话，约个时间来看。",
+       "zh-TW": "Marta 您好，我是 Meridian 的 Dana。十一公尺可以放五間單人隔音間或三間雙人的。展示間裡兩種都有：團隊同事今天會打電話給您，約個時間來看。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:02",
+      "@week": true
+     }
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "visitor",
+     "body": {
+      "@t": {
+       "en-US": "Perfect, thank you!",
+       "de-DE": "Perfekt, danke!",
+       "fr-FR": "Parfait, merci !",
+       "da-DK": "Perfekt, tak!",
+       "cs-CZ": "Výborně, děkuji!",
+       "ar-EG": "تمام، شكرًا!",
+       "zh-CN": "太好了，谢谢！",
+       "zh-TW": "太好了，謝謝！"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:03",
+      "@week": true
+     }
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "system",
+     "body": {
+      "@t": {
+       "en-US": "An enquiry was made from this chat.",
+       "de-DE": "Aus diesem Chat wurde eine Anfrage erstellt.",
+       "fr-FR": "Une demande a été créée à partir de cette discussion.",
+       "da-DK": "Der blev oprettet en henvendelse ud fra denne chat.",
+       "cs-CZ": "Z tohoto chatu vznikla poptávka.",
+       "ar-EG": "أُنشئ استفسار من هذه المحادثة.",
+       "zh-CN": "已根据此聊天创建询盘。",
+       "zh-TW": "已根據此聊天建立詢問。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:05",
+      "@week": true
+     },
+     "event": "enquiry"
+    },
+    {
+     "conversation_id": {
+      "@ref": "chat:marta"
+     },
+     "kind": "system",
+     "body": {
+      "@t": {
+       "en-US": "The chat was closed.",
+       "de-DE": "Der Chat wurde geschlossen.",
+       "fr-FR": "La discussion a été fermée.",
+       "da-DK": "Chatten blev lukket.",
+       "cs-CZ": "Chat byl uzavřen.",
+       "ar-EG": "أُغلقت المحادثة.",
+       "zh-CN": "聊天已结束。",
+       "zh-TW": "聊天已結束。"
+      }
+     },
+     "drafted": false,
+     "sent_at": {
+      "@day": -1,
+      "@time": "11:20",
+      "@week": true
+     },
+     "event": "closed"
+    }
+   ]
+  }
+ ]
+}

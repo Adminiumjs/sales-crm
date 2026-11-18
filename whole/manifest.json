@@ -28374,6 +28374,9 @@
       },
       "forms": {
         "file": "seeds/meridian.forms.json"
+      },
+      "live-chat": {
+        "file": "seeds/meridian.live-chat.json"
       }
     },
     "people": [
@@ -46693,12 +46696,12 @@
         "key": "live-chat",
         "range": ">=1.0.30",
         "reason": {
-          "en-US": "A chat window on your website: a question left outside hours becomes an enquiry in the Team inbox, and its card opens the chat.",
-          "de-DE": "Ein Chatfenster auf Ihrer Website: Eine außerhalb der Zeiten hinterlassene Frage wird zur Anfrage im Team-Eingang, und ihre Karte öffnet den Chat.",
-          "fr-FR": "Une fenêtre de discussion sur votre site : une question laissée hors des horaires devient une demande dans la boîte de l’équipe, et sa carte ouvre la discussion.",
-          "da-DK": "Et chatvindue på din hjemmeside: Et spørgsmål lagt uden for åbningstiden bliver til en henvendelse i teamets indbakke, og dens kort åbner chatten.",
-          "cs-CZ": "Okno chatu na vašem webu: dotaz zanechaný mimo otevírací dobu se stane poptávkou v týmové schránce a z její karty se otevře chat.",
-          "ar-EG": "نافذة محادثة على موقعك: يتحول السؤال المتروك خارج ساعات العمل إلى استفسار في صندوق الفريق، وتفتح بطاقته المحادثة.",
+          "en-US": "A chat window on your website: a question left outside hours becomes an enquiry, and its card opens the chat.",
+          "de-DE": "Ein Chat auf Ihrer Website: Eine Frage außerhalb der Zeiten wird zur Anfrage, und ihre Karte öffnet den Chat.",
+          "fr-FR": "Une discussion sur votre site : une question laissée hors horaires devient une demande, qui ouvre la discussion.",
+          "da-DK": "En chat på din hjemmeside: Et spørgsmål uden for åbningstiden bliver en henvendelse, hvis kort åbner chatten.",
+          "cs-CZ": "Chat na vašem webu: dotaz mimo otevírací dobu se stane poptávkou a z její karty se otevře chat.",
+          "ar-EG": "نافذة محادثة على موقعك: يتحول السؤال المتروك خارج ساعات العمل إلى استفسار، وتفتح بطاقته المحادثة.",
           "zh-CN": "网站上的聊天窗口：非工作时间留下的问题会变成团队收件箱中的询盘，询盘卡片可打开聊天记录。",
           "zh-TW": "網站上的聊天視窗：非營業時間留下的問題會變成團隊收件匣中的詢問，詢問卡片可開啟聊天記錄。"
         }

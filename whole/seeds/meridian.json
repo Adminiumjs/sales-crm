@@ -10801,20 +10801,20 @@
      }
     },
     {
-     "source": "phone",
+     "source": "chat",
      "company_name": "Veldt Studios",
      "person": "Marta Kovac",
      "email": "marta@veldtstudios.example",
      "text": {
       "@t": {
-       "en-US": "Marta rang about a second grading suite. Wants to know how many booths fit in eleven metres. Left a mobile number.",
-       "de-DE": "Marta hat wegen eines zweiten Grading-Raums angerufen. Will wissen, wie viele Boxen auf elf Meter passen. Handynummer hinterlassen.",
-       "fr-FR": "Marta a appelé au sujet d’une deuxième salle d’étalonnage. Veut savoir combien de cabines tiennent dans onze mètres. A laissé un numéro de portable.",
-       "cs-CZ": "Marta volala kvůli druhému koloristickému studiu. Chce vědět, kolik kabin se vejde do jedenácti metrů. Nechala číslo na mobil.",
-       "da-DK": "Marta ringede om et andet gradingrum. Vil vide, hvor mange bokse der kan være på elleve meter. Efterlod et mobilnummer.",
-       "zh-CN": "Marta来电问第二调色室。想知道十一米长能放几个隔音舱。留了手机号。",
-       "zh-TW": "Marta 來電問第二間調色室。想知道十一公尺放得下幾間隔音間。留了手機號碼。",
-       "ar-EG": "اتصلت Marta بخصوص غرفة تصحيح ألوان ثانية. تريد معرفة عدد الكبائن التي تتسع لها أحد عشر مترًا. تركت رقم موبايل."
+       "en-US": "Hello, we are fitting out a second grading suite. How many of your acoustic booths fit along an eleven-metre wall?",
+       "de-DE": "Hallo, wir richten einen zweiten Grading-Raum ein. Wie viele Ihrer Akustikboxen passen an eine elf Meter lange Wand?",
+       "fr-FR": "Bonjour, nous aménageons une deuxième salle d’étalonnage. Combien de vos cabines acoustiques tiennent le long d’un mur de onze mètres ?",
+       "da-DK": "Hej, vi indretter et andet gradingrum. Hvor mange af jeres akustikbokse kan der være langs en væg på elleve meter?",
+       "cs-CZ": "Dobrý den, zařizujeme druhé koloristické studio. Kolik vašich akustických kabin se vejde podél jedenáctimetrové stěny?",
+       "ar-EG": "أهلًا، بنجهّز غرفة تصحيح ألوان تانية. كام كابينة عزل صوتي من عندكم تتسع على حيطة طولها حداشر متر؟",
+       "zh-CN": "你好，我们正在布置第二间调色室。沿一面十一米长的墙能放几个你们的隔音舱？",
+       "zh-TW": "你好，我們正在布置第二間調色室。沿一面十一公尺長的牆能放幾間你們的隔音間？"
       }
      },
      "est_value": 12500,
@@ -10838,7 +10838,8 @@
       "@time": "11:05",
       "@week": true
      },
-     "state": "open"
+     "state": "open",
+     "@label": "enq:marta"
     },
     {
      "source": "show",
