@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.62",
+    "minAdminiumVersion": "0.3.64",
     "engines": [
       "postgres",
       "mysql",
@@ -23963,6 +23963,41 @@
               "expires_at"
             ]
           }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "conversations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "started_at",
+              "outside_hours",
+              "became_table",
+              "became_key"
+            ]
+          }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "messages",
+          "actions": [
+            "read",
+            "read_pii"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "conversation_id",
+              "kind",
+              "body",
+              "event",
+              "author_id",
+              "sent_at"
+            ]
+          }
         }
       ]
     },
@@ -25056,6 +25091,41 @@
               "expires_at"
             ]
           }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "conversations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "started_at",
+              "outside_hours",
+              "became_table",
+              "became_key"
+            ]
+          }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "messages",
+          "actions": [
+            "read",
+            "read_pii"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "conversation_id",
+              "kind",
+              "body",
+              "event",
+              "author_id",
+              "sent_at"
+            ]
+          }
         }
       ]
     },
@@ -26011,6 +26081,41 @@
               "expires_at"
             ]
           }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "conversations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "started_at",
+              "outside_hours",
+              "became_table",
+              "became_key"
+            ]
+          }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "messages",
+          "actions": [
+            "read",
+            "read_pii"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "conversation_id",
+              "kind",
+              "body",
+              "event",
+              "author_id",
+              "sent_at"
+            ]
+          }
         }
       ]
     },
@@ -26634,7 +26739,44 @@
             "state"
           ]
         }
-      }
+      },
+      "tables": [
+        {
+          "addOn": "live-chat",
+          "table": "conversations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "started_at",
+              "outside_hours",
+              "became_table",
+              "became_key"
+            ]
+          }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "messages",
+          "actions": [
+            "read",
+            "read_pii"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "conversation_id",
+              "kind",
+              "body",
+              "event",
+              "author_id",
+              "sent_at"
+            ]
+          }
+        }
+      ]
     },
     {
       "key": "front-desk",
@@ -26843,7 +26985,44 @@
             "may_email"
           ]
         }
-      }
+      },
+      "tables": [
+        {
+          "addOn": "live-chat",
+          "table": "conversations",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "started_at",
+              "outside_hours",
+              "became_table",
+              "became_key"
+            ]
+          }
+        },
+        {
+          "addOn": "live-chat",
+          "table": "messages",
+          "actions": [
+            "read",
+            "read_pii"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "conversation_id",
+              "kind",
+              "body",
+              "event",
+              "author_id",
+              "sent_at"
+            ]
+          }
+        }
+      ]
     },
     {
       "key": "ops-manager",
@@ -32080,6 +32259,40 @@
             "column": "company_name",
             "digits": 4,
             "max": 160
+          }
+        ]
+      }
+    },
+    {
+      "table": "enquiries",
+      "key": "chat",
+      "module": "inbox",
+      "methods": [
+        "POST"
+      ],
+      "writable": [
+        "person",
+        "email",
+        "text"
+      ],
+      "defaults": {
+        "state": "open",
+        "source": "chat",
+        "company_name": ""
+      },
+      "anonymous": {
+        "perValue": {
+          "columns": [
+            "email"
+          ],
+          "n": 5
+        },
+        "perKeyHour": 60,
+        "perIpHour": 10,
+        "plainText": [
+          {
+            "column": "person",
+            "max": 120
           }
         ]
       }
@@ -46474,6 +46687,20 @@
           "ar-EG": "تتحول نماذج الموقع إلى استفسارات في صندوق الفريق، وتملأ الاستبيانات آراء العملاء.",
           "zh-CN": "网站表单会变成团队收件箱中的询盘，问卷会填入客户反馈。",
           "zh-TW": "網站表單會變成團隊收件匣中的詢問，問卷會填入客戶回饋。"
+        }
+      },
+      {
+        "key": "live-chat",
+        "range": ">=1.0.30",
+        "reason": {
+          "en-US": "A chat window on your website: a question left outside hours becomes an enquiry in the Team inbox, and its card opens the chat.",
+          "de-DE": "Ein Chatfenster auf Ihrer Website: Eine außerhalb der Zeiten hinterlassene Frage wird zur Anfrage im Team-Eingang, und ihre Karte öffnet den Chat.",
+          "fr-FR": "Une fenêtre de discussion sur votre site : une question laissée hors des horaires devient une demande dans la boîte de l’équipe, et sa carte ouvre la discussion.",
+          "da-DK": "Et chatvindue på din hjemmeside: Et spørgsmål lagt uden for åbningstiden bliver til en henvendelse i teamets indbakke, og dens kort åbner chatten.",
+          "cs-CZ": "Okno chatu na vašem webu: dotaz zanechaný mimo otevírací dobu se stane poptávkou v týmové schránce a z její karty se otevře chat.",
+          "ar-EG": "نافذة محادثة على موقعك: يتحول السؤال المتروك خارج ساعات العمل إلى استفسار في صندوق الفريق، وتفتح بطاقته المحادثة.",
+          "zh-CN": "网站上的聊天窗口：非工作时间留下的问题会变成团队收件箱中的询盘，询盘卡片可打开聊天记录。",
+          "zh-TW": "網站上的聊天視窗：非營業時間留下的問題會變成團隊收件匣中的詢問，詢問卡片可開啟聊天記錄。"
         }
       }
     ],
