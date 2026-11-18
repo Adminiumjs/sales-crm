@@ -22,7 +22,7 @@
  * CRM_STAND_PORT (default 4774), CRM_STAND_ENGINE (sqlite | postgres | mysql),
  * CRM_STAND_ADD_ONS (the add-ons staged and attached: `invoices,inventory` unless set; `none` for neither;
  * `invoices,inventory,forms` adds Forms, built in ADD_ONS_REPO, with the sample's forms and survey answers;
- * `live-chat` adds Live chat, with the sample's chat),
+ * `live-chat` adds Live chat, with the sample's chat; `pages` adds Pages, with the sample's landing pages and funnel),
  * CRM_STAND_STAGE (which stage of the app to install: the released one unless set),
  * CRM_STAND_VERSION (the version the server says, while the engine is unreleased),
  * CRM_STAND_NOW (the moment the sample is added at; the ledger's, unless set;
@@ -401,7 +401,7 @@ export async function standUp() {
     ADMINIUM_STATIC_ROOT: dashboard,
     ADMINIUM_DATA_DIR: dataDir,
     ADMINIUM_SECRET: createHash("sha256").update(`crm-stand-${work}`).digest("hex"),
-    ADMINIUM_ADD_ON_DEV_TRUST: "invoices,inventory,forms,live-chat",
+    ADMINIUM_ADD_ON_DEV_TRUST: "invoices,inventory,forms,live-chat,pages",
     // The customer's quote page is served by this same server and calls its public API: "self" is that page's origin.
     ADMINIUM_PUBLIC_API_ORIGINS: "self",
     ADMINIUM_SETUP_TOKEN: SETUP_TOKEN,
@@ -505,7 +505,7 @@ export async function standUp() {
     // ones to stage (`none` for none): an install without Invoices and Inventory is the smaller app, Quotes and Supply left out.
     const staged = [];
     const wanted = (process.env.CRM_STAND_ADD_ONS ?? "invoices,inventory").split(",").map((one) => one.trim()).filter((one) => one !== "" && one !== "none");
-    for (const key of ["invoices", "inventory", "forms", "live-chat"].filter((one) => wanted.includes(one))) {
+    for (const key of ["invoices", "inventory", "forms", "live-chat", "pages"].filter((one) => wanted.includes(one))) {
       const dir = join(addOnsRepo, "packages", key);
       if (!existsSync(join(dir, "manifest.json"))) continue;
       const packDir = mkdtempSync(join(tmpdir(), "crm-stand-pack-"));
