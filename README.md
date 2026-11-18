@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.64 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.65 or newer.
 
 ## What installs
 
@@ -20,7 +20,7 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | Roles | 9 |
 | Shipped rules | 26: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, the brochure an enquirer asks for and the survey after a sign-off, switched off |
 | E-mails | 19, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers; with Pages, four landing pages (the showroom's open day, its thanks page and the acoustic booths, live; the open day's German copy, a draft) and the "Open day" funnel |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -50,7 +50,7 @@ of its documents, so it numbers the quote, works out its tax and prints it. Inst
 the Quotes part is left out (no quote tables, screens or links) and comes in when the add-on is
 connected. **Inventory** (1.0.14 or newer) keeps the stock: without it Supply's menu lines open a
 page that says what Supply waits for and who connects it. **Offers** (a reward for a customer who
-refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback. **Live chat** (1.0.30 or newer) is suggested and not ticked: a question a visitor leaves in the website chat outside hours becomes an enquiry in the Team inbox ("Chat", no company yet: claiming it asks for one), staff answering a chat in hours make one with "Make an enquiry", and the enquiry's card has "Read the chat" for the inbox's roles (the admin, the sales manager, the rep, the marketer and the front desk; Read-only reads no chat). Without Live chat there is no button.
+refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback. **Live chat** (1.0.30 or newer) is suggested and not ticked: a question a visitor leaves in the website chat outside hours becomes an enquiry in the Team inbox ("Chat", no company yet: claiming it asks for one), staff answering a chat in hours make one with "Make an enquiry", and the enquiry's card has "Read the chat" for the inbox's roles (the admin, the sales manager, the rep, the marketer and the front desk; Read-only reads no chat). Without Live chat there is no button. **Pages** (landing pages, 1.0.31 or newer) is suggested and not ticked: the marketer's home shows each funnel's views per step this month, and she reads the pages and funnels without changing them (an admin builds them in Pages).
 
 ### The roles
 
@@ -64,7 +64,7 @@ install's owner, who holds none, gets the CRM admin's menu.
 | Sales manager | `sales-manager` | Team view | The deals of the people they lead; approves a discount (not their own); targets, cover, one-to-ones, coaching |
 | CRM admin | `admin` | Team view | Everything but the private one-to-ones and coaching; the app's settings |
 | Account manager | `account-manager` | Home | Companies and contacts; a deal once it is won, and an open one while he is on it; renewals, repeat orders, referrals; after the job |
-| Marketer | `marketer` | Home | Enquiries and trade-show leads; companies; no deal, no amount |
+| Marketer | `marketer` | Home | Enquiries and trade-show leads; companies; this month's campaigns, form answers, funnels and website chats, read only; no deal, no amount |
 | Front desk | `front-desk` | Team inbox (Home with the showroom) | Types in an enquiry; the showroom's bookings and samples; no deal |
 | Operations manager | `ops-manager` | Stock (Home with Jobs on site) | Supply; jobs, deliveries, crews; vehicles and time sheets; a won deal's name to make its job, no amount |
 | Field crew | `crew` | My day | His crew's visits and snags, signing a job off, his vehicle, hours and certificates; no amount anywhere |
@@ -210,6 +210,24 @@ mail mode the people are `<name>@crm.stand` and the sample's addresses end `.sta
 The tests check the manifest against Adminium's own validator, a copy of which is in
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
+
+## Updating to 0.2.8
+
+0.2.8 needs Adminium 0.3.65 and suggests Pages 1.0.31 (landing pages, not ticked). No table,
+column, part or rule changes, and every row is kept as it was:
+
+- **The update asks you to allow one thing:** the marketer reads Forms' forms (their names, kind
+  and state) and answers (when each came, never what it says), and Pages' pages (name, address,
+  state and language, never the page itself) and funnels. She changes none of them. Allow it and
+  the update goes; refuse and nothing changes. It is asked even before Pages is installed.
+- **The marketer's home.** Under the enquiries: this month's campaigns (each one's latest send),
+  the answers each form had, each funnel's views step by step (with "Counting started on …" when
+  Adminium began counting inside the month), and the website chats with the questions left outside
+  hours. A group whose add-on is not installed is not shown.
+- **The sample**, with Pages: the open day's landing page, its thanks page, the acoustic booths'
+  page and a German copy of the open day not yet live, and the "Open day" funnel (the open day,
+  the showroom form, the thanks page). No rule is linked to the funnel: a sample cannot name a
+  rule an install made; link the brochure rule to it in Pages.
 
 ## Updating to 0.2.7
 
