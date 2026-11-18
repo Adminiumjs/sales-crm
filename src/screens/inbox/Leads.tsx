@@ -26,10 +26,10 @@ import { firstName, initials } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
 import type { Saved } from "../../staffSession.ts";
 import { readNames } from "../visits/data.ts";
-import { byWorkOrder, canClaim, leadAge, leadState, LEAD_STATES, markRung, notForUs, readColdDays, readLeads, readShows, type Enquiry, type LeadState, type Show } from "./data.ts";
+import { byWorkOrder, canClaim, hasCompany, leadAge, leadState, LEAD_STATES, markRung, notForUs, readColdDays, readLeads, readShows, type Enquiry, type LeadState, type Show } from "./data.ts";
 import { dealFrom } from "./Inbox.tsx";
 import { PasteLeads } from "./PasteLeads.tsx";
-import { tileOf, warmLabel, WARM_TONE } from "./parts.tsx";
+import { companyText, firstStepOf, tileOf, warmLabel, WARM_TONE } from "./parts.tsx";
 
 const PILL: Record<LeadState, "warn" | "info" | "pos" | "plain"> = { new: "warn", called: "info", deal: "pos", no: "plain" };
 
@@ -165,7 +165,7 @@ export function Leads({ rest }: ScreenProps) {
                   <Icon name="flame" size={15} />
                   <span>
                     {data.counts.hotNew === 1 && hot !== null
-                      ? t("leads.hot.one", { person: hot.person ?? hot.company_name, company: hot.company_name, count: f.number(leadAge(hot, now, f, data.coldDays).days) }, leadAge(hot, now, f, data.coldDays).days)
+                      ? t("leads.hot.one", { person: hot.person ?? companyText(hot, t), company: companyText(hot, t), count: f.number(leadAge(hot, now, f, data.coldDays).days) }, leadAge(hot, now, f, data.coldDays).days)
                       : t("leads.hot.many", { count: f.number(data.counts.hotNew) }, data.counts.hotNew)}{" "}
                     {t("leads.cold", { days: f.number(data.coldDays), day: coldOn }, data.coldDays)}
                   </span>
@@ -186,17 +186,22 @@ export function Leads({ rest }: ScreenProps) {
                 {shown.map((row) => {
                   const state = leadState(row);
                   const rep = names[row.claimed_by_id ?? row.passed_to_id ?? ""] ?? "";
-                  const subject = row.wants ?? row.company_name;
                   const age = leadAge(row, now, f, data.coldDays);
                   return (
                     <li key={row.id} className="crm-enq crm-lead mr-card" data-lead-state={state} data-warmth={row.warmth ?? ""} data-enquiry={row.id}>
                       <div className="crm-enq-top">
                         <span className="crm-lead-tile" aria-hidden="true">
-                          {tileOf(row.company_name)}
+                          {tileOf(hasCompany(row) ? row.company_name : "")}
                         </span>
                         <div className="crm-enq-main">
                           <div className="crm-enq-line">
-                            <span className="crm-enq-subject">{row.company_name}</span>
+                            {hasCompany(row) ? (
+                              <span className="crm-enq-subject">{row.company_name}</span>
+                            ) : (
+                              <span className="crm-enq-subject" data-no-company>
+                                {t("inbox.noCompany")}
+                              </span>
+                            )}
                             <span className="crm-pill" data-tone={PILL[state]} data-lead-pill>
                               {t(`leads.state.${state}`)}
                             </span>
@@ -235,19 +240,19 @@ export function Leads({ rest }: ScreenProps) {
                             </DealLink>
                           )}
                           {state === "new" && canChange && (
-                            <button type="button" className="crm-btn crm-btn-primary crm-btn-32 mr-btn" data-act="rung" aria-label={t("leads.rung.aria", { person: row.person ?? row.company_name })} disabled={busy === row.id} onClick={() => void act(row, markRung(session, row), t("leads.toast.rung", { person: row.person ?? row.company_name }))}>
+                            <button type="button" className="crm-btn crm-btn-primary crm-btn-32 mr-btn" data-act="rung" aria-label={t("leads.rung.aria", { person: row.person ?? companyText(row, t) })} disabled={busy === row.id} onClick={() => void act(row, markRung(session, row), t("leads.toast.rung", { person: row.person ?? companyText(row, t) }))}>
                               <Icon name="phone" size={14} />
                               {t("leads.rung")}
                             </button>
                           )}
                           {(state === "new" || state === "called") && claims && (
-                            <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-act="deal" aria-label={t("leads.deal.aria", { company: row.company_name })} disabled={busy === row.id} onClick={() => deals.start(dealFrom(row, row.person === null ? t("inbox.firstStep.nobody", { subject }) : t("inbox.firstStep", { person: row.person, subject })))}>
+                            <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-act="deal" aria-label={t("leads.deal.aria", { company: companyText(row, t) })} disabled={busy === row.id} onClick={() => deals.start(dealFrom(row, firstStepOf(row, t)))}>
                               <Icon name="plus" size={14} />
                               {t("leads.deal")}
                             </button>
                           )}
                           {(state === "new" || state === "called") && canChange && (
-                            <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-btn-quiet crm-lead-drop mr-gi" data-act="drop" aria-label={t("inbox.drop.aria", { subject: row.company_name })} disabled={busy === row.id} onClick={() => void act(row, notForUs(session, row), t("leads.toast.dropped"))}>
+                            <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-btn-quiet crm-lead-drop mr-gi" data-act="drop" aria-label={t("inbox.drop.aria", { subject: companyText(row, t) })} disabled={busy === row.id} onClick={() => void act(row, notForUs(session, row), t("leads.toast.dropped"))}>
                               {t("inbox.drop")}
                             </button>
                           )}

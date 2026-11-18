@@ -88,6 +88,13 @@ export interface InboxData {
   cut: boolean;
 }
 
+/**
+ * Whether an enquiry names its company. A question left in a website chat outside hours arrives with none: the chat
+ * asks for a name and an address, never a company, and the row holds an empty name until somebody claims it and says
+ * which company it is. Every screen shows such an enquiry as "No company yet", never as a blank.
+ */
+export const hasCompany = (row: Pick<Enquiry, "company_name">): boolean => (row.company_name ?? "").trim() !== "";
+
 export const inInboxFilter = (row: Enquiry, filter: InboxFilter, me: string): boolean => (filter === "all" ? true : filter === "open" ? row.state === "open" : row.claimed_by_id === me || row.passed_to_id === me);
 
 /** The reader's Team inbox, newest first, with the server's three counts. */
@@ -216,6 +223,74 @@ export async function readMarketerHome(session: StaffSession, month: [string, st
   });
   sources.sort((a, b) => b.enquiries - a.enquiries || a.source.localeCompare(b.source));
   return { month: monthTotal, sources, deals, notRung, hotNotRung, waiting: [...rows.rows].sort(byWorkOrder), coldDays };
+}
+
+/* ── The chat an enquiry came from ───────────────────────────────────────── */
+
+/** The Live chat add-on: a question left on the website, or a chat staff made an enquiry of, is one of its conversations. */
+export const CHAT_ADD_ON = "live-chat";
+/** How the chat names one of this app's enquiries on its conversation: the app's key and the table's own short name. */
+export const ENQUIRIES_REF = "crm:enquiries";
+/** The most lines a transcript shows: a chat longer than that says it was cut. */
+export const CHAT_LINES = 500;
+
+export type ChatLineKind = "visitor" | "staff" | "automatic" | "system";
+export interface ChatLine {
+  id: string;
+  kind: ChatLineKind;
+  body: string;
+  /** A system line's event (`asked`, `taken`, `closed`, `enquiry`…), which the screen words in the reader's language. */
+  event: string | null;
+  /** Who of the staff wrote it (a staff line, a system line a person caused). */
+  authorId: string | null;
+  sentAt: string;
+}
+export interface ChatTranscript {
+  conversationId: string;
+  startedAt: string;
+  /** Left as a question while nobody was in. */
+  outsideHours: boolean;
+  lines: ChatLine[];
+  /** Longer than {@link CHAT_LINES}: the first ones are shown. */
+  cut: boolean;
+}
+
+/**
+ * Whether "Read the chat" is offered: the add-on is attached to this install, and the reader may read both its
+ * conversations and their messages (the inbox's roles are given that; the others are not). The server still decides
+ * each read.
+ */
+export const chatReadable = (session: Pick<StaffSession, "config" | "can">): boolean =>
+  session.config.addOns[CHAT_ADD_ON] !== undefined && session.can(`${CHAT_ADD_ON}:conversations`, "read") && session.can(`${CHAT_ADD_ON}:messages`, "read");
+
+const isTrue = (value: unknown): boolean => value === true || value === 1 || value === "1" || value === "true";
+const LINE_KINDS: readonly ChatLineKind[] = ["visitor", "staff", "automatic", "system"];
+
+/**
+ * The conversation an enquiry came from, read only: found by the row it became (`crm:enquiries` and the enquiry's
+ * key), and its messages in the order they were written. Null when no conversation names the enquiry (one typed in by
+ * hand with "Chat" as its source, or a chat the add-on's keeping has since taken away).
+ */
+export async function readChat(session: StaffSession, enquiryId: number): Promise<ChatTranscript | null> {
+  const found = await session.list<{ id: number | string; started_at: string; outside_hours: unknown }>(`${CHAT_ADD_ON}:conversations`, {
+    select: ["id", "started_at", "outside_hours"],
+    where: { and: [{ column: "became_table", op: "eq", value: ENQUIRIES_REF }, { column: "became_key", op: "eq", value: String(enquiryId) }] },
+    order: ["id"],
+    limit: 1,
+  });
+  const conversation = found.rows[0];
+  if (conversation === undefined) return null;
+  const page = await session.list<{ id: number | string; kind: string; body: string | null; event: string | null; author_id: string | null; sent_at: string }>(`${CHAT_ADD_ON}:messages`, {
+    select: ["id", "kind", "body", "event", "author_id", "sent_at"],
+    where: { column: "conversation_id", op: "eq", value: conversation.id },
+    order: ["id"],
+    limit: CHAT_LINES,
+    count: "exact",
+  });
+  const lines = page.rows
+    .filter((row) => LINE_KINDS.includes(row.kind as ChatLineKind))
+    .map((row) => ({ id: String(row.id), kind: row.kind as ChatLineKind, body: row.body ?? "", event: row.event ?? null, authorId: row.author_id ?? null, sentAt: row.sent_at }));
+  return { conversationId: String(conversation.id), startedAt: conversation.started_at, outsideHours: isTrue(conversation.outside_hours), lines, cut: (page.total ?? lines.length) > page.rows.length };
 }
 
 /* ── What is done to an enquiry ──────────────────────────────────────────── */

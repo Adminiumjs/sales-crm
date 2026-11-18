@@ -16,6 +16,12 @@
  *
  * Read-only reads, and the server keeps e-mail addresses and phone numbers
  * from her.
+ *
+ * A CHAT'S ENQUIRY. One made from a website chat (the Live chat add-on) has
+ * "Read the chat" for whoever may read the chat's conversations and messages:
+ * the conversation it came from, read only (`ReadChat.tsx`). A question left
+ * outside hours names no company: the card says "No company yet", and
+ * claiming it asks for one.
  */
 import { useCallback, useMemo, useState } from "react";
 
@@ -31,20 +37,23 @@ import { firstName } from "../../ui/people.ts";
 import { useToasts } from "../../ui/toast.tsx";
 import { readNames } from "../visits/data.ts";
 import { AddEnquiry } from "./AddEnquiry.tsx";
+import { ReadChat } from "./ReadChat.tsx";
 import { YesOnLost } from "./YesOnLost.tsx";
-import { canClaim, inInboxFilter, isLead, markRung, notForUs, passOn, readInbox, readPassTo, type Enquiry, type InboxFilter } from "./data.ts";
-import { SOURCE_ICON, sourceOf, warmLabel, WARM_TONE, whenOf } from "./parts.tsx";
+import { canClaim, chatReadable, hasCompany, inInboxFilter, isLead, markRung, notForUs, passOn, readInbox, readPassTo, type Enquiry, type InboxFilter } from "./data.ts";
+import { firstStepOf, namedOf, SOURCE_ICON, sourceOf, subjectOf, warmLabel, WARM_TONE, whenOf } from "./parts.tsx";
 
 const FILTERS: readonly InboxFilter[] = ["open", "mine", "all"];
 
-/** What the new-deal sheet is opened with for an enquiry. */
+/**
+ * What the new-deal sheet is opened with for an enquiry. One with no company yet opens it with an empty name for the
+ * new company, which the sheet then asks for.
+ */
 export function dealFrom(row: Enquiry, firstStep: string) {
-  const subject = row.wants ?? row.company_name;
   return {
-    name: subject,
+    name: subjectOf(row) ?? "",
     ...(row.est_value === null ? {} : { amount: String(Number(row.est_value)) }),
     firstStep,
-    ...(row.company_id === null ? { newCompany: { name: row.company_name, person: row.person, email: row.email, phone: row.phone, town: row.town } } : { companyId: row.company_id }),
+    ...(row.company_id === null ? { newCompany: { name: hasCompany(row) ? row.company_name.trim() : "", person: row.person, email: row.email, phone: row.phone, town: row.town } } : { companyId: row.company_id }),
     enquiry: { id: row.id, state: row.state, offeredAt: row.opt_out_offered_at ?? null },
   };
 }
@@ -73,6 +82,9 @@ export function Inbox(_props: ScreenProps) {
   const canAdd = session.can("enquiries", "create");
   const canChange = session.can("enquiries", "update");
   const claims = canClaim(session);
+  // "Read the chat": the add-on attached and its conversations and messages readable by this person.
+  const readsChat = chatReadable(session);
+  const [reading, setReading] = useState<Enquiry | null>(null);
   const [filter, setFilter] = useState<InboxFilter>("open");
   const [adding, setAdding] = useState(false);
   const [passing, setPassing] = useState<number | null>(null);
@@ -125,7 +137,8 @@ export function Inbox(_props: ScreenProps) {
 
               <ul className="crm-enq-list">
                 {shown.map((row) => {
-                  const subject = row.wants ?? row.company_name;
+                  const subject = subjectOf(row);
+                  const named = namedOf(row, t);
                   const mine = row.claimed_by_id === me || row.passed_to_id === me;
                   const waiting = row.state === "open" || (row.state === "passed" && row.passed_to_id === me);
                   const fresh = row.state === "open" && f.dayDiff(new Date(row.received_at), now) <= 1;
@@ -134,7 +147,7 @@ export function Inbox(_props: ScreenProps) {
                   const claimer = nameOf(row.claimed_by_id);
                   const passee = nameOf(row.passed_to_id);
                   const hidden = (row._masked ?? []).some((column) => column === "email" || column === "phone");
-                  const startDeal = (): void => deals.start(dealFrom(row, row.person === null ? t("inbox.firstStep.nobody", { subject }) : t("inbox.firstStep", { person: row.person, subject })));
+                  const startDeal = (): void => deals.start(dealFrom(row, firstStepOf(row, t)));
                   return (
                     <li key={row.id} className="crm-enq mr-card" data-state={row.state} data-waiting={waiting ? "1" : "0"} data-enquiry={row.id}>
                       <div className="crm-enq-top">
@@ -144,7 +157,13 @@ export function Inbox(_props: ScreenProps) {
                         <div className="crm-enq-main">
                           <div className="crm-enq-line">
                             {fresh && <span className="crm-enq-new" role="img" aria-label={t("inbox.new")} />}
-                            <span className="crm-enq-subject">{subject}</span>
+                            {subject === null ? (
+                              <span className="crm-enq-subject" data-no-company>
+                                {t("inbox.noCompany")}
+                              </span>
+                            ) : (
+                              <span className="crm-enq-subject">{subject}</span>
+                            )}
                             <span className="crm-pill" data-tone="plain" data-source-pill>
                               {sourceOf(row, t)}
                             </span>
@@ -181,6 +200,12 @@ export function Inbox(_props: ScreenProps) {
                           <Icon name={row.company_id === null ? "building-2" : "link"} size={13} />
                           {row.company_id === null ? t("inbox.match.none") : t("inbox.match", { company: row.company ?? row.company_name })}
                         </span>
+                        {row.source === "chat" && readsChat && (
+                          <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-act="read-chat" aria-label={t("inbox.chat.read.aria", { subject: named })} onClick={() => setReading(row)}>
+                            <Icon name="message-square" size={14} />
+                            {t("inbox.chat.read")}
+                          </button>
+                        )}
                         {waiting && (claims || canChange) ? (
                           <span className="crm-enq-acts">
                             {lead && row.rung_at === null && canChange && mine && (
@@ -190,19 +215,19 @@ export function Inbox(_props: ScreenProps) {
                               </button>
                             )}
                             {claims && (
-                              <button type="button" className="crm-btn crm-btn-primary crm-btn-32 mr-btn" data-act="claim" aria-label={t("inbox.claim.aria", { subject })} disabled={busy === row.id} onClick={startDeal}>
+                              <button type="button" className="crm-btn crm-btn-primary crm-btn-32 mr-btn" data-act="claim" aria-label={t("inbox.claim.aria", { subject: named })} disabled={busy === row.id} onClick={startDeal}>
                                 <Icon name="hand" size={14} />
                                 {t("inbox.claim")}
                               </button>
                             )}
                             {canChange && row.state === "open" && (
-                              <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-act="pass" aria-label={t("inbox.pass.aria", { subject })} aria-expanded={passing === row.id} disabled={busy === row.id} onClick={() => setPassing(passing === row.id ? null : row.id)}>
+                              <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-gi" data-act="pass" aria-label={t("inbox.pass.aria", { subject: named })} aria-expanded={passing === row.id} disabled={busy === row.id} onClick={() => setPassing(passing === row.id ? null : row.id)}>
                                 <Icon name="users" size={14} />
                                 {t("inbox.pass")}
                               </button>
                             )}
                             {canChange && (
-                              <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-btn-quiet mr-gi" data-act="drop" aria-label={t("inbox.drop.aria", { subject })} disabled={busy === row.id} onClick={() => void act(row, notForUs(session, row), t("inbox.toast.dropped", { subject }))}>
+                              <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-btn-quiet mr-gi" data-act="drop" aria-label={t("inbox.drop.aria", { subject: named })} disabled={busy === row.id} onClick={() => void act(row, notForUs(session, row), t("inbox.toast.dropped", { subject: named }))}>
                                 {t("inbox.drop")}
                               </button>
                             )}
@@ -246,7 +271,7 @@ export function Inbox(_props: ScreenProps) {
                               <span className="crm-enq-pass-none">{t("inbox.pass.nobody")}</span>
                             ) : (
                               passTo.data.map((person) => (
-                                <button key={person.id} type="button" className="crm-chip-btn mr-chip" data-person={person.id} disabled={busy === row.id} onClick={() => void act(row, passOn(session, row, person.id), t("inbox.toast.passed", { subject, name: firstName(person.name) }))}>
+                                <button key={person.id} type="button" className="crm-chip-btn mr-chip" data-person={person.id} disabled={busy === row.id} onClick={() => void act(row, passOn(session, row, person.id), t("inbox.toast.passed", { subject: named, name: firstName(person.name) }))}>
                                   {firstName(person.name)}
                                 </button>
                               ))
@@ -279,6 +304,7 @@ export function Inbox(_props: ScreenProps) {
       </Loaded>
 
       {adding && <AddEnquiry onClose={() => setAdding(false)} onSaved={again} />}
+      {reading !== null && <ReadChat enquiry={reading} names={names} onClose={() => setReading(null)} />}
     </div>
   );
 }

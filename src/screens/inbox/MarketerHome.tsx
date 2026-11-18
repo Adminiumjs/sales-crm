@@ -18,8 +18,8 @@ import { isBuilt, type ScreenProps } from "../../shell/screens.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { firstName } from "../../ui/people.ts";
 import { readNames } from "../visits/data.ts";
-import { leadAge, readMarketerHome } from "./data.ts";
-import { SOURCE_ICON, sourceLabel, warmLabel, WARM_TONE } from "./parts.tsx";
+import { hasCompany, leadAge, readMarketerHome } from "./data.ts";
+import { companyText, SOURCE_ICON, sourceLabel, warmLabel, WARM_TONE } from "./parts.tsx";
 
 export function MarketerHome(_props: ScreenProps) {
   const t = useT();
@@ -141,7 +141,7 @@ export function MarketerHome(_props: ScreenProps) {
                         <ScreenLink to="leads" className="crm-mk-row mr-row">
                           <span className="crm-mk-main">
                             <span className="crm-mk-title">
-                              {row.person === null ? row.company_name : `${row.person}, ${row.company_name}`}
+                              {row.person === null ? companyText(row, t) : hasCompany(row) ? `${row.person}, ${row.company_name}` : row.person}
                               {row.warmth !== null && (
                                 <span className="crm-pill" data-tone={WARM_TONE[row.warmth]}>
                                   {warmLabel(row.warmth, t)}

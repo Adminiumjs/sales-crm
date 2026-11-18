@@ -15,7 +15,7 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import type { ScreenProps } from "../../shell/screens.tsx";
 import { Loaded, Skeleton, useCoalesced, useLive, useLoad } from "../../ui/load.tsx";
 import { readInbox, type Enquiry } from "../inbox/data.ts";
-import { sourceLabel, whenOf } from "../inbox/parts.tsx";
+import { companyText, sourceLabel, whenOf } from "../inbox/parts.tsx";
 import { useScreen } from "../team/data.ts";
 import { daysLate, readDeskHome, spanOf } from "./data.ts";
 
@@ -168,7 +168,7 @@ export function DeskHome(_props: ScreenProps) {
                               {row.wants ?? row.text ?? row.company_name}
                               <span className="crm-sh-row-co">{sourceLabel(row.source, t)}</span>
                             </span>
-                            <span className="crm-sh-row-sub">{[row.person, row.company_name].filter((part) => part !== null && part !== "").join(" · ")}</span>
+                            <span className="crm-sh-row-sub">{[row.person, companyText(row, t)].filter((part) => part !== null && part !== "").join(" · ")}</span>
                           </span>
                           <span className="crm-sh-row-when crm-mono">{whenOf(row.received_at, now, f, t)}</span>
                         </ScreenLink>

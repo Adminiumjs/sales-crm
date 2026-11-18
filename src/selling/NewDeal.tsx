@@ -12,6 +12,11 @@
  *
  * The amount is read the way the person's language writes a number, and
  * shown back in the install's currency before it is saved.
+ *
+ * AN ENQUIRY WITH NO COMPANY YET (a question left in a website chat) opens
+ * the sheet with "A new company" and a field for its name, which must be
+ * filled (`newDeal.ts`); a company on the books may be picked instead. Either
+ * way, the enquiry is told the company's name with its deal.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -26,6 +31,7 @@ import { useLoad } from "../ui/load.tsx";
 import { OptOutLine } from "../ui/optOut.tsx";
 import { firstName, initials } from "../ui/people.ts";
 import { reasonOf, useToasts } from "../ui/toast.tsx";
+import { COMPANY_NAME_MAX, companyProblem } from "./newDeal.ts";
 
 /** How far ahead a new deal is expected to close until the person says otherwise, and when its first step falls due. */
 const CLOSE_IN_DAYS = 60;
@@ -92,6 +98,10 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
   // "A new company from here": offered when the sheet was opened with one and the person may make companies; chosen to begin with when nothing on the books matched.
   const offersNew = start.newCompany !== undefined && session.can("companies", "create");
   const [makeNew, setMakeNew] = useState(offersNew && start.companyId === undefined);
+  // An enquiry with no company yet: the new company's name is asked for here, and must be given.
+  const namesCompany = start.newCompany !== undefined && start.newCompany.name.trim() === "";
+  const [typedCompany, setTypedCompany] = useState("");
+  const newName = (namesCompany ? typedCompany : (start.newCompany?.name ?? "")).trim();
   const [search, setSearch] = useState("");
   const [amount, setAmount] = useState(start.amount ?? "");
   const [close, setClose] = useState(() => addDays(today, CLOSE_IN_DAYS));
@@ -155,7 +165,8 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
   const save = async (): Promise<void> => {
     const title = name.trim();
     if (title === "") return setError(t("deal.new.error.name"));
-    if (companyId === null && !makeNew) return setError(t("deal.new.error.company"));
+    const problem = companyProblem({ companyId, makeNew, newName });
+    if (problem !== null) return setError(t(problem));
     if (read === null) return setError(t("deal.new.error.amount"));
     if (stage === null) return setError(t("deal.new.error.stage"));
     setError(null);
@@ -177,7 +188,7 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
     let contact: number | null = null;
     if (makeNew && start.newCompany !== undefined) {
       if (around.current.companyId === null) {
-        const made = await session.create<{ id: number }>("companies", { name: start.newCompany.name.trim(), town: start.newCompany.town ?? null, account_owner_id: owner }, around.current.keys.company);
+        const made = await session.create<{ id: number }>("companies", { name: newName, town: start.newCompany.town ?? null, account_owner_id: owner }, around.current.keys.company);
         if (made.state !== "saved") return stop(made.state === "refused" ? t("deal.new.error.newCompany", { reason: reasonOf(made.error, t) }) : t("ui.unknown"));
         around.current.companyId = made.row.id;
       }
@@ -221,7 +232,9 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
     }
     if (start.enquiry !== undefined && !around.current.told) {
       // The enquiry is told its deal and its company. If this one save fails the deal is still there, and the enquiry is hers: say so.
-      const told = await session.update("enquiries", start.enquiry.id, { deal_id: dealId, company_id: company });
+      // An enquiry that had no company is told the one it now has, by name, so every list shows it.
+      const named = !namesCompany ? null : makeNew ? newName : (companies.find((one) => one.id === company)?.name ?? null);
+      const told = await session.update("enquiries", start.enquiry.id, { deal_id: dealId, company_id: company, ...(named === null ? {} : { company_name: named }) });
       if (told.state !== "saved") {
         onSaved(dealId);
         // Only whoever claimed an enquiry ties it to a deal, while it is claimed: the server's refusal names the column.
@@ -273,7 +286,7 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
           {offersNew && (
             <button type="button" role="radio" aria-checked={makeNew} className="crm-choice mr-chip" data-new-company onClick={() => (setMakeNew(true), setCompanyId(null), setError(null))}>
               <Icon name="plus" size={14} />
-              <span className="crm-choice-text">{t("deal.new.company.new", { company: start.newCompany!.name })}</span>
+              <span className="crm-choice-text">{namesCompany ? t("deal.new.company.newNamed") : t("deal.new.company.new", { company: start.newCompany!.name })}</span>
             </button>
           )}
           {companies.map((company) => (
@@ -284,9 +297,26 @@ export function NewDeal({ start, onClose, onSaved }: { start: NewDealStart; onCl
           ))}
         </div>
         {found.state === "ready" && companies.length === 0 && !offersNew && <p className="crm-field-note">{t("deal.new.company.none")}</p>}
-        {makeNew && start.newCompany !== undefined && (
+        {makeNew && namesCompany && (
+          <>
+            <label className="crm-label" htmlFor="crm-nd-newco">
+              {t("deal.new.company.name")}
+            </label>
+            <input
+              id="crm-nd-newco"
+              className="crm-input mr-fld"
+              value={typedCompany}
+              maxLength={COMPANY_NAME_MAX}
+              required
+              aria-required="true"
+              placeholder={t("deal.new.company.name.hint")}
+              onChange={(event) => (setTypedCompany(event.target.value), setError(null))}
+            />
+          </>
+        )}
+        {makeNew && start.newCompany !== undefined && newName !== "" && (
           <p className="crm-field-note" data-testid="new-company-note">
-            {(start.newCompany.person ?? "").trim() !== "" && session.can("contacts", "create") ? t("deal.new.company.new.note", { company: start.newCompany.name, person: (start.newCompany.person ?? "").trim() }) : t("deal.new.company.new.noteAlone", { company: start.newCompany.name })}
+            {(start.newCompany.person ?? "").trim() !== "" && session.can("contacts", "create") ? t("deal.new.company.new.note", { company: newName, person: (start.newCompany.person ?? "").trim() }) : t("deal.new.company.new.noteAlone", { company: newName })}
           </p>
         )}
         {makesContact && carried !== null && (

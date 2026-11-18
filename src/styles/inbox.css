@@ -463,3 +463,70 @@
 .crm-inbox-yes .crm-enq-acts {
   margin-block-start: 10px;
 }
+
+/* An enquiry with no company yet (a question left in a website chat): said, muted, never a blank. */
+.crm-enq-subject[data-no-company] {
+  font-weight: 600;
+  font-style: italic;
+  color: var(--fg-subtle);
+}
+
+/* "Read the chat": the conversation an enquiry came from, read only. */
+.crm-chat-lines {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crm-chat-line {
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  max-inline-size: 88%;
+}
+.crm-chat-line[data-kind="visitor"] {
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  background: transparent;
+}
+.crm-chat-line[data-kind="staff"],
+.crm-chat-line[data-kind="automatic"] {
+  align-self: flex-end;
+  background: var(--accent-soft);
+}
+.crm-chat-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-chat-who {
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.crm-chat-body {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.crm-chat-event {
+  align-self: center;
+  display: flex;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  font-style: italic;
+}
+.crm-chat-when {
+  font-size: 10.5px;
+  font-style: normal;
+}
+.crm-chat-none {
+  color: var(--fg-subtle);
+  font-size: 13px;
+}

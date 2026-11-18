@@ -2,7 +2,7 @@
 import type { TFunction } from "../../i18n/index.tsx";
 import type { MessageKey } from "../../i18n/messages/index.ts";
 import type { Formatters } from "../../lib/format.ts";
-import type { Source, Warmth } from "./data.ts";
+import { hasCompany, type Enquiry, type Source, type Warmth } from "./data.ts";
 
 export const SOURCE_ICON: Record<Source, string> = { form: "globe", phone: "phone", show: "tent", chat: "message-square" };
 export const WARM_TONE: Record<Warmth, "danger" | "warn" | "plain"> = { hot: "danger", warm: "warn", cold: "plain" };
@@ -23,6 +23,18 @@ export const sourceOf = (row: { source: Source; from_form?: string | null }, t: 
   const form = row.from_form?.trim() ?? "";
   return row.source === "form" && form !== "" ? t("inbox.source.formNamed", { form }) : sourceLabel(row.source, t);
 };
+/** What an enquiry is about, as its card's headline says it: what they want, else their company; null when neither is known (a chat's question, with no company yet). */
+export const subjectOf = (row: Pick<Enquiry, "wants" | "company_name">): string | null => row.wants ?? (hasCompany(row) ? row.company_name : null);
+/** An enquiry's company as a screen shows it: its name, or "No company yet" for one that has none. */
+export const companyText = (row: Pick<Enquiry, "company_name">, t: TFunction): string => (hasCompany(row) ? row.company_name : t("inbox.noCompany"));
+/** Whom a button's label or a toast names: what the enquiry is about, else the person, else "No company yet". */
+export const namedOf = (row: Pick<Enquiry, "wants" | "company_name" | "person">, t: TFunction): string => subjectOf(row) ?? row.person ?? t("inbox.noCompany");
+/** The first step a deal made from an enquiry starts with: a call with the person, about what they want or their company when it is known. */
+export function firstStepOf(row: Pick<Enquiry, "wants" | "company_name" | "person">, t: TFunction): string {
+  const subject = subjectOf(row);
+  if (subject === null) return row.person === null ? t("inbox.firstStep.plain") : t("inbox.firstStep.person", { person: row.person });
+  return row.person === null ? t("inbox.firstStep.nobody", { subject }) : t("inbox.firstStep", { person: row.person, subject });
+}
 export const warmLabel = (warmth: Warmth, t: TFunction): string => t(`leads.warm.${warmth}` as MessageKey);
 
 /** Two letters for a company's tile. */
