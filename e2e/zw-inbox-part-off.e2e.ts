@@ -13,14 +13,21 @@ import type { Page } from "@playwright/test";
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, watch } from "./helpers.ts";
 
-/** Every card of the Overview, with where it is drawn. */
-const cards = (page: Page): Promise<{ key: string; x: number; y: number; w: number; h: number }[]> =>
-  page.locator("[data-grid-item]").evaluateAll((all) =>
+/**
+ * Every card of the Overview, with where it is drawn, once the page above the cards is settled. The owner manages apps
+ * and the stand's sample is loaded, so the engine draws "Sample data is loaded" above the cards; it comes on its own
+ * lazy chunk, after the Studio's words and its own call, and can come after the cards are drawn, moving each one down
+ * by its height (55px). Measured before it came, the cards read higher than on a load where it came first.
+ */
+async function cards(page: Page): Promise<{ key: string; x: number; y: number; w: number; h: number }[]> {
+  await expect(page.getByTestId("app-sample-banner")).toBeVisible();
+  return page.locator("[data-grid-item]").evaluateAll((all) =>
     all.map((card) => {
       const box = card.getBoundingClientRect();
       return { key: card.getAttribute("data-grid-item") ?? "", x: Math.round(box.x), y: Math.round(box.y + window.scrollY), w: Math.round(box.width), h: Math.round(box.height) };
     }),
   );
+}
 
 async function switchInbox(page: Page, on: boolean): Promise<void> {
   await page.goto("/studio/apps/crm");
