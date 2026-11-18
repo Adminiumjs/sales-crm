@@ -55,6 +55,9 @@ for (const [name, raw] of [
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
       expect(doc.compatibility.minAdminiumVersion).toBe("0.3.64");
+      // Under an older floor "chat" is no reserved key: the entry would be refused, so the floor cannot go back.
+      const older = validateManifest({ ...structuredClone(raw), compatibility: { ...doc.compatibility, minAdminiumVersion: "0.3.63" } });
+      expect(older.ok ? [] : older.issues.map((issue) => issue.path)).toContainEqual(expect.stringMatching(/^publicAccess\.\d+\.key$/));
     });
 
     it("opens enquiries to a question left outside hours: one entry, the visitor's name, address and question, open, from the chat", () => {

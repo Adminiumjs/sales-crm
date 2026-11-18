@@ -44,7 +44,7 @@ import { pageBoardIssues } from './page-board.ts';
 import { pageCalendarIssues } from './page-calendar.ts';
 import { pageConfigIssues } from './page-config.ts';
 import { emailTemplateSchema, outboxIssues, outboxProducerSchema, outboxSchema } from './outbox.ts';
-import { CHAT_KEY, FORMS_KEY, codeWhereSchema, personalColumn, plainTextMax, plainTextRef, publicAccessIssues, publicAccessSchema, publicKeysSchema, shareCodeColumns, unlistedColumn, type PublicAccess } from './public-access.ts';
+import { CHAT_KEY, FORMS_KEY, chatKeyReserved, codeWhereSchema, personalColumn, plainTextMax, plainTextRef, publicAccessIssues, publicAccessSchema, publicKeysSchema, shareCodeColumns, unlistedColumn, type PublicAccess } from './public-access.ts';
 import { appGrantsIssues, appGrantsSchema, roleTableHold, type AppGrantTableShape, type RoleTableHold } from './app-grants.ts';
 import { belongsIssues, belongsSchema, privateTableIssues, roleAddOnTableIssues, roleAddOnTablesSchema, type RoleAddOnTable, roleLimitIssues, roleLimitsSchema, rowTablesOf, type RoleShape, privateShapeIssues, storedTotalIssues } from './roles.ts';
 import { conditionIssues, stateConditionSchema, statesIssues, statesSchema, type States } from './states.ts';
@@ -2453,6 +2453,8 @@ export function appReferenceIssues(
     kind?: string | undefined;
     /** An add-on's code page refs (`addOn.pages`), which a state action's link may open. */
     codePages?: readonly string[] | undefined;
+    /** The manifest's floor: `chat` is the reserved key only from 0.3.64 on (`chatKeyReserved`). */
+    compatibility?: { minAdminiumVersion?: string | undefined } | undefined;
   },
   /**
    * When the tables are an add-on's shape rather than an app's: the add-on's
@@ -3269,6 +3271,7 @@ export function appReferenceIssues(
       figures: figureColumns(m.requiredSchema.tables),
       mailsOnCreate: (table) => (m.outbox?.producers ?? []).some((producer) => 'onCreate' in producer && producer.onCreate.table === table),
       publicKeys: m.publicKeys,
+      chatReserved: chatKeyReserved(m),
       roles: m.roles ?? [],
       outbox: m.outbox,
     }),
@@ -4190,6 +4193,8 @@ function installFloorIssues(m: { compatibility: { minAdminiumVersion: string } }
   const newest = Object.values(WORD_FLOORS).reduce((a, b) => (compareSemver(b, a) > 0 ? b : a), ADD_ON_INSTALL_FLOOR);
   if (compareSemver(floor, newest) >= 0) return [];
   return installFloorWords(m).flatMap((found) => {
+    // Below its floor `chat` is an ordinary key name, as it was when the manifest was written: no word of the chat's.
+    if (found.word === 'publicAccess.chat') return [];
     const needs = WORD_FLOORS[found.word] ?? ADD_ON_INSTALL_FLOOR;
     if (compareSemver(floor, needs) >= 0) return [];
     return [
@@ -4435,6 +4440,8 @@ export type ChatEntry = Omit<FormsEntry, 'source'>;
  * for a manifest that opens none. The chat door reads these and nothing else.
  */
 export function chatEntriesOf(m: Manifest): ChatEntry[] {
+  // Under an older floor `chat` is an ordinary key: its entries are the public API's, and no chat's.
+  if (!chatKeyReserved(m)) return [];
   // A chat entry names no source (the validator refuses one), so none is handed on.
   return entriesUnder(m, CHAT_KEY).map(({ source: _source, ...entry }) => entry);
 }
