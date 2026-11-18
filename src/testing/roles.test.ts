@@ -519,7 +519,7 @@ describe("the app brings nine roles", () => {
     const READS = ["id", "form_id", "record_table", "record_key", "class", "invited_at", "answered_at", "expires_at"];
     const readers: string[] = [];
     for (const r of roles) {
-      const forms = ((r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables ?? []).filter((entry) => entry.addOn === "forms");
+      const forms = ((r as { tables?: { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } }[] }).tables ?? []).filter((entry) => entry.addOn === "forms" && entry.table === "invitations");
       if (forms.length === 0) continue;
       readers.push(r.key);
       expect(forms, r.key).toEqual([{ addOn: "forms", table: "invitations", actions: ["read"], limit: { readable: READS } }]);

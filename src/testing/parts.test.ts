@@ -78,6 +78,8 @@ describe("the app is made of eleven parts", () => {
       ["forms", true],
       // A chat window on the website is the owner's to choose: offered, not ticked.
       ["live-chat", false],
+      // Landing pages too: the marketer's home reads them when they are there.
+      ["pages", false],
     ]);
   });
 });

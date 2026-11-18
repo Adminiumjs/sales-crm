@@ -51,10 +51,10 @@ for (const [name, raw] of [
   const forms = doc.publicAccess.find((one) => one.table === "enquiries" && one.key === "forms")!;
 
   describe(`the website chat, in ${name}`, () => {
-    it("still passes the validator, and needs Adminium 0.3.64, which knows the chat entry", () => {
+    it("still passes the validator, and needs Adminium 0.3.65 (0.3.64 brought the chat entry)", () => {
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.64");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.65");
       // Under an older floor "chat" is no reserved key: the entry would be refused, so the floor cannot go back.
       const older = validateManifest({ ...structuredClone(raw), compatibility: { ...doc.compatibility, minAdminiumVersion: "0.3.63" } });
       expect(older.ok ? [] : older.issues.map((issue) => issue.path)).toContainEqual(expect.stringMatching(/^publicAccess\.\d+\.key$/));

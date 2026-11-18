@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.64",
+    "minAdminiumVersion": "0.3.65",
     "engines": [
       "postgres",
       "mysql",
@@ -26775,6 +26775,66 @@
               "sent_at"
             ]
           }
+        },
+        {
+          "addOn": "forms",
+          "table": "forms",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "name",
+              "kind",
+              "state"
+            ]
+          }
+        },
+        {
+          "addOn": "forms",
+          "table": "answers",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "form_id",
+              "submitted_at"
+            ]
+          }
+        },
+        {
+          "addOn": "pages",
+          "table": "pages",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "name",
+              "slug",
+              "state",
+              "language",
+              "published_at"
+            ]
+          }
+        },
+        {
+          "addOn": "pages",
+          "table": "funnels",
+          "actions": [
+            "read"
+          ],
+          "limit": {
+            "readable": [
+              "id",
+              "name",
+              "steps"
+            ]
+          }
         }
       ]
     },
@@ -46704,6 +46764,20 @@
           "ar-EG": "نافذة محادثة على موقعك: يتحول السؤال المتروك خارج ساعات العمل إلى استفسار، وتفتح بطاقته المحادثة.",
           "zh-CN": "网站上的聊天窗口：非工作时间留下的问题会变成团队收件箱中的询盘，询盘卡片可打开聊天记录。",
           "zh-TW": "網站上的聊天視窗：非營業時間留下的問題會變成團隊收件匣中的詢問，詢問卡片可開啟聊天記錄。"
+        }
+      },
+      {
+        "key": "pages",
+        "range": ">=1.0.31",
+        "reason": {
+          "en-US": "Landing pages for an open day or an offer; the marketer's home counts their views.",
+          "de-DE": "Landingpages für einen Tag der offenen Tür oder ein Angebot; die Marketing-Startseite zählt ihre Aufrufe.",
+          "fr-FR": "Des pages d’atterrissage pour une journée portes ouvertes ou une offre ; l’accueil marketing compte leurs vues.",
+          "da-DK": "Landingssider til et åbent hus eller et tilbud; marketingforsiden tæller deres visninger.",
+          "cs-CZ": "Vstupní stránky ke dni otevřených dveří nebo k nabídce; úvod marketingu počítá jejich zobrazení.",
+          "ar-EG": "صفحات هبوط ليوم مفتوح أو لعرض؛ وتعدّ صفحة التسويق الرئيسية مرات مشاهدتها.",
+          "zh-CN": "用于开放日或优惠活动的落地页；营销首页会统计它们的浏览次数。",
+          "zh-TW": "用於開放日或優惠活動的到達頁面；行銷首頁會統計它們的瀏覽次數。"
         }
       }
     ],
