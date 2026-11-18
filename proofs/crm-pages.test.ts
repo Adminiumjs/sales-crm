@@ -293,9 +293,9 @@ describe.each(LEGS)(`the CRM's sample without Pages — %s`, (dialect, legAvaila
     await h.stageApp(manifest(), appFiles());
     // Pages is suggested and not on this server (nor on a shelf it reads): shown as not available here, not ticked, and
     // the install goes without it.
-    const plan = await h.plan(manifest());
+    const plan = await h.inject({ method: 'POST', url: '/apps/plan', payload: { key: 'crm', version: manifest().version, connectionId: h.connectionId } });
     expect(plan.statusCode, plan.body).toBe(200);
-    const pages = ((plan.json() as Doc).addOns as Doc[] | undefined)?.find((one) => one.key === 'pages');
+    const pages = (((plan.json() as Doc).plan as Doc).addOns as Doc[] | undefined)?.find((one) => one.key === 'pages');
     expect(pages === undefined ? null : { state: pages.state, checked: pages.checked, action: pages.action, need: pages.need }).toEqual({ state: 'unavailable', checked: false, action: null, need: 'suggests' });
     expect((pages!.problems as Doc[]).map((problem) => problem.code)).toEqual(['ADD_ON_UNAVAILABLE']);
     const installed = await h.install('crm', manifest().version, { addOns: [{ key: 'forms', version: FORMS!.version }], modules: { inbox: true } });
