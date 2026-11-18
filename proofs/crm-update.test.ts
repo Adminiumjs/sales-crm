@@ -1,11 +1,18 @@
 /**
- * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3, 0.2.4 and 0.2.5, holding the sample
- * and rows typed since by the people who type them, updated to 0.2.6 (the whole app), on SQLite, Postgres and MySQL.
+ * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3, 0.2.4, 0.2.5 and 0.2.6, holding
+ * the sample and rows typed since by the people who type them, updated to 0.2.7 (the whole app), on SQLite, Postgres and
+ * MySQL.
  *
- * Each release is read from its git tag (`v0.2.0` … `v0.2.5`): the manifest and the `seeds/` the package shipped, as
- * the release put them in its file. The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
+ * Each release is read from its git tag (`v0.2.0` … `v0.2.6`): the manifest and the `seeds/` the package shipped, as
+ * the release put them in its file. Before a release is tagged, `CRM_RELEASE_REFS` names the commit that holds it
+ * (`0.2.6=<commit>`). The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
  * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
  * when it still says the one installed), Forms among them, installed after the CRM's update.
+ *
+ * The website chat (0.2.7, on Adminium 0.3.64): a question left outside hours makes an enquiry through the chat entry,
+ * and the Team inbox's five roles read the chat an enquiry came from (Live chat's conversations and messages). No table,
+ * column, part or rule changes. The update from every release asks the owner for those reads, though no install has
+ * Live chat yet; once it is installed after the update, a rep reads its chats and the operations manager does not.
  *
  * A quote paid online (0.2.6, on Adminium 0.3.62): a new table of the Quotes part (`quote_payments`), what a quote asks on
  * acceptance and what was paid of it, and two settings. The update from every release asks the owner to let the
@@ -82,7 +89,7 @@ import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.62' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.64' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 type Row = Record<string, unknown>;
@@ -90,8 +97,11 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.6';
-const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5'] as const;
+const NEXT = '0.2.7';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6'] as const;
+/** A release not tagged yet, read from the commit that holds it: `CRM_RELEASE_REFS=0.2.6=<commit>`. */
+const REFS: Record<string, string> = Object.fromEntries((process.env.CRM_RELEASE_REFS ?? '').split(',').filter((pair) => pair.includes('=')).map((pair) => pair.split('=', 2) as [string, string]));
+const refOf = (version: string): string => REFS[version] ?? `v${version}`;
 /** What 0.2.6 adds to a quote, worked out by the server, and the two it takes from Settings when it is made; and the two settings. */
 const PAY_DERIVED = ['quotes.pay_amount', 'quotes.pay_due', 'quotes.pay_open', 'quotes.pay_paid', 'quotes.pay_paid_at', 'quotes.pay_provider', 'quotes.pay_refunded'];
 const PAY_PLAIN = ['quotes.pay_ask', 'quotes.pay_pct', 'settings.pay_ask', 'settings.pay_deposit_pct'];
@@ -132,7 +142,7 @@ interface Doc {
 const git = (...args: string[]): Buffer => execFileSync('git', ['-C', APP, ...args], { maxBuffer: 1 << 30 });
 const tagged = (version: Release): boolean => {
   try {
-    git('rev-parse', '--verify', '--quiet', `v${version}^{commit}`);
+    git('rev-parse', '--verify', '--quiet', `${refOf(version)}^{commit}`);
     return true;
   } catch {
     return false;
@@ -154,7 +164,7 @@ function packed(files: Record<string, string | Buffer>): Record<string, string> 
 
 /** A release as its tag holds it: `manifest.json`, and every file under `seeds/` (what `publish-app.mjs` puts in the package). */
 function released(version: Release): { manifest: Doc; files: Record<string, string> } {
-  const tag = `v${version}`;
+  const tag = refOf(version);
   const manifest = JSON.parse(git('show', `${tag}:manifest.json`).toString('utf8')) as Doc;
   expect(manifest.version).toBe(version);
   const files: Record<string, string | Buffer> = {};
@@ -165,7 +175,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.6: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.7: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -213,7 +223,15 @@ const before = Object.fromEntries(ADD_ONS.map((key) => [key, addOnAt(BEFORE_REPO
 const after = Object.fromEntries(ADD_ONS.map((key) => [key, bumped(addOnAt(AFTER_REPO, key), before[key])])) as Record<(typeof ADD_ONS)[number], AddOn | null>;
 /** Forms, which no install had before: installed after the CRM's update, at the next add-ons release. */
 const formsNext = addOnAt(AFTER_REPO, 'forms');
-const haveAddOns = ADD_ONS.every((key) => before[key] !== null && after[key] !== null) && formsNext !== null;
+/** Live chat, which no install had before: installed after the CRM's update, numbered as the release will (the app suggests 1.0.30 or newer). */
+const chatBuilt = addOnAt(AFTER_REPO, 'live-chat');
+const chatNext: AddOn | null = chatBuilt === null ? null : { ...chatBuilt, version: '1.0.30', manifest: { ...chatBuilt.manifest, version: '1.0.30' } };
+/** What every release before 0.2.7 is asked of Live chat's tables: the Team inbox's five roles read a chat and its lines. */
+const CHAT_READS = ['admin', 'front-desk', 'marketer', 'rep', 'sales-manager'].flatMap((role) => [
+  { role, addOn: 'live-chat', table: 'conversations', actions: ['read'], columns: ['id', 'started_at', 'outside_hours', 'became_table', 'became_key'] },
+  { role, addOn: 'live-chat', table: 'messages', actions: ['read', 'read_pii'], columns: ['id', 'conversation_id', 'kind', 'body', 'event', 'author_id', 'sent_at'] },
+]);
+const haveAddOns = ADD_ONS.every((key) => before[key] !== null && after[key] !== null) && formsNext !== null && chatNext !== null;
 /** Whether an Inventory copies an order's expected day onto each delivery (from 1.0.14). */
 const copiesExpectedDay = (addOn: AddOn | null): boolean => ((addOn?.manifest['requiredSchema'] as { tables?: Table[] } | undefined)?.tables ?? []).some((table) => table.ref === 'receipts' && table.columns.some((column) => column.ref === 'expected_on'));
 
@@ -516,7 +534,7 @@ function lostOrChanged(was: Map<string, Map<string, Row>>, now: Map<string, Map<
 describe.skipIf(haveAddOns && RELEASES.every(tagged))('the CRM updated from its releases', () => {
   it('needs both releases tagged, and the add-ons as released and as next, built', () => {
     throw new Error(
-      `tags ${RELEASES.filter((one) => !tagged(one)).join(', ') || 'present'}; CRM_ADD_ONS_BEFORE ${BEFORE_REPO ?? 'unset'}, ADD_ONS_REPO ${AFTER_REPO ?? 'unset'}: each needs Invoices and Inventory built, the next one Forms too`,
+      `tags ${RELEASES.filter((one) => !tagged(one)).join(', ') || 'present'}; CRM_ADD_ONS_BEFORE ${BEFORE_REPO ?? 'unset'}, ADD_ONS_REPO ${AFTER_REPO ?? 'unset'}: each needs Invoices and Inventory built, the next one Forms and Live chat too`,
     );
   });
 });
@@ -539,7 +557,9 @@ for (const [dialect, reachable] of LEGS) {
       /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 and later already have the mark of the line and the count of won deals; 0.2.4 already has website forms and surveys. */
       const has22 = from !== '0.2.0' && from !== '0.2.1';
       const has23 = has22 && from !== '0.2.2';
-      const has24 = from === '0.2.4' || from === '0.2.5';
+      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6';
+      /** 0.2.6 already takes a quote's payments online: the update asks nothing of them. */
+      const has26 = from === '0.2.6';
       const installedAddOns = before;
       const nextAddOns = after;
 
@@ -727,13 +747,17 @@ for (const [dialect, reachable] of LEGS) {
         expect(receipts.filter((row) => plainValue(row['got']) !== plainValue(row['want'])).map((row) => `${String(row['id'])}: ${String(plainValue(row['got']))}, the order says ${String(plainValue(row['want']))}`).slice(0, 10)).toEqual([]);
       }, 600_000);
 
-      it(has24 ? `the CRM update to ${NEXT} widens no grant of an add-on's table, and goes when the owner lets the customer's link show more and two roles refund` : `the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table, and goes when the owner allows them`, async () => {
+      it(`the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table (the inbox's reads of Live chat${has24 ? '' : ', and older ones'}), and goes when the owner allows them${has26 ? '' : ', lets the customer\'s link show more and two roles refund'}`, async () => {
         await s.jobs();
         rowsBefore = await everyRow(s);
         partsBefore = await parts();
         rulesBefore = await rules();
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
         const want = widerGrants(was.manifest, now.manifest);
+        // From every release: the Team inbox's roles read the chat an enquiry came from, though no install has Live chat yet.
+        const chatWant = want.filter((grant) => grant.addOn === 'live-chat');
+        expect(chatWant).toEqual([...CHAT_READS].sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`)));
+        const older = want.filter((grant) => grant.addOn !== 'live-chat');
         // Each refusal names what it asks, before anything moves; the owner allows each in turn.
         // Nothing is allowed up front: the quote link's own key carries the app's public access through the update.
         const allowed: Record<string, boolean> = {};
@@ -761,22 +785,22 @@ for (const [dialect, reachable] of LEGS) {
         }
         // From every release: the customer's link shows what a quote asks, and what was paid and is left; the CRM admin
         // and the sales manager may refund the CRM's online payments.
-        expect(reasons.filter((one) => one !== 'roleTables').sort()).toEqual(['PUBLIC_WIDER', 'ROLE_GRANTS_ADDED']);
+        // 0.2.6 asks neither: it holds both already. The chat's own entry asks nothing more of the app's public access.
+        expect(reasons.filter((one) => one !== 'roleTables').sort()).toEqual(has26 ? [] : ['PUBLIC_WIDER', 'ROLE_GRANTS_ADDED']);
+        expect(reasons).toContain('roleTables');
         if (has24) {
-          // 0.2.4 already holds every grant of an add-on's table 0.2.6 does.
-          expect(want).toEqual([]);
-          expect(reasons).not.toContain('roleTables');
+          // 0.2.4 already holds every other grant of an add-on's table 0.2.7 does.
+          expect(older).toEqual([]);
         } else {
           // From every release before 0.2.4: the five roles that read the aftercare calls read when a job's survey went
           // (Forms' invitations), though no install has Forms yet; never who it went to.
-          const invitations = want.filter((grant) => grant.addOn === 'forms' && grant.table === 'invitations');
+          const invitations = older.filter((grant) => grant.addOn === 'forms' && grant.table === 'invitations');
           expect(invitations.map((grant) => [grant.role, grant.actions]).sort()).toEqual(['account-manager', 'admin', 'read-only', 'rep', 'sales-manager'].map((role) => [role, ['read']]));
           for (const grant of invitations) expect(grant.columns, grant.role).not.toContain('email');
           // Inventory's receipts, read by Supply's three roles (the scorecard), from 0.2.0 and 0.2.1 only.
-          expect(want.filter((grant) => grant.table === 'receipts').map((grant) => grant.role).sort()).toEqual(has22 ? [] : ['admin', 'ops-manager', 'read-only']);
+          expect(older.filter((grant) => grant.table === 'receipts').map((grant) => grant.role).sort()).toEqual(has22 ? [] : ['admin', 'ops-manager', 'read-only']);
           // And from those two, the crew's read of Inventory's items (a van's load names the item).
-          expect(want.filter((grant) => grant.table !== 'receipts' && grant.table !== 'invitations').map((grant) => `${grant.role}/${grant.addOn}/${grant.table}`)).toEqual(has22 ? [] : ['crew/inventory/items']);
-          expect(reasons).toContain('roleTables');
+          expect(older.filter((grant) => grant.table !== 'receipts' && grant.table !== 'invitations').map((grant) => `${grant.role}/${grant.addOn}/${grant.table}`)).toEqual(has22 ? [] : ['crew/inventory/items']);
         }
         expect(updated?.statusCode, updated?.body).toBe(200);
         updateReply = updated!.json() as typeof updateReply;
@@ -830,7 +854,7 @@ for (const [dialect, reachable] of LEGS) {
         // what a quote asks on acceptance and how its payments stand.
         expect(ids).toEqual(
           [
-            ...PAY_DERIVED,
+            ...(has26 ? [] : PAY_DERIVED),
             ...(has23
               ? []
               : has22
@@ -931,7 +955,9 @@ for (const [dialect, reachable] of LEGS) {
         // and the two settings, at what they start at (nothing asked, a deposit of 20 %).
         const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
         const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
-        if (has24) expect(ids).toEqual(PAY_PLAIN);
+        // 0.2.7's: none.
+        if (has26) expect(ids).toEqual([]);
+        else if (has24) expect(ids).toEqual(PAY_PLAIN);
         else if (has23) expect(ids).toEqual([...ours, ...PAY_PLAIN].sort());
         else if (has22) expect(ids).toEqual([...ours, ...PAY_PLAIN, 'contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at'].sort());
         else expect(plain.length).toBeGreaterThan(20);
@@ -1053,6 +1079,23 @@ for (const [dialect, reachable] of LEGS) {
           ['brochure', KIM, 'sent', null],
           ['brochure', null, 'skipped', 'Not sent: on the do-not-email list'],
         ]);
+      }, 600_000);
+
+      it('Live chat installed after the update: a rep reads its chats and their lines, the operations manager neither', async () => {
+        await upload('/api/v1/add-ons/upload', addOnTarball(chatNext!));
+        const added = await as('owner', 'POST', '/api/v1/add-ons', { key: 'live-chat', version: chatNext!.version, attachTo: ['crm'] });
+        expect(added.statusCode, added.body).toBe(200);
+        await s.jobs();
+        await s.reread();
+        // The grants the owner allowed on the update, written now the add-on is there.
+        for (const table of ['conversations', 'messages']) {
+          const path = `/api/v1/data/${s.connectionId}/${s.t(`live_chat_${table}`)}?limit=1`;
+          const read = await as('dana', 'GET', path);
+          expect(read.statusCode, `${table}: ${read.body}`).toBe(200);
+          expect((await as('ada', 'GET', path)).statusCode, table).toBe(403);
+        }
+        // What the update kept is still kept.
+        expect(Number((await one('select count(*) as c from crm_enquiries'))['c'])).toBeGreaterThan(0);
       }, 600_000);
 
       it('a later update carries the old marks again and adds no entry: each was put on the list once', async () => {
