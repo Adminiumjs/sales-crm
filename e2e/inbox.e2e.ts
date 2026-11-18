@@ -221,7 +221,8 @@ test("Add an enquiry at the front desk, its first reply lost: one enquiry, and t
 
     // Live: Lena's home, never reloaded, counts it.
     await expect(stat(lena, "month").locator(".crm-leads-value")).toHaveText("18");
-    await expect(lena.locator('.crm-mk-rows li[data-source="phone"]')).toContainText("2 enquiries", { timeout: 45_000 });
+    // The sample's only phone enquiry was not one (Veldt Studios asked in the website chat): this is the first.
+    await expect(lena.locator('.crm-mk-rows li[data-source="phone"]')).toContainText("1 enquiry", { timeout: 45_000 });
 
   } finally {
     await page.unroute("**/api/v1/data/**").catch(() => undefined);
@@ -549,7 +550,7 @@ test("the marketer's home: counts only, each the server's, the keen lead first, 
   await expect(sources).toHaveCount(3);
   await expect(sources.nth(0)).toHaveText(/Trade show.*1 in the team inbox · 11 scanned at the show.*12 enquiries.*0 deals/);
   await expect(sources.nth(1)).toHaveText(/Web form.*4 in the team inbox.*4 enquiries.*0 deals/);
-  await expect(sources.nth(2)).toHaveText(/Phone.*1 in the team inbox.*1 enquiry.*0 deals/);
+  await expect(sources.nth(2)).toHaveText(/Chat.*1 in the team inbox.*1 enquiry.*0 deals/);
   const waiting = page.locator("section[aria-labelledby='crm-mk-waiting'] li");
   await expect(waiting).toHaveCount(3);
   await expect(waiting.first()).toContainText("Sadie Kwan, Verity Insurance");
@@ -568,7 +569,7 @@ test("the marketer's home: counts only, each the server's, the keen lead first, 
     data: { descriptor: { connectionId: standOf().connectionId, source: { name: standOf().tables["crm_enquiries"] }, shape: "categorical", groupBy: ["source"], aggregations: [{ fn: "count", alias: "n" }], filters: [] } },
     headers: await csrf(context.request),
   });
-  expect(((await bySource.json()) as { result: { items: { key: string; value: number }[] } }).result.items.map((item) => [item.key, item.value]).sort()).toEqual([["form", 4], ["phone", 1], ["show", 12]]);
+  expect(((await bySource.json()) as { result: { items: { key: string; value: number }[] } }).result.items.map((item) => [item.key, item.value]).sort()).toEqual([["chat", 1], ["form", 4], ["show", 12]]);
   // She reads nothing of a deal: the server's refusal.
   expect((await context.request.get(data("deals", "?limit=1"))).status()).toBe(403);
   // The row for the show opens the leads.
