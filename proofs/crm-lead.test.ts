@@ -12,11 +12,13 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { usersRepo } from '@adminium/meta';
+import { rolesRepo, usersRepo } from '@adminium/meta';
 import { createSampleDataService, findSampleApp } from '../src/apps/sample-data.js';
 import { LEGS } from './invoicing-install.helpers.js';
 import { builtAddOn } from './add-ons/harness.js';
 import { addOnHarness, type Harness } from './app-add-ons.helpers.js';
+import { ADMIN_PASSWORD, adminPasswordHash, sessionCookie } from './auth-helpers.js';
+import { servePublic } from './public-lane.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
 vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.66' }));
@@ -64,6 +66,7 @@ for (const [dialect, reachable] of LEGS) {
   for (const withFinder of [false, true]) {
     describe.skipIf(!reachable || (withFinder && FINDER === null))(`the company's details, ${withFinder ? 'with' : 'without'} Lead finder, on ${dialect}`, () => {
       let h: Harness;
+      let served: Awaited<ReturnType<typeof servePublic>> | undefined;
       const service = () => createSampleDataService(h.sampleData);
       const app = async () => (await findSampleApp(h.meta, 'crm'))!;
       const count = async (table: string, where = '1 = 1') => Number((await h.rows(`SELECT COUNT(*) AS n FROM ${table} WHERE ${where}`))[0]!['n']);
@@ -81,6 +84,7 @@ for (const [dialect, reachable] of LEGS) {
         expect(installed.statusCode, installed.body).toBe(200);
       }, 600_000);
       afterAll(async () => {
+        await served?.close();
         await h?.close();
       });
 
@@ -130,7 +134,13 @@ for (const [dialect, reachable] of LEGS) {
       }, 600_000);
 
       it.skipIf(!withFinder)("tells Lead finder's page of Companies and where each detail goes", async () => {
-        const res = await h.inject({ method: 'GET', url: '/add-ons/lead-finder/kit' });
+        // The whole server, signed in as somebody who runs the install, as Lead finder's page reads it.
+        // Closing it ends the harness's database too: it stays up until the harness goes (afterAll).
+        served = await servePublic(h as never, null, { ADMINIUM_DATA_DIR: h.dataDir });
+        const user = await usersRepo(h.meta).create({ email: 'boss@crm.example', name: 'boss', passwordHash: await adminPasswordHash() });
+        await rolesRepo(h.meta).assignToUser(user.id, (await rolesRepo(h.meta).findBySlug('super-admin'))!.id);
+        const login = await served.composed.app.inject({ method: 'POST', url: '/api/v1/auth/login', remoteAddress: '10.3.0.1', payload: { email: 'boss@crm.example', password: ADMIN_PASSWORD } });
+        const res = await served.composed.app.inject({ method: 'GET', url: '/api/v1/add-ons/lead-finder/kit', headers: { cookie: sessionCookie(login.headers['set-cookie']) } });
         expect(res.statusCode, res.body).toBe(200);
         const hosts = (res.json() as unknown as { hosts: { via: string; tableRef: string; lead?: unknown }[] }).hosts.filter((one) => one.via === 'companies');
         expect(hosts).toHaveLength(1);

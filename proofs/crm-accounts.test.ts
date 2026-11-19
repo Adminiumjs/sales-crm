@@ -394,7 +394,7 @@ for (const [dialect, reachable] of LEGS) {
 
     it('counts every open deal at a company for everybody who reads the marks, and whose is whose only for those who read deals', async () => {
       const names = await byName('companies');
-      const ledger = { 'Cobalt Legal': 2, 'Fernway Clinics': 1, 'Juno Analytics': 1, 'Nordwind Logistics': 2, 'Veldt Studios': 2, 'Brightloom Foods': 2, 'Harbor & Finch': 2, 'Tandem Robotics': 1, 'Low Orbit': 1 };
+      const ledger = { 'Cobalt Legal': 2, 'Fernway Clinics': 1, 'Juno Analytics': 1, 'Nordwind Logistics': 2, 'Veldt Studios': 2, 'Brightloom Foods': 2, 'Harbor & Finch': 2, 'Tandem Robotics': 1, 'Low Orbit': 1, ...Object.fromEntries(Object.keys(NOTHING_FOUND).map((name) => [name, 0])) };
       for (const person of ['dana', 'ivy', 'hugo', 'grace', 'lena']) expect(await marksBy(person, 'company_id', names), person).toEqual(ledger);
 
       // Nordwind's two open deals: d1 is Dana's, d12 is Leo's. Dana is answered Leo's as a mark: who and which stage, no more.
@@ -522,11 +522,12 @@ for (const [dialect, reachable] of LEGS) {
     it('a new contact may not be emailed until somebody ticks it, and the server says who and when', async () => {
       const names = await byName('companies');
       const cobalt = names['Cobalt Legal']!;
-      // The sample: six of the thirteen say yes, each ticked by a colleague on a day; the rest say no.
+      // The sample: seven of the seventeen say yes, each ticked by a colleague on a day (Kari Vik agreed by phone after
+      // Lead finder found her, Dana recorded it); the rest say no.
       const sample = await s.rows(`SELECT name, may_email, may_email_by_id, may_email_at FROM ${s.real('contacts')} WHERE name NOT LIKE 'P07 %' ORDER BY name`);
-      expect(sample).toHaveLength(13);
+      expect(sample).toHaveLength(17);
       const yes = sample.filter((row) => Boolean(Number(row['may_email'])));
-      expect(yes.map((row) => row['name'])).toEqual(['Ana Belova', 'Ines Vaughan', 'Marta Kovac', 'Petra Lindqvist', 'Ruth Adeyemi', 'Sadie Moore']);
+      expect(yes.map((row) => row['name'])).toEqual(['Ana Belova', 'Ines Vaughan', 'Kari Vik', 'Marta Kovac', 'Petra Lindqvist', 'Ruth Adeyemi', 'Sadie Moore']);
       for (const row of yes) expect([row['may_email_by_id'] !== null, row['may_email_at'] !== null], String(row['name'])).toEqual([true, true]);
       expect(yes.find((row) => row['name'] === 'Ines Vaughan')!['may_email_by_id']).toBe(s.id['dana']);
 
