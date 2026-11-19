@@ -43,6 +43,9 @@ vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.66' }));
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 const invoices = builtAddOn('invoices');
+// A locally built Invoices draws its documents only as a developer's own add-on (Adminium 0.3.66): name it so, keeping
+// any key already named.
+process.env['ADMINIUM_ADD_ON_DEV_TRUST'] = [...new Set([...(process.env['ADMINIUM_ADD_ON_DEV_TRUST'] ?? '').split(','), 'invoices'].filter((key) => key !== ''))].join(',');
 const DAY = 86_400_000;
 const WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const ANA = 'ana.belova@fernway-clinics.com';

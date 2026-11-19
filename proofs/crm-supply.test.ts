@@ -70,6 +70,9 @@ vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof im
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
 const inventory = builtAddOn('inventory');
 const invoices = builtAddOn('invoices');
+// A locally built Invoices draws its documents only as a developer's own add-on (Adminium 0.3.66): name it so, keeping
+// any key already named.
+process.env['ADMINIUM_ADD_ON_DEV_TRUST'] = [...new Set([...(process.env['ADMINIUM_ADD_ON_DEV_TRUST'] ?? '').split(','), 'invoices'].filter((key) => key !== ''))].join(',');
 const n = (value: unknown): number => Number(value);
 
 interface Stage {

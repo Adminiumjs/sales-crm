@@ -25,6 +25,9 @@ const read = (path: string) => readFileSync(`${APP}/${path}`, 'utf8');
 const manifest = () => JSON.parse(read("whole/manifest.json")) as Record<string, unknown> & { version: string };
 const inventory = builtAddOn('inventory');
 const invoices = builtAddOn('invoices');
+// A locally built Invoices draws its documents only as a developer's own add-on (Adminium 0.3.66): name it so, keeping
+// any key already named.
+process.env['ADMINIUM_ADD_ON_DEV_TRUST'] = [...new Set([...(process.env['ADMINIUM_ADD_ON_DEV_TRUST'] ?? '').split(','), 'invoices'].filter((key) => key !== ''))].join(',');
 const n = (value: unknown): number => Number(value);
 
 describe.skipIf(inventory !== null && invoices !== null)('the CRM\'s goods in Inventory', () => {
