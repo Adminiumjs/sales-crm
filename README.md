@@ -20,7 +20,7 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | Roles | 9 |
 | Shipped rules | 26: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, the brochure an enquirer asks for and the survey after a sign-off, switched off |
 | E-mails | 19, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers; with Pages, four landing pages (the showroom's open day, its thanks page and the acoustic booths, live; the open day's German copy, a draft) and the "Open day" funnel |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers; with Pages, four landing pages in the adding person's language (the showroom's open day, its thanks page and the acoustic booths, live; the spring open day, a draft) and the "Open day" funnel, linked to the brochure rule |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -225,9 +225,9 @@ column, part or rule changes, and every row is kept as it was:
   Adminium began counting inside the month), and the website chats with the questions left outside
   hours. A group whose add-on is not installed is not shown.
 - **The sample**, with Pages: the open day's landing page, its thanks page, the acoustic booths'
-  page and a German copy of the open day not yet live, and the "Open day" funnel (the open day,
-  the showroom form, the thanks page). No rule is linked to the funnel: a sample cannot name a
-  rule an install made; link the brochure rule to it in Pages.
+  page and the spring open day (not yet live), each in the language of whoever adds the sample,
+  and the "Open day" funnel (the open day, the showroom form, the thanks page), linked to the
+  brochure rule.
 
 ## Updating to 0.2.7
 

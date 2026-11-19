@@ -23,29 +23,128 @@
      },
      "slug": "acoustic-booths",
      "state": "live",
-     "language": "en-US",
+     "language": {
+      "@t": {
+       "en-US": "en-US",
+       "de-DE": "de-DE",
+       "fr-FR": "fr-FR",
+       "da-DK": "da-DK",
+       "cs-CZ": "cs-CZ",
+       "ar-EG": "ar-EG",
+       "zh-CN": "zh-CN",
+       "zh-TW": "zh-TW"
+      }
+     },
      "draft": {
       "v": 1,
-      "title": "Acoustic booths for open offices",
-      "description": "Booths that cut the noise of a busy floor by half. Each one seats two and is in place in a day.",
+      "title": {
+       "@t": {
+        "en-US": "Acoustic booths for open offices",
+        "de-DE": "Akustikkabinen für Großraumbüros",
+        "fr-FR": "Cabines acoustiques pour bureaux ouverts",
+        "da-DK": "Akustiske kabiner til åbne kontorer",
+        "cs-CZ": "Akustické kabiny do otevřených kanceláří",
+        "ar-EG": "كبائن عازلة للصوت للمكاتب المفتوحة",
+        "zh-CN": "开放式办公室的隔音舱",
+        "zh-TW": "開放式辦公室的隔音艙"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "Booths that cut the noise of a busy floor by half. Each seats two and is in place in a day.",
+        "de-DE": "Kabinen, die den Lärm im Großraumbüro halbieren. Jede bietet zwei Personen Platz und steht in einem Tag.",
+        "fr-FR": "Des cabines qui divisent par deux le bruit d’un plateau animé. Chacune accueille deux personnes et s’installe en un jour.",
+        "da-DK": "Kabiner, der halverer larmen på et travlt kontor. Hver har plads til to og står klar på en dag.",
+        "cs-CZ": "Kabiny, které na rušném patře sníží hluk na polovinu. Každá pojme dva lidi a stojí za jeden den.",
+        "ar-EG": "كبائن تخفض ضوضاء المكتب المزدحم إلى النصف. تتسع كل منها لشخصين وتُركّب في يوم واحد.",
+        "zh-CN": "隔音舱可将繁忙办公区的噪音减半。每个可坐两人，一天即可安装到位。",
+        "zh-TW": "隔音艙可將繁忙辦公區的噪音減半。每個可坐兩人，一天即可安裝到位。"
+       }
+      },
       "blocks": [
        {
         "id": "hero",
         "kind": "hero",
-        "heading": "Acoustic booths for open offices",
-        "text": "Our booths cut the noise of a busy floor by half. Each one seats two, fits through a standard door, and is in place in a day."
+        "heading": {
+         "@t": {
+          "en-US": "Acoustic booths for open offices",
+          "de-DE": "Akustikkabinen für Großraumbüros",
+          "fr-FR": "Cabines acoustiques pour bureaux ouverts",
+          "da-DK": "Akustiske kabiner til åbne kontorer",
+          "cs-CZ": "Akustické kabiny do otevřených kanceláří",
+          "ar-EG": "كبائن عازلة للصوت للمكاتب المفتوحة",
+          "zh-CN": "开放式办公室的隔音舱",
+          "zh-TW": "開放式辦公室的隔音艙"
+         }
+        },
+        "text": {
+         "@t": {
+          "en-US": "Our booths cut the noise of a busy floor by half. Each one seats two, fits through a standard door and is in place in a day.",
+          "de-DE": "Unsere Kabinen halbieren den Lärm im Großraumbüro. Jede bietet zwei Personen Platz, passt durch eine normale Tür und steht in einem Tag.",
+          "fr-FR": "Nos cabines divisent par deux le bruit d’un plateau animé. Chacune accueille deux personnes, passe par une porte standard et s’installe en un jour.",
+          "da-DK": "Vores kabiner halverer larmen på et travlt kontor. Hver har plads til to, passer gennem en almindelig dør og står klar på en dag.",
+          "cs-CZ": "Naše kabiny sníží hluk na rušném patře na polovinu. Každá pojme dva lidi, projde běžnými dveřmi a stojí za jeden den.",
+          "ar-EG": "تخفض كبائننا ضوضاء المكتب المزدحم إلى النصف. تتسع كل منها لشخصين، وتمر من باب عادي، وتُركّب في يوم واحد.",
+          "zh-CN": "我们的隔音舱可将繁忙办公区的噪音减半。每个可坐两人，能通过普通门，一天即可安装到位。",
+          "zh-TW": "我們的隔音艙可將繁忙辦公區的噪音減半。每個可坐兩人，能通過一般門，一天即可安裝到位。"
+         }
+        }
        },
        {
         "id": "sizes",
         "kind": "columns",
         "columns": [
          {
-          "heading": "What fits where",
-          "text": "Single booths for calls, double booths for two people, and a meeting pod for four."
+          "heading": {
+           "@t": {
+            "en-US": "What fits where",
+            "de-DE": "Was wohin passt",
+            "fr-FR": "Ce qui va où",
+            "da-DK": "Hvad passer hvor",
+            "cs-CZ": "Co se kam hodí",
+            "ar-EG": "ما يناسب كل مكان",
+            "zh-CN": "什么放在哪里",
+            "zh-TW": "什麼放在哪裡"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Single booths for calls, double booths for two people, and a meeting pod for four.",
+            "de-DE": "Einzelkabinen für Telefonate, Doppelkabinen für zwei Personen und eine Besprechungsbox für vier.",
+            "fr-FR": "Des cabines simples pour les appels, des doubles pour deux personnes et un module de réunion pour quatre.",
+            "da-DK": "Enkeltkabiner til opkald, dobbeltkabiner til to og en mødeboks til fire.",
+            "cs-CZ": "Jednomístné kabiny na hovory, dvoumístné kabiny a zasedací box až na čtyři lidi.",
+            "ar-EG": "كبائن فردية للمكالمات، وكبائن مزدوجة لشخصين، وكبينة اجتماعات لأربعة.",
+            "zh-CN": "单人舱用于通话，双人舱可坐两人，会议舱可坐四人。",
+            "zh-TW": "單人艙用於通話，雙人艙可坐兩人，會議艙可坐四人。"
+           }
+          }
          },
          {
-          "heading": "In place in a day",
-          "text": "We bring each booth in through a standard door and set it up while you work."
+          "heading": {
+           "@t": {
+            "en-US": "In place in a day",
+            "de-DE": "In einem Tag aufgestellt",
+            "fr-FR": "Installée en un jour",
+            "da-DK": "Klar på en dag",
+            "cs-CZ": "Hotovo za jeden den",
+            "ar-EG": "تُركّب في يوم واحد",
+            "zh-CN": "一天安装到位",
+            "zh-TW": "一天安裝到位"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "We bring each booth in through a standard door and set it up while you work.",
+            "de-DE": "Wir bringen jede Kabine durch eine normale Tür und bauen sie auf, während Sie arbeiten.",
+            "fr-FR": "Nous faisons passer chaque cabine par une porte standard et l’installons pendant que vous travaillez.",
+            "da-DK": "Vi bærer hver kabine ind gennem en almindelig dør og stiller den op, mens I arbejder.",
+            "cs-CZ": "Každou kabinu doneseme běžnými dveřmi a postavíme ji, zatímco pracujete.",
+            "ar-EG": "ندخل كل كبينة من باب عادي ونركّبها وأنتم تعملون.",
+            "zh-CN": "我们通过普通门把隔音舱搬进来，在您工作时完成安装。",
+            "zh-TW": "我們透過一般門把隔音艙搬進來，在您工作時完成安裝。"
+           }
+          }
          }
         ]
        },
@@ -55,37 +154,180 @@
         "items": [
          {
           "icon": "volume-x",
-          "heading": "Quiet inside",
-          "text": "Talk at a normal voice."
+          "heading": {
+           "@t": {
+            "en-US": "Quiet inside",
+            "de-DE": "Ruhig im Inneren",
+            "fr-FR": "Le calme à l’intérieur",
+            "da-DK": "Stille indeni",
+            "cs-CZ": "Uvnitř ticho",
+            "ar-EG": "هدوء في الداخل",
+            "zh-CN": "舱内安静",
+            "zh-TW": "艙內安靜"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Talk at a normal voice.",
+            "de-DE": "Sprechen Sie in normaler Lautstärke.",
+            "fr-FR": "Parlez à voix normale.",
+            "da-DK": "Tal med normal stemme.",
+            "cs-CZ": "Mluvte normálním hlasem.",
+            "ar-EG": "تحدّث بصوتك العادي.",
+            "zh-CN": "正常音量说话即可。",
+            "zh-TW": "正常音量說話即可。"
+           }
+          }
          },
          {
           "icon": "wind",
-          "heading": "Air that moves",
-          "text": "A silent fan changes the air every two minutes."
+          "heading": {
+           "@t": {
+            "en-US": "Air that moves",
+            "de-DE": "Frische Luft",
+            "fr-FR": "De l’air qui circule",
+            "da-DK": "Luft, der skiftes",
+            "cs-CZ": "Vzduch v pohybu",
+            "ar-EG": "هواء متجدد",
+            "zh-CN": "空气流通",
+            "zh-TW": "空氣流通"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "A silent fan changes the air every two minutes.",
+            "de-DE": "Ein leiser Lüfter tauscht die Luft alle zwei Minuten.",
+            "fr-FR": "Un ventilateur silencieux renouvelle l’air toutes les deux minutes.",
+            "da-DK": "En lydløs ventilator skifter luften hvert andet minut.",
+            "cs-CZ": "Tichý ventilátor vymění vzduch každé dvě minuty.",
+            "ar-EG": "مروحة صامتة تجدد الهواء كل دقيقتين.",
+            "zh-CN": "静音风扇每两分钟换一次气。",
+            "zh-TW": "靜音風扇每兩分鐘換一次氣。"
+           }
+          }
          },
          {
           "icon": "move",
-          "heading": "Moves with you",
-          "text": "Lift it onto wheels and roll it to a new spot."
+          "heading": {
+           "@t": {
+            "en-US": "Moves with you",
+            "de-DE": "Zieht mit um",
+            "fr-FR": "Elle vous suit",
+            "da-DK": "Flytter med jer",
+            "cs-CZ": "Přestěhuje se s vámi",
+            "ar-EG": "تنتقل معك",
+            "zh-CN": "随您移动",
+            "zh-TW": "隨您移動"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Lift it onto wheels and roll it to a new spot.",
+            "de-DE": "Auf Rollen setzen und an einen neuen Platz schieben.",
+            "fr-FR": "Posez-la sur des roulettes et déplacez-la ailleurs.",
+            "da-DK": "Sæt den på hjul og rul den til et nyt sted.",
+            "cs-CZ": "Postavte ji na kolečka a odvezte na nové místo.",
+            "ar-EG": "ضعها على عجلات وانقلها إلى مكان جديد.",
+            "zh-CN": "装上轮子，推到新位置。",
+            "zh-TW": "裝上輪子，推到新位置。"
+           }
+          }
          }
         ]
        },
        {
         "id": "questions",
         "kind": "questions",
-        "title": "Questions and answers",
+        "title": {
+         "@t": {
+          "en-US": "Questions and answers",
+          "de-DE": "Fragen und Antworten",
+          "fr-FR": "Questions et réponses",
+          "da-DK": "Spørgsmål og svar",
+          "cs-CZ": "Otázky a odpovědi",
+          "ar-EG": "أسئلة وأجوبة",
+          "zh-CN": "问与答",
+          "zh-TW": "問與答"
+         }
+        },
         "items": [
          {
-          "question": "How long does fitting take?",
-          "answer": "One day for up to four booths."
+          "question": {
+           "@t": {
+            "en-US": "How long does fitting take?",
+            "de-DE": "Wie lange dauert der Aufbau?",
+            "fr-FR": "Combien de temps dure l’installation ?",
+            "da-DK": "Hvor lang tid tager opsætningen?",
+            "cs-CZ": "Jak dlouho trvá montáž?",
+            "ar-EG": "كم يستغرق التركيب؟",
+            "zh-CN": "安装需要多长时间？",
+            "zh-TW": "安裝需要多久？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "One day for up to four booths.",
+            "de-DE": "Einen Tag für bis zu vier Kabinen.",
+            "fr-FR": "Une journée, jusqu’à quatre cabines.",
+            "da-DK": "En dag for op til fire kabiner.",
+            "cs-CZ": "Jeden den, až čtyři kabiny.",
+            "ar-EG": "يوم واحد لما يصل إلى أربع كبائن.",
+            "zh-CN": "最多四个隔音舱，一天完成。",
+            "zh-TW": "最多四個隔音艙，一天完成。"
+           }
+          }
          },
          {
-          "question": "Do the booths need power?",
-          "answer": "One standard socket runs the fan and the light."
+          "question": {
+           "@t": {
+            "en-US": "Do the booths need power?",
+            "de-DE": "Brauchen die Kabinen Strom?",
+            "fr-FR": "Les cabines ont-elles besoin d’électricité ?",
+            "da-DK": "Skal kabinerne have strøm?",
+            "cs-CZ": "Potřebují kabiny elektřinu?",
+            "ar-EG": "هل تحتاج الكبائن إلى كهرباء؟",
+            "zh-CN": "隔音舱需要通电吗？",
+            "zh-TW": "隔音艙需要通電嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "One standard socket runs the fan and the light.",
+            "de-DE": "Eine normale Steckdose versorgt Lüfter und Licht.",
+            "fr-FR": "Une prise standard alimente le ventilateur et la lumière.",
+            "da-DK": "Én almindelig stikkontakt driver ventilator og lys.",
+            "cs-CZ": "Ventilátor i světlo napájí jedna běžná zásuvka.",
+            "ar-EG": "مقبس عادي واحد يشغّل المروحة والإضاءة.",
+            "zh-CN": "一个普通插座即可为风扇和灯供电。",
+            "zh-TW": "一個一般插座即可為風扇和燈供電。"
+           }
+          }
          },
          {
-          "question": "Can we try one first?",
-          "answer": "Yes. Come to our open day in Leeds and sit in one."
+          "question": {
+           "@t": {
+            "en-US": "Can we try one first?",
+            "de-DE": "Können wir eine vorher ausprobieren?",
+            "fr-FR": "Peut-on en essayer une d’abord ?",
+            "da-DK": "Kan vi prøve en først?",
+            "cs-CZ": "Můžeme si jednu nejdřív vyzkoušet?",
+            "ar-EG": "هل يمكننا تجربة واحدة أولًا؟",
+            "zh-CN": "可以先试用吗？",
+            "zh-TW": "可以先試用嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "Yes. Come to our open day in Leeds and sit in one.",
+            "de-DE": "Ja. Kommen Sie zu unserem Tag der offenen Tür in Leeds und setzen Sie sich hinein.",
+            "fr-FR": "Oui. Venez à notre journée portes ouvertes à Leeds et installez-vous dans l’une d’elles.",
+            "da-DK": "Ja. Kom til vores åbent hus i Leeds og sæt jer i en.",
+            "cs-CZ": "Ano. Přijďte na náš den otevřených dveří v Leedsu a posaďte se do ní.",
+            "ar-EG": "نعم. تعال إلى يومنا المفتوح في ليدز وجرّب الجلوس في واحدة.",
+            "zh-CN": "可以。欢迎来我们在利兹的开放日亲自体验。",
+            "zh-TW": "可以。歡迎來我們在里茲的開放日親自體驗。"
+           }
+          }
          }
         ]
        }
@@ -93,26 +335,114 @@
      },
      "published": {
       "v": 1,
-      "title": "Acoustic booths for open offices",
-      "description": "Booths that cut the noise of a busy floor by half. Each one seats two and is in place in a day.",
+      "title": {
+       "@t": {
+        "en-US": "Acoustic booths for open offices",
+        "de-DE": "Akustikkabinen für Großraumbüros",
+        "fr-FR": "Cabines acoustiques pour bureaux ouverts",
+        "da-DK": "Akustiske kabiner til åbne kontorer",
+        "cs-CZ": "Akustické kabiny do otevřených kanceláří",
+        "ar-EG": "كبائن عازلة للصوت للمكاتب المفتوحة",
+        "zh-CN": "开放式办公室的隔音舱",
+        "zh-TW": "開放式辦公室的隔音艙"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "Booths that cut the noise of a busy floor by half. Each seats two and is in place in a day.",
+        "de-DE": "Kabinen, die den Lärm im Großraumbüro halbieren. Jede bietet zwei Personen Platz und steht in einem Tag.",
+        "fr-FR": "Des cabines qui divisent par deux le bruit d’un plateau animé. Chacune accueille deux personnes et s’installe en un jour.",
+        "da-DK": "Kabiner, der halverer larmen på et travlt kontor. Hver har plads til to og står klar på en dag.",
+        "cs-CZ": "Kabiny, které na rušném patře sníží hluk na polovinu. Každá pojme dva lidi a stojí za jeden den.",
+        "ar-EG": "كبائن تخفض ضوضاء المكتب المزدحم إلى النصف. تتسع كل منها لشخصين وتُركّب في يوم واحد.",
+        "zh-CN": "隔音舱可将繁忙办公区的噪音减半。每个可坐两人，一天即可安装到位。",
+        "zh-TW": "隔音艙可將繁忙辦公區的噪音減半。每個可坐兩人，一天即可安裝到位。"
+       }
+      },
       "blocks": [
        {
         "id": "hero",
         "kind": "hero",
-        "heading": "Acoustic booths for open offices",
-        "text": "Our booths cut the noise of a busy floor by half. Each one seats two, fits through a standard door, and is in place in a day."
+        "heading": {
+         "@t": {
+          "en-US": "Acoustic booths for open offices",
+          "de-DE": "Akustikkabinen für Großraumbüros",
+          "fr-FR": "Cabines acoustiques pour bureaux ouverts",
+          "da-DK": "Akustiske kabiner til åbne kontorer",
+          "cs-CZ": "Akustické kabiny do otevřených kanceláří",
+          "ar-EG": "كبائن عازلة للصوت للمكاتب المفتوحة",
+          "zh-CN": "开放式办公室的隔音舱",
+          "zh-TW": "開放式辦公室的隔音艙"
+         }
+        },
+        "text": {
+         "@t": {
+          "en-US": "Our booths cut the noise of a busy floor by half. Each one seats two, fits through a standard door and is in place in a day.",
+          "de-DE": "Unsere Kabinen halbieren den Lärm im Großraumbüro. Jede bietet zwei Personen Platz, passt durch eine normale Tür und steht in einem Tag.",
+          "fr-FR": "Nos cabines divisent par deux le bruit d’un plateau animé. Chacune accueille deux personnes, passe par une porte standard et s’installe en un jour.",
+          "da-DK": "Vores kabiner halverer larmen på et travlt kontor. Hver har plads til to, passer gennem en almindelig dør og står klar på en dag.",
+          "cs-CZ": "Naše kabiny sníží hluk na rušném patře na polovinu. Každá pojme dva lidi, projde běžnými dveřmi a stojí za jeden den.",
+          "ar-EG": "تخفض كبائننا ضوضاء المكتب المزدحم إلى النصف. تتسع كل منها لشخصين، وتمر من باب عادي، وتُركّب في يوم واحد.",
+          "zh-CN": "我们的隔音舱可将繁忙办公区的噪音减半。每个可坐两人，能通过普通门，一天即可安装到位。",
+          "zh-TW": "我們的隔音艙可將繁忙辦公區的噪音減半。每個可坐兩人，能通過一般門，一天即可安裝到位。"
+         }
+        }
        },
        {
         "id": "sizes",
         "kind": "columns",
         "columns": [
          {
-          "heading": "What fits where",
-          "text": "Single booths for calls, double booths for two people, and a meeting pod for four."
+          "heading": {
+           "@t": {
+            "en-US": "What fits where",
+            "de-DE": "Was wohin passt",
+            "fr-FR": "Ce qui va où",
+            "da-DK": "Hvad passer hvor",
+            "cs-CZ": "Co se kam hodí",
+            "ar-EG": "ما يناسب كل مكان",
+            "zh-CN": "什么放在哪里",
+            "zh-TW": "什麼放在哪裡"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Single booths for calls, double booths for two people, and a meeting pod for four.",
+            "de-DE": "Einzelkabinen für Telefonate, Doppelkabinen für zwei Personen und eine Besprechungsbox für vier.",
+            "fr-FR": "Des cabines simples pour les appels, des doubles pour deux personnes et un module de réunion pour quatre.",
+            "da-DK": "Enkeltkabiner til opkald, dobbeltkabiner til to og en mødeboks til fire.",
+            "cs-CZ": "Jednomístné kabiny na hovory, dvoumístné kabiny a zasedací box až na čtyři lidi.",
+            "ar-EG": "كبائن فردية للمكالمات، وكبائن مزدوجة لشخصين، وكبينة اجتماعات لأربعة.",
+            "zh-CN": "单人舱用于通话，双人舱可坐两人，会议舱可坐四人。",
+            "zh-TW": "單人艙用於通話，雙人艙可坐兩人，會議艙可坐四人。"
+           }
+          }
          },
          {
-          "heading": "In place in a day",
-          "text": "We bring each booth in through a standard door and set it up while you work."
+          "heading": {
+           "@t": {
+            "en-US": "In place in a day",
+            "de-DE": "In einem Tag aufgestellt",
+            "fr-FR": "Installée en un jour",
+            "da-DK": "Klar på en dag",
+            "cs-CZ": "Hotovo za jeden den",
+            "ar-EG": "تُركّب في يوم واحد",
+            "zh-CN": "一天安装到位",
+            "zh-TW": "一天安裝到位"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "We bring each booth in through a standard door and set it up while you work.",
+            "de-DE": "Wir bringen jede Kabine durch eine normale Tür und bauen sie auf, während Sie arbeiten.",
+            "fr-FR": "Nous faisons passer chaque cabine par une porte standard et l’installons pendant que vous travaillez.",
+            "da-DK": "Vi bærer hver kabine ind gennem en almindelig dør og stiller den op, mens I arbejder.",
+            "cs-CZ": "Každou kabinu doneseme běžnými dveřmi a postavíme ji, zatímco pracujete.",
+            "ar-EG": "ندخل كل كبينة من باب عادي ونركّبها وأنتم تعملون.",
+            "zh-CN": "我们通过普通门把隔音舱搬进来，在您工作时完成安装。",
+            "zh-TW": "我們透過一般門把隔音艙搬進來，在您工作時完成安裝。"
+           }
+          }
          }
         ]
        },
@@ -122,37 +452,180 @@
         "items": [
          {
           "icon": "volume-x",
-          "heading": "Quiet inside",
-          "text": "Talk at a normal voice."
+          "heading": {
+           "@t": {
+            "en-US": "Quiet inside",
+            "de-DE": "Ruhig im Inneren",
+            "fr-FR": "Le calme à l’intérieur",
+            "da-DK": "Stille indeni",
+            "cs-CZ": "Uvnitř ticho",
+            "ar-EG": "هدوء في الداخل",
+            "zh-CN": "舱内安静",
+            "zh-TW": "艙內安靜"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Talk at a normal voice.",
+            "de-DE": "Sprechen Sie in normaler Lautstärke.",
+            "fr-FR": "Parlez à voix normale.",
+            "da-DK": "Tal med normal stemme.",
+            "cs-CZ": "Mluvte normálním hlasem.",
+            "ar-EG": "تحدّث بصوتك العادي.",
+            "zh-CN": "正常音量说话即可。",
+            "zh-TW": "正常音量說話即可。"
+           }
+          }
          },
          {
           "icon": "wind",
-          "heading": "Air that moves",
-          "text": "A silent fan changes the air every two minutes."
+          "heading": {
+           "@t": {
+            "en-US": "Air that moves",
+            "de-DE": "Frische Luft",
+            "fr-FR": "De l’air qui circule",
+            "da-DK": "Luft, der skiftes",
+            "cs-CZ": "Vzduch v pohybu",
+            "ar-EG": "هواء متجدد",
+            "zh-CN": "空气流通",
+            "zh-TW": "空氣流通"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "A silent fan changes the air every two minutes.",
+            "de-DE": "Ein leiser Lüfter tauscht die Luft alle zwei Minuten.",
+            "fr-FR": "Un ventilateur silencieux renouvelle l’air toutes les deux minutes.",
+            "da-DK": "En lydløs ventilator skifter luften hvert andet minut.",
+            "cs-CZ": "Tichý ventilátor vymění vzduch každé dvě minuty.",
+            "ar-EG": "مروحة صامتة تجدد الهواء كل دقيقتين.",
+            "zh-CN": "静音风扇每两分钟换一次气。",
+            "zh-TW": "靜音風扇每兩分鐘換一次氣。"
+           }
+          }
          },
          {
           "icon": "move",
-          "heading": "Moves with you",
-          "text": "Lift it onto wheels and roll it to a new spot."
+          "heading": {
+           "@t": {
+            "en-US": "Moves with you",
+            "de-DE": "Zieht mit um",
+            "fr-FR": "Elle vous suit",
+            "da-DK": "Flytter med jer",
+            "cs-CZ": "Přestěhuje se s vámi",
+            "ar-EG": "تنتقل معك",
+            "zh-CN": "随您移动",
+            "zh-TW": "隨您移動"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Lift it onto wheels and roll it to a new spot.",
+            "de-DE": "Auf Rollen setzen und an einen neuen Platz schieben.",
+            "fr-FR": "Posez-la sur des roulettes et déplacez-la ailleurs.",
+            "da-DK": "Sæt den på hjul og rul den til et nyt sted.",
+            "cs-CZ": "Postavte ji na kolečka a odvezte na nové místo.",
+            "ar-EG": "ضعها على عجلات وانقلها إلى مكان جديد.",
+            "zh-CN": "装上轮子，推到新位置。",
+            "zh-TW": "裝上輪子，推到新位置。"
+           }
+          }
          }
         ]
        },
        {
         "id": "questions",
         "kind": "questions",
-        "title": "Questions and answers",
+        "title": {
+         "@t": {
+          "en-US": "Questions and answers",
+          "de-DE": "Fragen und Antworten",
+          "fr-FR": "Questions et réponses",
+          "da-DK": "Spørgsmål og svar",
+          "cs-CZ": "Otázky a odpovědi",
+          "ar-EG": "أسئلة وأجوبة",
+          "zh-CN": "问与答",
+          "zh-TW": "問與答"
+         }
+        },
         "items": [
          {
-          "question": "How long does fitting take?",
-          "answer": "One day for up to four booths."
+          "question": {
+           "@t": {
+            "en-US": "How long does fitting take?",
+            "de-DE": "Wie lange dauert der Aufbau?",
+            "fr-FR": "Combien de temps dure l’installation ?",
+            "da-DK": "Hvor lang tid tager opsætningen?",
+            "cs-CZ": "Jak dlouho trvá montáž?",
+            "ar-EG": "كم يستغرق التركيب؟",
+            "zh-CN": "安装需要多长时间？",
+            "zh-TW": "安裝需要多久？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "One day for up to four booths.",
+            "de-DE": "Einen Tag für bis zu vier Kabinen.",
+            "fr-FR": "Une journée, jusqu’à quatre cabines.",
+            "da-DK": "En dag for op til fire kabiner.",
+            "cs-CZ": "Jeden den, až čtyři kabiny.",
+            "ar-EG": "يوم واحد لما يصل إلى أربع كبائن.",
+            "zh-CN": "最多四个隔音舱，一天完成。",
+            "zh-TW": "最多四個隔音艙，一天完成。"
+           }
+          }
          },
          {
-          "question": "Do the booths need power?",
-          "answer": "One standard socket runs the fan and the light."
+          "question": {
+           "@t": {
+            "en-US": "Do the booths need power?",
+            "de-DE": "Brauchen die Kabinen Strom?",
+            "fr-FR": "Les cabines ont-elles besoin d’électricité ?",
+            "da-DK": "Skal kabinerne have strøm?",
+            "cs-CZ": "Potřebují kabiny elektřinu?",
+            "ar-EG": "هل تحتاج الكبائن إلى كهرباء؟",
+            "zh-CN": "隔音舱需要通电吗？",
+            "zh-TW": "隔音艙需要通電嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "One standard socket runs the fan and the light.",
+            "de-DE": "Eine normale Steckdose versorgt Lüfter und Licht.",
+            "fr-FR": "Une prise standard alimente le ventilateur et la lumière.",
+            "da-DK": "Én almindelig stikkontakt driver ventilator og lys.",
+            "cs-CZ": "Ventilátor i světlo napájí jedna běžná zásuvka.",
+            "ar-EG": "مقبس عادي واحد يشغّل المروحة والإضاءة.",
+            "zh-CN": "一个普通插座即可为风扇和灯供电。",
+            "zh-TW": "一個一般插座即可為風扇和燈供電。"
+           }
+          }
          },
          {
-          "question": "Can we try one first?",
-          "answer": "Yes. Come to our open day in Leeds and sit in one."
+          "question": {
+           "@t": {
+            "en-US": "Can we try one first?",
+            "de-DE": "Können wir eine vorher ausprobieren?",
+            "fr-FR": "Peut-on en essayer une d’abord ?",
+            "da-DK": "Kan vi prøve en først?",
+            "cs-CZ": "Můžeme si jednu nejdřív vyzkoušet?",
+            "ar-EG": "هل يمكننا تجربة واحدة أولًا؟",
+            "zh-CN": "可以先试用吗？",
+            "zh-TW": "可以先試用嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "Yes. Come to our open day in Leeds and sit in one.",
+            "de-DE": "Ja. Kommen Sie zu unserem Tag der offenen Tür in Leeds und setzen Sie sich hinein.",
+            "fr-FR": "Oui. Venez à notre journée portes ouvertes à Leeds et installez-vous dans l’une d’elles.",
+            "da-DK": "Ja. Kom til vores åbent hus i Leeds og sæt jer i en.",
+            "cs-CZ": "Ano. Přijďte na náš den otevřených dveří v Leedsu a posaďte se do ní.",
+            "ar-EG": "نعم. تعال إلى يومنا المفتوح في ليدز وجرّب الجلوس في واحدة.",
+            "zh-CN": "可以。欢迎来我们在利兹的开放日亲自体验。",
+            "zh-TW": "可以。歡迎來我們在里茲的開放日親自體驗。"
+           }
+          }
          }
         ]
        }
@@ -178,19 +651,85 @@
      },
      "slug": "showroom-open-day",
      "state": "live",
-     "language": "en-US",
+     "language": {
+      "@t": {
+       "en-US": "en-US",
+       "de-DE": "de-DE",
+       "fr-FR": "fr-FR",
+       "da-DK": "da-DK",
+       "cs-CZ": "cs-CZ",
+       "ar-EG": "ar-EG",
+       "zh-CN": "zh-CN",
+       "zh-TW": "zh-TW"
+      }
+     },
      "draft": {
       "v": 1,
-      "title": "Showroom open day",
-      "description": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+      "title": {
+       "@t": {
+        "en-US": "Showroom open day",
+        "de-DE": "Tag der offenen Tür im Showroom",
+        "fr-FR": "Journée portes ouvertes du showroom",
+        "da-DK": "Åbent hus i showroomet",
+        "cs-CZ": "Den otevřených dveří v showroomu",
+        "ar-EG": "يوم مفتوح في صالة العرض",
+        "zh-CN": "展厅开放日",
+        "zh-TW": "展示廳開放日"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+        "de-DE": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Setzen Sie sich in die neuen Kabinen und testen Sie die Tische.",
+        "fr-FR": "Jeudi 18 septembre, de 10 h à 19 h. Asseyez-vous dans les nouvelles cabines et essayez les bureaux.",
+        "da-DK": "Torsdag den 18. september kl. 10.00–19.00. Sæt jer i de nye kabiner og prøv bordene.",
+        "cs-CZ": "Čtvrtek 18. září, 10:00 až 19:00. Posaďte se do nových kabin a vyzkoušejte stoly.",
+        "ar-EG": "الخميس 18 سبتمبر، من 10:00 إلى 19:00. اجلس في الكبائن الجديدة وجرّب المكاتب.",
+        "zh-CN": "9 月 18 日星期四，10:00 至 19:00。来坐坐新的隔音舱，试试新办公桌。",
+        "zh-TW": "9 月 18 日星期四，10:00 至 19:00。來坐坐新的隔音艙，試試新辦公桌。"
+       }
+      },
       "blocks": [
        {
         "id": "hero",
         "kind": "hero",
-        "heading": "Open day at our Leeds showroom",
-        "text": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+        "heading": {
+         "@t": {
+          "en-US": "Open day at our Leeds showroom",
+          "de-DE": "Tag der offenen Tür in unserem Showroom in Leeds",
+          "fr-FR": "Journée portes ouvertes dans notre showroom de Leeds",
+          "da-DK": "Åbent hus i vores showroom i Leeds",
+          "cs-CZ": "Den otevřených dveří v našem showroomu v Leedsu",
+          "ar-EG": "يوم مفتوح في صالة عرضنا في ليدز",
+          "zh-CN": "利兹展厅开放日",
+          "zh-TW": "里茲展示廳開放日"
+         }
+        },
+        "text": {
+         "@t": {
+          "en-US": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+          "de-DE": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Setzen Sie sich in die neuen Kabinen und testen Sie die Tische.",
+          "fr-FR": "Jeudi 18 septembre, de 10 h à 19 h. Asseyez-vous dans les nouvelles cabines et essayez les bureaux.",
+          "da-DK": "Torsdag den 18. september kl. 10.00–19.00. Sæt jer i de nye kabiner og prøv bordene.",
+          "cs-CZ": "Čtvrtek 18. září, 10:00 až 19:00. Posaďte se do nových kabin a vyzkoušejte stoly.",
+          "ar-EG": "الخميس 18 سبتمبر، من 10:00 إلى 19:00. اجلس في الكبائن الجديدة وجرّب المكاتب.",
+          "zh-CN": "9 月 18 日星期四，10:00 至 19:00。来坐坐新的隔音舱，试试新办公桌。",
+          "zh-TW": "9 月 18 日星期四，10:00 至 19:00。來坐坐新的隔音艙，試試新辦公桌。"
+         }
+        },
         "button": {
-         "label": "See the booths",
+         "label": {
+          "@t": {
+           "en-US": "See the booths",
+           "de-DE": "Zu den Kabinen",
+           "fr-FR": "Voir les cabines",
+           "da-DK": "Se kabinerne",
+           "cs-CZ": "Prohlédnout kabiny",
+           "ar-EG": "شاهد الكبائن",
+           "zh-CN": "查看隔音舱",
+           "zh-TW": "查看隔音艙"
+          }
+         },
          "link": {
           "kind": "page",
           "key": {
@@ -205,18 +744,84 @@
         "items": [
          {
           "icon": "calendar",
-          "heading": "One day only",
-          "text": "Come at any time between 10:00 and 19:00."
+          "heading": {
+           "@t": {
+            "en-US": "One day only",
+            "de-DE": "Nur ein Tag",
+            "fr-FR": "Une seule journée",
+            "da-DK": "Kun én dag",
+            "cs-CZ": "Jen jeden den",
+            "ar-EG": "يوم واحد فقط",
+            "zh-CN": "仅此一天",
+            "zh-TW": "僅此一天"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Come at any time between 10:00 and 19:00.",
+            "de-DE": "Kommen Sie, wann es Ihnen passt, zwischen 10:00 und 19:00 Uhr.",
+            "fr-FR": "Venez quand vous voulez entre 10 h et 19 h.",
+            "da-DK": "Kom når som helst mellem kl. 10.00 og 19.00.",
+            "cs-CZ": "Přijďte kdykoli mezi 10:00 a 19:00.",
+            "ar-EG": "تعال في أي وقت بين 10:00 و19:00.",
+            "zh-CN": "10:00 至 19:00 之间随时光临。",
+            "zh-TW": "10:00 至 19:00 之間隨時光臨。"
+           }
+          }
          },
          {
           "icon": "users",
-          "heading": "Bring your team",
-          "text": "Up to eight people, and your floor drawings."
+          "heading": {
+           "@t": {
+            "en-US": "Bring your team",
+            "de-DE": "Bringen Sie Ihr Team mit",
+            "fr-FR": "Venez avec votre équipe",
+            "da-DK": "Tag jeres team med",
+            "cs-CZ": "Vezměte s sebou tým",
+            "ar-EG": "أحضر فريقك",
+            "zh-CN": "带上您的团队",
+            "zh-TW": "帶上您的團隊"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Up to eight people, and your floor drawings.",
+            "de-DE": "Bis zu acht Personen, gern mit Ihren Grundrissen.",
+            "fr-FR": "Jusqu’à huit personnes, avec le croquis de vos locaux.",
+            "da-DK": "Op til otte personer og tegninger af jeres kontor.",
+            "cs-CZ": "Až osm lidí a k tomu vaše půdorysy.",
+            "ar-EG": "حتى ثمانية أشخاص، ومعكم رسومات المكتب.",
+            "zh-CN": "最多八人，可带上楼层平面图。",
+            "zh-TW": "最多八人，可帶上樓層平面圖。"
+           }
+          }
          },
          {
           "icon": "map-pin",
-          "heading": "Parking behind the showroom",
-          "text": "Twenty spaces, kept for the day."
+          "heading": {
+           "@t": {
+            "en-US": "Parking behind the showroom",
+            "de-DE": "Parken hinter dem Showroom",
+            "fr-FR": "Parking derrière le showroom",
+            "da-DK": "Parkering bag showroomet",
+            "cs-CZ": "Parkování za showroomem",
+            "ar-EG": "موقف سيارات خلف صالة العرض",
+            "zh-CN": "展厅后有停车位",
+            "zh-TW": "展示廳後有停車位"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Twenty spaces, kept for the day.",
+            "de-DE": "Zwanzig Plätze, für den Tag freigehalten.",
+            "fr-FR": "Vingt places, réservées pour la journée.",
+            "da-DK": "Tyve pladser, holdt fri for dagen.",
+            "cs-CZ": "Dvacet míst, rezervovaných na celý den.",
+            "ar-EG": "عشرون مكانًا محجوزة لهذا اليوم.",
+            "zh-CN": "二十个车位，当天专用。",
+            "zh-TW": "二十個車位，當天專用。"
+           }
+          }
          }
         ]
        },
@@ -229,15 +834,70 @@
        {
         "id": "questions",
         "kind": "questions",
-        "title": "Questions and answers",
+        "title": {
+         "@t": {
+          "en-US": "Questions and answers",
+          "de-DE": "Fragen und Antworten",
+          "fr-FR": "Questions et réponses",
+          "da-DK": "Spørgsmål og svar",
+          "cs-CZ": "Otázky a odpovědi",
+          "ar-EG": "أسئلة وأجوبة",
+          "zh-CN": "问与答",
+          "zh-TW": "問與答"
+         }
+        },
         "items": [
          {
-          "question": "Is there parking?",
-          "answer": "Yes, twenty spaces behind the showroom."
+          "question": {
+           "@t": {
+            "en-US": "Is there parking?",
+            "de-DE": "Gibt es Parkplätze?",
+            "fr-FR": "Y a-t-il un parking ?",
+            "da-DK": "Er der parkering?",
+            "cs-CZ": "Dá se tam zaparkovat?",
+            "ar-EG": "هل يوجد موقف للسيارات؟",
+            "zh-CN": "有停车位吗？",
+            "zh-TW": "有停車位嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "Yes, twenty spaces behind the showroom.",
+            "de-DE": "Ja, zwanzig Plätze hinter dem Showroom.",
+            "fr-FR": "Oui, vingt places derrière le showroom.",
+            "da-DK": "Ja, tyve pladser bag showroomet.",
+            "cs-CZ": "Ano, dvacet míst za showroomem.",
+            "ar-EG": "نعم، عشرون مكانًا خلف صالة العرض.",
+            "zh-CN": "有，展厅后有二十个车位。",
+            "zh-TW": "有，展示廳後有二十個車位。"
+           }
+          }
          },
          {
-          "question": "Can I bring my team?",
-          "answer": "Yes, up to eight people."
+          "question": {
+           "@t": {
+            "en-US": "Can I bring my team?",
+            "de-DE": "Kann ich mein Team mitbringen?",
+            "fr-FR": "Puis-je venir avec mon équipe ?",
+            "da-DK": "Må jeg tage mit team med?",
+            "cs-CZ": "Můžu přivést svůj tým?",
+            "ar-EG": "هل يمكنني إحضار فريقي؟",
+            "zh-CN": "可以带团队来吗？",
+            "zh-TW": "可以帶團隊來嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "Yes, up to eight people.",
+            "de-DE": "Ja, bis zu acht Personen.",
+            "fr-FR": "Oui, jusqu’à huit personnes.",
+            "da-DK": "Ja, op til otte personer.",
+            "cs-CZ": "Ano, až osm lidí.",
+            "ar-EG": "نعم، حتى ثمانية أشخاص.",
+            "zh-CN": "可以，最多八人。",
+            "zh-TW": "可以，最多八人。"
+           }
+          }
          }
         ]
        }
@@ -245,16 +905,71 @@
      },
      "published": {
       "v": 1,
-      "title": "Showroom open day",
-      "description": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+      "title": {
+       "@t": {
+        "en-US": "Showroom open day",
+        "de-DE": "Tag der offenen Tür im Showroom",
+        "fr-FR": "Journée portes ouvertes du showroom",
+        "da-DK": "Åbent hus i showroomet",
+        "cs-CZ": "Den otevřených dveří v showroomu",
+        "ar-EG": "يوم مفتوح في صالة العرض",
+        "zh-CN": "展厅开放日",
+        "zh-TW": "展示廳開放日"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+        "de-DE": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Setzen Sie sich in die neuen Kabinen und testen Sie die Tische.",
+        "fr-FR": "Jeudi 18 septembre, de 10 h à 19 h. Asseyez-vous dans les nouvelles cabines et essayez les bureaux.",
+        "da-DK": "Torsdag den 18. september kl. 10.00–19.00. Sæt jer i de nye kabiner og prøv bordene.",
+        "cs-CZ": "Čtvrtek 18. září, 10:00 až 19:00. Posaďte se do nových kabin a vyzkoušejte stoly.",
+        "ar-EG": "الخميس 18 سبتمبر، من 10:00 إلى 19:00. اجلس في الكبائن الجديدة وجرّب المكاتب.",
+        "zh-CN": "9 月 18 日星期四，10:00 至 19:00。来坐坐新的隔音舱，试试新办公桌。",
+        "zh-TW": "9 月 18 日星期四，10:00 至 19:00。來坐坐新的隔音艙，試試新辦公桌。"
+       }
+      },
       "blocks": [
        {
         "id": "hero",
         "kind": "hero",
-        "heading": "Open day at our Leeds showroom",
-        "text": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+        "heading": {
+         "@t": {
+          "en-US": "Open day at our Leeds showroom",
+          "de-DE": "Tag der offenen Tür in unserem Showroom in Leeds",
+          "fr-FR": "Journée portes ouvertes dans notre showroom de Leeds",
+          "da-DK": "Åbent hus i vores showroom i Leeds",
+          "cs-CZ": "Den otevřených dveří v našem showroomu v Leedsu",
+          "ar-EG": "يوم مفتوح في صالة عرضنا في ليدز",
+          "zh-CN": "利兹展厅开放日",
+          "zh-TW": "里茲展示廳開放日"
+         }
+        },
+        "text": {
+         "@t": {
+          "en-US": "Thursday 18 September, 10:00 to 19:00. Sit in the new booths and try the desks.",
+          "de-DE": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Setzen Sie sich in die neuen Kabinen und testen Sie die Tische.",
+          "fr-FR": "Jeudi 18 septembre, de 10 h à 19 h. Asseyez-vous dans les nouvelles cabines et essayez les bureaux.",
+          "da-DK": "Torsdag den 18. september kl. 10.00–19.00. Sæt jer i de nye kabiner og prøv bordene.",
+          "cs-CZ": "Čtvrtek 18. září, 10:00 až 19:00. Posaďte se do nových kabin a vyzkoušejte stoly.",
+          "ar-EG": "الخميس 18 سبتمبر، من 10:00 إلى 19:00. اجلس في الكبائن الجديدة وجرّب المكاتب.",
+          "zh-CN": "9 月 18 日星期四，10:00 至 19:00。来坐坐新的隔音舱，试试新办公桌。",
+          "zh-TW": "9 月 18 日星期四，10:00 至 19:00。來坐坐新的隔音艙，試試新辦公桌。"
+         }
+        },
         "button": {
-         "label": "See the booths",
+         "label": {
+          "@t": {
+           "en-US": "See the booths",
+           "de-DE": "Zu den Kabinen",
+           "fr-FR": "Voir les cabines",
+           "da-DK": "Se kabinerne",
+           "cs-CZ": "Prohlédnout kabiny",
+           "ar-EG": "شاهد الكبائن",
+           "zh-CN": "查看隔音舱",
+           "zh-TW": "查看隔音艙"
+          }
+         },
          "link": {
           "kind": "page",
           "key": {
@@ -269,18 +984,84 @@
         "items": [
          {
           "icon": "calendar",
-          "heading": "One day only",
-          "text": "Come at any time between 10:00 and 19:00."
+          "heading": {
+           "@t": {
+            "en-US": "One day only",
+            "de-DE": "Nur ein Tag",
+            "fr-FR": "Une seule journée",
+            "da-DK": "Kun én dag",
+            "cs-CZ": "Jen jeden den",
+            "ar-EG": "يوم واحد فقط",
+            "zh-CN": "仅此一天",
+            "zh-TW": "僅此一天"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Come at any time between 10:00 and 19:00.",
+            "de-DE": "Kommen Sie, wann es Ihnen passt, zwischen 10:00 und 19:00 Uhr.",
+            "fr-FR": "Venez quand vous voulez entre 10 h et 19 h.",
+            "da-DK": "Kom når som helst mellem kl. 10.00 og 19.00.",
+            "cs-CZ": "Přijďte kdykoli mezi 10:00 a 19:00.",
+            "ar-EG": "تعال في أي وقت بين 10:00 و19:00.",
+            "zh-CN": "10:00 至 19:00 之间随时光临。",
+            "zh-TW": "10:00 至 19:00 之間隨時光臨。"
+           }
+          }
          },
          {
           "icon": "users",
-          "heading": "Bring your team",
-          "text": "Up to eight people, and your floor drawings."
+          "heading": {
+           "@t": {
+            "en-US": "Bring your team",
+            "de-DE": "Bringen Sie Ihr Team mit",
+            "fr-FR": "Venez avec votre équipe",
+            "da-DK": "Tag jeres team med",
+            "cs-CZ": "Vezměte s sebou tým",
+            "ar-EG": "أحضر فريقك",
+            "zh-CN": "带上您的团队",
+            "zh-TW": "帶上您的團隊"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Up to eight people, and your floor drawings.",
+            "de-DE": "Bis zu acht Personen, gern mit Ihren Grundrissen.",
+            "fr-FR": "Jusqu’à huit personnes, avec le croquis de vos locaux.",
+            "da-DK": "Op til otte personer og tegninger af jeres kontor.",
+            "cs-CZ": "Až osm lidí a k tomu vaše půdorysy.",
+            "ar-EG": "حتى ثمانية أشخاص، ومعكم رسومات المكتب.",
+            "zh-CN": "最多八人，可带上楼层平面图。",
+            "zh-TW": "最多八人，可帶上樓層平面圖。"
+           }
+          }
          },
          {
           "icon": "map-pin",
-          "heading": "Parking behind the showroom",
-          "text": "Twenty spaces, kept for the day."
+          "heading": {
+           "@t": {
+            "en-US": "Parking behind the showroom",
+            "de-DE": "Parken hinter dem Showroom",
+            "fr-FR": "Parking derrière le showroom",
+            "da-DK": "Parkering bag showroomet",
+            "cs-CZ": "Parkování za showroomem",
+            "ar-EG": "موقف سيارات خلف صالة العرض",
+            "zh-CN": "展厅后有停车位",
+            "zh-TW": "展示廳後有停車位"
+           }
+          },
+          "text": {
+           "@t": {
+            "en-US": "Twenty spaces, kept for the day.",
+            "de-DE": "Zwanzig Plätze, für den Tag freigehalten.",
+            "fr-FR": "Vingt places, réservées pour la journée.",
+            "da-DK": "Tyve pladser, holdt fri for dagen.",
+            "cs-CZ": "Dvacet míst, rezervovaných na celý den.",
+            "ar-EG": "عشرون مكانًا محجوزة لهذا اليوم.",
+            "zh-CN": "二十个车位，当天专用。",
+            "zh-TW": "二十個車位，當天專用。"
+           }
+          }
          }
         ]
        },
@@ -293,15 +1074,70 @@
        {
         "id": "questions",
         "kind": "questions",
-        "title": "Questions and answers",
+        "title": {
+         "@t": {
+          "en-US": "Questions and answers",
+          "de-DE": "Fragen und Antworten",
+          "fr-FR": "Questions et réponses",
+          "da-DK": "Spørgsmål og svar",
+          "cs-CZ": "Otázky a odpovědi",
+          "ar-EG": "أسئلة وأجوبة",
+          "zh-CN": "问与答",
+          "zh-TW": "問與答"
+         }
+        },
         "items": [
          {
-          "question": "Is there parking?",
-          "answer": "Yes, twenty spaces behind the showroom."
+          "question": {
+           "@t": {
+            "en-US": "Is there parking?",
+            "de-DE": "Gibt es Parkplätze?",
+            "fr-FR": "Y a-t-il un parking ?",
+            "da-DK": "Er der parkering?",
+            "cs-CZ": "Dá se tam zaparkovat?",
+            "ar-EG": "هل يوجد موقف للسيارات؟",
+            "zh-CN": "有停车位吗？",
+            "zh-TW": "有停車位嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "Yes, twenty spaces behind the showroom.",
+            "de-DE": "Ja, zwanzig Plätze hinter dem Showroom.",
+            "fr-FR": "Oui, vingt places derrière le showroom.",
+            "da-DK": "Ja, tyve pladser bag showroomet.",
+            "cs-CZ": "Ano, dvacet míst za showroomem.",
+            "ar-EG": "نعم، عشرون مكانًا خلف صالة العرض.",
+            "zh-CN": "有，展厅后有二十个车位。",
+            "zh-TW": "有，展示廳後有二十個車位。"
+           }
+          }
          },
          {
-          "question": "Can I bring my team?",
-          "answer": "Yes, up to eight people."
+          "question": {
+           "@t": {
+            "en-US": "Can I bring my team?",
+            "de-DE": "Kann ich mein Team mitbringen?",
+            "fr-FR": "Puis-je venir avec mon équipe ?",
+            "da-DK": "Må jeg tage mit team med?",
+            "cs-CZ": "Můžu přivést svůj tým?",
+            "ar-EG": "هل يمكنني إحضار فريقي؟",
+            "zh-CN": "可以带团队来吗？",
+            "zh-TW": "可以帶團隊來嗎？"
+           }
+          },
+          "answer": {
+           "@t": {
+            "en-US": "Yes, up to eight people.",
+            "de-DE": "Ja, bis zu acht Personen.",
+            "fr-FR": "Oui, jusqu’à huit personnes.",
+            "da-DK": "Ja, op til otte personer.",
+            "cs-CZ": "Ano, až osm lidí.",
+            "ar-EG": "نعم، حتى ثمانية أشخاص.",
+            "zh-CN": "可以，最多八人。",
+            "zh-TW": "可以，最多八人。"
+           }
+          }
          }
         ]
        }
@@ -327,26 +1163,92 @@
      },
      "slug": "thanks-open-day",
      "state": "live",
-     "language": "en-US",
+     "language": {
+      "@t": {
+       "en-US": "en-US",
+       "de-DE": "de-DE",
+       "fr-FR": "fr-FR",
+       "da-DK": "da-DK",
+       "cs-CZ": "cs-CZ",
+       "ar-EG": "ar-EG",
+       "zh-CN": "zh-CN",
+       "zh-TW": "zh-TW"
+      }
+     },
      "draft": {
       "v": 1,
-      "title": "Thanks, see you there",
-      "description": "We have your booking for the showroom open day.",
+      "title": {
+       "@t": {
+        "en-US": "Thanks, see you there",
+        "de-DE": "Danke, bis bald",
+        "fr-FR": "Merci, à bientôt",
+        "da-DK": "Tak, vi ses",
+        "cs-CZ": "Děkujeme, uvidíme se",
+        "ar-EG": "شكرًا، نراك هناك",
+        "zh-CN": "谢谢，到时见",
+        "zh-TW": "謝謝，到時見"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "We have your booking for the showroom open day.",
+        "de-DE": "Ihre Anmeldung zum Tag der offenen Tür im Showroom ist bei uns.",
+        "fr-FR": "Nous avons bien votre réservation pour la journée portes ouvertes.",
+        "da-DK": "Vi har jeres booking til åbent hus i showroomet.",
+        "cs-CZ": "Vaši rezervaci na den otevřených dveří máme.",
+        "ar-EG": "وصلنا حجزك ليوم صالة العرض المفتوح.",
+        "zh-CN": "我们已收到您的展厅开放日预约。",
+        "zh-TW": "我們已收到您的展示廳開放日預約。"
+       }
+      },
       "blocks": [
        {
         "id": "heading",
         "kind": "heading",
-        "text": "Thanks, see you there"
+        "text": {
+         "@t": {
+          "en-US": "Thanks, see you there",
+          "de-DE": "Danke, bis bald",
+          "fr-FR": "Merci, à bientôt",
+          "da-DK": "Tak, vi ses",
+          "cs-CZ": "Děkujeme, uvidíme se",
+          "ar-EG": "شكرًا، نراك هناك",
+          "zh-CN": "谢谢，到时见",
+          "zh-TW": "謝謝，到時見"
+         }
+        }
        },
        {
         "id": "text",
         "kind": "text",
-        "text": "We have your booking for Thursday 18 September. We'll confirm your time within one working day."
+        "text": {
+         "@t": {
+          "en-US": "We have your booking for Thursday 18 September. We'll confirm your time within one working day.",
+          "de-DE": "Ihre Anmeldung für Donnerstag, den 18. September, ist bei uns. Wir bestätigen Ihre Uhrzeit innerhalb eines Werktags.",
+          "fr-FR": "Nous avons bien votre réservation pour le jeudi 18 septembre. Nous confirmerons votre horaire sous un jour ouvré.",
+          "da-DK": "Vi har jeres booking til torsdag den 18. september. Vi bekræfter tidspunktet inden for en arbejdsdag.",
+          "cs-CZ": "Vaši rezervaci na čtvrtek 18. září máme. Čas vám potvrdíme do jednoho pracovního dne.",
+          "ar-EG": "وصلنا حجزك ليوم الخميس 18 سبتمبر. سنؤكد موعدك خلال يوم عمل واحد.",
+          "zh-CN": "我们已收到您 9 月 18 日星期四的预约，将在一个工作日内确认时间。",
+          "zh-TW": "我們已收到您 9 月 18 日星期四的預約，將在一個工作天內確認時間。"
+         }
+        }
        },
        {
         "id": "booths",
         "kind": "button",
-        "label": "See the booths",
+        "label": {
+         "@t": {
+          "en-US": "See the booths",
+          "de-DE": "Zu den Kabinen",
+          "fr-FR": "Voir les cabines",
+          "da-DK": "Se kabinerne",
+          "cs-CZ": "Prohlédnout kabiny",
+          "ar-EG": "شاهد الكبائن",
+          "zh-CN": "查看隔音舱",
+          "zh-TW": "查看隔音艙"
+         }
+        },
         "link": {
          "kind": "page",
          "key": {
@@ -358,23 +1260,78 @@
      },
      "published": {
       "v": 1,
-      "title": "Thanks, see you there",
-      "description": "We have your booking for the showroom open day.",
+      "title": {
+       "@t": {
+        "en-US": "Thanks, see you there",
+        "de-DE": "Danke, bis bald",
+        "fr-FR": "Merci, à bientôt",
+        "da-DK": "Tak, vi ses",
+        "cs-CZ": "Děkujeme, uvidíme se",
+        "ar-EG": "شكرًا، نراك هناك",
+        "zh-CN": "谢谢，到时见",
+        "zh-TW": "謝謝，到時見"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "We have your booking for the showroom open day.",
+        "de-DE": "Ihre Anmeldung zum Tag der offenen Tür im Showroom ist bei uns.",
+        "fr-FR": "Nous avons bien votre réservation pour la journée portes ouvertes.",
+        "da-DK": "Vi har jeres booking til åbent hus i showroomet.",
+        "cs-CZ": "Vaši rezervaci na den otevřených dveří máme.",
+        "ar-EG": "وصلنا حجزك ليوم صالة العرض المفتوح.",
+        "zh-CN": "我们已收到您的展厅开放日预约。",
+        "zh-TW": "我們已收到您的展示廳開放日預約。"
+       }
+      },
       "blocks": [
        {
         "id": "heading",
         "kind": "heading",
-        "text": "Thanks, see you there"
+        "text": {
+         "@t": {
+          "en-US": "Thanks, see you there",
+          "de-DE": "Danke, bis bald",
+          "fr-FR": "Merci, à bientôt",
+          "da-DK": "Tak, vi ses",
+          "cs-CZ": "Děkujeme, uvidíme se",
+          "ar-EG": "شكرًا، نراك هناك",
+          "zh-CN": "谢谢，到时见",
+          "zh-TW": "謝謝，到時見"
+         }
+        }
        },
        {
         "id": "text",
         "kind": "text",
-        "text": "We have your booking for Thursday 18 September. We'll confirm your time within one working day."
+        "text": {
+         "@t": {
+          "en-US": "We have your booking for Thursday 18 September. We'll confirm your time within one working day.",
+          "de-DE": "Ihre Anmeldung für Donnerstag, den 18. September, ist bei uns. Wir bestätigen Ihre Uhrzeit innerhalb eines Werktags.",
+          "fr-FR": "Nous avons bien votre réservation pour le jeudi 18 septembre. Nous confirmerons votre horaire sous un jour ouvré.",
+          "da-DK": "Vi har jeres booking til torsdag den 18. september. Vi bekræfter tidspunktet inden for en arbejdsdag.",
+          "cs-CZ": "Vaši rezervaci na čtvrtek 18. září máme. Čas vám potvrdíme do jednoho pracovního dne.",
+          "ar-EG": "وصلنا حجزك ليوم الخميس 18 سبتمبر. سنؤكد موعدك خلال يوم عمل واحد.",
+          "zh-CN": "我们已收到您 9 月 18 日星期四的预约，将在一个工作日内确认时间。",
+          "zh-TW": "我們已收到您 9 月 18 日星期四的預約，將在一個工作天內確認時間。"
+         }
+        }
        },
        {
         "id": "booths",
         "kind": "button",
-        "label": "See the booths",
+        "label": {
+         "@t": {
+          "en-US": "See the booths",
+          "de-DE": "Zu den Kabinen",
+          "fr-FR": "Voir les cabines",
+          "da-DK": "Se kabinerne",
+          "cs-CZ": "Prohlédnout kabiny",
+          "ar-EG": "شاهد الكبائن",
+          "zh-CN": "查看隔音舱",
+          "zh-TW": "查看隔音艙"
+         }
+        },
         "link": {
          "kind": "page",
          "key": {
@@ -389,62 +1346,87 @@
      }
     },
     {
-     "@label": "page:open-day-de",
+     "@label": "page:spring",
      "name": {
       "@t": {
-       "en-US": "Showroom open day, in German",
-       "de-DE": "Tag der offenen Tür im Showroom, auf Deutsch",
-       "fr-FR": "Journée portes ouvertes du showroom, en allemand",
-       "da-DK": "Åbent hus i showroomet, på tysk",
-       "cs-CZ": "Den otevřených dveří v showroomu, německy",
-       "ar-EG": "يوم مفتوح في صالة العرض، بالألمانية",
-       "zh-CN": "展厅开放日（德语版）",
-       "zh-TW": "展示廳開放日（德文版）"
+       "en-US": "Spring open day",
+       "de-DE": "Frühjahrs-Tag der offenen Tür",
+       "fr-FR": "Journée portes ouvertes de printemps",
+       "da-DK": "Åbent hus i foråret",
+       "cs-CZ": "Jarní den otevřených dveří",
+       "ar-EG": "يوم مفتوح في الربيع",
+       "zh-CN": "春季开放日",
+       "zh-TW": "春季開放日"
       }
      },
-     "slug": "tag-der-offenen-tuer",
+     "slug": "spring-open-day",
      "state": "draft",
-     "language": "de-DE",
+     "language": {
+      "@t": {
+       "en-US": "en-US",
+       "de-DE": "de-DE",
+       "fr-FR": "fr-FR",
+       "da-DK": "da-DK",
+       "cs-CZ": "cs-CZ",
+       "ar-EG": "ar-EG",
+       "zh-CN": "zh-CN",
+       "zh-TW": "zh-TW"
+      }
+     },
      "draft": {
       "v": 1,
-      "title": "Tag der offenen Tür im Showroom",
-      "description": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Probieren Sie die neuen Kabinen und Tische aus.",
+      "title": {
+       "@t": {
+        "en-US": "Spring open day",
+        "de-DE": "Frühjahrs-Tag der offenen Tür",
+        "fr-FR": "Journée portes ouvertes de printemps",
+        "da-DK": "Åbent hus i foråret",
+        "cs-CZ": "Jarní den otevřených dveří",
+        "ar-EG": "يوم مفتوح في الربيع",
+        "zh-CN": "春季开放日",
+        "zh-TW": "春季開放日"
+       }
+      },
+      "description": {
+       "@t": {
+        "en-US": "A second open day in spring, for the new sit-stand desks.",
+        "de-DE": "Ein zweiter Tag der offenen Tür im Frühjahr, für die neuen Sitz-Steh-Tische.",
+        "fr-FR": "Une deuxième journée portes ouvertes au printemps, consacrée aux nouveaux bureaux assis-debout.",
+        "da-DK": "Endnu et åbent hus i foråret med de nye hæve-sænkeborde.",
+        "cs-CZ": "Druhý den otevřených dveří na jaře, věnovaný novým stolům k sezení i stání.",
+        "ar-EG": "يوم مفتوح ثانٍ في الربيع للمكاتب الجديدة القابلة للجلوس والوقوف.",
+        "zh-CN": "春季第二场开放日，展示新的升降办公桌。",
+        "zh-TW": "春季第二場開放日，展示新的升降辦公桌。"
+       }
+      },
       "blocks": [
        {
         "id": "hero",
         "kind": "hero",
-        "heading": "Tag der offenen Tür in unserem Showroom in Leeds",
-        "text": "Donnerstag, 18. September, 10:00 bis 19:00 Uhr. Setzen Sie sich in die neuen Kabinen und probieren Sie die Tische aus.",
-        "button": {
-         "label": "Zu den Kabinen",
-         "link": {
-          "kind": "page",
-          "key": {
-           "@ref": "page:booths"
-          }
+        "heading": {
+         "@t": {
+          "en-US": "Spring open day at our Leeds showroom",
+          "de-DE": "Frühjahrs-Tag der offenen Tür in unserem Showroom in Leeds",
+          "fr-FR": "Journée portes ouvertes de printemps dans notre showroom de Leeds",
+          "da-DK": "Åbent hus i foråret i vores showroom i Leeds",
+          "cs-CZ": "Jarní den otevřených dveří v našem showroomu v Leedsu",
+          "ar-EG": "يوم مفتوح في الربيع في صالة عرضنا في ليدز",
+          "zh-CN": "利兹展厅春季开放日",
+          "zh-TW": "里茲展示廳春季開放日"
+         }
+        },
+        "text": {
+         "@t": {
+          "en-US": "Try the new sit-stand desks. We will set the date once they arrive.",
+          "de-DE": "Probieren Sie die neuen Sitz-Steh-Tische aus. Den Termin legen wir fest, sobald sie da sind.",
+          "fr-FR": "Essayez les nouveaux bureaux assis-debout. Nous fixerons la date dès leur arrivée.",
+          "da-DK": "Prøv de nye hæve-sænkeborde. Vi fastsætter datoen, når de er kommet.",
+          "cs-CZ": "Vyzkoušejte nové stoly k sezení i stání. Datum určíme, jakmile dorazí.",
+          "ar-EG": "جرّب المكاتب الجديدة القابلة للجلوس والوقوف. سنحدد الموعد فور وصولها.",
+          "zh-CN": "来试试新的升降办公桌。到货后我们会确定日期。",
+          "zh-TW": "來試試新的升降辦公桌。到貨後我們會確定日期。"
          }
         }
-       },
-       {
-        "id": "day",
-        "kind": "features",
-        "items": [
-         {
-          "icon": "calendar",
-          "heading": "Nur ein Tag",
-          "text": "Kommen Sie zwischen 10:00 und 19:00 Uhr, wann es Ihnen passt."
-         },
-         {
-          "icon": "users",
-          "heading": "Mit Ihrem Team",
-          "text": "Bis zu acht Personen, gern mit Ihren Grundrissen."
-         },
-         {
-          "icon": "map-pin",
-          "heading": "Parken hinter dem Showroom",
-          "text": "Zwanzig Plätze, für den Tag freigehalten."
-         }
-        ]
        }
       ]
      },
@@ -489,7 +1471,9 @@
        }
       }
      ],
-     "rule_id": null
+     "rule_id": {
+      "@rule": "brochure-asked"
+     }
     }
    ]
   }

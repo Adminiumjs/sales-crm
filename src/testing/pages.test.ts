@@ -19,6 +19,8 @@ import section from "../../whole/seeds/meridian.pages.json";
 import { validateManifest } from "./manifest/index.ts";
 
 const LOCALES = ["en-US", "de-DE", "fr-FR", "da-DK", "cs-CZ", "ar-EG", "zh-CN", "zh-TW"];
+/** The longest each text of a landing page may be (`LANDING_TEXT_MAX`). */
+const LIMITS: Record<string, number> = { title: 70, description: 200, heading: 120, text: 600, label: 60, question: 200, answer: 2000 };
 type Grant = { addOn: string; table: string; actions: string[]; limit?: { readable?: string[] } };
 type Role = { key: string; permissions: string[]; tables?: Grant[] };
 type Row = Record<string, unknown>;
@@ -100,12 +102,12 @@ describe("the sample's landing pages and funnel", () => {
     expect(releasedPages).toEqual(section);
   });
 
-  it("holds four pages: the open day and its thanks page, the booths, and the open day's German copy, not yet live", () => {
-    expect(pages.map((page) => [page["slug"], page["state"], page["language"]])).toEqual([
-      ["acoustic-booths", "live", "en-US"],
-      ["showroom-open-day", "live", "en-US"],
-      ["thanks-open-day", "live", "en-US"],
-      ["tag-der-offenen-tuer", "draft", "de-DE"],
+  it("holds four pages: the open day and its thanks page and the booths, live, and the spring open day, a draft", () => {
+    expect(pages.map((page) => [page["slug"], page["state"]])).toEqual([
+      ["acoustic-booths", "live"],
+      ["showroom-open-day", "live"],
+      ["thanks-open-day", "live"],
+      ["spring-open-day", "draft"],
     ]);
     // An address keeps the landing rule (lower case, digits, dashes) and is none of the reserved ones, nor one of the add-on's own sample's.
     for (const page of pages) {
@@ -114,17 +116,37 @@ describe("the sample's landing pages and funnel", () => {
     }
   });
 
-  it("names every page in eight languages, as the lists and the marketer's home show it; a page itself is in one language", () => {
+  it("writes every page in the adding person's language: its name, its language and every word inside it, each in eight languages", () => {
     for (const row of [...pages, ...funnels]) expect(Object.keys(texts(row["name"])).sort()).toEqual([...LOCALES].sort());
-    for (const page of pages) expect(typeof page["language"]).toBe("string");
+    for (const page of pages) {
+      // The page says the language it is written in: the one its words come in.
+      for (const locale of LOCALES) expect(texts(page["language"])[locale]).toBe(locale);
+      let words = 0;
+      const walk = (value: unknown, key: string): void => {
+        if (typeof value === "string") {
+          // A word a visitor reads is never left in one language; ids, kinds, icons, a form's key and a size are not words.
+          expect(["id", "kind", "icon", "form", "addOn", "size"], `${String(page["@label"])} ${key}: ${value}`).toContain(key);
+          return;
+        }
+        if (typeof value !== "object" || value === null) return;
+        if ("@t" in value) {
+          words += 1;
+          expect(Object.keys(texts(value)).sort(), `${String(page["@label"])} ${key}`).toEqual([...LOCALES].sort());
+          for (const text of Object.values(texts(value))) expect(text.length, key).toBeLessThanOrEqual(LIMITS[key] ?? 2000);
+          return;
+        }
+        if ("@ref" in value) return;
+        for (const [inner, item] of Object.entries(value)) walk(item, Array.isArray(value) ? key : inner);
+      };
+      walk(page["draft"], "draft");
+      expect(words).toBeGreaterThan(3);
+    }
   });
 
   it("publishes each live page as drafted, with no mark of Milo's, and keeps the draft unpublished", () => {
     for (const page of pages) {
-      const doc = page["draft"] as { v: number; title: string; description: string; blocks: Row[] };
+      const doc = page["draft"] as { v: number; blocks: Row[] };
       expect(doc.v).toBe(1);
-      expect(doc.title.length).toBeLessThanOrEqual(70);
-      expect(doc.description.length).toBeLessThanOrEqual(200);
       expect(JSON.stringify(doc)).not.toContain('"milo"');
       for (const block of doc.blocks) expect(["hero", "heading", "text", "picture", "button", "columns", "features", "quote", "questions", "spacer", "form"]).toContain(block["kind"]);
       if (page["state"] === "live") {
@@ -148,7 +170,7 @@ describe("the sample's landing pages and funnel", () => {
     expect(openDay.blocks.find((block) => block["kind"] === "form")).toEqual({ id: "book", kind: "form", form: showroom["id"], addOn: "forms" });
   });
 
-  it("puts the open day, its form and its thanks page in order in the \"Open day\" funnel, with no rule (a sample cannot name an installed rule)", () => {
+  it("puts the open day, its form and its thanks page in order in the \"Open day\" funnel, linked to the CRM's brochure rule", () => {
     expect(funnels.length).toBe(1);
     const funnel = funnels[0]!;
     expect(texts(funnel["name"])["en-US"]).toBe("Open day");
@@ -157,7 +179,9 @@ describe("the sample's landing pages and funnel", () => {
       { kind: "form", key: showroom["id"], addOn: "forms" },
       { kind: "page", key: { "@ref": "page:thanks" } },
     ]);
-    expect(funnel["rule_id"]).toBeNull();
+    // The rule the CRM ships for an enquirer who asks for the brochure, as this database installed it.
+    expect(funnel["rule_id"]).toEqual({ "@rule": "brochure-asked" });
+    expect((whole as unknown as Doc).automations.map((rule) => rule.key)).toContain("brochure-asked");
   });
 
   it("names no sample person (an app's rows for an add-on may not)", () => {
