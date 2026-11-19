@@ -152,13 +152,13 @@ describe("the sample is the one the manifest names", () => {
 });
 
 describe("the sample's rows are the ledger's", () => {
-  it("has 695 rows in 70 tables: the ledger's 668 in 68, the 17 list prices its quotes were written from, and the two crews' ten working days", () => {
+  it("has 704 rows in 70 tables: the ledger's 668 in 68, the 17 list prices its quotes were written from, the two crews' ten working days, and the five companies Lead finder found with the four people at them", () => {
     const counts = Object.fromEntries([...tables].map(([table, list]) => [table, list.length]));
     expect(Object.keys(counts)).toHaveLength(70);
-    expect(Object.values(counts).reduce((total, n) => total + n, 0)).toBe(695);
+    expect(Object.values(counts).reduce((total, n) => total + n, 0)).toBe(704);
     expect(counts["price_list"]).toBe(17);
     expect(counts).toMatchObject({
-      settings: 1, stages: 5, lost_reasons: 5, companies: 9, contacts: 13, territories: 4, territory_places: 9,
+      settings: 1, stages: 5, lost_reasons: 5, companies: 14, contacts: 17, territories: 4, territory_places: 9,
       deals: 40, deal_stage_changes: 66, deal_marks: 40, follow_ups: 16, activities: 26, quotes: 9, quote_lines: 31,
       comments: 7, enquiries: 17, shows: 1, saved_views: 6, saved_searches: 5, renewals: 13, referrals: 6, reps: 4,
       targets: 4, one_to_ones: 4, one_to_one_sessions: 9, coaching_plans: 4, coaching_areas: 8, actions: 25,

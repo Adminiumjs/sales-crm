@@ -739,6 +739,68 @@
      "account_owner_id": {
       "@person": "priya"
      }
+    },
+    {
+     "@label": "co:kestrel-yard",
+     "name": "Kestrel Yard Architects",
+     "company_number": "98000412",
+     "sector": "Architectural activities",
+     "website": "https://kestrelyard.example",
+     "phone": "0113 496 0412",
+     "address_lines": "Unit 4, Calder Wharf Lane",
+     "town": "Leeds",
+     "region": "West Yorkshire",
+     "postal_code": "LS1 0ZZ",
+     "country": "GB",
+     "about": "A small practice drawing homes and workshops."
+    },
+    {
+     "@label": "co:millbeck",
+     "name": "Millbeck Drawing Office",
+     "company_number": "98001537",
+     "sector": "Architectural activities",
+     "website": "https://millbeck.example",
+     "address_lines": "22 Fennel Row",
+     "town": "Leeds",
+     "region": "West Yorkshire",
+     "postal_code": "LS2 0ZZ",
+     "country": "GB"
+    },
+    {
+     "@label": "co:ouseburn",
+     "name": "Ouseburn Studio",
+     "company_number": "98002264",
+     "sector": "Architectural activities",
+     "website": "https://ouseburn.example",
+     "address_lines": "3 Lime Kiln Court",
+     "town": "Newcastle upon Tyne",
+     "region": "Tyne and Wear",
+     "postal_code": "NE1 0ZZ",
+     "country": "GB"
+    },
+    {
+     "@label": "co:tannery-row",
+     "name": "Tannery Row Design",
+     "company_number": "98003391",
+     "sector": "Architectural activities",
+     "website": "https://tanneryrow.example",
+     "address_lines": "7 Tannery Row",
+     "town": "Leeds",
+     "region": "West Yorkshire",
+     "postal_code": "LS3 0ZZ",
+     "country": "GB"
+    },
+    {
+     "@label": "co:fjordlys",
+     "name": "Fjordlys Arkitekter AS",
+     "company_number": "923456781",
+     "sector": "Arkitektvirksomhet",
+     "website": "https://www.fjordlys.example",
+     "phone": "55 00 00 00",
+     "address_lines": "Lysverkgata 5",
+     "town": "Bergen",
+     "postal_code": "5003",
+     "country": "NO"
     }
    ]
   },
@@ -1098,6 +1160,52 @@
      "email": "bea@loworbit.example",
      "phone": "0118 990 2277",
      "may_email": false
+    },
+    {
+     "@label": "ct:robin-hale",
+     "company_id": {
+      "@ref": "co:kestrel-yard"
+     },
+     "name": "Robin Hale",
+     "job_title": "Director",
+     "email": "robin@kestrelyard.example",
+     "may_email": false
+    },
+    {
+     "@label": "ct:sam-ellery",
+     "company_id": {
+      "@ref": "co:kestrel-yard"
+     },
+     "name": "Sam Ellery",
+     "job_title": "Architect",
+     "email": "sam@kestrelyard.example",
+     "may_email": false
+    },
+    {
+     "@label": "ct:jo-ashby",
+     "company_id": {
+      "@ref": "co:millbeck"
+     },
+     "name": "Jo Ashby",
+     "job_title": "Director",
+     "email": "jo@millbeck.example",
+     "may_email": false
+    },
+    {
+     "@label": "ct:kari-vik",
+     "company_id": {
+      "@ref": "co:fjordlys"
+     },
+     "name": "Kari Vik",
+     "job_title": "Daglig leder",
+     "email": "kari@fjordlys.example",
+     "may_email": true,
+     "may_email_at": {
+      "@ago": "P20D"
+     },
+     "may_email_by_id": {
+      "@person": "dana"
+     }
     }
    ]
   },

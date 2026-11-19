@@ -47,10 +47,10 @@ for (const [name, raw] of [
   const doc = raw as unknown as Doc;
 
   describe(`landing pages, in ${name}`, () => {
-    it("passes the validator, at Adminium 0.3.65, which counts a page's views and serves landing pages", () => {
+    it("passes the validator, at Adminium 0.3.66 (0.3.65 counts a page's views and serves landing pages)", () => {
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.65");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.66");
     });
 
     it("lets the marketer read the forms, their answers, the pages and the funnels, and change none of them", () => {

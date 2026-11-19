@@ -159,6 +159,11 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "account_owner_id",
       "access_note",
       "ask_for_contact_id",
+      // A company's number in the register, its phone and what it does: typed, or found by Lead finder; empty on every
+      // company there before.
+      "company_number",
+      "phone",
+      "about",
     ],
   },
   // The old "unsubscribed" moment stays one release more: the update carries each to the do-not-email list, and nothing

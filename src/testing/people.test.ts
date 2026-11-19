@@ -72,14 +72,15 @@ describe("the people of the app", () => {
       ["companies", "companies"],
       ["enquiries", "people"],
     ]);
-    expect(doc.compatibility.minAdminiumVersion).toBe("0.3.65");
+    expect(doc.compatibility.minAdminiumVersion).toBe("0.3.66");
   });
 
   it("names a contact by her name and her address, the one the outbox writes to, and greets her by her first name", () => {
     expect(entry("contacts")).toMatchObject({ email: "email", name: "name", company: "company_id", firstName: "firstWordOfName" });
     expect(doc.outbox.recipient).toMatchObject({ table: "contacts", email: entry("contacts").email });
     expect(entry("enquiries")).toMatchObject({ email: "email", name: "person", firstName: "firstWordOfName" });
-    expect(entry("companies")).toEqual({ table: "companies", kind: "companies", name: "name" });
+    // A company is named by its name; where a found company's details go is held in lead.test.ts.
+    expect(entry("companies")).toMatchObject({ table: "companies", kind: "companies", name: "name" });
   });
 
   it("reads a contact's \"may be e-mailed\" as the newsletter's yes; an enquiry's answer is kept in the consent log alone", () => {

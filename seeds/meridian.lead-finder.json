@@ -1,0 +1,234 @@
+{
+ "format": "adminium.sample/1",
+ "app": "crm",
+ "addOn": "lead-finder",
+ "tables": [
+  {
+   "ref": "found_people",
+   "rows": [
+    {
+     "@label": "found:robin-hale",
+     "person_table": {
+      "@table": "contacts"
+     },
+     "person_key": {
+      "@ref": "ct:robin-hale"
+     },
+     "company_table": {
+      "@table": "companies"
+     },
+     "company_key": {
+      "@ref": "co:kestrel-yard"
+     },
+     "source": "hunter",
+     "found_at": {
+      "@ago": "P1DT2H"
+     },
+     "purpose": "To offer your company office fit-outs and furniture.",
+     "tell_by": {
+      "@day": 29
+     },
+     "told_at": {
+      "@ago": "P1DT2H"
+     },
+     "state": "told",
+     "source_pages": "https://kestrelyard.example/team"
+    },
+    {
+     "@label": "found:sam-ellery",
+     "person_table": {
+      "@table": "contacts"
+     },
+     "person_key": {
+      "@ref": "ct:sam-ellery"
+     },
+     "company_table": {
+      "@table": "companies"
+     },
+     "company_key": {
+      "@ref": "co:kestrel-yard"
+     },
+     "source": "hunter",
+     "found_at": {
+      "@ago": "PT20M"
+     },
+     "purpose": "To offer your company office fit-outs and furniture.",
+     "tell_by": {
+      "@day": 30
+     },
+     "told_at": null,
+     "state": "waiting",
+     "source_pages": "https://kestrelyard.example/team\nhttps://kestrelyard.example/projects/mill-yard"
+    },
+    {
+     "@label": "found:jo-ashby",
+     "person_table": {
+      "@table": "contacts"
+     },
+     "person_key": {
+      "@ref": "ct:jo-ashby"
+     },
+     "company_table": {
+      "@table": "companies"
+     },
+     "company_key": {
+      "@ref": "co:millbeck"
+     },
+     "source": "hunter",
+     "found_at": {
+      "@ago": "P27D"
+     },
+     "purpose": "To offer your company office fit-outs and furniture.",
+     "tell_by": {
+      "@day": 3
+     },
+     "told_at": null,
+     "state": "failed",
+     "source_pages": "https://millbeck.example/about"
+    },
+    {
+     "@label": "found:kari-vik",
+     "person_table": {
+      "@table": "contacts"
+     },
+     "person_key": {
+      "@ref": "ct:kari-vik"
+     },
+     "company_table": {
+      "@table": "companies"
+     },
+     "company_key": {
+      "@ref": "co:fjordlys"
+     },
+     "source": "hunter",
+     "found_at": {
+      "@ago": "P24D"
+     },
+     "purpose": "To offer your company office fit-outs and furniture.",
+     "tell_by": {
+      "@day": 6
+     },
+     "told_at": {
+      "@ago": "P24D"
+     },
+     "state": "told",
+     "source_pages": "https://www.fjordlys.example/kontakt"
+    }
+   ]
+  },
+  {
+   "ref": "tell_mails",
+   "rows": [
+    {
+     "kind": "tell",
+     "status": "sent",
+     "to_address": "robin@kestrelyard.example",
+     "language": "en-US",
+     "found_person_id": {
+      "@ref": "found:robin-hale"
+     },
+     "sent_at": {
+      "@ago": "P1DT2H"
+     }
+    },
+    {
+     "kind": "tell",
+     "status": "failed",
+     "to_address": "jo@millbeck.example",
+     "language": "en-US",
+     "found_person_id": {
+      "@ref": "found:jo-ashby"
+     },
+     "error": "The address bounced"
+    },
+    {
+     "kind": "tell",
+     "status": "sent",
+     "to_address": "kari@fjordlys.example",
+     "language": "en-US",
+     "found_person_id": {
+      "@ref": "found:kari-vik"
+     },
+     "sent_at": {
+      "@ago": "P24D"
+     }
+    }
+   ]
+  },
+  {
+   "ref": "field_sources",
+   "rows": [
+    {
+     "table_ref": {
+      "@table": "companies"
+     },
+     "row_key": {
+      "@ref": "co:kestrel-yard"
+     },
+     "column_name": "company_number",
+     "source": "companies-house",
+     "found_at": {
+      "@ago": "P2D"
+     },
+     "value_hash": "ec0b8f3a78dea5f1cd8ff6ee45452a96c90ad7ef924c92a2efee317886f0481f"
+    },
+    {
+     "table_ref": {
+      "@table": "companies"
+     },
+     "row_key": {
+      "@ref": "co:kestrel-yard"
+     },
+     "column_name": "town",
+     "source": "companies-house",
+     "found_at": {
+      "@ago": "P2D"
+     },
+     "value_hash": "8593b9db65212160979d946950601c26622a219c80f1f122679eb69ec5b96600"
+    },
+    {
+     "table_ref": {
+      "@table": "companies"
+     },
+     "row_key": {
+      "@ref": "co:kestrel-yard"
+     },
+     "column_name": "website",
+     "source": "website",
+     "found_at": {
+      "@ago": "P2D"
+     },
+     "value_hash": "bdf1f1afd031d9b268578664dbeecd6163cd9f65274bf9b0366a646192ab0a1a"
+    },
+    {
+     "table_ref": {
+      "@table": "companies"
+     },
+     "row_key": {
+      "@ref": "co:fjordlys"
+     },
+     "column_name": "company_number",
+     "source": "norway",
+     "found_at": {
+      "@ago": "P25D"
+     },
+     "value_hash": "74c528fa4d4487ca475d23ceaf980c08a10410fc91bcd29f44d41171fb3279a8"
+    },
+    {
+     "table_ref": {
+      "@table": "companies"
+     },
+     "row_key": {
+      "@ref": "co:fjordlys"
+     },
+     "column_name": "website",
+     "source": "norway",
+     "found_at": {
+      "@ago": "P25D"
+     },
+     "value_hash": "2fa5b9df8317496da92bc0db2abb143892251bea8f3ceb8898bd2e9b2a60fb17"
+    }
+   ]
+  }
+ ]
+}

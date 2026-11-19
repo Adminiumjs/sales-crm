@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.65",
+    "minAdminiumVersion": "0.3.66",
     "engines": [
       "postgres",
       "mysql",
@@ -7023,6 +7023,9 @@
           ],
           [
             "territory_id"
+          ],
+          [
+            "company_number"
           ]
         ],
         "columns": [
@@ -7261,6 +7264,60 @@
               "ar-EG": "الموقع الإلكتروني",
               "zh-CN": "网站",
               "zh-TW": "網站"
+            }
+          },
+          {
+            "ref": "phone",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "personal": false
+            },
+            "label": {
+              "en-US": "Phone",
+              "de-DE": "Telefon",
+              "fr-FR": "Téléphone",
+              "da-DK": "Telefon",
+              "cs-CZ": "Telefon",
+              "ar-EG": "الهاتف",
+              "zh-CN": "电话",
+              "zh-TW": "電話"
+            }
+          },
+          {
+            "ref": "about",
+            "type": "text",
+            "maxLength": 1000,
+            "nullable": true,
+            "label": {
+              "en-US": "About",
+              "de-DE": "Über die Firma",
+              "fr-FR": "À propos",
+              "da-DK": "Om virksomheden",
+              "cs-CZ": "O firmě",
+              "ar-EG": "نبذة",
+              "zh-CN": "简介",
+              "zh-TW": "簡介"
+            }
+          },
+          {
+            "ref": "company_number",
+            "type": "text",
+            "maxLength": 40,
+            "nullable": true,
+            "rules": {
+              "normalize": "code"
+            },
+            "label": {
+              "en-US": "Company number",
+              "de-DE": "Registernummer",
+              "fr-FR": "Numéro d’immatriculation",
+              "da-DK": "Registreringsnummer",
+              "cs-CZ": "Identifikační číslo",
+              "ar-EG": "رقم السجل التجاري",
+              "zh-CN": "公司注册号",
+              "zh-TW": "公司登記號碼"
             }
           },
           {
@@ -25997,6 +26054,9 @@
             "lng",
             "place",
             "website",
+            "company_number",
+            "phone",
+            "about",
             "logo",
             "access_note",
             "ask_for_contact_id"
@@ -26015,6 +26075,9 @@
             "lng",
             "place",
             "website",
+            "company_number",
+            "phone",
+            "about",
             "logo",
             "account_owner_id",
             "access_note",
@@ -26465,6 +26528,9 @@
             "lng",
             "place",
             "website",
+            "company_number",
+            "phone",
+            "about",
             "logo",
             "access_note",
             "ask_for_contact_id"
@@ -26483,6 +26549,9 @@
             "lng",
             "place",
             "website",
+            "company_number",
+            "phone",
+            "about",
             "logo",
             "account_owner_id",
             "access_note",
@@ -28440,6 +28509,9 @@
       },
       "pages": {
         "file": "seeds/meridian.pages.json"
+      },
+      "lead-finder": {
+        "file": "seeds/meridian.lead-finder.json"
       }
     },
     "people": [
@@ -32473,7 +32545,22 @@
     {
       "table": "companies",
       "kind": "companies",
-      "name": "name"
+      "name": "name",
+      "lead": {
+        "number": "company_number",
+        "website": "website",
+        "phone": "phone",
+        "address": {
+          "lines": "address_lines",
+          "town": "town",
+          "region": "region",
+          "postalCode": "postal_code",
+          "country": "country"
+        },
+        "activity": "sector",
+        "about": "about",
+        "owner": "account_owner_id"
+      }
     },
     {
       "table": "enquiries",
@@ -46781,6 +46868,20 @@
           "ar-EG": "صفحات هبوط ليوم مفتوح أو لعرض؛ وتعدّ صفحة التسويق الرئيسية مرات مشاهدتها.",
           "zh-CN": "用于开放日或优惠活动的落地页；营销首页会统计它们的浏览次数。",
           "zh-TW": "用於開放日或優惠活動的到達頁面；行銷首頁會統計它們的瀏覽次數。"
+        }
+      },
+      {
+        "key": "lead-finder",
+        "range": ">=1.0.32",
+        "reason": {
+          "en-US": "Finds companies in public registers by trade and town, and adds them to Companies with their details.",
+          "de-DE": "Findet Firmen in öffentlichen Registern nach Branche und Ort und fügt sie mit ihren Angaben zu den Firmen hinzu.",
+          "fr-FR": "Trouve des sociétés dans les registres publics par activité et ville, et les ajoute aux Sociétés avec leurs détails.",
+          "da-DK": "Finder virksomheder i offentlige registre efter branche og by og føjer dem til Virksomheder med deres oplysninger.",
+          "cs-CZ": "Najde firmy ve veřejných rejstřících podle oboru a města a přidá je do Firem i s jejich údaji.",
+          "ar-EG": "يبحث عن الشركات في السجلات العامة حسب النشاط والمدينة، ويضيفها إلى الشركات ببياناتها.",
+          "zh-CN": "按行业和城市在公开登记中查找公司，并连同其信息一起添加到公司。",
+          "zh-TW": "依產業和城市在公開登記中尋找公司，並連同其資料一併加入公司。"
         }
       }
     ],

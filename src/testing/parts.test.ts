@@ -80,6 +80,8 @@ describe("the app is made of eleven parts", () => {
       ["live-chat", false],
       // Landing pages too: the marketer's home reads them when they are there.
       ["pages", false],
+      // Finding companies in the registers is the owner's to choose too.
+      ["lead-finder", false],
     ]);
   });
 });
