@@ -76,7 +76,8 @@ for (const [name, raw] of [
     it("suggests Pages sixth of eight, not ticked, in every language, from its first release", () => {
       const suggests = doc.addOns.suggests;
       expect(suggests.length).toBeLessThanOrEqual(8);
-      expect(suggests.map((one) => one.key)).toEqual(["invoices", "inventory", "offers", "forms", "live-chat", "pages"]);
+      // Lead finder (0.2.9) comes after it.
+      expect(suggests.map((one) => one.key)).toEqual(["invoices", "inventory", "offers", "forms", "live-chat", "pages", "lead-finder"]);
       const pages = suggests[5]!;
       expect(pages.checked).toBeUndefined();
       expect(pages.range).toBe(">=1.0.31");
