@@ -61,6 +61,9 @@ const SEEDS = process.env.CRM_SEEDS ?? `${APP}/whole/seeds`;
 const manifest = () => JSON.parse(readFileSync(`${APP}/whole/manifest.json`, 'utf8')) as Record<string, unknown>;
 /** 09:35 on Tuesday 28 July 2026, where the sample's business is: the moment every figure of the ledger is true at. */
 const LEDGER_NOW = '2026-07-28T08:35:00.000Z';
+/** The practices Lead finder found and the people at them, in the sample: nobody's, with no deal anywhere. */
+const FOUND_PEOPLE = ['Robin Hale', 'Sam Ellery', 'Jo Ashby', 'Kari Vik'];
+const NOTHING_FOUND = Object.fromEntries(['Kestrel Yard Architects', 'Millbeck Drawing Office', 'Ouseburn Studio', 'Tannery Row Design', 'Fjordlys Arkitekter AS'].map((name) => [name, { n: 0, open: 0, weighted: 0, won: 0 }]));
 const PEOPLE = manifest()['sampleData'] as { people: { key: string; name: string; email: string; role: string }[] };
 
 async function sourceDatabase(dialect: Dialect, dataDir: string): Promise<{ dsn: string; drop: () => Promise<void> }> {
@@ -313,9 +316,9 @@ for (const [dialect, reachable] of LEGS) {
 
     it('answers "main contact on N open deals" from the marks, and never whose a deal is to the marketer', async () => {
       const people = await byName('contacts');
-      // The ledger: two open deals each for Marta and Ruth, none for Kit, one for the other ten.
-      const ledger = Object.fromEntries(Object.keys(people).map((name) => [name, name === 'Marta Kovac' || name === 'Ruth Adeyemi' ? 2 : name === 'Kit Delaney' ? 0 : 1]));
-      expect(Object.keys(people)).toHaveLength(13);
+      // The ledger: two open deals each for Marta and Ruth, none for Kit nor the four people Lead finder found, one for the other ten.
+      const ledger = Object.fromEntries(Object.keys(people).map((name) => [name, name === 'Marta Kovac' || name === 'Ruth Adeyemi' ? 2 : name === 'Kit Delaney' || FOUND_PEOPLE.includes(name) ? 0 : 1]));
+      expect(Object.keys(people)).toHaveLength(17);
       for (const person of ['dana', 'ivy', 'tessa', 'hugo', 'grace']) expect(await marksBy(person, 'contact_id', people), person).toEqual(ledger);
 
       // Dana may open six of the fourteen: the rest she is answered as a count and nothing else.
@@ -350,6 +353,7 @@ for (const [dialect, reachable] of LEGS) {
         'Harbor & Finch': { n: 2, open: 40750, weighted: 24225, won: 6200 },
         'Tandem Robotics': { n: 1, open: 6300, weighted: 1575, won: 15600 },
         'Low Orbit': { n: 1, open: 21500, weighted: 10750, won: 0 },
+        ...NOTHING_FOUND,
       };
       for (const person of ['ivy', 'tessa', 'grace']) expect(await companies(person), person).toEqual(ledger);
 
@@ -364,12 +368,13 @@ for (const [dialect, reachable] of LEGS) {
         'Harbor & Finch': { n: 0, open: 0, weighted: 0, won: 0 },
         'Tandem Robotics': { n: 0, open: 0, weighted: 0, won: 0 },
         'Low Orbit': { n: 1, open: 21500, weighted: 10750, won: 0 },
+        ...NOTHING_FOUND,
       });
       // The account manager reads a deal once it is won: nothing open, and what was won by anybody.
       expect(await companies('hugo')).toEqual(Object.fromEntries(Object.entries(ledger).map(([name, row]) => [name, { n: 0, open: 0, weighted: 0, won: row.won }])));
       // The marketer reads no deal: every fold is empty, and the row says which.
       const lena = data(await get('lena', url('companies', `?select=id,name&limit=200&compute=${measures(s.t('deals'))}`)));
-      expect(lena).toHaveLength(9);
+      expect(lena).toHaveLength(14);
       for (const row of lena) {
         expect([row['open_n'], row['open_value'], row['weighted'], row['won_value']], String(row['name'])).toEqual([null, null, null, null]);
         expect(row['_masked']).toEqual(expect.arrayContaining(['open_n', 'open_value', 'weighted', 'won_value']));
@@ -635,9 +640,9 @@ for (const [dialect, reachable] of LEGS) {
       const names = await byName('companies');
       const cobalt = names['Cobalt Legal']!;
       for (const person of ['dana', 'ivy', 'tessa', 'hugo', 'grace', 'lena']) {
-        // The sample's nine and thirteen (this file's own rows are called "P07 …").
-        expect(data(await get(person, url('companies', '?select=id,name&limit=200'))).filter((row) => !String(row['name']).startsWith('P07 ')), person).toHaveLength(9);
-        expect(data(await get(person, url('contacts', '?select=id,name&limit=200'))).filter((row) => !String(row['name']).startsWith('P07 ')), person).toHaveLength(13);
+        // The sample's fourteen and seventeen, Lead finder's five and four among them (this file's own rows are called "P07 …").
+        expect(data(await get(person, url('companies', '?select=id,name&limit=200'))).filter((row) => !String(row['name']).startsWith('P07 ')), person).toHaveLength(14);
+        expect(data(await get(person, url('contacts', '?select=id,name&limit=200'))).filter((row) => !String(row['name']).startsWith('P07 ')), person).toHaveLength(17);
       }
       // A contact's e-mail and phone are personal: kept from Read-only, who is refused a list that names them and answered the rest with them left empty.
       for (const person of ['grace']) {

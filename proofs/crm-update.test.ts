@@ -1,6 +1,6 @@
 /**
  * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3, 0.2.4, 0.2.5, 0.2.6 and 0.2.7,
- * holding the sample and rows typed since by the people who type them, updated to 0.2.8 (the whole app), on SQLite,
+ * holding the sample and rows typed since by the people who type them, updated to 0.2.9 (the whole app), on SQLite,
  * Postgres and MySQL.
  *
  * Each release is read from its git tag (`v0.2.0` … `v0.2.7`): the manifest and the `seeds/` the package shipped, as
@@ -8,6 +8,11 @@
  * (`0.2.6=<commit>`). The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
  * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
  * when it still says the one installed), Forms among them, installed after the CRM's update.
+ *
+ * A company's details for Lead finder (0.2.9, on Adminium 0.3.66): companies gain a number in the register, a phone and
+ * a few words about them, and the companies entry says where a found company's details go (the `lead` word). Every
+ * company is kept as it was, and the three columns are empty on every one. No grant of an add-on's table, part or rule
+ * changes: the update from 0.2.8 asks nothing.
  *
  * Landing pages (0.2.8, on Adminium 0.3.65): the marketer's home shows the campaigns, the forms' answers, the funnels'
  * views and the chats, so the marketer reads Forms' forms and answers and Pages' pages and funnels, read only. No table,
@@ -95,7 +100,7 @@ import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.65' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.66' }));
 
 type Dialect = 'sqlite' | 'postgres' | 'mysql';
 type Row = Record<string, unknown>;
@@ -103,8 +108,8 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.8';
-const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7'] as const;
+const NEXT = '0.2.9';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7', '0.2.8'] as const;
 /** A release not tagged yet, read from the commit that holds it: `CRM_RELEASE_REFS=0.2.6=<commit>`. */
 const REFS: Record<string, string> = Object.fromEntries((process.env.CRM_RELEASE_REFS ?? '').split(',').filter((pair) => pair.includes('=')).map((pair) => pair.split('=', 2) as [string, string]));
 const refOf = (version: string): string => REFS[version] ?? `v${version}`;
@@ -181,7 +186,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.8: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.9: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -574,11 +579,13 @@ for (const [dialect, reachable] of LEGS) {
       /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 and later already have the mark of the line and the count of won deals; 0.2.4 already has website forms and surveys. */
       const has22 = from !== '0.2.0' && from !== '0.2.1';
       const has23 = has22 && from !== '0.2.2';
-      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6' || from === '0.2.7';
+      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6' || from === '0.2.7' || from === '0.2.8';
       /** 0.2.6 and later already take a quote's payments online: the update asks nothing of them. */
-      const has26 = from === '0.2.6' || from === '0.2.7';
+      const has26 = from === '0.2.6' || from === '0.2.7' || from === '0.2.8';
       /** 0.2.7 already lets the Team inbox's roles read the chat an enquiry came from. */
-      const has27 = from === '0.2.7';
+      const has27 = from === '0.2.7' || from === '0.2.8';
+      /** 0.2.8 already lets the marketer read Forms' and Pages' tables: the update asks nothing at all. */
+      const has28 = from === '0.2.8';
       const installedAddOns = before;
       const nextAddOns = after;
 
@@ -766,15 +773,15 @@ for (const [dialect, reachable] of LEGS) {
         expect(receipts.filter((row) => plainValue(row['got']) !== plainValue(row['want'])).map((row) => `${String(row['id'])}: ${String(plainValue(row['got']))}, the order says ${String(plainValue(row['want']))}`).slice(0, 10)).toEqual([]);
       }, 600_000);
 
-      it(`the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table (the marketer's reads of Forms and Pages${has27 ? '' : ', the inbox\'s reads of Live chat'}${has24 ? '' : ', and older ones'}), and goes when the owner allows them${has26 ? '' : ', lets the customer\'s link show more and two roles refund'}`, async () => {
+      it(`the CRM update to ${NEXT} is refused naming each wider grant of an add-on's table (${has28 ? 'none from 0.2.8' : `the marketer's reads of Forms and Pages${has27 ? '' : ', the inbox\'s reads of Live chat'}${has24 ? '' : ', and older ones'}`}), and goes when the owner allows them${has26 ? '' : ', lets the customer\'s link show more and two roles refund'}`, async () => {
         await s.jobs();
         rowsBefore = await everyRow(s);
         partsBefore = await parts();
         rulesBefore = await rules();
         await upload('/api/v1/apps/upload', appTarball(now.manifest, now.files));
         const want = widerGrants(was.manifest, now.manifest);
-        // From every release: the marketer reads what her home shows of Forms and Pages, though no install has Pages yet.
-        expect(want.filter(isMarketerRead)).toEqual(MARKETER_READS);
+        // From every release before 0.2.8: the marketer reads what her home shows of Forms and Pages, though no install has Pages yet.
+        expect(want.filter(isMarketerRead)).toEqual(has28 ? [] : MARKETER_READS);
         // From every release before 0.2.7: the Team inbox's roles read the chat an enquiry came from.
         const chatWant = want.filter((grant) => grant.addOn === 'live-chat');
         expect(chatWant).toEqual(has27 ? [] : [...CHAT_READS].sort((a, b) => `${a.role}/${a.table}`.localeCompare(`${b.role}/${b.table}`)));
@@ -806,11 +813,13 @@ for (const [dialect, reachable] of LEGS) {
         }
         // From every release: the customer's link shows what a quote asks, and what was paid and is left; the CRM admin
         // and the sales manager may refund the CRM's online payments.
-        // 0.2.6 and 0.2.7 ask neither: they hold both already. The chat's own entry asks nothing more of the app's public access.
+        // 0.2.6, 0.2.7 and 0.2.8 ask neither: they hold both already. The chat's own entry asks nothing more of the app's public access.
         expect(reasons.filter((one) => one !== 'roleTables').sort()).toEqual(has26 ? [] : ['PUBLIC_WIDER', 'ROLE_GRANTS_ADDED']);
-        expect(reasons).toContain('roleTables');
+        // 0.2.8 holds every grant of an add-on's table already: the update goes at once.
+        if (has28) expect(reasons).toEqual([]);
+        else expect(reasons).toContain('roleTables');
         if (has24) {
-          // 0.2.4 already holds every other grant of an add-on's table 0.2.8 does.
+          // 0.2.4 already holds every other grant of an add-on's table 0.2.9 does.
           expect(older).toEqual([]);
         } else {
           // From every release before 0.2.4: the five roles that read the aftercare calls read when a job's survey went
@@ -839,6 +848,16 @@ for (const [dialect, reachable] of LEGS) {
         const want = now.manifest.requiredSchema.tables.map((table) => `crm_${table.ref}`).sort();
         expect({ extra: crm.filter((name) => !want.includes(name)), missing: want.filter((name) => !crm.includes(name)) }).toEqual({ extra: [], missing: [] });
         expect(crm.length).toBe(79);
+      });
+
+      it('every company is kept, its number in the register, phone and few words empty, and the companies entry says where Lead finder writes', async () => {
+        const companies = [...(rowsBefore.get('crm_companies') ?? new Map<string, Row>()).keys()].map(String).sort();
+        expect(companies.length).toBeGreaterThan(0);
+        const held = await s.rows('select id, company_number, phone, about from crm_companies');
+        expect(held.map((row) => String(row['id'])).sort()).toEqual(companies);
+        expect(held.filter((row) => row['company_number'] !== null || row['phone'] !== null || row['about'] !== null)).toEqual([]);
+        const entry = (now.manifest as unknown as { people: { table: string; lead?: Record<string, unknown> }[] }).people.find((one) => one.table === 'companies');
+        expect(entry?.lead).toMatchObject({ number: 'company_number', phone: 'phone', about: 'about', owner: 'account_owner_id' });
       });
 
       it('the parts keep their switches, and the parts it lacked arrive switched off; the rules keep theirs', async () => {
@@ -976,11 +995,13 @@ for (const [dialect, reachable] of LEGS) {
         // and the two settings, at what they start at (nothing asked, a deposit of 20 %).
         const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
         const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
-        // 0.2.7's and 0.2.8's: none.
-        if (has26) expect(ids).toEqual([]);
-        else if (has24) expect(ids).toEqual(PAY_PLAIN);
-        else if (has23) expect(ids).toEqual([...ours, ...PAY_PLAIN].sort());
-        else if (has22) expect(ids).toEqual([...ours, ...PAY_PLAIN, 'contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at'].sort());
+        // 0.2.7's and 0.2.8's: none. 0.2.9's: a company's number, phone and few words, empty on every company there before.
+        const COMPANY = ['companies.about', 'companies.company_number', 'companies.phone'];
+        expect(COMPANY.filter((one) => ids.includes(one))).toEqual(COMPANY);
+        if (has26) expect(ids).toEqual(COMPANY);
+        else if (has24) expect(ids).toEqual([...COMPANY, ...PAY_PLAIN].sort());
+        else if (has23) expect(ids).toEqual([...ours, ...COMPANY, ...PAY_PLAIN].sort());
+        else if (has22) expect(ids).toEqual([...ours, ...COMPANY, ...PAY_PLAIN, 'contacts.opt_out_offered_at', 'enquiries.opt_out_offered_at'].sort());
         else expect(plain.length).toBeGreaterThan(20);
         // (0.2.0 had no feedback: the table is new to it, the column with it.)
         if (!has24) for (const id of ours.filter((one) => has21 || !one.startsWith('feedback.'))) expect(ids, id).toContain(id);
