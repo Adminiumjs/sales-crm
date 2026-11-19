@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addressOf, COMPANY_COLUMNS, fixedOn, CONTACT_COLUMNS, countryName, mainLine, modesFor, newestFirst, openLine, quietLines, reachOf, readsDeals, sinceOf, toneOf, typed, type Entry, type Mark } from "./data.ts";
+import { addressOf, COMPANY_COLUMNS, fixedOn, CONTACT_COLUMNS, countryName, mainLine, modesFor, newestFirst, openLine, quietLines, detailsOf, readsDeals, sinceOf, toneOf, typed, type Entry, type Mark } from "./data.ts";
 
 describe("what a company's card says about open deals", () => {
   it("a team's reader: the deals she reaches; how many there are where she reaches none; nothing open", () => {
@@ -147,13 +147,13 @@ describe("what a record shows and does not let change", () => {
 
 describe("how to reach a company, under its name", () => {
   it("is its number in the register, its phone and its website, in that order, each only when filled", () => {
-    expect(reachOf({ company_number: "98000412", phone: " 0113 496 0412 ", website: "https://kestrelyard.example" })).toEqual([
+    expect(detailsOf({ company_number: "98000412", phone: " 0113 496 0412 ", website: "https://kestrelyard.example" })).toEqual([
       { column: "company_number", value: "98000412" },
       { column: "phone", value: "0113 496 0412" },
       { column: "website", value: "https://kestrelyard.example" },
     ]);
-    expect(reachOf({ company_number: null, phone: "", website: "https://millbeck.example" })).toEqual([{ column: "website", value: "https://millbeck.example" }]);
+    expect(detailsOf({ company_number: null, phone: "", website: "https://millbeck.example" })).toEqual([{ column: "website", value: "https://millbeck.example" }]);
     // A company from before the three columns: nothing to say.
-    expect(reachOf({ website: null })).toEqual([]);
+    expect(detailsOf({ website: null })).toEqual([]);
   });
 });

@@ -29,7 +29,7 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import { NoRecord } from "../../shell/pages.tsx";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { initials } from "../../ui/people.ts";
-import { addressOf, num, reachOf, readProfile, type Since } from "./data.ts";
+import { addressOf, detailsOf, num, readProfile, type Since } from "./data.ts";
 import { RecordSheet, type Rec } from "./RecordSheet.tsx";
 import { Tile, useAccounts } from "./shared.tsx";
 
@@ -105,9 +105,9 @@ export function CompanyProfile({ id }: { id: number }) {
                       </button>
                     )}
                   </div>
-                  {reachOf(company).length > 0 && (
+                  {detailsOf(company).length > 0 && (
                     <dl className="crm-acc-hero-reach">
-                      {reachOf(company).map((line) => (
+                      {detailsOf(company).map((line) => (
                         <div key={line.column} data-fact={line.column}>
                           <dt>{t(`acc.rec.co.${line.column}` as MessageKey)}</dt>
                           <dd className="crm-mono">

@@ -526,7 +526,7 @@ export function countryName(code: string | null, locale: string): string | null 
 }
 
 /** How to reach a company and find it in its register, each with the label it is shown under: only what is filled. */
-export function reachOf(company: Pick<Company, "company_number" | "phone" | "website">): { column: "company_number" | "phone" | "website"; value: string }[] {
+export function detailsOf(company: Pick<Company, "company_number" | "phone" | "website">): { column: "company_number" | "phone" | "website"; value: string }[] {
   return (["company_number", "phone", "website"] as const).flatMap((column) => {
     const value = company[column];
     return typeof value === "string" && value.trim() !== "" ? [{ column, value: value.trim() }] : [];
