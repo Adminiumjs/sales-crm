@@ -5,9 +5,10 @@
  * Pages installed beside the CRM, and every staff call made signed in as the
  * person it is about.
  *
- *  - "Add sample data" with Pages brings the four landing pages (three live,
- *    each publishing a page that parses, with no mark of Milo's) and the "Open
- *    day" funnel, whose steps name the sample's pages by their real keys;
+ *  - "Add sample data" with Pages brings the four landing pages in the adding
+ *    person's language (three live, each publishing a page that parses, with
+ *    no mark of Milo's) and the "Open day" funnel, whose steps name the
+ *    sample's pages by their real keys and which is linked to the brochure rule;
  *    "Remove sample data" takes all of it away again;
  *  - the marketer reads what her home shows: the forms and their answers, the
  *    pages and the funnels (only the columns she is given), their views
@@ -32,7 +33,7 @@ import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { rolesRepo, usersRepo, viewDaysRepo } from '@adminium/meta';
+import { automationsRepo, rolesRepo, usersRepo, viewDaysRepo } from '@adminium/meta';
 
 import { createSampleDataService, findSampleApp } from '../src/apps/sample-data.js';
 import { composeServer, type ComposedServer } from '../src/compose.js';
@@ -170,15 +171,16 @@ describe.each(LEGS)(`the CRM with Forms, Live chat and Pages — %s`, (dialect, 
       });
     expect(added.counts).toMatchObject({ 'pages:pages': 4, 'pages:funnels': 1 });
     const pages = await rows(`SELECT * FROM ${tables['pages:pages']!} ORDER BY id`);
+    // Every page in the adding person's language: its name, the language it says, and every word inside it.
     expect(pages.map((row) => [row['slug'], row['state'], row['language']])).toEqual([
-      ['acoustic-booths', 'live', 'en-US'],
-      ['showroom-open-day', 'live', 'en-US'],
-      ['thanks-open-day', 'live', 'en-US'],
-      ['tag-der-offenen-tuer', 'draft', 'de-DE'],
+      ['acoustic-booths', 'live', 'de-DE'],
+      ['showroom-open-day', 'live', 'de-DE'],
+      ['thanks-open-day', 'live', 'de-DE'],
+      ['spring-open-day', 'draft', 'de-DE'],
     ]);
-    // The staff name in the adding person's language; the page in its own.
-    expect(pages.map((row) => row['name'])).toEqual(['Akustikkabinen', 'Tag der offenen Tür im Showroom', 'Danke, bis bald', 'Tag der offenen Tür im Showroom, auf Deutsch']);
-    for (const [i, slug] of ['booths', 'open-day', 'thanks', 'open-day-de'].entries()) page[slug] = String(pages[i]!['id']);
+    expect(pages.map((row) => row['name'])).toEqual(['Akustikkabinen', 'Tag der offenen Tür im Showroom', 'Danke, bis bald', 'Frühjahrs-Tag der offenen Tür']);
+    for (const [i, slug] of ['booths', 'open-day', 'thanks', 'spring'].entries()) page[slug] = String(pages[i]!['id']);
+    expect(JSON.stringify(json(pages[0]!['draft']))).not.toContain('@t');
     // What a live page publishes parses whole and carries no mark of Milo's; its links name the booths' real key.
     const { parseLandingPage, hasMiloMarks } = await import('@adminium/add-on-contracts/landing');
     for (const row of pages.filter((one) => one['state'] === 'live')) {
@@ -188,7 +190,9 @@ describe.each(LEGS)(`the CRM with Forms, Live chat and Pages — %s`, (dialect, 
       expect(row['published_at']).not.toBeNull();
     }
     const openDay = json(pages[1]!['published']) as Doc;
-    expect(openDay.blocks[0].button.link).toEqual({ kind: 'page', key: page['booths'] });
+    expect(openDay.title).toBe('Tag der offenen Tür im Showroom');
+    expect(openDay.blocks[0].heading).toBe('Tag der offenen Tür in unserem Showroom in Leeds');
+    expect(openDay.blocks[0].button).toEqual({ label: 'Zu den Kabinen', link: { kind: 'page', key: page['booths'] } });
     expect(openDay.blocks.find((block: Doc) => block.kind === 'form')).toMatchObject({ kind: 'form', addOn: 'forms' });
     expect(pages[3]!['published']).toBeNull();
     const [funnel] = await rows(`SELECT * FROM ${tables['pages:funnels']!}`);
@@ -198,7 +202,10 @@ describe.each(LEGS)(`the CRM with Forms, Live chat and Pages — %s`, (dialect, 
       { kind: 'form', key: openDay.blocks.find((block: Doc) => block.kind === 'form').form, addOn: 'forms' },
       { kind: 'page', key: page['thanks'] },
     ]);
-    expect(funnel!['rule_id'] ?? null).toBeNull();
+    // Linked to the CRM's brochure rule, as this database installed it.
+    const brochure = (await automationsRepo(h.meta).listManagedBy('crm', h.connectionId)).find((rule) => rule.templateKey === 'brochure-asked');
+    expect(brochure, 'the brochure rule').toBeDefined();
+    expect(funnel!['rule_id']).toBe(brochure!.id);
   }, 600_000);
 
   it.skipIf(!available)('the marketer reads the forms, their answers, the pages and the funnels her home shows, only the columns she is given', async () => {
@@ -250,7 +257,7 @@ describe.each(LEGS)(`the CRM with Forms, Live chat and Pages — %s`, (dialect, 
     expect(made.statusCode, made.body).toBe(403);
     const changed = await as('lena', 'PATCH', data('pages:pages', `/${page['open-day']!}`), { values: { name: 'Changed' } });
     expect(changed.statusCode, changed.body).toBe(403);
-    expect((await as('lena', 'DELETE', data('pages:pages', `/${page['open-day-de']!}`))).statusCode).toBe(403);
+    expect((await as('lena', 'DELETE', data('pages:pages', `/${page['spring']!}`))).statusCode).toBe(403);
     const funnel = String((await rows(`SELECT id FROM ${tables['pages:funnels']!}`))[0]!['id']);
     expect((await as('lena', 'POST', data('pages:funnels'), { values: { name: 'Mine', steps: [] } })).statusCode).toBe(403);
     expect((await as('lena', 'PATCH', data('pages:funnels', `/${funnel}`), { values: { name: 'Changed' } })).statusCode).toBe(403);
