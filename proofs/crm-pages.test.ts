@@ -45,7 +45,7 @@ import { adminPasswordHash, ADMIN_PASSWORD, sessionCookie } from './auth-helpers
 import { makeEnv, TEST_SECRET } from './helpers.js';
 import { LEGS } from './invoicing-install.helpers.js';
 
-vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.65' }));
+vi.mock('../src/version.js', () => ({ APP_VERSION: '0.3.66' }));
 
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p71w4-k`;
 const SEEDS = process.env.CRM_SEEDS ?? `${APP}/whole/seeds`;

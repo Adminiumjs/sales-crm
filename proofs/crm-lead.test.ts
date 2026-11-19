@@ -11,12 +11,15 @@
  */
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { usersRepo } from '@adminium/meta';
 import { createSampleDataService, findSampleApp } from '../src/apps/sample-data.js';
 import { LEGS } from './invoicing-install.helpers.js';
 import { builtAddOn } from './add-ons/harness.js';
 import { addOnHarness, type Harness } from './app-add-ons.helpers.js';
+
+// The server says the version it was built at; the app's floor is the release to come.
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.66' }));
 
 // The app this copy of the proofs came from (`npm run proofs` names it), not a fixed lane.
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
