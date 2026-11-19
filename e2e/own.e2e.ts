@@ -131,7 +131,8 @@ test("saved searches: a live count from the server, private to their owner", asy
     await expect(acoustic.getByTestId("search-breakdown")).toHaveText("1 deal · 0 companies · 0 people");
     await expect(acoustic.getByTestId("search-value")).toHaveText("£27,500");
     await expect(acoustic.getByTestId("search-last")).toHaveText("Last run Tue, Jul 28, 08:40");
-    await expect(cards.nth(1).getByTestId("search-breakdown")).toHaveText("0 deals · 1 company · 0 people");
+    // "Leeds": Cobalt Legal and the three Leeds practices Lead finder found.
+    await expect(cards.nth(1).getByTestId("search-breakdown")).toHaveText("0 deals · 4 companies · 0 people");
     await expect(cards.nth(1).getByTestId("search-last")).toHaveText("Last run Mon, Jul 27, 15:10");
     await expect(cards.nth(2).getByTestId("search-breakdown")).toHaveText("1 deal · 0 companies · 0 people");
     await expect(cards.nth(2).getByTestId("search-value")).toHaveText("£16,800");

@@ -20,7 +20,8 @@ import { authOf, expect, picture, stand, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, watch, type Data, unfoldMenu } from "./helpers.ts";
 
 const card = (page: Page, name: string) => page.locator(".crm-acc-contact").filter({ has: page.locator(".crm-acc-contact-name", { hasText: new RegExp(`^${name}$`) }) });
-const NAMES = ["Ana Belova", "Bea Nolan", "Callum Finch", "Ines Vaughan", "Jonas Reuter", "Kit Delaney", "Marta Kovac", "Owen Marsh", "Petra Lindqvist", "Ruth Adeyemi", "Sadie Moore", "Tomas Reidy", "Yusuf Demir"];
+/** The sample's seventeen: Meridian's thirteen and the four people Lead finder found (Jo, Kari, Robin and Sam), by name. */
+const NAMES = ["Ana Belova", "Bea Nolan", "Callum Finch", "Ines Vaughan", "Jo Ashby", "Jonas Reuter", "Kari Vik", "Kit Delaney", "Marta Kovac", "Owen Marsh", "Petra Lindqvist", "Robin Hale", "Ruth Adeyemi", "Sadie Moore", "Sam Ellery", "Tomas Reidy", "Yusuf Demir"];
 /** The one open deal each of these is the main contact of. */
 const ONE: Record<string, string> = {
   "Ana Belova": "Clinic waiting-room seating",
@@ -115,16 +116,17 @@ test("Dana opens Contacts from her menu: her own deal is named, a colleague's is
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Nordwind Logistics");
 });
 
-test("the sales manager may open every deal: each one-deal contact names it; the ledger's two, ten and one", async ({ as, data }) => {
+test("the sales manager may open every deal: each one-deal contact names it; the ledger's two, ten and five", async ({ as, data }) => {
   const context = await as("ivy");
   const page = await context.newPage();
   await page.goto(`${STAFF}contacts`);
-  await expect(page.locator(".crm-acc-contact")).toHaveCount(13);
+  await expect(page.locator(".crm-acc-contact")).toHaveCount(NAMES.length);
   for (const [name, deal] of Object.entries(ONE)) await expect(card(page, name).locator(".crm-acc-contact-deals a"), name).toHaveText(deal);
   for (const name of ["Marta Kovac", "Ruth Adeyemi"]) await expect(card(page, name).locator(".crm-acc-contact-deals"), name).toHaveText("Main contact on 2 open deals");
   await expect(card(page, "Kit Delaney").locator(".crm-acc-contact-deals")).toHaveCount(0);
   const counts = Object.values(await mainCounts(context.request, data));
-  expect([counts.filter((n) => n === 2).length, counts.filter((n) => n === 1).length, 13 - counts.length]).toEqual([2, 10, 1]);
+  // Two open deals for two, one for ten, none for Kit and the four Lead finder found.
+  expect([counts.filter((n) => n === 2).length, counts.filter((n) => n === 1).length, NAMES.length - counts.length]).toEqual([2, 10, 5]);
   await picture(page, "2-ivy-contacts");
 });
 
@@ -132,7 +134,7 @@ test("the marketer reads who her campaigns go to, and is told nothing of deals; 
   const lena = await as("lena");
   const page = await lena.newPage();
   await page.goto(`${STAFF}contacts`);
-  await expect(page.locator(".crm-acc-contact")).toHaveCount(13);
+  await expect(page.locator(".crm-acc-contact")).toHaveCount(NAMES.length);
   // She sends the campaigns (0.2.3): a contact's address and phone are hers to read.
   await expect(page.locator(".crm-acc-kept")).toHaveCount(0);
   await expect(page.locator("main")).toContainText("@");
@@ -155,7 +157,7 @@ test("the marketer reads who her campaigns go to, and is told nothing of deals; 
   const grace = await as("grace");
   const hers = await grace.newPage();
   await hers.goto(`${STAFF}contacts`);
-  await expect(hers.locator(".crm-acc-contact")).toHaveCount(13);
+  await expect(hers.locator(".crm-acc-contact")).toHaveCount(NAMES.length);
   await expect(hers.locator(".crm-acc-kept")).toBeVisible();
   await expect(hers.locator(".crm-acc-contact-ways")).toHaveCount(0);
   await expect(card(hers, "Tomas Reidy").locator(".crm-acc-contact-deals a")).toHaveText("Reception desk and lounge");
@@ -169,7 +171,7 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   const page = await context.newPage();
   const problems = watch(page);
   await page.goto(`${STAFF}contacts`);
-  await expect(page.locator(".crm-acc-contact")).toHaveCount(13);
+  await expect(page.locator(".crm-acc-contact")).toHaveCount(NAMES.length);
   // Callum Finch is the main contact of Sam's own d14.
   const who = card(page, "Callum Finch").locator(".crm-acc-contact-who");
   await who.focus();

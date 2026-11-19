@@ -274,7 +274,7 @@ test("Nordwind for the sales manager: the ledger's figures, the day it became a 
   await picture(page, "4-ivy-nordwind");
 });
 
-test("since when, for all nine, as the CRM admin: the ledger's lines, each from the first win or the first deal", async ({ as, data }) => {
+test("since when, for all fourteen, as the CRM admin: the ledger's lines, each from the first win or the first deal, and new where there is none", async ({ as, data }) => {
   const context = await as("tessa");
   const page = await context.newPage();
   const ledger: Record<string, string> = {
@@ -287,8 +287,10 @@ test("since when, for all nine, as the CRM admin: the ledger's lines, each from 
     "Harbor & Finch": "Customer since December 2025",
     "Tandem Robotics": "Customer since June 2026",
     "Low Orbit": "In conversation since September 2025",
+    // Found by Lead finder, no deal yet.
+    ...Object.fromEntries(FOUND.map((name) => [name, "New"])),
   };
-  const won: Record<string, string> = { "Cobalt Legal": "£36,900", "Fernway Clinics": "£11,200", "Juno Analytics": "£24,800", "Nordwind Logistics": "£26,400", "Veldt Studios": "£8,900", "Brightloom Foods": "£0", "Harbor & Finch": "£6,200", "Tandem Robotics": "£15,600", "Low Orbit": "£0" };
+  const won: Record<string, string> = { "Cobalt Legal": "£36,900", "Fernway Clinics": "£11,200", "Juno Analytics": "£24,800", "Nordwind Logistics": "£26,400", "Veldt Studios": "£8,900", "Brightloom Foods": "£0", "Harbor & Finch": "£6,200", "Tandem Robotics": "£15,600", "Low Orbit": "£0", ...Object.fromEntries(FOUND.map((name) => [name, "£0"])) };
   const companies = await rows<{ id: number; name: string }>(context.request, data, "companies");
   const deals = await rows<{ company_id: number; state: string; closed_on: string | null; opened_on: string }>(context.request, data, "deals");
   for (const company of companies) {
@@ -297,6 +299,10 @@ test("since when, for all nine, as the CRM admin: the ledger's lines, each from 
     await expect(fact(page, "won").locator("dd"), company.name).toHaveText(won[company.name]!);
     // The server's own rows say the same: the first day a deal here was won, else the first day one was opened.
     const here = deals.filter((deal) => deal.company_id === company.id);
+    if (here.length === 0) {
+      expect(ledger[company.name], company.name).toBe("New");
+      continue;
+    }
     const firstWon = here.filter((deal) => deal.state === "won").map((deal) => String(deal.closed_on)).sort()[0];
     const first = firstWon ?? here.map((deal) => deal.opened_on).sort()[0]!;
     const month = new Date(`${first}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });

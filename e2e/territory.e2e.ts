@@ -5,7 +5,8 @@
  * area now takes in.
  *
  * The map server is stood in for (`territory-helpers.ts`): no spec reaches the
- * network. The sample ships five of nine companies with a place and NO area:
+ * network. The sample ships five of fourteen companies with a place and NO area
+ * (the five Lead finder found have no place either):
  * a spec that needs an area draws one, and every spec that changes a place, an
  * area or a company's territory puts the sample back in its `finally`.
  *
@@ -19,6 +20,9 @@ import type { Page } from "@playwright/test";
 import { expect, picture, test } from "./fixtures.ts";
 import { csrf, inArabic, rows, STAFF, unfoldMenu, watch } from "./helpers.ts";
 import { bubble, canvas, companies, mapServer, openDealsAt, openTerritory, pinOf, pins, placeOf, restore, snapshot, territories, territoryRow, unplacedRow } from "./territory-helpers.ts";
+
+/** The sample's companies with no place: four of Meridian's and the five Lead finder found. */
+const UNPLACED = ["Brightloom Foods", "Harbor & Finch", "Low Orbit", "Tandem Robotics", "Fjordlys Arkitekter AS", "Kestrel Yard Architects", "Millbeck Drawing Office", "Ouseburn Studio", "Tannery Row Design"];
 
 const money = (value: number): string => new Intl.NumberFormat("en-US", { style: "currency", currency: "GBP", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
 /** What may be in the console while the map server is being refused on purpose. */
@@ -74,10 +78,10 @@ test("the map and its list, as the sales manager: every figure is what the serve
   await expect(page.getByTestId("terr-placed-open")).toHaveText(money(atPlaced.value));
   expect(atPlaced.value).toBe(171_950);
 
-  // The four with no place are listed, never dropped.
-  await expect(page.locator(".crm-terr-unplaced > li")).toHaveCount(4);
+  // The nine with no place (four of Meridian's and the five Lead finder found) are listed, never dropped.
+  await expect(page.locator(".crm-terr-unplaced > li")).toHaveCount(UNPLACED.length);
   await picture(page, "p09-territory-manager");
-  for (const name of ["Brightloom Foods", "Harbor & Finch", "Low Orbit", "Tandem Robotics"]) await expect(unplacedRow(page, name)).toBeVisible();
+  for (const name of UNPLACED) await expect(unplacedRow(page, name)).toBeVisible();
 
   // A pin is in its territory's colour, and says whose territory that is.
   const north = allTerritories.findIndex((territory) => territory.name === "North");
@@ -191,7 +195,7 @@ test("the map server out of reach: the list is whole, nothing that needs a map i
   // The list is this page's own, drawn from its rows: all of it is there.
   await expect(page.locator("#crm-terr-list > li")).toHaveCount(4);
   await expect(territoryRow(page, "North").getByTestId("terr-value")).toHaveText(money(128_850));
-  await expect(page.locator(".crm-terr-unplaced > li")).toHaveCount(4);
+  await expect(page.locator(".crm-terr-unplaced > li")).toHaveCount(UNPLACED.length);
   // Reshaping and placing need a map: neither is offered, and the page says why.
   await expect(page.getByTestId("terr-edit")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Place it" })).toHaveCount(0);
@@ -212,7 +216,7 @@ test("the map server out of reach: the list is whole, nothing that needs a map i
   await expect(bubble(page)).toHaveAttribute("data-map-status", "ready", { timeout: 45_000 });
   await expect(pins(page)).toHaveCount(5);
   await expect(page.getByTestId("terr-edit")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Place it" })).toHaveCount(4);
+  await expect(page.getByRole("button", { name: "Place it" })).toHaveCount(UNPLACED.length);
   expect(problems.filter((line) => !expected(line))).toEqual([]);
 });
 
@@ -241,7 +245,7 @@ test("maps switched off for the install: the list and one line, and nothing is a
     // The list, whole, with the server's figures.
     await expect(page.locator("#crm-terr-list > li")).toHaveCount(4);
     await expect(territoryRow(page, "Scotland").getByTestId("terr-value")).toHaveText(money(71_450));
-    await expect(page.locator(".crm-terr-unplaced > li")).toHaveCount(4);
+    await expect(page.locator(".crm-terr-unplaced > li")).toHaveCount(UNPLACED.length);
     await expect(page.getByTestId("terr-edit")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Place it" })).toHaveCount(0);
     // No request left for the map server, or for anywhere else.
