@@ -517,7 +517,8 @@ for (const [dialect, reachable] of LEGS) {
       const id = (import_.json() as { data: { import: { id: string } } }).data.import.id;
       const names = async (): Promise<string[]> => (await s.rows(`SELECT name FROM ${s.real('companies')} ORDER BY name`)).map((row) => String(row['name']));
       const before = await names();
-      expect(before).toHaveLength(9);
+      // The sample's fourteen: Meridian's nine and the five Lead finder found.
+      expect(before).toHaveLength(14);
 
       const preview = await get('dana', `/api/v1/imports/${id}/preview`);
       expect(preview.statusCode, preview.body).toBe(200);
