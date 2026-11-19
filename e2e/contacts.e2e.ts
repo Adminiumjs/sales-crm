@@ -193,7 +193,8 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   await sheet.getByRole("button", { name: "Edit" }).click();
   const edit = page.getByRole("dialog", { name: "Callum Finch" });
   await expect(edit.getByLabel("Job title")).toHaveValue("Partner");
-  await expect(edit.getByRole("radio", { name: "Harbor & Finch" })).toHaveAttribute("aria-checked", "true");
+  // The sample holds more companies than the sheet offers as chips: they are a list to pick from.
+  await expect(edit.getByLabel("Which company").locator("option:checked")).toHaveText("Harbor & Finch");
   await edit.getByLabel("Job title").fill("Managing Partner");
   const patches: unknown[] = [];
   page.on("request", (request) => {
@@ -230,7 +231,7 @@ test("a contact's sheet: who they are, where they come up; changed and read agai
   await expect(may).toHaveAttribute("aria-checked", "false");
   await may.click();
   await expect(may).toHaveAttribute("aria-checked", "true");
-  await add.getByRole("radio", { name: "Tandem Robotics" }).click();
+  await add.getByLabel("Which company").selectOption({ label: "Tandem Robotics" });
   const sent: { key: string; replayed: boolean | null }[] = [];
   let dropped = false;
   await page.route("**/api/v1/data/**", async (route) => {
@@ -353,7 +354,7 @@ test("a new contact's sheet says the line under the address: saved, she is marke
     await expect(add.locator(".crm-optout")).toHaveCount(0);
     await add.getByLabel("Email").fill("line.told@p07-optout.example");
     await expect(add.locator(".crm-optout-line")).toHaveText("Tell them: “We may e-mail you now and then about our work. You can say no now, or at any time from any e-mail.”");
-    await add.getByRole("radio", { name: "Tandem Robotics" }).click();
+    await add.getByLabel("Which company").selectOption({ label: "Tandem Robotics" });
     const sent: unknown[] = [];
     page.on("request", (request) => {
       if (request.method() === "POST" && /crm_contacts$/.test(new URL(request.url()).pathname)) sent.push((request.postDataJSON() as { optOut?: unknown }).optOut ?? null);
@@ -373,7 +374,7 @@ test("a new contact's sheet says the line under the address: saved, she is marke
     await no.click();
     await expect(no).toHaveAttribute("aria-pressed", "true");
     await expect(again.locator(".crm-optout [role=status]")).toHaveText("They go on the do-not-email list when you save, and are not counted as offered a way to say no.");
-    await again.getByRole("radio", { name: "Tandem Robotics" }).click();
+    await again.getByLabel("Which company").selectOption({ label: "Tandem Robotics" });
     await again.getByRole("button", { name: "Add contact" }).click();
     await expect(page.locator(".crm-toast")).toHaveText("P07 Line Refused is on the do-not-email list.");
     expect(sent).toEqual([{ shown: true }, null]);

@@ -23,6 +23,8 @@ import { room } from "./p12-helpers.ts";
 const card = (page: Page, name: string) => page.locator(".crm-acc-card").filter({ has: page.locator(".crm-acc-card-name", { hasText: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\&]/g, "\\$&")}$`) }) });
 const fact = (page: Page, key: string) => page.locator(`.crm-acc-facts [data-fact="${key}"]`);
 const money = (value: number): string => `£${value.toLocaleString("en-GB", { minimumFractionDigits: Number.isInteger(value) ? 0 : 2 })}`;
+/** The five practices Lead finder found, in the sample: nobody's yet, with nothing open. */
+const FOUND = ["Fjordlys Arkitekter AS", "Kestrel Yard Architects", "Millbeck Drawing Office", "Ouseburn Studio", "Tannery Row Design"];
 const companyId = async (person: APIRequestContext, data: Data, name: string): Promise<number> => (await rows<{ id: number }>(person, data, "companies", { column: "name", op: "eq", value: name }))[0]!.id;
 
 async function removeMade(admin: APIRequestContext, data: Data): Promise<void> {
@@ -41,7 +43,7 @@ test.afterAll(async ({ browser }) => {
   await context.close();
 });
 
-test("Dana opens Companies from her menu: the nine, each with what is HERS open there", async ({ as }) => {
+test("Dana opens Companies from her menu: the fourteen, each with what is HERS open there", async ({ as }) => {
   const page = await (await as("dana")).newPage();
   const problems = watch(page);
   await page.goto(STAFF);
@@ -49,9 +51,9 @@ test("Dana opens Companies from her menu: the nine, each with what is HERS open 
   await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Companies" }).click();
   await expect(page).toHaveURL(/\/apps\/crm\/staff\/companies$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Companies");
-  await expect(page.locator(".crm-acc-card")).toHaveCount(9);
+  await expect(page.locator(".crm-acc-card")).toHaveCount(14);
   // By name, and each says what it is: sector, people, town.
-  await expect(page.locator(".crm-acc-card-name")).toHaveText(["Brightloom Foods", "Cobalt Legal", "Fernway Clinics", "Harbor & Finch", "Juno Analytics", "Low Orbit", "Nordwind Logistics", "Tandem Robotics", "Veldt Studios"]);
+  await expect(page.locator(".crm-acc-card-name")).toHaveText(["Brightloom Foods", "Cobalt Legal", "Fernway Clinics", "Fjordlys Arkitekter AS", "Harbor & Finch", "Juno Analytics", "Kestrel Yard Architects", "Low Orbit", "Millbeck Drawing Office", "Nordwind Logistics", "Ouseburn Studio", "Tandem Robotics", "Tannery Row Design", "Veldt Studios"]);
   await expect(card(page, "Nordwind Logistics").locator(".crm-acc-card-meta")).toHaveText("Freight · 1,200 people · Hull");
   // Hers: six open deals, 143,400 in all, at five companies. A company where only colleagues hold deals says so and shows no amount.
   const hers: Record<string, [string, string]> = {
@@ -69,18 +71,23 @@ test("Dana opens Companies from her menu: the nine, each with what is HERS open 
     await expect(card(page, name).locator(".crm-acc-card-open span").first(), name).toHaveText("None of yours open");
     await expect(card(page, name).locator(".crm-acc-card-value"), name).toHaveText("—");
   }
+  for (const name of FOUND) {
+    await expect(card(page, name).locator(".crm-acc-card-open span").first(), name).toHaveText("Nothing open");
+    await expect(card(page, name).locator(".crm-acc-card-value"), name).toHaveText("—");
+  }
   // The two deals that have sat past thirty days (d12, d5) are colleagues': no badge on her cards.
   await expect(page.locator(".crm-acc-badge")).toHaveCount(0);
   // A rep adds companies, and changes the ones that are hers: her accounts and where she has an open deal (Veldt is Leo's
-  // account, with her deal), not a colleague's (Fernway is Priya's, Brightloom Sam's).
+  // account, with her deal), and the ones that are nobody's (the five Lead finder found), not a colleague's (Fernway is
+  // Priya's, Brightloom Sam's).
   await expect(page.getByRole("button", { name: "New company" })).toBeVisible();
-  for (const name of ["Nordwind Logistics", "Veldt Studios", "Low Orbit", "Cobalt Legal", "Juno Analytics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toBeVisible();
+  for (const name of ["Nordwind Logistics", "Veldt Studios", "Low Orbit", "Cobalt Legal", "Juno Analytics", ...FOUND]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toBeVisible();
   for (const name of ["Fernway Clinics", "Brightloom Foods", "Harbor & Finch", "Tandem Robotics"]) await expect(page.getByRole("button", { name: `Edit ${name}` }), name).toHaveCount(0);
   expect(problems).toEqual([]);
   await picture(page, "1-dana-companies");
 });
 
-test("the sales manager reads the ledger's nine: open deals, open value, and the two with a stale deal; the box narrows them", async ({ as }) => {
+test("the sales manager reads the ledger's fourteen: open deals, open value, and the two with a stale deal; the box narrows them", async ({ as }) => {
   const page = await (await as("ivy")).newPage();
   await page.goto(`${STAFF}companies`);
   const ledger: Record<string, [string, string]> = {
@@ -93,6 +100,7 @@ test("the sales manager reads the ledger's nine: open deals, open value, and the
     "Harbor & Finch": ["2 deals open", "£40,750"],
     "Tandem Robotics": ["1 deal open", "£6,300"],
     "Low Orbit": ["1 deal open", "£21,500"],
+    ...Object.fromEntries(FOUND.map((name) => [name, ["Nothing open", "—"]])),
   };
   for (const [name, [line, value]] of Object.entries(ledger)) {
     await expect(card(page, name).locator(".crm-acc-card-open span").first(), name).toHaveText(line);
@@ -112,7 +120,7 @@ test("the sales manager reads the ledger's nine: open deals, open value, and the
   await expect(page.locator(".crm-acc-card")).toHaveCount(0);
   await expect(page.locator(".crm-empty-title")).toHaveText("No company matches that");
   await box.fill("");
-  await expect(page.locator(".crm-acc-card")).toHaveCount(9);
+  await expect(page.locator(".crm-acc-card")).toHaveCount(14);
 });
 
 test("every figure on a company's card is what the server answers that person, asked directly", async ({ as, data }) => {
@@ -120,7 +128,7 @@ test("every figure on a company's card is what the server answers that person, a
     const context = await as(person);
     const page = await context.newPage();
     await page.goto(`${STAFF}companies`);
-    await expect(page.locator(".crm-acc-card"), person).toHaveCount(9);
+    await expect(page.locator(".crm-acc-card"), person).toHaveCount(14);
     const companies = await rows<{ id: number; name: string }>(context.request, data, "companies");
     // Every open deal there, by the marks: all of these people read them.
     const marks = await rows<{ company_id: number }>(context.request, data, "deal_marks", { column: "state", op: "eq", value: "open" });
@@ -138,22 +146,23 @@ test("every figure on a company's card is what the server answers that person, a
         await expect(line, `${person} ${company.name}`).toHaveText(mine.length > 0 ? `${deals_(mine.length)} of yours open` : all > 0 ? "None of yours open" : "Nothing open");
         await expect(value, `${person} ${company.name}`).toHaveText(mine.length > 0 ? money(sum) : "—");
       } else if (person === "grace") {
-        // Read-only reads the team's: the ledger's figures.
+        // Read-only reads the team's: the ledger's figures; a company with nothing open says so.
         expect(mine.length).toBe(all);
-        await expect(line, `${person} ${company.name}`).toHaveText(`${deals_(all)} open`);
-        await expect(value, `${person} ${company.name}`).toHaveText(money(sum));
+        await expect(line, `${person} ${company.name}`).toHaveText(all > 0 ? `${deals_(all)} open` : "Nothing open");
+        await expect(value, `${person} ${company.name}`).toHaveText(all > 0 ? money(sum) : "—");
       } else {
         // The account manager and the marketer: how many are open, and no amount at all.
         expect(mine.length).toBe(0);
-        await expect(line, `${person} ${company.name}`).toHaveText(`${deals_(all)} open`);
+        await expect(line, `${person} ${company.name}`).toHaveText(all > 0 ? `${deals_(all)} open` : "Nothing open");
         await expect(value, `${person} ${company.name}`).toHaveCount(0);
       }
     }
     if (person === "grace") expect(deals.reduce((total, deal) => total + Number(deal.amount), 0)).toBe(286_300);
     // Who is offered a change: Read-only and the marketer none; Dana the five that are hers (her accounts and where she has
-    // an open deal); the account manager none of the nine (no account of the sample is his, and none is nobody's).
+    // an open deal) and the five that are nobody's (Lead finder's); the account manager those five only (no account of
+    // the sample is his).
     await expect(page.getByRole("button", { name: "New company" }), person).toHaveCount(person === "hugo" ? 1 : person === "dana" ? 1 : 0);
-    await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "dana" ? 5 : 0);
+    await expect(page.getByRole("button", { name: /^Edit / }), person).toHaveCount(person === "dana" ? 10 : person === "hugo" ? FOUND.length : 0);
     await page.close();
   }
 });
