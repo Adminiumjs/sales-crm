@@ -7,7 +7,7 @@ and its own language: the install's currency, the business's time zone and worki
 person's language as they chose it in Adminium.
 
 It runs inside Adminium: its screens read and write through the signed-in person's own session,
-so every figure on them is what the server answers that person. It needs Adminium 0.3.65 or newer.
+so every figure on them is what the server answers that person. It needs Adminium 0.3.66 or newer.
 
 ## What installs
 
@@ -20,7 +20,7 @@ so every figure on them is what the server answers that person. It needs Adminiu
 | Roles | 9 |
 | Shipped rules | 26: fifteen switched on (a deal's history, a won deal's job, the crew's day sheet, the aftercare call, and the three somebody must act on: an approval asked, a customer's yes on a lost deal, a sign-off refused), nine that tell people, switched off, the brochure an enquirer asks for and the survey after a sign-off, switched off |
 | E-mails | 19, each in eight languages |
-| Sample data | "Meridian", an office-furniture wholesaler in pounds: 695 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers; with Pages, four landing pages in the adding person's language (the showroom's open day, its thanks page and the acoustic booths, live; the spring open day, a draft) and the "Open day" funnel, linked to the brochure rule |
+| Sample data | "Meridian", an office-furniture wholesaler in pounds: 704 rows in 70 tables, 16 people, three teams (sales and two crews); with Forms, five forms (none live: open one in Forms to use it), the fit-out survey's seven invitations and 21 answers; with Live chat, the website chat Veldt Studios' enquiry came from (nine lines: an automatic answer, a reply from Dana) and two answers; with Pages, four landing pages in the adding person's language (the showroom's open day, its thanks page and the acoustic booths, live; the spring open day, a draft) and the "Open day" funnel, linked to the brochure rule; with Lead finder, the four people it found at the sample's five architects' practices (one told, one waiting to be told, one whose mail bounced, one who agreed by phone) and where five of their details came from |
 | Languages | English, German, French, Danish, Czech, Egyptian Arabic (right to left), Simplified and Traditional Chinese |
 | Databases | Postgres, MySQL, SQLite |
 
@@ -50,7 +50,7 @@ of its documents, so it numbers the quote, works out its tax and prints it. Inst
 the Quotes part is left out (no quote tables, screens or links) and comes in when the add-on is
 connected. **Inventory** (1.0.14 or newer) keeps the stock: without it Supply's menu lines open a
 page that says what Supply waits for and who connects it. **Offers** (a reward for a customer who
-refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback. **Live chat** (1.0.30 or newer) is suggested and not ticked: a question a visitor leaves in the website chat outside hours becomes an enquiry in the Team inbox ("Chat", no company yet: claiming it asks for one), staff answering a chat in hours make one with "Make an enquiry", and the enquiry's card has "Read the chat" for the inbox's roles (the admin, the sales manager, the rep, the marketer and the front desk; Read-only reads no chat). Without Live chat there is no button. **Pages** (landing pages, 1.0.31 or newer) is suggested and not ticked: the marketer's home shows each funnel's views per step this month, and she reads the pages and funnels without changing them (an admin builds them in Pages).
+refers another) is suggested and not ticked. **Forms** (1.0.15 or newer) is ticked: an answer to a website form becomes an enquiry in the Team inbox, with the form's name on it, and a survey fills customer feedback. **Live chat** (1.0.30 or newer) is suggested and not ticked: a question a visitor leaves in the website chat outside hours becomes an enquiry in the Team inbox ("Chat", no company yet: claiming it asks for one), staff answering a chat in hours make one with "Make an enquiry", and the enquiry's card has "Read the chat" for the inbox's roles (the admin, the sales manager, the rep, the marketer and the front desk; Read-only reads no chat). Without Live chat there is no button. **Pages** (landing pages, 1.0.31 or newer) is suggested and not ticked: the marketer's home shows each funnel's views per step this month, and she reads the pages and funnels without changing them (an admin builds them in Pages). **Lead finder** (1.0.32 or newer) is suggested and not ticked: it finds companies in the public registers by trade and town and adds them to Companies with their number, phone, address, what they do and a few words about them, owned by whoever adds them, and fills in an empty detail of a company already here.
 
 ### The roles
 
@@ -158,14 +158,14 @@ reader's language; a card of a part that is off is not drawn.
 ## The sample data
 
 "Add sample data" brings Meridian's pipeline: 40 deals (14 open, 8 won, 18 lost), nine quotes, ten
-site visits, seventeen enquiries, the team's targets, one-to-ones, coaching and a cover; the
+site visits, seventeen enquiries, fourteen companies (five of them architects' practices Lead finder found, nobody's yet), the team's targets, one-to-ones, coaching and a cover; the
 showroom's bookings and samples; eight jobs with their visits, sign-offs and snags; aftercare calls,
 complaints and claims; two vans and a hired one, their fuel and checks, the crews' time sheets and certificates;
-688 rows in 69 tables, and sixteen people in the nine roles, with the team "Sales" and two crews. The sample's people cannot sign in; they are there
+704 rows in 70 tables, and sixteen people in the nine roles, with the team "Sales" and two crews. The sample's people cannot sign in; they are there
 so every deal, target and follow-up has a name on it. Dates are written as days from the day the
 sample is added, so its late follow-ups are late on any day. Where Inventory is installed, the
 sample also brings ten stock lines, six suppliers and four orders on their way into it, posted by
-Inventory itself. "Remove sample data" takes all of it away again.
+Inventory itself. With Lead finder installed, the sample also brings the people it found at those practices and where some of their details came from. "Remove sample data" takes all of it away again.
 
 ## Running it
 
@@ -210,6 +210,20 @@ mail mode the people are `<name>@crm.stand` and the sample's addresses end `.sta
 The tests check the manifest against Adminium's own validator, a copy of which is in
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
+
+## Updating to 0.2.9
+
+0.2.9 needs Adminium 0.3.66 and suggests Lead finder 1.0.32 (not ticked). The update asks nothing, and
+every row is kept as it was:
+
+- **A company's details.** Companies gain three columns, each empty on every company there before:
+  the company number (its number in the register, looked up by but never unique: the customer
+  number stays the CRM's own), a phone and a few words about what it does (up to 1,000 characters).
+  The company sheet asks for them under the website, and the company's page shows them under its
+  name. The rep and the account manager write them as they write the website.
+- **Where Lead finder writes.** The app tells Adminium which of Companies' columns hold a found
+  company's number, website, phone, address (lines, town, region, postal code, country), what it
+  does (the sector), the few words about it and its owner. Without Lead finder nothing reads that.
 
 ## Updating to 0.2.8
 
