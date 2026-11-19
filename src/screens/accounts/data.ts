@@ -196,6 +196,10 @@ export interface Company extends Record<string, unknown> {
   postal_code: string | null;
   country: string | null;
   website: string | null;
+  /** Its number in the register, its phone and what it does: typed, or written by Lead finder. */
+  company_number?: string | null;
+  phone?: string | null;
+  about?: string | null;
   access_note: string | null;
   account_owner_id: string | null;
   open_n: number | string | null;
@@ -519,6 +523,14 @@ export function countryName(code: string | null, locale: string): string | null 
   } catch {
     return code;
   }
+}
+
+/** How to reach a company and find it in its register, each with the label it is shown under: only what is filled. */
+export function reachOf(company: Pick<Company, "company_number" | "phone" | "website">): { column: "company_number" | "phone" | "website"; value: string }[] {
+  return (["company_number", "phone", "website"] as const).flatMap((column) => {
+    const value = company[column];
+    return typeof value === "string" && value.trim() !== "" ? [{ column, value: value.trim() }] : [];
+  });
 }
 
 /** A company's address on one line: its lines, the town, the region, the postal code, the country. */

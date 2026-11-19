@@ -29,7 +29,7 @@ import { ScreenLink } from "../../shell/nav.tsx";
 import { NoRecord } from "../../shell/pages.tsx";
 import { Loaded, Skeleton, useLive, useLoad } from "../../ui/load.tsx";
 import { initials } from "../../ui/people.ts";
-import { addressOf, num, readProfile, type Since } from "./data.ts";
+import { addressOf, num, reachOf, readProfile, type Since } from "./data.ts";
 import { RecordSheet, type Rec } from "./RecordSheet.tsx";
 import { Tile, useAccounts } from "./shared.tsx";
 
@@ -105,6 +105,23 @@ export function CompanyProfile({ id }: { id: number }) {
                       </button>
                     )}
                   </div>
+                  {reachOf(company).length > 0 && (
+                    <dl className="crm-acc-hero-reach">
+                      {reachOf(company).map((line) => (
+                        <div key={line.column} data-fact={line.column}>
+                          <dt>{t(`acc.rec.co.${line.column}` as MessageKey)}</dt>
+                          <dd className="crm-mono">
+                            <bdi>{line.value}</bdi>
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  {typeof company.about === "string" && company.about.trim() !== "" && (
+                    <p className="crm-acc-hero-note crm-acc-hero-about">
+                      <strong>{t("acc.cp.about")}</strong> {company.about}
+                    </p>
+                  )}
                   {company.access_note !== null && company.access_note !== "" && (
                     <p className="crm-acc-hero-note">
                       <strong>{t("acc.cp.access")}</strong> {company.access_note}

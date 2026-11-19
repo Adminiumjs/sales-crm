@@ -39,10 +39,15 @@ export type Rec =
   | { kind: "contact"; mode: "add"; companyId?: number }
   | { kind: "contact"; mode: "view" | "edit"; id: number };
 
-const COMPANY_TEXTS = ["name", "sector", "headcount", "address_lines", "town", "region", "postal_code", "country", "website"] as const;
+/** A company's fields: its address and website, then how to reach it, its number in the register and what it does (where Lead finder writes what it found). */
+const COMPANY_TEXTS = ["name", "sector", "headcount", "address_lines", "town", "region", "postal_code", "country", "website", "phone", "company_number", "about"] as const;
 const CONTACT_TEXTS = ["name", "job_title", "email", "phone"] as const;
-const LENGTHS: Record<string, number> = { name: 160, sector: 80, headcount: 9, address_lines: 400, town: 120, region: 120, postal_code: 20, country: 2, website: 200, job_title: 120, email: 200, phone: 40 };
-const MONO = new Set(["postal_code", "country", "email", "phone", "headcount", "website"]);
+const LENGTHS: Record<string, number> = { name: 160, sector: 80, headcount: 9, address_lines: 400, town: 120, region: 120, postal_code: 20, country: 2, website: 200, job_title: 120, email: 200, phone: 40, company_number: 40, about: 1000 };
+const MONO = new Set(["postal_code", "country", "email", "phone", "headcount", "website", "company_number"]);
+/** Written as a few sentences, not a line. */
+const LONG = new Set(["about"]);
+/** Offered as optional: a placeholder says so. */
+const OPTIONAL = new Set(["region", "postal_code", "website", "phone", "company_number", "about"]);
 /** The most companies offered as chips for a contact; past that they are a list to pick from. */
 const CHIPS = 12;
 
@@ -366,19 +371,32 @@ function Sheet({ rec, data, onClose, onSaved, onEdit, onBack }: { rec: Rec; data
             <label className="crm-label" htmlFor={`crm-rec-${column}`}>
               {label(column)}
             </label>
-            <input
-              id={`crm-rec-${column}`}
-              {...(index === 0 ? { "data-autofocus": true } : {})}
-              className={`crm-input mr-fld${MONO.has(column) ? " crm-mono" : ""}`}
-              value={draft[column] ?? ""}
-              maxLength={LENGTHS[column]}
-              inputMode={column === "headcount" ? "numeric" : column === "email" ? "email" : column === "phone" ? "tel" : undefined}
-              type={column === "email" ? "email" : "text"}
-              autoComplete="off"
-              {...(column === "country" || column === "region" || column === "postal_code" || column === "website" ? { placeholder: t(column === "country" ? "acc.rec.co.country.hint" : "acc.rec.optional") } : {})}
-              {...(fixed.includes(column) ? { readOnly: true, "aria-describedby": `crm-rec-${column}-fixed` } : {})}
-              onChange={(event) => set(column, event.target.value)}
-            />
+            {LONG.has(column) ? (
+              <textarea
+                id={`crm-rec-${column}`}
+                className="crm-input crm-textarea mr-fld"
+                value={draft[column] ?? ""}
+                maxLength={LENGTHS[column]}
+                rows={3}
+                placeholder={t("acc.rec.optional")}
+                {...(fixed.includes(column) ? { readOnly: true, "aria-describedby": `crm-rec-${column}-fixed` } : {})}
+                onChange={(event) => set(column, event.target.value)}
+              />
+            ) : (
+              <input
+                id={`crm-rec-${column}`}
+                {...(index === 0 ? { "data-autofocus": true } : {})}
+                className={`crm-input mr-fld${MONO.has(column) ? " crm-mono" : ""}`}
+                value={draft[column] ?? ""}
+                maxLength={LENGTHS[column]}
+                inputMode={column === "headcount" ? "numeric" : column === "email" ? "email" : column === "phone" ? "tel" : undefined}
+                type={column === "email" ? "email" : "text"}
+                autoComplete="off"
+                {...(column === "country" || (isCompany && OPTIONAL.has(column)) ? { placeholder: t(column === "country" ? "acc.rec.co.country.hint" : "acc.rec.optional") } : {})}
+                {...(fixed.includes(column) ? { readOnly: true, "aria-describedby": `crm-rec-${column}-fixed` } : {})}
+                onChange={(event) => set(column, event.target.value)}
+              />
+            )}
             {fixed.includes(column) && (
               <p className="crm-field-note" id={`crm-rec-${column}-fixed`}>
                 {t("acc.rec.fixed")}

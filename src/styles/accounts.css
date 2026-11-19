@@ -281,6 +281,27 @@
   font-weight: 500;
   color: var(--fg-subtle);
 }
+/* How to reach the company and its number in the register, under its name. */
+.crm-acc-hero-reach {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+}
+.crm-acc-hero-reach > div {
+  display: flex;
+  gap: 6px;
+  min-inline-size: 0;
+}
+.crm-acc-hero-reach dt {
+  color: var(--fg-subtle);
+}
+.crm-acc-hero-reach dd {
+  margin: 0;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
 .crm-acc-hero-note {
   margin: 14px 0 0;
   max-inline-size: 640px;
