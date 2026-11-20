@@ -402,6 +402,8 @@ export async function standUp() {
     ADMINIUM_DATA_DIR: dataDir,
     ADMINIUM_SECRET: createHash("sha256").update(`crm-stand-${work}`).digest("hex"),
     ADMINIUM_ADD_ON_DEV_TRUST: "invoices,inventory,forms,live-chat,pages",
+    // The engine reads that list only on a server whose NODE_ENV says test or development (refused unset after 0.3.66).
+    NODE_ENV: "test",
     // The customer's quote page is served by this same server and calls its public API: "self" is that page's origin.
     ADMINIUM_PUBLIC_API_ORIGINS: "self",
     ADMINIUM_SETUP_TOKEN: SETUP_TOKEN,
