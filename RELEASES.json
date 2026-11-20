@@ -54,6 +54,12 @@
       "version": "0.2.8",
       "integrity": "sha512-M5fU/FxWox2e59JxiYMYQ4uYEctou0Ilb7AXaCvcpqnVvS00ENJMQcQxElgWBca5rehyu9UCp6cCHbtiB3afVA==",
       "publishedAt": "2026-11-19T11:03:14.000Z"
+    },
+    {
+      "name": "@adminiumjs/app-crm",
+      "version": "0.2.9",
+      "integrity": "sha512-jZI4jyiRJiIPrSnn+orMTk6fu1GsnUo3qfF5Z8q77X//TXhITq3v8dakpMC/KsIMhmpXU4BXTefkSfgrv6pqzg==",
+      "publishedAt": "2026-11-20T00:07:52.000Z"
     }
   ]
 }
