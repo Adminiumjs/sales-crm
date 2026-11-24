@@ -276,16 +276,17 @@ export function Call({ id }: { id: string }) {
                     <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi" disabled={busy || blank} onClick={() => setNotes("")}>
                       {t("call.clear")}
                     </button>
+                    <button type="submit" className="crm-btn crm-btn-primary crm-btn-38 mr-btn" disabled={busy || blank}>
+                      <Icon name="check" size={16} />
+                      {t("call.log")}
+                    </button>
+                    {/* Beside "Log the call", after it, so the notes keep their Tab order. */}
                     {canText && (
                       <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-btn" data-testid="call-text" disabled={busy} onClick={() => setTexting(true)}>
                         <Icon name="smartphone" size={16} />
                         {t("text.open")}
                       </button>
                     )}
-                    <button type="submit" className="crm-btn crm-btn-primary crm-btn-38 mr-btn" disabled={busy || blank}>
-                      <Icon name="check" size={16} />
-                      {t("call.log")}
-                    </button>
                   </span>
                 </div>
               </form>
