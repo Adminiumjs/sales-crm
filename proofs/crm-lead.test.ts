@@ -21,7 +21,7 @@ import { ADMIN_PASSWORD, adminPasswordHash, sessionCookie } from './auth-helpers
 import { servePublic } from './public-lane.helpers.js';
 
 // The server says the version it was built at; the app's floor is the release to come.
-vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.66' }));
+vi.mock('../src/version.js', async (original) => ({ ...(await original<typeof import('../src/version.js')>()), APP_VERSION: '0.3.76' }));
 
 // The app this copy of the proofs came from (`npm run proofs` names it), not a fixed lane.
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;

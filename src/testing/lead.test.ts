@@ -64,7 +64,7 @@ for (const [name, raw] of [
   describe(`a company's details for Lead finder, in ${name}`, () => {
     it("still passes the validator, and needs Adminium 0.3.66, which knows the lead word", () => {
       expect(issuesOf(raw)).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.66");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.76");
       // Under an older floor the word is unknown: the entry would be refused, so the floor cannot go back.
       const older = issuesOf({ ...structuredClone(raw), compatibility: { ...doc.compatibility, minAdminiumVersion: "0.3.65" } });
       expect(older.map((issue) => issue.path)).toContainEqual(expect.stringContaining(`people.${String(at)}.lead`));

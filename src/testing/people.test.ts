@@ -43,6 +43,7 @@ interface Entry {
   table: string;
   kind: "people" | "companies";
   email?: string;
+  phone?: string;
   name?: string;
   company?: string;
   firstName?: unknown;
@@ -72,7 +73,7 @@ describe("the people of the app", () => {
       ["companies", "companies"],
       ["enquiries", "people"],
     ]);
-    expect(doc.compatibility.minAdminiumVersion).toBe("0.3.66");
+    expect(doc.compatibility.minAdminiumVersion).toBe("0.3.76");
   });
 
   it("names a contact by her name and her address, the one the outbox writes to, and greets her by her first name", () => {
@@ -81,6 +82,14 @@ describe("the people of the app", () => {
     expect(entry("enquiries")).toMatchObject({ email: "email", name: "person", firstName: "firstWordOfName" });
     // A company is named by its name; where a found company's details go is held in lead.test.ts.
     expect(entry("companies")).toMatchObject({ table: "companies", kind: "companies", name: "name" });
+  });
+
+  it("names the number a contact and an enquirer are texted on, a personal column of their own row (Adminium 0.3.76)", () => {
+    for (const ref of ["contacts", "enquiries"]) {
+      expect(entry(ref).phone, ref).toBe("phone");
+      expect(column(ref, "phone"), ref).toMatchObject({ type: "text", nullable: true, rules: { personal: true } });
+    }
+    expect(entry("companies").phone).toBeUndefined();
   });
 
   it("reads a contact's \"may be e-mailed\" as the newsletter's yes; an enquiry's answer is kept in the consent log alone", () => {

@@ -17,7 +17,7 @@
     "crm"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.66",
+    "minAdminiumVersion": "0.3.76",
     "engines": [
       "postgres",
       "mysql",
@@ -1952,7 +1952,8 @@
               "call",
               "email",
               "meeting",
-              "note"
+              "note",
+              "text"
             ],
             "rules": {
               "enumLabels": {
@@ -1996,6 +1997,16 @@
                     "ar-EG": "ملاحظة",
                     "zh-CN": "备注",
                     "zh-TW": "備註"
+                  },
+                  "text": {
+                    "en-US": "Text",
+                    "de-DE": "SMS",
+                    "fr-FR": "SMS",
+                    "da-DK": "Sms",
+                    "cs-CZ": "SMS",
+                    "ar-EG": "رسالة نصية",
+                    "zh-CN": "短信",
+                    "zh-TW": "簡訊"
                   }
                 }
               }
@@ -23702,7 +23713,8 @@
         "table:@refused_sign_offs:read_pii",
         "table:@showroom_bookings:read_pii",
         "table:@referrals:read_pii",
-        "payments:@:refund"
+        "payments:@:refund",
+        "texts:@:reply"
       ],
       "limits": {
         "saved_views": {
@@ -24305,7 +24317,8 @@
         "page:@crm-settings:view",
         "page:@crm-overview:view",
         "page:@crm-approvals:view",
-        "payments:@:refund"
+        "payments:@:refund",
+        "texts:@:reply"
       ],
       "limits": {
         "deals": {
@@ -25394,7 +25407,8 @@
         "page:@crm-warranty-claims:view",
         "page:@crm-deal-stock-needs:view",
         "page:@crm-settings:view",
-        "table:@showroom_bookings:read_pii"
+        "table:@showroom_bookings:read_pii",
+        "texts:@:reply"
       ],
       "limits": {
         "deals": {
@@ -26311,7 +26325,8 @@
         "page:@crm-comments:view",
         "page:@crm-deal-stage-changes:view",
         "page:@crm-deal-amount-changes:view",
-        "table:@referrals:read_pii"
+        "table:@referrals:read_pii",
+        "texts:@:read"
       ],
       "limits": {
         "deals": {
@@ -32460,6 +32475,7 @@
       "table": "contacts",
       "kind": "people",
       "email": "email",
+      "phone": "phone",
       "name": "name",
       "company": "company_id",
       "firstName": "firstWordOfName",
@@ -32566,6 +32582,7 @@
       "table": "enquiries",
       "kind": "people",
       "email": "email",
+      "phone": "phone",
       "name": "person",
       "firstName": "firstWordOfName",
       "optOutMark": "opt_out_offered_at"
@@ -33030,6 +33047,7 @@
       "brochure": "newsletter"
     }
   },
+  "textReplies": "on",
   "emailTemplates": [
     {
       "key": "crm-quote-sent",

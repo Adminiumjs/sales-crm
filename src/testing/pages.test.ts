@@ -50,7 +50,7 @@ for (const [name, raw] of [
     it("passes the validator, at Adminium 0.3.66 (0.3.65 counts a page's views and serves landing pages)", () => {
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
-      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.66");
+      expect(doc.compatibility.minAdminiumVersion).toBe("0.3.76");
     });
 
     it("lets the marketer read the forms, their answers, the pages and the funnels, and change none of them", () => {

@@ -539,7 +539,7 @@ describe("the app brings nine roles", () => {
   it("grants only a table right, a page to view, and the app's staff screens", () => {
     const known = /^(table:@[a-z_]+:(read|create|update|delete|export|import|read_pii)|page:@[a-z][a-z0-9-]*:view|app:@:staff)$/;
     for (const r of roles) {
-      expect(r.permissions.filter((grant) => !known.test(grant) && grant !== "payments:@:refund"), r.key).toEqual([]);
+      expect(r.permissions.filter((grant) => !known.test(grant) && grant !== "payments:@:refund" && grant !== "texts:@:read" && grant !== "texts:@:reply"), r.key).toEqual([]);
       expect(r.permissions.length, `${r.key} repeats a grant`).toBe(new Set(r.permissions).size);
       expect(r.permissions, r.key).toContain("app:@:staff");
     }
@@ -548,6 +548,15 @@ describe("the app brings nine roles", () => {
   it("lets the CRM admin and the sales manager give back what was paid online for a quote, and nobody else", () => {
     const refunders = roles.filter((r) => r.permissions.includes("payments:@:refund")).map((r) => r.key);
     expect(refunders).toEqual(["admin", "sales-manager"]);
+  });
+
+  it("lets the roles that log a call text from a deal, and the account manager read this app's conversations", () => {
+    const of = (grant: string) => roles.filter((r) => r.permissions.includes(grant)).map((r) => r.key);
+    const loggers = roles.filter((r) => r.permissions.includes("table:@activities:create")).map((r) => r.key);
+    expect(of("texts:@:reply")).toEqual(["admin", "sales-manager", "rep"]);
+    expect(of("texts:@:reply")).toEqual(loggers);
+    // Answering holds reading: nobody is given both.
+    expect(of("texts:@:read")).toEqual(["account-manager"]);
   });
 
   it("names only tables and pages the manifest declares", () => {
