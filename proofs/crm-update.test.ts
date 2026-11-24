@@ -996,7 +996,8 @@ for (const [dialect, reachable] of LEGS) {
         const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
         const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
         // 0.2.7's and 0.2.8's: none. 0.2.9's: a company's number, phone and few words, empty on every company there before.
-        const COMPANY = ['companies.about', 'companies.company_number', 'companies.phone'];
+        // Plan 80's: the website form's box for texts on an enquiry, empty on every enquiry there before (nobody ticked it).
+        const COMPANY = ['companies.about', 'companies.company_number', 'companies.phone', 'enquiries.text_ok'];
         expect(COMPANY.filter((one) => ids.includes(one))).toEqual(COMPANY);
         if (has26) expect(ids).toEqual(COMPANY);
         else if (has24) expect(ids).toEqual([...COMPANY, ...PAY_PLAIN].sort());
