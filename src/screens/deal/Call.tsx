@@ -37,6 +37,7 @@ import { callText, chipsOf, logCall, MARK_ICON, MARKS, MAX_NOTES, pickOut, readC
 import { num } from "./data.ts";
 import { NoDeal } from "./Room.tsx";
 import { SendText } from "./SendText.tsx";
+import { textsReady } from "./text.ts";
 
 const MARK_WORD: Record<Mark, MessageKey> = { next: "call.mark.next", decision: "call.mark.decision", objection: "call.mark.objection", blocker: "call.mark.blocker" };
 const KIND_WORD: Record<string, MessageKey> = { call: "room.kind.call", email: "room.kind.email", meeting: "room.kind.meeting", note: "room.kind.note", text: "room.kind.text" };
@@ -65,6 +66,8 @@ export function Call({ id }: { id: string }) {
   // A rep helping on a colleague's deal logs nothing on it: its owner does. Null while that is read.
   const ownerId = call.load.state === "ready" && call.load.data !== null && call.load.data.deal.id === key ? call.load.data.deal.owner_id : undefined;
   const helping = useHelping(ownerId, today);
+  // Whether a text can go from this server at all (`GET /texts/ready`); null while asked, or when it could not be.
+  const ready = useLoad(() => textsReady(session), [session]);
   const owner = useLoad(() => (helping === true && typeof ownerId === "string" ? readNames(session, [ownerId]).then((names) => names[ownerId] ?? "") : Promise.resolve("")), [session, helping, ownerId]);
 
   const [notes, setNotes] = useState("");
@@ -110,6 +113,7 @@ export function Call({ id }: { id: string }) {
     const canStep = session.can("follow_ups", "create");
     // A text to one of the customer's people, from whoever logs the call (the server judges the rest).
     const canText = canLog && session.part("accounts") && session.can("contacts", "read");
+    const textsOff = ready.load.state === "ready" && ready.load.data === false;
     const main = data.people.find((one) => one.id === deal.contact_id) ?? null;
     const mainName = main?.name ?? deal.contact;
     const days = deal.entered_stage_at === null ? 0 : Math.max(0, f.dayDiff(new Date(deal.entered_stage_at), now));
@@ -282,13 +286,18 @@ export function Call({ id }: { id: string }) {
                     </button>
                     {/* Beside "Log the call", after it, so the notes keep their Tab order. */}
                     {canText && (
-                      <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-btn" data-testid="call-text" disabled={busy} onClick={() => setTexting(true)}>
+                      <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-btn" data-testid="call-text" disabled={busy || textsOff} aria-describedby={textsOff ? "crm-call-texts-off" : undefined} onClick={() => setTexting(true)}>
                         <Icon name="smartphone" size={16} />
                         {t("text.open")}
                       </button>
                     )}
                   </span>
                 </div>
+                {canText && textsOff && (
+                  <p id="crm-call-texts-off" className="crm-text-ready" data-testid="call-texts-off">
+                    {t("text.notReady")}
+                  </p>
+                )}
               </form>
             ) : (
               <div className="crm-call-notes crm-call-readonly" data-testid="call-readonly">
@@ -372,7 +381,7 @@ export function Call({ id }: { id: string }) {
             </section>
           </aside>
         </div>
-        {texting && canText && <SendText deal={{ id: deal.id, name: deal.name, company: deal.company, contactId: deal.contact_id }} people={data.people} onClose={() => setTexting(false)} onSent={again} />}
+        {texting && canText && <SendText deal={{ id: deal.id, name: deal.name, company: deal.company, contactId: deal.contact_id }} people={data.people} ready={ready.load.state === "ready" ? ready.load.data : null} mayAnswer={canText} onClose={() => setTexting(false)} onSent={again} />}
       </>
     );
   }

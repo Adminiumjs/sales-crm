@@ -43,7 +43,9 @@ import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { createQuote, families, familyNo, held, newest, readNames, stateOf, TONE } from "../quotes/data.ts";
 import { serviceName } from "../quotes/Payments.tsx";
 import { SendText } from "./SendText.tsx";
-import { coverPhase, num, readFixed, readRoom, readSide, readTimeline, sittingOf, timelineOf, type Activity, type Deal, type Fixed, type Line, type Member, type RoomData, type Side, type Stage } from "./data.ts";
+import { TextAnswerDialog } from "./TextAnswer.tsx";
+import { textsReady } from "./text.ts";
+import { coverPhase, num, readFixed, readRoom, readSide, readTimeline, sittingOf, timelineOf, type Activity, type Contact, type Deal, type Fixed, type Line, type Member, type RoomData, type Side, type Stage } from "./data.ts";
 
 const KINDS: readonly Activity["kind"][] = ["call", "email", "meeting", "note"];
 const KIND_ICON: Record<Activity["kind"], string> = { call: "phone", email: "mail", meeting: "calendar-days", note: "sticky-note", text: "smartphone" };
@@ -94,6 +96,8 @@ export function Room({ id }: { id: string }) {
   // Whether the reader only helps on this deal; null while that is still being read (nothing that changes it is drawn).
   const helping = useHelping(room.load.state === "ready" && room.load.data !== null && room.load.data.deal.id === key ? room.load.data.deal.owner_id : undefined, today);
   const side = useLoad<Side | null>(() => (companyId === null ? Promise.resolve(null) : readSide(session, companyId)), [session, companyId]);
+  // Whether a text can go from this server at all (`GET /texts/ready`); null while asked, or when it could not be.
+  const ready = useLoad(() => textsReady(session), [session]);
 
   // A save's own "read again" and the live frame it sets off are one read.
   const againRoom = useCoalesced(
@@ -172,6 +176,8 @@ export function Room({ id }: { id: string }) {
   const [noteDraft, setNoteDraft] = useState<string | null>(null);
   // "Send a text": the dialog is open.
   const [texting, setTexting] = useState(false);
+  // A contact's answer to texts, from the people card: whose.
+  const [answering, setAnswering] = useState<Contact | null>(null);
   // One key per thing saved: sent again after a lost reply it answers the row the first one made. A changed draft is another save.
   const keys = useRef<{ of: string; activity: string; step: string }>({ of: "", activity: "", step: "" });
   // `E`, heard by the frame (`finding/Finding.tsx`): open the amount's field, when it may be changed here.
@@ -198,6 +204,7 @@ export function Room({ id }: { id: string }) {
     setAdding(false);
     setNoteDraft(null);
     setTexting(false);
+    setAnswering(null);
   }, [key]);
 
   const back = (open: boolean) => {
@@ -258,6 +265,10 @@ export function Room({ id }: { id: string }) {
     const canLog = open && session.can("activities", "create") && works;
     // A text from the deal: whoever logs on it, to one of the customer's people (the server judges the rest).
     const canText = canLog && its !== null && session.part("accounts") && session.can("contacts", "read");
+    const textsOff = ready.load.state === "ready" && ready.load.data === false;
+    const textsReadyNow = ready.load.state === "ready" ? ready.load.data : null;
+    // A contact's yes or no, taken by staff: whoever may change the contact, or text from the deal (the server decides).
+    const mayAnswer = works && session.part("accounts") && session.can("contacts", "read") && (session.can("contacts", "update") || canText);
     // Somebody is added by the deal's owner or by who leads her; a helper and a covering rep add nobody (the server holds it).
     const canList = open && (mine || team);
     const canAdd = canList && session.can("deal_members", "create");
@@ -562,7 +573,7 @@ export function Room({ id }: { id: string }) {
                 </ScreenLink>
               )}
               {canText && (
-                <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-btn" data-testid="room-text" disabled={busy} onClick={() => setTexting(true)}>
+                <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-btn" data-testid="room-text" disabled={busy || textsOff} aria-describedby={textsOff ? "crm-room-texts-off" : undefined} onClick={() => setTexting(true)}>
                   <Icon name="smartphone" size={14} />
                   {t("text.open")}
                 </button>
@@ -587,6 +598,11 @@ export function Room({ id }: { id: string }) {
               )}
             </div>
           </div>
+          {canText && textsOff && (
+            <p id="crm-room-texts-off" className="crm-text-ready" data-testid="room-texts-off">
+              {t("text.notReady")}
+            </p>
+          )}
         </section>
 
         <div className="crm-room-grid">
@@ -898,6 +914,12 @@ export function Room({ id }: { id: string }) {
                           )}
                         </div>
                       )}
+                      {mayAnswer && contact.phone !== null && (
+                        <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 crm-room-contact-text mr-btn" data-testid="room-text-answer" onClick={() => setAnswering(contact)}>
+                          <Icon name="smartphone" size={13} />
+                          {t("text.answer.open")}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -982,7 +1004,8 @@ export function Room({ id }: { id: string }) {
             )}
           </aside>
         </div>
-        {texting && canText && <SendText deal={{ id: deal.id, name: deal.name, company: deal.company, contactId: deal.contact_id }} people={its.contacts} onClose={() => setTexting(false)} onSent={again} />}
+        {texting && canText && <SendText deal={{ id: deal.id, name: deal.name, company: deal.company, contactId: deal.contact_id }} people={its.contacts} ready={textsReadyNow} mayAnswer={mayAnswer} onClose={() => setTexting(false)} onSent={again} />}
+        {answering !== null && <TextAnswerDialog contact={answering} deal={deal.name} mayAnswer={mayAnswer} onClose={() => setAnswering(null)} />}
       </>
     );
   }

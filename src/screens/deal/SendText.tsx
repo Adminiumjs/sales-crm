@@ -24,6 +24,7 @@ import { Dialog } from "../../ui/dialog.tsx";
 import { firstName } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import type { Contact } from "./data.ts";
+import { TextAnswer } from "./TextAnswer.tsx";
 import { failedWords, refusedKey, sendText, TEXT_MAX, textable, type TextKeys } from "./text.ts";
 
 export interface TextingDeal {
@@ -33,7 +34,7 @@ export interface TextingDeal {
   contactId: number | null;
 }
 
-export function SendText({ deal, people, onClose, onSent }: { deal: TextingDeal; people: readonly Contact[]; onClose: () => void; onSent: () => void }) {
+export function SendText({ deal, people, ready, mayAnswer, onClose, onSent }: { deal: TextingDeal; people: readonly Contact[]; ready: boolean | null; mayAnswer: boolean; onClose: () => void; onSent: () => void }) {
   const t = useT();
   const { locale } = useI18n();
   const session = useSession();
@@ -44,6 +45,8 @@ export function SendText({ deal, people, onClose, onSent }: { deal: TextingDeal;
   const [to, setTo] = useState<number | null>(choices[0]?.id ?? null);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
+  // Their answer is being recorded below: nothing closes or sends meanwhile.
+  const [answering, setAnswering] = useState(false);
   const [said, setSaid] = useState<{ text: string; tone: "danger" | "warn" } | null>(null);
   // One pair of keys for one person and one set of words: a press after a lost reply sends nothing twice.
   const keys = useRef<{ of: string } & TextKeys>({ of: "", text: "", activity: "" });
@@ -54,7 +57,7 @@ export function SendText({ deal, people, onClose, onSent }: { deal: TextingDeal;
   const name = person === null ? "" : person.name;
 
   const send = async (): Promise<void> => {
-    if (person === null || blank || busy) return;
+    if (person === null || blank || busy || ready === false) return;
     const of = `${String(person.id)}:${words}`;
     if (keys.current.of !== of) keys.current = { of, text: newClientKey(), activity: newClientKey() };
     setBusy(true);
@@ -107,19 +110,25 @@ export function SendText({ deal, people, onClose, onSent }: { deal: TextingDeal;
       title={t("text.open")}
       subtitle={deal.company === null ? deal.name : `${deal.name} · ${deal.company}`}
       onClose={onClose}
-      busy={busy}
+      busy={busy || answering}
       foot={
         <>
           <button type="button" className="crm-btn crm-btn-ghost crm-btn-44 mr-gi" disabled={busy} onClick={onClose}>
             {t("text.cancel")}
           </button>
-          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="text-send" disabled={busy || blank || person === null} onClick={() => void send()}>
+          <button type="button" className="crm-btn crm-btn-primary crm-btn-44 mr-btn" data-testid="text-send" disabled={busy || answering || blank || person === null || ready === false} onClick={() => void send()}>
             <Icon name="send" size={16} />
             {busy ? t("text.sending") : t("text.send")}
           </button>
         </>
       }
     >
+      {ready === false && (
+        <p className="crm-form-error crm-text-said" data-tone="warn" data-testid="text-not-ready">
+          <Icon name="triangle-alert" size={16} />
+          <span>{t("text.notReady")}</span>
+        </p>
+      )}
       {choices.length === 0 ? (
         <p className="crm-field-note" data-testid="text-no-phone">
           {t("text.noPhone")}
@@ -168,6 +177,7 @@ export function SendText({ deal, people, onClose, onSent }: { deal: TextingDeal;
             <p className="crm-field-note">{t("text.consent")}</p>
             <p className="crm-field-note">{t("text.logged")}</p>
           </div>
+          {person !== null && <TextAnswer key={person.id} contact={person} mayAnswer={mayAnswer} onBusy={setAnswering} />}
         </>
       )}
       <div aria-live="polite" data-testid="text-said">

@@ -7,7 +7,8 @@ import { describe, expect, it } from "vitest";
 import { MESSAGES } from "../../i18n/messages/index.ts";
 import { LostReply, StaffError, type Row, type Saved } from "../../staffSession.ts";
 import type { Contact } from "./data.ts";
-import { failedWords, refusedKey, sendText, textable, textActivity, type TextReply } from "./text.ts";
+import whole from "../../../whole/manifest.json";
+import { BOX_VERSION, failedWords, readStanding, recordAnswer, refusedKey, sendText, textable, textActivity, textsReady, type Standing, type TextReply } from "./text.ts";
 
 const contact = (id: number, phone: string | null): Contact => ({ id, name: `Person ${String(id)}`, job_title: null, email: null, phone });
 
@@ -145,5 +146,61 @@ describe("the words for each answer", () => {
 
   it("never calls a queued text delivered", () => {
     for (const table of Object.values(MESSAGES)) expect(table["text.toast.queued"]).not.toMatch(/deliver|zugestellt|livré|leveret|doručen|送达|送達|تسليم/i);
+  });
+});
+
+describe("where a contact stands, and the answer staff record", () => {
+  const standing: Standing = { ready: true, masked: "+44 ••• 182", service: { state: "yes", answer: { at: 1, source: "staff", how: "phone", by: { id: "u1", label: "Dana" }, wordingVersion: "1" } }, marketing: { state: "not-asked", answer: null }, stopped: null };
+  function fake(answer: () => unknown) {
+    const calls: { method: string; path: string; body: unknown }[] = [];
+    return {
+      calls,
+      session: {
+        connectionId: "conn-1",
+        tableId: (ref: string) => `crm_${ref}`,
+        call: async <T,>(method: string, path: string, body?: unknown): Promise<T> => {
+          calls.push({ method, path, body });
+          return answer() as T;
+        },
+      },
+    };
+  }
+
+  it("asks whether texts are set up, and says 'not known' when it cannot ask", async () => {
+    expect(await textsReady(fake(() => ({ data: { ready: false } })).session)).toBe(false);
+    expect(await textsReady(fake(() => ({ data: { ready: true } })).session)).toBe(true);
+    expect(
+      await textsReady(
+        fake(() => {
+          throw new LostReply();
+        }).session,
+      ),
+    ).toBeNull();
+  });
+
+  it("reads the contact's standing by its row and phone column", async () => {
+    const one = fake(() => ({ data: standing }));
+    expect(await readStanding(one.session, 4)).toEqual({ state: "ok", value: standing });
+    expect(one.calls).toEqual([{ method: "GET", path: "/texts/consent?connection=conn-1&table=crm_contacts&row=4&column=phone", body: undefined }]);
+  });
+
+  it("records a yes with the words they were read and how, and a no with how alone", async () => {
+    const one = fake(() => ({ data: standing }));
+    await recordAnswer(one.session, 4, { state: "yes", how: "phone", wording: { text: "Text me about my enquiry", version: BOX_VERSION } });
+    await recordAnswer(one.session, 4, { state: "no", how: "in-person" });
+    expect(one.calls).toEqual([
+      { method: "POST", path: "/texts/consent", body: { connection: "conn-1", table: "crm_contacts", row: "4", column: "phone", state: "yes", how: "phone", wording: { text: "Text me about my enquiry", version: "1" } } },
+      { method: "POST", path: "/texts/consent", body: { connection: "conn-1", table: "crm_contacts", row: "4", column: "phone", state: "no", how: "in-person" } },
+    ]);
+    const refused = fake(() => {
+      throw new StaffError(403, "FORBIDDEN", "no");
+    });
+    expect((await recordAnswer(refused.session, 4, { state: "no", how: "phone" })).state).toBe("failed");
+  });
+
+  it("reads staff the same words, and version, as the enquiry form's box, in every language", () => {
+    const box = (whole as unknown as { publicAccess: { table: string; key?: string; textConsent?: { wording: { version: number; text: Record<string, string> } } }[] }).publicAccess.find((entry) => entry.table === "enquiries" && entry.key === "forms")!.textConsent!;
+    expect(String(box.wording.version)).toBe(BOX_VERSION);
+    for (const [locale, words] of Object.entries(box.wording.text)) expect(MESSAGES[locale as keyof typeof MESSAGES]["text.box"], locale).toBe(words);
   });
 });

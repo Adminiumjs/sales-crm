@@ -381,3 +381,38 @@
 .crm-text-said span {
   overflow-wrap: anywhere;
 }
+.crm-text-answer {
+  margin-block-start: 18px;
+  padding-block-start: 4px;
+  border-block-start: 1px solid var(--border);
+}
+.crm-text-standing {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+.crm-text-wording {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.crm-text-answer-acts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-block-start: 14px;
+}
+.crm-text-ready {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.crm-room-contact-text {
+  margin-block-start: 8px;
+}

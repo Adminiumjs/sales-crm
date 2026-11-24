@@ -157,3 +157,76 @@ export function failedWords(error: StaffError): { key: MessageKey; message?: str
   if (error.status === 422 && error.details["reason"] === "not-a-phone-column") return { key: "text.fail.notPhone" };
   return { key: "text.fail.refused", message: error.message };
 }
+
+// ── whether texts can go at all, and where a person stands ──────────────────
+
+/**
+ * Whether this server can send a text now (a provider and a sender saved, not
+ * switched off): `GET /texts/ready`, which says nothing of the account. Null
+ * when it could not be asked: the page then offers the button and lets the
+ * server's answer say why a text did not go.
+ */
+export async function textsReady(session: Pick<StaffSession, "call">): Promise<boolean | null> {
+  try {
+    return (await session.call<{ data: { ready: boolean } }>("GET", "/texts/ready")).data.ready;
+  } catch {
+    return null;
+  }
+}
+
+export const STANDING_STATES = ["yes", "no", "not-asked", "stopped", "no-phone"] as const;
+export type StandingState = (typeof STANDING_STATES)[number];
+export const HOWS = ["in-person", "phone", "paper", "email"] as const;
+export type How = (typeof HOWS)[number];
+
+export interface Answer {
+  at: number;
+  source: string;
+  how: string | null;
+  by: { id: string; label: string } | null;
+  wordingVersion: string | null;
+}
+/** A person's standing for texts from THIS app, as `GET /texts/consent` answers it. */
+export interface Standing {
+  ready: boolean;
+  masked: string | null;
+  service: { state: StandingState; answer: Answer | null };
+  marketing: { state: StandingState; answer: Answer | null };
+  stopped: { since: number; reason: string; liftBy: "start" | "business" | "never" } | null;
+}
+
+const contactRecord = (session: Pick<StaffSession, "connectionId" | "tableId">, contactId: number) => ({ connection: session.connectionId, table: session.tableId("contacts"), row: String(contactId), column: "phone" });
+
+export type Read<T> = { state: "ok"; value: T } | { state: "failed"; error: StaffError } | { state: "unknown" };
+
+async function asked<T>(run: () => Promise<T>): Promise<Read<T>> {
+  try {
+    return { state: "ok", value: await run() };
+  } catch (error) {
+    if (error instanceof StaffError) return { state: "failed", error };
+    if (error instanceof LostReply) return { state: "unknown" };
+    throw error;
+  }
+}
+
+/** Where a contact stands for this app's texts. Every read is audited by the server, so it is asked when shown, never for a list. */
+export function readStanding(session: Pick<StaffSession, "call" | "connectionId" | "tableId">, contactId: number): Promise<Read<Standing>> {
+  const query = new URLSearchParams(contactRecord(session, contactId)).toString();
+  return asked(async () => (await session.call<{ data: Standing }>("GET", `/texts/consent?${query}`)).data);
+}
+
+/**
+ * Record the yes a contact gave a member of staff (in person, on the phone, on
+ * paper, by e-mail), with the words they were given and their version, or
+ * their no. A yes never lifts a STOP: only the person can, by texting START.
+ */
+export function recordAnswer(
+  session: Pick<StaffSession, "call" | "connectionId" | "tableId">,
+  contactId: number,
+  answer: { state: "yes"; how: How; wording: { text: string; version: string } } | { state: "no"; how: How },
+): Promise<Read<Standing>> {
+  return asked(async () => (await session.call<{ data: Standing }>("POST", "/texts/consent", { ...contactRecord(session, contactId), ...answer })).data);
+}
+
+/** The words a contact is read before their yes is recorded: the enquiry form's box, version 1 (`whole/manifest.json`). */
+export const BOX_VERSION = "1";
