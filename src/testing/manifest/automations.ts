@@ -39,7 +39,7 @@
 import { z } from 'zod';
 
 import { MAIL_CLASSES, MAIL_PURPOSES } from './mail-classes.ts';
-import { placeholderNames, requiredNamesOfEmail, showWhenNames } from './placeholders.ts';
+import { placeholderNames, placeholdersIn, requiredNamesOfEmail, showWhenNames } from './placeholders.ts';
 import { bcp47TagSchema, refSchema, type ReferenceIssue } from './refs.ts';
 
 /** The most rules one manifest ships, and the most steps one rule holds. */
@@ -76,6 +76,26 @@ const operand = z.union([
 const fieldLeft = z.object({ field: refSchema }).strict();
 const leaf = z.object({ left: fieldLeft, op: z.enum(AUTOMATION_CONDITION_OPS), right: operand.optional() }).strict();
 const countLeft = z.object({ count: z.object({ table: refSchema, matchColumn: refSchema, equalsField: refSchema, where: leaf.optional() }).strict() }).strict();
+/**
+ * An add-on's words about a row the record links to: `words` names them
+ * (`<add-on key>:<words id>`, as a public entry's `words` does), `of` the
+ * record's link to the row they are asked about. Compared with `is` or
+ * `is_not` and one of `in`, `low`, `out`. Asked only in a rule's own
+ * condition and branch steps (see {@link WORDS_STATES}).
+ */
+const wordsLeft = z
+  .object({ words: z.string().regex(/^[a-z][a-z0-9-]{1,79}:[a-z][a-z0-9-]{0,39}$/, '<add-on key>:<words id>'), of: refSchema })
+  .strict();
+
+/**
+ * What a rule may ask of an add-on's words. `in`: the add-on counts the row
+ * and one whole unit or more is left ("low" with one or more left counts as
+ * in). `low`: it says low. `out`: it counts the row and none is left. The
+ * add-on off for the app, not answering, the record linked to nothing, or a
+ * row the add-on does not count: the condition is false, `is_not` too.
+ */
+export const WORDS_STATES = ['in', 'low', 'out'] as const;
+const WORDS_OPS: readonly ConditionOp[] = ['is', 'is_not'];
 
 /** An operator takes the operand its kind needs: none, an amount with a unit, or a plain value. */
 function operandIssue(op: ConditionOp, right: unknown): string | null {
@@ -89,11 +109,15 @@ function operandIssue(op: ConditionOp, right: unknown): string | null {
 }
 
 export const manifestConditionSchema = z
-  .object({ left: z.union([fieldLeft, countLeft]), op: z.enum(AUTOMATION_CONDITION_OPS), right: operand.optional() })
+  .object({ left: z.union([fieldLeft, countLeft, wordsLeft]), op: z.enum(AUTOMATION_CONDITION_OPS), right: operand.optional() })
   .strict()
   .superRefine((condition, ctx) => {
     const issue = operandIssue(condition.op, condition.right);
     if (issue !== null) ctx.addIssue({ code: 'custom', path: ['right'], message: issue });
+    if ('words' in condition.left) {
+      if (!WORDS_OPS.includes(condition.op)) ctx.addIssue({ code: 'custom', path: ['op'], message: `an add-on's words are compared with is or is_not, not ${condition.op}` });
+      if (!(WORDS_STATES as readonly unknown[]).includes(condition.right)) ctx.addIssue({ code: 'custom', path: ['right'], message: `an add-on's words are ${WORDS_STATES.join(', ')}` });
+    }
     if ('count' in condition.left) {
       if (!COUNT_OPS.includes(condition.op)) ctx.addIssue({ code: 'custom', path: ['op'], message: `${condition.op} cannot compare a count` });
       const nested = condition.left.count.where;
@@ -351,6 +375,24 @@ export const manifestActionSchema = z.discriminatedUnion('kind', [
     })
     .strict(),
   /**
+   * A text to the number in a column of the record, from one of the manifest's
+   * own `textTemplates`. A service text, sent through the same path as an
+   * outbox text. `notAfter`: a date-and-time column of the record that the
+   * text is about; it is never sent after that moment.
+   */
+  z
+    .object({
+      kind: z.literal('text'),
+      templateKey: z.string().regex(/^[a-z][a-z0-9-]{1,79}$/, 'a template key'),
+      to: z.object({ kind: z.literal('field'), column: refSchema }).strict(),
+      vars: z
+        .record(z.string().regex(/^[A-Za-z0-9_.-]{1,120}$/), z.string().max(2000))
+        .refine((value) => Object.keys(value).length <= 60, 'at most 60 placeholders')
+        .optional(),
+      notAfter: refSchema.optional(),
+    })
+    .strict(),
+  /**
    * A step an add-on gives (its `addOn.steps`): which add-on, which step, and
    * what fills each of the step's inputs: text, which may carry `{{record.<column>}}`.
    */
@@ -497,10 +539,14 @@ export function automationIssues(m: {
   tables: readonly AutomationTableShape[];
   roles: readonly string[];
   templates: readonly AutomationTemplateShape[];
+  /** The manifest's text templates: the only ones a rule's text step may name. */
+  textTemplates?: readonly { key: string; locales: Readonly<Record<string, { body: string }>> }[] | undefined;
   /** The columns Adminium decides beyond a column's own rule (a balance, what a posting fills), by table. */
   decided?: (table: string) => ReadonlySet<string>;
   /** An add-on's own steps, when the manifest is one that gives any: a rule of its own that names one is checked against them. */
   steps?: { addOn: string; steps: readonly { key: string; inputs: readonly { key: string; required?: boolean | undefined }[] }[] } | undefined;
+  /** The add-ons whose words a rule may ask: the ones the manifest names, and itself when it is one. Absent: not checked. */
+  addOns?: ReadonlySet<string> | undefined;
 }): ReferenceIssue[] {
   const out: ReferenceIssue[] = [];
   const tables = new Map(m.tables.map((table) => [table.ref, table]));
@@ -544,8 +590,19 @@ export function automationIssues(m: {
       const found = column(held, right.setting.column, [...at, 'column']);
       if (found !== undefined && !['int', 'bigint'].includes(found.type)) out.push({ path: [...at, 'column'], message: `"${right.setting.table}.${right.setting.column}" is not a whole-number column: it holds an amount of ${right.unit}` });
     };
-    const conditionIssues = (of: AutomationTableShape | undefined, condition: ManifestCondition, path: (string | number)[], inScan: boolean, settingsOk = false) => {
+    const conditionIssues = (of: AutomationTableShape | undefined, condition: ManifestCondition, path: (string | number)[], inScan: boolean, settingsOk = false, wordsOk = false) => {
       settingIssues(condition, path, settingsOk);
+      if ('words' in condition.left) {
+        const asked = condition.left;
+        // A trigger's or a scan's condition is judged before a run exists, many rows at a time: an add-on is asked in a step.
+        if (!wordsOk) out.push({ path: [...path, 'left'], message: "an add-on's words are asked in a rule's condition or branch step, never in a trigger's when or the rows a rule visits by the clock" });
+        const addOn = asked.words.slice(0, asked.words.indexOf(':'));
+        if (m.addOns !== undefined && !m.addOns.has(addOn)) out.push({ path: [...path, 'left', 'words'], message: `"${addOn}" is not an add-on this manifest names: add it to addOns.requires or addOns.suggests` });
+        const link = column(of, asked.of, [...path, 'left', 'of']);
+        if (link !== undefined && link.references === undefined) out.push({ path: [...path, 'left', 'of'], message: `"${of?.ref ?? ''}.${asked.of}" is not a link: the words are asked about the row a link of the record names` });
+        if (of === undefined && rule.trigger.kind === 'schedule' && rule.trigger.forEach === undefined) out.push({ path: [...path, 'left'], message: 'this rule runs for no record, so it has no link to ask about' });
+        return;
+      }
       if ('count' in condition.left) {
         // A scan's filter is one query over the scanned table: it cannot count another table's rows.
         if (inScan) out.push({ path: [...path, 'left'], message: 'a rule that runs by the clock cannot filter the rows it visits by a count: keep the count in a column of the row (a rollup), and compare that' });
@@ -738,7 +795,7 @@ export function automationIssues(m: {
       (node, path) => {
         tokens(node.title, [...path, 'title']);
         tokens(node.sub, [...path, 'sub']);
-        if (node.kind === 'condition' || node.kind === 'branch') conditionIssues(record, node.condition, [...path, 'condition'], false, true);
+        if (node.kind === 'condition' || node.kind === 'branch') conditionIssues(record, node.condition, [...path, 'condition'], false, true, true);
         if (node.kind !== 'action') return;
         const action = node.action;
         const here = (...rest: (string | number)[]) => [...path, 'action', ...rest];
@@ -916,6 +973,46 @@ export function automationIssues(m: {
           }
           for (const input of step.inputs) {
             if (input.required === true && (action.inputs[input.key] ?? '').trim() === '') out.push({ path: here('inputs'), message: `the step "${step.key}" needs its input "${input.key}"` });
+          }
+          return;
+        }
+        if (action.kind === 'text') {
+          if (record === undefined) out.push({ path: here(), message: 'this rule runs for no record, so there is no number to text' });
+          column(record, action.to.column, here('to', 'column'));
+          if (action.notAfter !== undefined) {
+            const moment = column(record, action.notAfter, here('notAfter'));
+            if (moment !== undefined && moment.type !== 'timestamptz') out.push({ path: here('notAfter'), message: `"${record?.ref ?? ''}.${action.notAfter}" is ${moment.type}: a text is held to a moment, so this is a timestamptz column` });
+          }
+          const vars = action.vars ?? {};
+          for (const [name, text] of Object.entries(vars)) tokens(text, here('vars', name));
+          const template = (m.textTemplates ?? []).find((candidate) => candidate.key === action.templateKey);
+          if (template === undefined) {
+            out.push({ path: here('templateKey'), message: `"${action.templateKey}" is not one of this manifest's textTemplates: a shipped rule sends only its own` });
+            return;
+          }
+          const columns = new Set((record?.columns ?? []).map((candidate) => candidate.ref));
+          const auditOnly = new Set((record?.columns ?? []).filter((candidate) => candidate.rules?.['history'] === 'audit').map((candidate) => candidate.ref));
+          const people = new Set((record?.columns ?? []).filter((candidate) => candidate.rules?.['staff'] === true).flatMap((candidate) => [`${candidate.ref}.name`, `record.${candidate.ref}.name`]));
+          const filled = (name: string): boolean =>
+            (RULE_EMAIL_VARS as readonly string[]).includes(name) ||
+            Object.hasOwn(vars, name) ||
+            columns.has(name) ||
+            (name.startsWith('record.') && columns.has(name.slice('record.'.length))) ||
+            people.has(name) ||
+            (changing && name.startsWith('was.') && columns.has(name.slice('was.'.length)) && !auditOnly.has(name.slice('was.'.length)));
+          for (const [locale, content] of Object.entries(template.locales)) {
+            const placeholders = placeholdersIn(content.body);
+            hiddenCodes(placeholders.map((one) => one.name).filter((name) => !Object.hasOwn(vars, name)), here('templateKey'));
+            // A text with an unfilled placeholder is refused when it would go, so a rule that can never fill one is refused here.
+            const unfilled = [...new Set(placeholders.filter((one) => (one.backup ?? '') === '' && !filled(one.name)).map((one) => one.name))];
+            if (unfilled.length > 0) {
+              out.push({ path: here(), message: `"${action.templateKey}" (${locale}) reads ${unfilled.map((name) => `{{${name}}}`).join(', ')}, which a rule cannot fill. Add "vars": { "${unfilled[0]!}": "{{record.<column>}}" } to this step, or give it a backup.` });
+            }
+          }
+          for (const name of Object.keys(vars)) {
+            if (!Object.values(template.locales).some((content) => placeholdersIn(content.body).some((one) => one.name === name))) {
+              out.push({ path: here('vars', name), message: `"${action.templateKey}" reads no {{${name}}} in any language: take it out, or fix the name` });
+            }
           }
           return;
         }
