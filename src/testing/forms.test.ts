@@ -31,7 +31,7 @@ interface Doc {
   addOns: { suggests: { key: string; range: string; checked?: boolean; reason: Record<string, string> }[]; features: { id: string; requires: string[]; label: Record<string, string> }[] };
 }
 
-const FORM_WRITES = ["person", "company_name", "email", "phone", "text", "town", "wants", "wanted_on", "brochure", "from_form"];
+const FORM_WRITES = ["person", "company_name", "email", "phone", "text_ok", "text", "town", "wants", "wanted_on", "brochure", "from_form"];
 
 for (const [name, raw] of [
   ["the whole app", whole],

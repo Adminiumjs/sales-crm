@@ -11780,6 +11780,21 @@
             }
           },
           {
+            "ref": "text_ok",
+            "type": "bool",
+            "nullable": true,
+            "label": {
+              "en-US": "Agreed to texts",
+              "de-DE": "SMS erlaubt",
+              "fr-FR": "Accepte les SMS",
+              "da-DK": "Må få sms",
+              "cs-CZ": "Souhlas se SMS",
+              "ar-EG": "وافق على الرسائل النصية",
+              "zh-CN": "同意接收短信",
+              "zh-TW": "同意接收簡訊"
+            }
+          },
+          {
             "ref": "text",
             "type": "text",
             "nullable": true,
@@ -32379,6 +32394,7 @@
         "company_name",
         "email",
         "phone",
+        "text_ok",
         "text",
         "town",
         "wants",
@@ -32414,6 +32430,24 @@
             "max": 160
           }
         ]
+      },
+      "textConsent": {
+        "column": "text_ok",
+        "phone": "phone",
+        "class": "service",
+        "wording": {
+          "version": 1,
+          "text": {
+            "en-US": "Text me about my enquiry",
+            "de-DE": "Schreiben Sie mir per SMS zu meiner Anfrage",
+            "fr-FR": "M’écrire par SMS au sujet de ma demande",
+            "da-DK": "Send mig en sms om min henvendelse",
+            "cs-CZ": "Pište mi SMS k mé poptávce",
+            "ar-EG": "راسلوني برسالة نصية بخصوص استفساري",
+            "zh-CN": "就我的询盘给我发短信",
+            "zh-TW": "就我的詢問傳簡訊給我"
+          }
+        }
       }
     },
     {

@@ -22,7 +22,7 @@ interface Doc {
   textReplies?: string;
   textTemplates?: unknown;
   outbox: { channels?: unknown };
-  publicAccess: { table: string; textConsent?: unknown }[];
+  publicAccess: { table: string; key?: string; writable?: string[]; requires?: string[]; defaults?: Record<string, unknown>; textConsent?: unknown }[];
 }
 
 for (const [name, raw] of [
@@ -37,9 +37,9 @@ for (const [name, raw] of [
       const result = validateManifest(raw);
       expect(result.ok ? [] : result.issues).toEqual([]);
       expect(doc.compatibility.minAdminiumVersion).toBe(SMS_WORDS_FLOOR);
-      // Exactly the words this app says: people's phones, the roles' grants and the replies switch.
+      // Exactly the words this app says: people's phones, the roles' grants, the replies switch and the form's box.
       const words = [...new Set(installFloorWords(raw).map((one) => one.word))].filter((word) => ["people.phone", "roles.texts", "textReplies", "textTemplates", "publicAccess.textConsent", "outbox.channels"].includes(word));
-      expect(words.sort()).toEqual(["people.phone", "roles.texts", "textReplies"]);
+      expect(words.sort()).toEqual(["people.phone", "publicAccess.textConsent", "roles.texts", "textReplies"]);
     });
 
     it("logs a text as an activity of its own kind, named in all eight languages", () => {
@@ -54,8 +54,23 @@ for (const [name, raw] of [
       // A person writes every text this app sends: no template, no text kind in the outbox.
       expect(doc.textTemplates).toBeUndefined();
       expect(doc.outbox.channels).toBeUndefined();
-      // The enquiry form has no box for texts: a forms entry may not carry one (see the plan 80 progress file).
-      expect(doc.publicAccess.filter((entry) => entry.textConsent !== undefined)).toEqual([]);
+    });
+
+    it("asks a website form's enquirer for a yes to texts in a box of its own: unticked, never required, for the number typed", () => {
+      const boxes = doc.publicAccess.filter((entry) => entry.textConsent !== undefined);
+      expect(boxes.map((entry) => [entry.table, entry.key])).toEqual([["enquiries", "forms"]]);
+      const entry = boxes[0]!;
+      const box = entry.textConsent as { column: string; phone: string; class: string; wording: { version: number; text: Record<string, string> } };
+      expect(box).toMatchObject({ column: "text_ok", phone: "phone", class: "service", wording: { version: 1 } });
+      expect(Object.keys(box.wording.text).sort()).toEqual([...LOCALES].sort());
+      for (const text of Object.values(box.wording.text)) expect(text).not.toMatch(/\bYES\b/);
+      // Its own column, never the e-mail tick's, starting empty and never required.
+      const column = doc.requiredSchema.tables.find((one) => one.ref === "enquiries")!.columns.find((one) => one.ref === "text_ok") as Column & { nullable?: boolean; default?: unknown };
+      expect(column).toMatchObject({ type: "bool", nullable: true });
+      expect(column.default).toBeUndefined();
+      expect(entry.writable).toContain("text_ok");
+      expect(entry.requires ?? []).not.toContain("text_ok");
+      expect(entry.defaults?.["text_ok"]).toBeUndefined();
     });
   });
 }

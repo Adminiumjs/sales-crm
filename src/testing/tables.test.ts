@@ -200,6 +200,8 @@ const TABLES: Record<string, { nullable: readonly string[] }> = {
       "person",
       "email",
       "phone",
+      // The form's box for texts: empty when the form drew none, or on an enquiry typed in.
+      "text_ok",
       "text",
       "est_value",
       "town",
