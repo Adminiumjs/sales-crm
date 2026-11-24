@@ -243,7 +243,7 @@ export interface Person extends Record<string, unknown> {
 export interface ActivityRow extends Record<string, unknown> {
   id: number;
   deal_id: number;
-  kind: "call" | "email" | "meeting" | "note";
+  kind: "call" | "email" | "meeting" | "note" | "text";
   text: string | null;
   author_id: string | null;
   at: string;
@@ -449,7 +449,7 @@ export function mainLine(everybody: number | null, mine: readonly { id: number; 
 
 // ── the company's timeline ───────────────────────────────────────────────────
 
-export const KINDS = ["call", "email", "meeting", "note"] as const;
+export const KINDS = ["call", "email", "meeting", "note", "text"] as const;
 export type Kind = (typeof KINDS)[number] | "stage";
 
 export interface Entry {
@@ -486,7 +486,7 @@ export const newestFirst = (a: Entry, b: Entry): number => (a.at < b.at ? 1 : a.
  */
 export async function readTimeline(session: StaffSession, id: number): Promise<Timeline> {
   const company = await session.get<{ id: number; name: string }>("companies", id);
-  const none: Timeline = { company, entries: [], counts: { call: 0, email: 0, meeting: 0, note: 0, stage: 0 }, cut: false, names: {} };
+  const none: Timeline = { company, entries: [], counts: { call: 0, email: 0, meeting: 0, note: 0, text: 0, stage: 0 }, cut: false, names: {} };
   if (company === null || !session.can("deals", "read")) return none;
   const deals = await session.list<{ id: number }>("deals", { select: ["id"], where: { and: [{ column: "company_id", op: "eq", value: id }, { column: "state", op: "eq", value: "open" }] }, order: ["id"], limit: PAGE });
   const ids = deals.rows.map((deal) => deal.id);
@@ -507,7 +507,7 @@ export async function readTimeline(session: StaffSession, id: number): Promise<T
     ...(stages?.rows ?? []).map((row): Entry => ({ key: `s${String(row["id"])}`, type: "stage", at: String(row["at"]), who: text(row["by_id"]), dealId: num(row["deal_id"]), deal: text(row["deal"]), text: null, from: text(row["from"]), to: text(row["to"]) })),
   ].sort(newestFirst);
   const kinds = byKind === null ? {} : grouped(byKind);
-  const counts: Timeline["counts"] = { call: kinds["call"] ?? 0, email: kinds["email"] ?? 0, meeting: kinds["meeting"] ?? 0, note: kinds["note"] ?? 0, stage: moves === null ? 0 : num(moves.value) };
+  const counts: Timeline["counts"] = { call: kinds["call"] ?? 0, email: kinds["email"] ?? 0, meeting: kinds["meeting"] ?? 0, note: kinds["note"] ?? 0, text: kinds["text"] ?? 0, stage: moves === null ? 0 : num(moves.value) };
   const cut = [activities, stages].some((page) => page !== null && (page.total ?? page.rows.length) > page.rows.length);
   return { company, entries, counts, cut, names };
 }

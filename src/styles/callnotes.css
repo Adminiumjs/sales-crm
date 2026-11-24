@@ -341,3 +341,43 @@
   flex-shrink: 0;
   margin-block-start: 2px;
 }
+
+/* "Send a text" (plan 80): who it goes to, the words, and what came of it. */
+.crm-text-to .crm-why-item[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+.crm-text-to .crm-why-item[aria-checked="true"] .crm-why-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.crm-text-to-name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.crm-text-to-number {
+  font-size: 12px;
+  color: var(--fg-muted);
+  unicode-bidi: isolate;
+}
+.crm-text-body {
+  min-block-size: 120px;
+}
+.crm-text-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: 6px;
+}
+.crm-text-count {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.crm-text-said[data-tone="warn"] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.crm-text-said span {
+  overflow-wrap: anywhere;
+}

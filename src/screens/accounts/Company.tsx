@@ -33,7 +33,7 @@ import { addressOf, detailsOf, num, readProfile, type Since } from "./data.ts";
 import { RecordSheet, type Rec } from "./RecordSheet.tsx";
 import { Tile, useAccounts } from "./shared.tsx";
 
-const KIND_ICON: Record<string, string> = { call: "contact", email: "mail", meeting: "calendar-days", note: "notebook-pen" };
+const KIND_ICON: Record<string, string> = { call: "contact", email: "mail", meeting: "calendar-days", note: "notebook-pen", text: "smartphone" };
 
 export function CompanyProfile({ id }: { id: number }) {
   const t = useT();

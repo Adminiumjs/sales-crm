@@ -42,10 +42,11 @@ import { firstName, initials } from "../../ui/people.ts";
 import { reasonOf, useToasts } from "../../ui/toast.tsx";
 import { createQuote, families, familyNo, held, newest, readNames, stateOf, TONE } from "../quotes/data.ts";
 import { serviceName } from "../quotes/Payments.tsx";
+import { SendText } from "./SendText.tsx";
 import { coverPhase, num, readFixed, readRoom, readSide, readTimeline, sittingOf, timelineOf, type Activity, type Deal, type Fixed, type Line, type Member, type RoomData, type Side, type Stage } from "./data.ts";
 
 const KINDS: readonly Activity["kind"][] = ["call", "email", "meeting", "note"];
-const KIND_ICON: Record<Activity["kind"], string> = { call: "phone", email: "mail", meeting: "calendar-days", note: "sticky-note" };
+const KIND_ICON: Record<Activity["kind"], string> = { call: "phone", email: "mail", meeting: "calendar-days", note: "sticky-note", text: "smartphone" };
 
 export function useMenuFacts(): MenuFacts {
   const session = useSession();
@@ -169,6 +170,8 @@ export function Room({ id }: { id: string }) {
   const [next, setNext] = useState(false);
   const [adding, setAdding] = useState(false);
   const [noteDraft, setNoteDraft] = useState<string | null>(null);
+  // "Send a text": the dialog is open.
+  const [texting, setTexting] = useState(false);
   // One key per thing saved: sent again after a lost reply it answers the row the first one made. A changed draft is another save.
   const keys = useRef<{ of: string; activity: string; step: string }>({ of: "", activity: "", step: "" });
   // `E`, heard by the frame (`finding/Finding.tsx`): open the amount's field, when it may be changed here.
@@ -194,6 +197,7 @@ export function Room({ id }: { id: string }) {
     setNext(false);
     setAdding(false);
     setNoteDraft(null);
+    setTexting(false);
   }, [key]);
 
   const back = (open: boolean) => {
@@ -252,6 +256,8 @@ export function Room({ id }: { id: string }) {
     const works = helping === false;
     const canWork = open && session.can("deals", "update") && works;
     const canLog = open && session.can("activities", "create") && works;
+    // A text from the deal: whoever logs on it, to one of the customer's people (the server judges the rest).
+    const canText = canLog && its !== null && session.part("accounts") && session.can("contacts", "read");
     // Somebody is added by the deal's owner or by who leads her; a helper and a covering rep add nobody (the server holds it).
     const canList = open && (mine || team);
     const canAdd = canList && session.can("deal_members", "create");
@@ -348,7 +354,7 @@ export function Room({ id }: { id: string }) {
     };
 
     const lineText = (line: Line): { label: string; who: string; text: string; icon: string; tone: string } => {
-      if (line.type === "activity") return { label: t(`room.kind.${line.kind}` as MessageKey), who: nameOf(line.who), text: line.text, icon: KIND_ICON[line.kind], tone: line.kind === "call" ? "info" : line.kind === "meeting" ? "warn" : "plain" };
+      if (line.type === "activity") return { label: t(`room.kind.${line.kind}` as MessageKey), who: nameOf(line.who), text: line.text, icon: KIND_ICON[line.kind], tone: line.kind === "call" || line.kind === "text" ? "info" : line.kind === "meeting" ? "warn" : "plain" };
       if (line.type === "stage") return { label: t("room.line.stage"), who: line.whoLabel ?? nameOf(line.who), text: line.from === null ? t("room.line.opened", { stage: stageName(line.to) }) : t("room.line.moved", { from: stageName(line.from), to: stageName(line.to) }), icon: "move-right", tone: "accent" };
       if (line.type === "member") {
         const name = nameOf(line.person);
@@ -554,6 +560,12 @@ export function Room({ id }: { id: string }) {
                   <Icon name="phone" size={14} />
                   {t("room.call")}
                 </ScreenLink>
+              )}
+              {canText && (
+                <button type="button" className="crm-btn crm-btn-ghost crm-btn-32 mr-btn" data-testid="room-text" disabled={busy} onClick={() => setTexting(true)}>
+                  <Icon name="smartphone" size={14} />
+                  {t("text.open")}
+                </button>
               )}
               {canWork && (mine || team) && canOpen("handover", facts) && (
                 <ScreenLink to="handover" rest={[deal.id]} className="crm-btn crm-btn-ghost crm-btn-32 mr-gi">
@@ -970,6 +982,7 @@ export function Room({ id }: { id: string }) {
             )}
           </aside>
         </div>
+        {texting && canText && <SendText deal={{ id: deal.id, name: deal.name, company: deal.company, contactId: deal.contact_id }} people={its.contacts} onClose={() => setTexting(false)} onSent={again} />}
       </>
     );
   }

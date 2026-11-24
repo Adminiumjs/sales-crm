@@ -79,7 +79,7 @@ export interface Contact extends Record<string, unknown> {
 
 export interface Activity extends Record<string, unknown> {
   id: number;
-  kind: "call" | "email" | "meeting" | "note";
+  kind: "call" | "email" | "meeting" | "note" | "text";
   text: string;
   author_id: string | null;
   at: string;

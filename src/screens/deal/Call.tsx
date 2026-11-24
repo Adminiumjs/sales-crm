@@ -36,9 +36,10 @@ import { readNames } from "../quotes/data.ts";
 import { callText, chipsOf, logCall, MARK_ICON, MARKS, MAX_NOTES, pickOut, readCall, withLine, wordCount, type CallData, type Mark } from "./call.ts";
 import { num } from "./data.ts";
 import { NoDeal } from "./Room.tsx";
+import { SendText } from "./SendText.tsx";
 
 const MARK_WORD: Record<Mark, MessageKey> = { next: "call.mark.next", decision: "call.mark.decision", objection: "call.mark.objection", blocker: "call.mark.blocker" };
-const KIND_WORD: Record<string, MessageKey> = { call: "room.kind.call", email: "room.kind.email", meeting: "room.kind.meeting", note: "room.kind.note" };
+const KIND_WORD: Record<string, MessageKey> = { call: "room.kind.call", email: "room.kind.email", meeting: "room.kind.meeting", note: "room.kind.note", text: "room.kind.text" };
 
 export function Call({ id }: { id: string }) {
   const t = useT();
@@ -68,6 +69,8 @@ export function Call({ id }: { id: string }) {
 
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  // "Send a text", beside "Log the call": the dialog is open.
+  const [texting, setTexting] = useState(false);
   const box = useRef<HTMLTextAreaElement>(null);
   // One key for the call and one per next step, for as long as the draft is the same: a press after a lost reply makes nothing twice.
   const keys = useRef<{ of: string; call: string; steps: string[] }>({ of: "", call: "", steps: [] });
@@ -78,7 +81,10 @@ export function Call({ id }: { id: string }) {
     toEnd.current = false;
     el.setSelectionRange(el.value.length, el.value.length);
   }, [notes]);
-  useEffect(() => setNotes(""), [key]);
+  useEffect(() => {
+    setNotes("");
+    setTexting(false);
+  }, [key]);
 
   const words = useMemo(() => Object.fromEntries(MARKS.map((mark) => [mark, t(MARK_WORD[mark])])) as Record<Mark, string>, [t]);
   const picked = useMemo(() => pickOut(notes, words), [notes, words]);
@@ -102,6 +108,8 @@ export function Call({ id }: { id: string }) {
     const open = deal.state === "open";
     const canLog = open && session.can("activities", "create") && me !== null && helping === false;
     const canStep = session.can("follow_ups", "create");
+    // A text to one of the customer's people, from whoever logs the call (the server judges the rest).
+    const canText = canLog && session.part("accounts") && session.can("contacts", "read");
     const main = data.people.find((one) => one.id === deal.contact_id) ?? null;
     const mainName = main?.name ?? deal.contact;
     const days = deal.entered_stage_at === null ? 0 : Math.max(0, f.dayDiff(new Date(deal.entered_stage_at), now));
@@ -268,6 +276,12 @@ export function Call({ id }: { id: string }) {
                     <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-gi" disabled={busy || blank} onClick={() => setNotes("")}>
                       {t("call.clear")}
                     </button>
+                    {canText && (
+                      <button type="button" className="crm-btn crm-btn-ghost crm-btn-38 mr-btn" data-testid="call-text" disabled={busy} onClick={() => setTexting(true)}>
+                        <Icon name="smartphone" size={16} />
+                        {t("text.open")}
+                      </button>
+                    )}
                     <button type="submit" className="crm-btn crm-btn-primary crm-btn-38 mr-btn" disabled={busy || blank}>
                       <Icon name="check" size={16} />
                       {t("call.log")}
@@ -357,6 +371,7 @@ export function Call({ id }: { id: string }) {
             </section>
           </aside>
         </div>
+        {texting && canText && <SendText deal={{ id: deal.id, name: deal.name, company: deal.company, contactId: deal.contact_id }} people={data.people} onClose={() => setTexting(false)} onSent={again} />}
       </>
     );
   }

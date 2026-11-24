@@ -22,7 +22,7 @@ import { Tile, useAccounts } from "./shared.tsx";
 
 const TYPES = ["all", ...KINDS, "stage"] as const;
 type Type = (typeof TYPES)[number];
-const ICONS: Record<Kind, string> = { call: "contact", email: "mail", meeting: "calendar-days", note: "notebook-pen", stage: "arrow-right-left" };
+const ICONS: Record<Kind, string> = { call: "contact", email: "mail", meeting: "calendar-days", note: "notebook-pen", text: "smartphone", stage: "arrow-right-left" };
 
 export function CompanyTimeline({ id }: { id: number }) {
   const t = useT();

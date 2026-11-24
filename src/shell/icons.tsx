@@ -22,6 +22,8 @@ import { Ban, ChevronsUpDown, Info } from "lucide-react";
 import { Download } from "lucide-react";
 // A quote's payments.
 import { Undo2 } from "lucide-react";
+// A text from a deal.
+import { Smartphone } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   activity: Activity, "alarm-clock": AlarmClock, "calendar-plus": CalendarPlus, "calendar-sync": CalendarSync, "calendar-x": CalendarX, "clock-alert": ClockAlert, "calendar-arrow-up": CalendarArrowUp, "calendar-days": CalendarDays, check: Check, "check-check": CheckCheck,
@@ -44,6 +46,8 @@ const ICONS: Record<string, LucideIcon> = {
   download: Download,
   // A quote's payments.
   "undo-2": Undo2,
+  // A text from a deal.
+  smartphone: Smartphone,
   "notebook-tabs": NotebookTabs, route: Route, "clipboard-check": ClipboardCheck, recycle: Recycle, printer: Printer, "file-check": FileCheck, "file-x": FileX, "file-warning": FileWarning, "pen-line": PenLine, "hard-hat": HardHat,
 };
 

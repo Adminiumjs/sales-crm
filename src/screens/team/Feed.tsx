@@ -33,10 +33,10 @@ const PAGE = 20;
 const FURTHEST = 200;
 /** The feed follows this many open deals, the most recently active first. */
 const DEALS = 400;
-const KINDS = ["call", "email", "meeting", "note"] as const;
+const KINDS = ["call", "email", "meeting", "note", "text"] as const;
 const TYPES = ["all", ...KINDS, "stage", "amount"] as const;
 type Type = (typeof TYPES)[number];
-const ICONS: Record<Exclude<Type, "all">, string> = { call: "contact", email: "mail", meeting: "calendar-days", note: "notebook-pen", stage: "arrow-right-left", amount: "file-text" };
+const ICONS: Record<Exclude<Type, "all">, string> = { call: "contact", email: "mail", meeting: "calendar-days", note: "notebook-pen", text: "smartphone", stage: "arrow-right-left", amount: "file-text" };
 
 interface Entry {
   key: string;
