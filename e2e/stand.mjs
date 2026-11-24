@@ -34,6 +34,8 @@
  * CRM_STAND_MAIL=1 to keep the mail it sends (`e2e/mail-catcher.mjs`: SMTP on
  * CRM_STAND_MAIL_PORT, else the stand's port + 100, the mails one port above;
  * `mailbox()` reads them),
+ * CRM_STAND_SMS=0 to leave texts unset (by default the stand connects a Telnyx account whose API is answered by
+ * `e2e/sms-stub.mjs`, with a UK sender: every text the CRM sends is kept in `.stand/sms.jsonl`, read by `smsSent()`),
  * CRM_STAND_INSTALL=0 to stage the add-ons and the app and install NOTHING (for
  * the install wizard's specs: only the owner signs in until the spec installs
  * the app with its sample and calls `admitSamplePeople()`).
@@ -42,7 +44,7 @@
  * a spec that reads an address on screen runs on a stand without mail.
  */
 import { execFileSync, spawn } from "node:child_process";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, generateKeyPairSync, randomBytes } from "node:crypto";
 import { closeSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
@@ -184,6 +186,13 @@ async function moveAddresses(engine, dsn, engineRequire) {
   }
   await db.end();
   return moved;
+}
+
+/** The texts the stand's stub provider took (`e2e/sms-stub.mjs`), oldest first: `to`, `from`, `text`, `key`. */
+export function smsSent() {
+  const state = readState();
+  if (state?.sms == null || !existsSync(state.sms.log)) return [];
+  return readFileSync(state.sms.log, "utf8").split("\n").filter((line) => line.trim() !== "").map((line) => JSON.parse(line));
 }
 
 /** The mails the stand has sent, oldest first (the stand must be up with CRM_STAND_MAIL=1). */
@@ -411,10 +420,16 @@ export async function standUp() {
     ...(startAt === null ? {} : { CRM_STAND_NOW: String(startAt), CRM_STAND_CLOCK_FILE: clockFile }),
     TZ: timeZone,
   });
+  // Texts: a Telnyx account the stand's own stub answers (`e2e/sms-stub.mjs`), unless CRM_STAND_SMS=0.
+  const sms = process.env.CRM_STAND_SMS === "0" ? null : { log: join(STAND_DIR, "sms.jsonl"), profile: "5e7a0d1c-0b6f-4c55-9f6e-2a1b3c4d5e6f", number: "+447400123456" };
+  if (sms !== null) {
+    writeFileSync(sms.log, "");
+    Object.assign(env, { CRM_STAND_SMS_LOG: sms.log, CRM_STAND_SMS_PROFILE: sms.profile, CRM_STAND_SMS_NUMBER: sms.number });
+  }
   const logFile = join(STAND_DIR, "server.log");
   const fd = openSync(logFile, "w");
   const preload = (file) => ["--import", pathToFileURL(join(here, file)).href];
-  const args = [...(standIn === "" ? [] : preload("version-shim.mjs")), ...(startAt === null ? [] : preload("clock.mjs")), cli, "start", "--port", String(port), "--host", "127.0.0.1"];
+  const args = [...(standIn === "" ? [] : preload("version-shim.mjs")), ...(startAt === null ? [] : preload("clock.mjs")), ...(sms === null ? [] : preload("sms-stub.mjs")), cli, "start", "--port", String(port), "--host", "127.0.0.1"];
   const child = spawn(process.execPath, args, { cwd: work, detached: true, stdio: ["ignore", fd, fd], env });
   closeSync(fd);
   child.unref();
@@ -542,6 +557,14 @@ export async function standUp() {
     state.skippedRules = installed.rules?.skipped ?? [];
     // The public API is off until an owner switches it on (Studio → Settings → Public API): the customer's page needs it.
     await call("the public API switched on", "PUT", "/api/v1/public-api", { enabled: true });
+    if (sms !== null) {
+      // The stub's account, as an owner connects one in Studio → Texts: a key of the stand's, never a real one.
+      const publicKey = Buffer.from(generateKeyPairSync("ed25519").publicKey.export({ format: "jwk" }).x, "base64url").toString("base64");
+      await call("the text account", "PUT", "/api/v1/sms/account", { provider: "telnyx", apiKey: "crm-stand-sms-key", publicKey, messagingProfileId: sms.profile });
+      await call("the text sender", "PUT", "/api/v1/sms/sending", { sender: { kind: "number", value: sms.number }, defaultCountry: "GB" });
+      state.sms = sms;
+      save();
+    }
 
     // The sample goes in at the ledger's moment exactly, however long the install took; the clock runs on from there after.
     setClock(startAt, true);

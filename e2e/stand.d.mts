@@ -38,6 +38,8 @@ export interface StandState {
   installedBy?: "wizard";
   /** With `CRM_STAND_MAIL=1`: the catcher's process and where its kept mails are read. */
   mail?: { pid: number; smtpPort: number; url: string };
+  /** Unless CRM_STAND_SMS=0: the stub provider's log of texts, its messaging profile and the sender's number. */
+  sms?: { log: string; profile: string; number: string };
   ready?: boolean;
 }
 export const STAND_DIR: string;
@@ -64,6 +66,15 @@ export interface KeptMail {
 }
 /** The mails the stand has sent, oldest first. */
 export function mailbox(): Promise<KeptMail[]>;
+export interface SentText {
+  id: string;
+  to: string;
+  from: string | null;
+  text: string;
+  key: string | null;
+  at: string;
+}
+export function smsSent(): SentText[];
 /** Forget every mail kept so far. */
 export function clearMailbox(): Promise<void>;
 /** On a stand started with `CRM_STAND_INSTALL=0`, after a spec installed the app and its sample: the sample's people sign in from now on. */
