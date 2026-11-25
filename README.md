@@ -211,6 +211,25 @@ The tests check the manifest against Adminium's own validator, a copy of which i
 `src/testing/manifest/`; `node scripts/sync-manifest-validator.mjs` takes a fresh copy from
 `ADMINIUM_REPO`.
 
+## Updating to 0.2.10
+
+0.2.10 needs Adminium 0.3.76 and, where Forms is installed, Forms 1.0.37 (its forms, answers and invitations are
+readable by the app's roles again from that release). The update asks nothing, and every row is kept as it was:
+
+- **Send a text.** Beside "Log the call", in a deal's room and in its call notes: a short text to one of the customer's
+  people with a mobile number on file, through the business's own text account (Studio → Texts). It goes only to
+  someone who said yes to this app's texts, or who texted the business in the last 7 days; Adminium adds the line that
+  says how to stop. A text that goes is kept on the deal's timeline as a "Text"; one that cannot go says why, and nothing
+  is logged. With no text account set up, the button waits and says so.
+- **Their answer to texts.** Each contact with a number on the deal's people, and the text dialog, show where they stand
+  for this app's texts, and let whoever works the deal record the yes or no they gave in person, on the phone, on paper
+  or by e-mail, after reading them the form's words. A STOP is never lifted from here.
+- **The website form's box.** Enquiries gain one column, the form's own box for texts ("Text me about my enquiry"),
+  unticked and never required, drawn under any website form that asks for a phone. It is empty on every enquiry there
+  before.
+- **Who.** The CRM admin, the sales manager and the rep may text from a deal and answer this app's conversations in
+  Studio → Texts; the account manager reads them.
+
 ## Updating to 0.2.9
 
 0.2.9 needs Adminium 0.3.66 and suggests Lead finder 1.0.32 (not ticked). The update asks nothing, and

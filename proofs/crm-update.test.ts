@@ -1,13 +1,17 @@
 /**
- * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0, 0.2.1, 0.2.2, 0.2.3, 0.2.4, 0.2.5, 0.2.6 and 0.2.7,
- * holding the sample and rows typed since by the people who type them, updated to 0.2.9 (the whole app), on SQLite,
- * Postgres and MySQL.
+ * THE UPDATE FROM A RELEASE: a real install of the RELEASED 0.2.0 … 0.2.9, holding the sample and rows typed since by
+ * the people who type them, updated to 0.2.10 (the whole app), on SQLite, Postgres and MySQL.
  *
  * Each release is read from its git tag (`v0.2.0` … `v0.2.7`): the manifest and the `seeds/` the package shipped, as
  * the release put them in its file. Before a release is tagged, `CRM_RELEASE_REFS` names the commit that holds it
  * (`0.2.6=<commit>`). The add-ons are what an install had then (`CRM_ADD_ONS_BEFORE`, built: Invoices and
  * Inventory, no Forms) and what the next add-ons release brings (`ADD_ONS_REPO`, built; its version is taken one up
  * when it still says the one installed), Forms among them, installed after the CRM's update.
+ *
+ * Texts from a deal (0.2.10, on Adminium 0.3.76): an activity of the kind `text`, the roles that log calls may text from
+ * a deal (`texts:@:reply`, the account manager reads, `texts:@:read`), the people's phone columns, and the website form's
+ * box for texts: enquiries gain `text_ok`, empty on every enquiry there before (nobody was asked). No grant of an add-on's
+ * table, part or rule changes: the update from 0.2.9 asks nothing, and from 0.2.8 nothing either.
  *
  * A company's details for Lead finder (0.2.9, on Adminium 0.3.66): companies gain a number in the register, a phone and
  * a few words about them, and the companies entry says where a found company's details go (the `lead` word). Every
@@ -108,8 +112,8 @@ type Reply = Awaited<ReturnType<AdminiumServer['inject']>>;
 const POSTGRES_URL = process.env.TEST_POSTGRES_URL || undefined;
 const MYSQL_URL = process.env.TEST_MYSQL_URL || undefined;
 const APP = process.env.CRM_APP ?? `${process.env.HOME}/Work/lanes/p67-app`;
-const NEXT = '0.2.9';
-const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7', '0.2.8'] as const;
+const NEXT = '0.2.10';
+const RELEASES = ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.2.7', '0.2.8', '0.2.9'] as const;
 /** A release not tagged yet, read from the commit that holds it: `CRM_RELEASE_REFS=0.2.6=<commit>`. */
 const REFS: Record<string, string> = Object.fromEntries((process.env.CRM_RELEASE_REFS ?? '').split(',').filter((pair) => pair.includes('=')).map((pair) => pair.split('=', 2) as [string, string]));
 const refOf = (version: string): string => REFS[version] ?? `v${version}`;
@@ -186,7 +190,7 @@ function released(version: Release): { manifest: Doc; files: Record<string, stri
   return { manifest, files: packed(files) };
 }
 
-/** 0.2.9: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
+/** 0.2.10: the whole app, cut by the app's own script (stage 3 is the whole), numbered as the release will be. */
 async function next(): Promise<{ manifest: Doc; files: Record<string, string> }> {
   const script = (await import(pathToFileURL(`${APP}/scripts/stage-manifest.mjs`).href)) as { stageFiles: (stage: number) => { manifest: Doc; files: Record<string, string | Buffer> } };
   const three = script.stageFiles(3);
@@ -579,13 +583,15 @@ for (const [dialect, reachable] of LEGS) {
       /** 0.2.2 and later already let Supply's roles read Inventory's receipts; 0.2.3 and later already have the mark of the line and the count of won deals; 0.2.4 already has website forms and surveys. */
       const has22 = from !== '0.2.0' && from !== '0.2.1';
       const has23 = has22 && from !== '0.2.2';
-      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6' || from === '0.2.7' || from === '0.2.8';
+      const has24 = from === '0.2.4' || from === '0.2.5' || from === '0.2.6' || from === '0.2.7' || from === '0.2.8' || from === '0.2.9';
       /** 0.2.6 and later already take a quote's payments online: the update asks nothing of them. */
-      const has26 = from === '0.2.6' || from === '0.2.7' || from === '0.2.8';
+      const has26 = from === '0.2.6' || from === '0.2.7' || from === '0.2.8' || from === '0.2.9';
       /** 0.2.7 already lets the Team inbox's roles read the chat an enquiry came from. */
-      const has27 = from === '0.2.7' || from === '0.2.8';
+      const has27 = from === '0.2.7' || from === '0.2.8' || from === '0.2.9';
       /** 0.2.8 already lets the marketer read Forms' and Pages' tables: the update asks nothing at all. */
-      const has28 = from === '0.2.8';
+      const has28 = from === '0.2.8' || from === '0.2.9';
+      /** 0.2.9 already has a company's number, phone and few words. */
+      const has29 = from === '0.2.9';
       const installedAddOns = before;
       const nextAddOns = after;
 
@@ -819,7 +825,7 @@ for (const [dialect, reachable] of LEGS) {
         if (has28) expect(reasons).toEqual([]);
         else expect(reasons).toContain('roleTables');
         if (has24) {
-          // 0.2.4 already holds every other grant of an add-on's table 0.2.9 does.
+          // 0.2.4 already holds every other grant of an add-on's table 0.2.10 does.
           expect(older).toEqual([]);
         } else {
           // From every release before 0.2.4: the five roles that read the aftercare calls read when a job's survey went
@@ -996,8 +1002,9 @@ for (const [dialect, reachable] of LEGS) {
         const ours = ['enquiries.brochure', 'enquiries.brochure_link', 'enquiries.from_form', 'enquiries.wanted_on', 'feedback.from_survey', 'outbox.enquiry_id', 'settings.brochure_follow_up_owner_id', 'settings.brochure_link'];
         const ids = plain.map((added) => `${added.table}.${added.column.ref}`).sort();
         // 0.2.7's and 0.2.8's: none. 0.2.9's: a company's number, phone and few words, empty on every company there before.
-        // Plan 80's: the website form's box for texts on an enquiry, empty on every enquiry there before (nobody ticked it).
-        const COMPANY = ['companies.about', 'companies.company_number', 'companies.phone', 'enquiries.text_ok'];
+        // 0.2.10's: the website form's box for texts on an enquiry, empty on every enquiry there before (nobody ticked it).
+        const TEXTS = ['enquiries.text_ok'];
+        const COMPANY = [...(has29 ? [] : ['companies.about', 'companies.company_number', 'companies.phone']), ...TEXTS];
         expect(COMPANY.filter((one) => ids.includes(one))).toEqual(COMPANY);
         if (has26) expect(ids).toEqual(COMPANY);
         else if (has24) expect(ids).toEqual([...COMPANY, ...PAY_PLAIN].sort());

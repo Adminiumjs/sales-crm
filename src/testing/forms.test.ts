@@ -180,9 +180,9 @@ for (const [name, raw] of [
   });
 
   describe(`Forms, suggested by ${name}`, () => {
-    it("is ticked at install, from 1.0.15, saying what it brings in eight languages", () => {
+    it("is ticked at install, from 1.0.37 (whose review tables let an app's roles read forms, answers and invitations), saying what it brings in eight languages", () => {
       const forms = doc.addOns.suggests.find((one) => one.key === "forms")!;
-      expect(forms).toMatchObject({ range: ">=1.0.15", checked: true });
+      expect(forms).toMatchObject({ range: ">=1.0.37", checked: true });
       expect(Object.keys(forms.reason).sort()).toEqual([...LOCALES].sort());
       expect(doc.addOns.suggests.length).toBeLessThanOrEqual(8);
     });

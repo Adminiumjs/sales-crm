@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "crm",
   "name": "Sales CRM",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "publisher": {
     "id": "adminium",
     "name": "Adminium"
@@ -46881,7 +46881,7 @@
       },
       {
         "key": "forms",
-        "range": ">=1.0.15",
+        "range": ">=1.0.37",
         "checked": true,
         "reason": {
           "en-US": "Website forms become enquiries in the Team inbox, and surveys fill Customer feedback.",
