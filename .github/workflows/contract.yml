@@ -25,7 +25,7 @@ on:
 
 env:
   ADMINIUM_REF: v0.3.76
-  ADD_ONS_REF: v1.0.36
+  ADD_ONS_REF: v1.0.37
   # The add-ons an install of the released CRM had, for the update proof.
   ADD_ONS_BEFORE_REF: v1.0.14
 
