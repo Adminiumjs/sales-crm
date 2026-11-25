@@ -159,8 +159,8 @@ for (const [dialect, reachable] of LEGS) {
  * with it. Needs the add-ons checkout with Forms built (`ADD_ONS_REPO`).
  */
 const BUILT = builtAddOn('forms');
-// As the release will number it: the app suggests Forms 1.0.15 or newer, and a checkout built before the release says 1.0.14.
-const FORMS = BUILT === null ? null : { ...BUILT, version: '1.0.15', manifest: { ...BUILT.manifest, version: '1.0.15' } };
+// As the release numbers it: the app suggests Forms 1.0.37 or newer (its review tables open to an app's roles from then).
+const FORMS = BUILT === null ? null : { ...BUILT, version: '1.0.37', manifest: { ...BUILT.manifest, version: '1.0.37' } };
 const formsFile = () => JSON.parse(readFileSync(`${SEEDS}/meridian.forms.json`, 'utf8')) as { tables: { ref: string; own?: true; rows: unknown[] }[] };
 
 describe.skipIf(FORMS !== null)("the CRM's sample with Forms", () => {

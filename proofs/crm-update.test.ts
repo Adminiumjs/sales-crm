@@ -861,7 +861,13 @@ for (const [dialect, reachable] of LEGS) {
         expect(companies.length).toBeGreaterThan(0);
         const held = await s.rows('select id, company_number, phone, about from crm_companies');
         expect(held.map((row) => String(row['id'])).sort()).toEqual(companies);
-        expect(held.filter((row) => row['company_number'] !== null || row['phone'] !== null || row['about'] !== null)).toEqual([]);
+        // Added empty by the update to 0.2.9; from 0.2.9 itself, kept as they were (its sample fills some).
+        if (!has29) expect(held.filter((row) => row['company_number'] !== null || row['phone'] !== null || row['about'] !== null)).toEqual([]);
+        else {
+          const before = rowsBefore.get('crm_companies')!;
+          const three = (row: Row | undefined) => [row?.['company_number'] ?? null, row?.['phone'] ?? null, row?.['about'] ?? null].map((one) => (one === null ? null : String(one)));
+          expect(held.filter((row) => JSON.stringify(three(row)) !== JSON.stringify(three(before.get(plainValue(row['id'])!))))).toEqual([]);
+        }
         const entry = (now.manifest as unknown as { people: { table: string; lead?: Record<string, unknown> }[] }).people.find((one) => one.table === 'companies');
         expect(entry?.lead).toMatchObject({ number: 'company_number', phone: 'phone', about: 'about', owner: 'account_owner_id' });
       });

@@ -51,8 +51,8 @@ const manifest = () => JSON.parse(read('whole/manifest.json')) as Record<string,
 const HOST = 'forms.meridian.example';
 const ORIGIN = `https://${HOST}`;
 const BUILT = builtAddOn('forms');
-// As the release will number it: the app suggests Forms 1.0.15 or newer, and a checkout built before the release says 1.0.14.
-const FORMS = BUILT === null ? null : { ...BUILT, version: '1.0.15', manifest: { ...BUILT.manifest, version: '1.0.15' } };
+// As the release numbers it: the app suggests Forms 1.0.37 or newer (its review tables open to an app's roles from then).
+const FORMS = BUILT === null ? null : { ...BUILT, version: '1.0.37', manifest: { ...BUILT.manifest, version: '1.0.37' } };
 
 type Doc = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- a reply read freely
 

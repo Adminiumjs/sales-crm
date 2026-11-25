@@ -57,7 +57,7 @@ const numbered = (key: string, version: string) => {
   const built = builtAddOn(key);
   return built === null ? null : { ...built, version, manifest: { ...built.manifest, version } };
 };
-const FORMS = numbered('forms', '1.0.31');
+const FORMS = numbered('forms', '1.0.37');
 const CHAT = numbered('live-chat', '1.0.31');
 const PAGES = numbered('pages', '1.0.31');
 const ALL = FORMS !== null && CHAT !== null && PAGES !== null;
